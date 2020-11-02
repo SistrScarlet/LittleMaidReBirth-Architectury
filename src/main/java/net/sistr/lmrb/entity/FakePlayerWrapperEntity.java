@@ -1,0 +1,128 @@
+package net.sistr.lmrb.entity;
+
+import com.mojang.authlib.GameProfile;
+import net.minecraft.advancement.PlayerAdvancementTracker;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.sistr.lmrb.util.LivingAccessor;
+import net.sistr.lmrb.util.PlayerAccessor;
+
+import java.util.List;
+import java.util.Optional;
+
+//エンティティをプレイヤーにラップするクラス
+//基本的にサーバーオンリー
+//アイテムの使用/アイテム回収/その他
+//注意！ワールド起動時に読み込まれた場合、ワールド読み込みが停止する可能性がある
+//必ずワールド読み込み後にインスタンスを生成するようにすること
+public abstract class FakePlayerWrapperEntity extends FakePlayer {
+
+    public FakePlayerWrapperEntity(LivingEntity origin) {
+        super((ServerWorld) origin.world, new GameProfile(origin.getUuid(),
+                origin.getType().getName().getString() + "_player_wrapper"));
+        setEntityId(origin.getEntityId());
+    }
+
+    public abstract LivingEntity getOrigin();
+
+    public abstract Optional<PlayerAdvancementTracker> getOriginAdvancementTracker();
+
+    @Override
+    public void tick() {
+        //Fencer
+        ++lastAttackedTicks;
+        ((LivingAccessor)this).applyEquipmentAttributes_LM();
+        //Archer
+        ((LivingAccessor)this).tickActiveItemStack_LM();
+
+        //アイテム回収
+        pickupItems();
+    }
+
+    private void pickupItems() {
+        if (this.getHealth() > 0.0F && !this.isSpectator()) {
+            Box box2;
+            if (this.hasVehicle() && !this.getVehicle().removed) {
+                box2 = this.getBoundingBox().union(this.getVehicle().getBoundingBox()).expand(1.0D, 0.0D, 1.0D);
+            } else {
+                box2 = this.getBoundingBox().expand(1.0D, 0.5D, 1.0D);
+            }
+
+            List<Entity> list = this.world.getOtherEntities(this, box2);
+
+            for (Entity entity : list) {
+                if (!entity.removed && entity != getOrigin()) {
+                    ((PlayerAccessor)this).onCollideWithEntity_LM(entity);
+                }
+            }
+        }
+    }
+
+    @Override
+    public PlayerAdvancementTracker getAdvancementTracker() {
+        return getOriginAdvancementTracker().orElse(super.getAdvancementTracker());
+    }
+
+    @Override
+    public EntityDimensions getDimensions(EntityPose pose) {
+        return getOrigin().getDimensions(pose);
+    }
+
+    //座標系
+
+    @Override
+    public Vec3d getPos() {
+        Vec3d vec = getOrigin().getPos();
+        setPos(vec.x, vec.y, vec.z);
+        return vec;
+    }
+
+    @Override
+    public double getEyeY() {
+        return getOrigin().getEyeY();
+    }
+
+    @Override
+    public BlockPos getBlockPos() {
+        return getOrigin().getBlockPos();
+    }
+
+    @Override
+    public Box getBoundingBox() {
+        return getOrigin().getBoundingBox();
+    }
+
+    @Override
+    public Box getBoundingBox(EntityPose pose) {
+        return getOrigin().getBoundingBox(pose);
+    }
+
+    //体力
+
+    @Override
+    public void heal(float amount) {
+        getOrigin().heal(amount);
+    }
+
+    @Override
+    public float getHealth() {
+        return getOrigin().getHealth();
+    }
+
+    @Override
+    public void setHealth(float health) {
+        getOrigin().setHealth(health);
+    }
+
+    @Override
+    public boolean damage(DamageSource source, float amount) {
+        return getOrigin().damage(source, amount);
+    }
+}

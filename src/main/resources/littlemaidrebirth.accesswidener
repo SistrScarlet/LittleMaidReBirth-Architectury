@@ -1,0 +1,5 @@
+accessWidener v1 named
+
+mutable field net/minecraft/entity/player/PlayerEntity inventory Lnet/minecraft/entity/player/PlayerInventory;
+accessible method net/minecraft/world/biome/SpawnSettings$SpawnDensity <init> (DD)V
+accessible class net/minecraft/world/biome/Biome$Weather

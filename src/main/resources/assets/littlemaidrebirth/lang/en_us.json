@@ -1,0 +1,20 @@
+{
+  "entity.littlemaidrebirth.little_maid_mob": "LittleMaid",
+  "entity.littlemaidrebirth.little_maid_mob.InsideSkirt": "InsideSkirt",
+
+  "state.littlemaidrebirth.None": "None",
+  "state.littlemaidrebirth.Wait": "Wait",
+  "state.littlemaidrebirth.Escort": "Escort",
+  "state.littlemaidrebirth.Freedom": "Freedom",
+
+  "mode.littlemaidrebirth.Fencer": "Fencer",
+  "mode.littlemaidrebirth.Archer": "Archer",
+  "mode.littlemaidrebirth.Cooking": "Cooking",
+  "mode.littlemaidrebirth.Ripper": "Ripper",
+  "mode.littlemaidrebirth.Torcher": "Torcher",
+
+  "item.littlemaidrebirth.little_maid_spawn_egg": "LittleMaid Spawn Egg",
+
+  "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth"
+
+}
