@@ -21,12 +21,12 @@ import net.sistr.lmrb.util.ModeManager;
 //ただしFakePlayerに殴らせるようにしている
 public class FencerMode implements Mode {
     protected final PathAwareEntity mob;
-    protected final FakePlayerSupplier hasFakePlayer;
+    protected final FakePlayerSupplier fakePlayer;
     protected final MeleeAttackGoal melee;
 
-    public FencerMode(PathAwareEntity mob, FakePlayerSupplier hasFakePlayer, double speed, boolean memory) {
+    public FencerMode(PathAwareEntity mob, FakePlayerSupplier fakePlayer, double speed, boolean memory) {
         this.mob = mob;
-        this.hasFakePlayer = hasFakePlayer;
+        this.fakePlayer = fakePlayer;
         this.melee = new MeleeAttackGoal(mob, speed, memory) {
             @Override
             protected void attack(LivingEntity target, double squaredDistance) {
@@ -41,7 +41,7 @@ public class FencerMode implements Mode {
                     ((SoundPlayable)mob).play(LMSounds.ATTACK);
                 }
 
-                FakePlayer fake = hasFakePlayer.getFakePlayer();
+                FakePlayer fake = fakePlayer.getFakePlayer();
                 fake.attack(target);
                 if (target instanceof MobEntity && ((MobEntity) target).getTarget() == fake) {
                     ((MobEntity) target).setTarget(mob);
@@ -56,7 +56,7 @@ public class FencerMode implements Mode {
             @Override
             protected double getSquaredMaxAttackDistance(LivingEntity entity) {
                 double reachSq = ReachEntityAttributes
-                        .getSquaredAttackRange(hasFakePlayer.getFakePlayer(), 4.5D - 1D);
+                        .getSquaredAttackRange(fakePlayer.getFakePlayer(), 4.5D - 1D);
                 reachSq = Math.max(reachSq, 0);
                 return reachSq;
             }

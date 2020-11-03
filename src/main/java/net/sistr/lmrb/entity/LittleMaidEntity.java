@@ -67,7 +67,7 @@ import net.sistr.lmrb.util.LivingAccessor;
 import java.util.*;
 
 //メイドさん本体
-//todo 啼くように、このクラスの行数を500まで減らす
+//todo このクラスの行数を500まで減らす
 public class LittleMaidEntity extends TameableEntity implements CustomPacketEntity, InventorySupplier, Tameable,
         NeedSalary, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable {
     //変数群。カオス
