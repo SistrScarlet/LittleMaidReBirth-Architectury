@@ -47,18 +47,20 @@ public class SyncMovingStatePacket {
         } else {
             state = Tameable.WAIT;
         }
-        context.getTaskQueue().execute(() -> {
-            PlayerEntity player = context.getPlayer();
-            Entity entity = context.getPlayer().world.getEntityById(id);
-            if (entity instanceof Tameable) {
-                if (!((Tameable) entity).getTameOwnerUuid()
-                        .filter(ownerId -> ownerId.equals(player.getUuid()))
-                        .isPresent()) {
-                    return;
-                }
-                ((Tameable) entity).setMovingState(state);
+        context.getTaskQueue().execute(() ->
+                applyMovingStateServer(context.getPlayer(), id, state));
+    }
+
+    private static void applyMovingStateServer(PlayerEntity player, int id, String state) {
+        Entity entity = player.world.getEntityById(id);
+        if (entity instanceof Tameable) {
+            if (!((Tameable) entity).getTameOwnerUuid()
+                    .filter(ownerId -> ownerId.equals(player.getUuid()))
+                    .isPresent()) {
+                return;
             }
-        });
+            ((Tameable) entity).setMovingState(state);
+        }
     }
 
 }

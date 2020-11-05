@@ -42,41 +42,43 @@ public class SyncSoundConfigPacket {
     public static void receiveS2CPacket(PacketContext context, PacketByteBuf buf) {
         int id = buf.readVarInt();
         String configName = buf.readString();
-        context.getTaskQueue().execute(() -> {
-            World world = getWorld();
-            Entity entity = world.getEntityById(id);
-            if (entity instanceof SoundPlayable) {
-                LMConfigManager.INSTANCE.getConfig(configName)
-                        .ifPresent(((SoundPlayable) entity)::setConfigHolder);
-            }
-        });
+        context.getTaskQueue().execute(() ->
+                applySoundConfigClient(id, configName));
     }
 
-    @Environment(EnvType.CLIENT)
-    private static World getWorld() {
-        return MinecraftClient.getInstance().world;
+    private static void applySoundConfigClient(int id, String configName) {
+        PlayerEntity player = MinecraftClient.getInstance().player;
+        if (player == null) return;
+        World world = player.world;
+        Entity entity = world.getEntityById(id);
+        if (entity instanceof SoundPlayable) {
+            LMConfigManager.INSTANCE.getConfig(configName)
+                    .ifPresent(((SoundPlayable) entity)::setConfigHolder);
+        }
     }
 
     public static void receiveC2SPacket(PacketContext context, PacketByteBuf buf) {
         int id = buf.readVarInt();
-        String configName = buf.readString();
-        context.getTaskQueue().execute(() -> {
-            PlayerEntity player = context.getPlayer();
-            World world = context.getPlayer().world;
-            Entity entity = world.getEntityById(id);
-            if (!(entity instanceof SoundPlayable)) {
-                return;
-            }
-            if (entity instanceof Tameable
-                    && !((Tameable) entity).getTameOwnerUuid()
-                    .filter(ownerId -> ownerId.equals(player.getUuid()))
-                    .isPresent()) {
-                return;
-            }
-            LMConfigManager.INSTANCE.getConfig(configName)
-                    .ifPresent(((SoundPlayable) entity)::setConfigHolder);
-            sendS2CPacket(entity, configName);
-        });
+        String configName = buf.readString(32767);
+        context.getTaskQueue().execute(() ->
+                applySoundConfigServer(context.getPlayer(), id, configName));
+    }
+
+    private static void applySoundConfigServer(PlayerEntity player, int id, String configName) {
+        World world = player.world;
+        Entity entity = world.getEntityById(id);
+        if (!(entity instanceof SoundPlayable)) {
+            return;
+        }
+        if (entity instanceof Tameable
+                && !((Tameable) entity).getTameOwnerUuid()
+                .filter(ownerId -> ownerId.equals(player.getUuid()))
+                .isPresent()) {
+            return;
+        }
+        LMConfigManager.INSTANCE.getConfig(configName)
+                .ifPresent(((SoundPlayable) entity)::setConfigHolder);
+        sendS2CPacket(entity, configName);
     }
 
 }
