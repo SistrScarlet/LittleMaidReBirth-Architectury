@@ -33,7 +33,7 @@ public class LMInventorySupplier implements InventorySupplier {
                 FakePlayer fakePlayer = player.getFakePlayer();
                 inventory = new LMInventory(fakePlayer, owner, size);
                 fakePlayer.inventory = (PlayerInventory) inventory;
-                readInventory();
+                if (inventoryTag != null) readInventory(inventoryTag);
             } else {
                 inventory = new SimpleInventory(size);
             }
@@ -84,9 +84,10 @@ public class LMInventorySupplier implements InventorySupplier {
 
     public void readInventory(CompoundTag nbt) {
         this.inventoryTag = nbt.getList("Inventory", 10);
+        if (inventory != null) readInventory(inventoryTag);
     }
 
-    private void readInventory() {
+    private void readInventory(ListTag inventoryTag) {
         for(int i = 0; i < inventoryTag.size(); ++i) {
             CompoundTag tag = inventoryTag.getCompound(i);
             int slot = tag.getByte("Slot") & 255;

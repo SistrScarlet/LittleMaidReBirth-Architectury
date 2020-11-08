@@ -38,8 +38,6 @@ public class FixedMoveControl extends MoveControl {
             this.state = MoveControl.State.WAIT;
             return;
         } else if (this.state == State.WAIT) {
-            this.forwardMovement = 0;
-            this.sidewaysMovement = 0;
             this.entity.setForwardSpeed(0);
             this.entity.setSidewaysSpeed(0);
             return;
