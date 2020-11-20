@@ -1,12 +1,20 @@
 package net.sistr.lmrb.entity;
 
 import com.mojang.authlib.GameProfile;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.network.ClientConnection;
+import net.minecraft.network.NetworkSide;
+import net.minecraft.network.Packet;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -20,14 +28,13 @@ import java.util.Optional;
 //エンティティをプレイヤーにラップするクラス
 //基本的にサーバーオンリー
 //アイテムの使用/アイテム回収/その他
-//注意！ワールド起動時に読み込まれた場合、ワールド読み込みが停止する可能性がある
-//必ずワールド読み込み後にインスタンスを生成するようにすること
 public abstract class FakePlayerWrapperEntity extends FakePlayer {
 
     public FakePlayerWrapperEntity(LivingEntity origin) {
         super((ServerWorld) origin.world, new GameProfile(origin.getUuid(),
                 origin.getType().getName().getString() + "_player_wrapper"));
         setEntityId(origin.getEntityId());
+        networkHandler = new FakePlayNetworkHandler(getServer(), this);
     }
 
     public abstract LivingEntity getOrigin();
@@ -124,5 +131,35 @@ public abstract class FakePlayerWrapperEntity extends FakePlayer {
     @Override
     public boolean damage(DamageSource source, float amount) {
         return getOrigin().damage(source, amount);
+    }
+
+    public static class FakePlayNetworkHandler extends ServerPlayNetworkHandler {
+
+        public FakePlayNetworkHandler(MinecraftServer server, ServerPlayerEntity playerIn) {
+            super(server, new FakeClientConnection(), playerIn);
+        }
+
+        @Override
+        public void sendPacket(Packet<?> packet) {
+        }
+
+        @Override
+        public void sendPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> listener) {
+        }
+    }
+
+    public static class FakeClientConnection extends ClientConnection {
+
+        public FakeClientConnection() {
+            super(NetworkSide.SERVERBOUND);
+        }
+
+        @Override
+        public void send(Packet<?> packet) {
+        }
+
+        @Override
+        public void send(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> callback) {
+        }
     }
 }
