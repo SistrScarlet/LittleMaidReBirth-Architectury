@@ -17,7 +17,6 @@ import net.sistr.lmml.resource.util.LMSounds;
 import net.sistr.lmrb.entity.FakePlayer;
 import net.sistr.lmrb.entity.FakePlayerSupplier;
 import net.sistr.lmrb.entity.Tameable;
-import net.sistr.lmrb.util.ModeManager;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,6 +25,7 @@ import java.util.Optional;
 
 //暗所発見->移動->設置
 //ライトエンジンが別スレ化しているので置いてすぐはライトレベルに変化が無い点に注意
+//todo 処理の見直し
 public class TorcherMode implements Mode {
     protected final PathAwareEntity mob;
     protected final FakePlayerSupplier hasFakePlayer;

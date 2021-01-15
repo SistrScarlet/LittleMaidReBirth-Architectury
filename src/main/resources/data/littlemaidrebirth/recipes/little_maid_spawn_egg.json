@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SGS",
+    "CEC",
+    "SGS"
+  ],
+  "key": {
+    "S": {
+      "tag": "littlemaidrebirth:maids_salary"
+    },
+    "C": {
+      "tag": "littlemaidrebirth:maids_employable"
+    },
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "E": {
+      "item": "minecraft:egg"
+    }
+  },
+  "result": {
+    "item": "littlemaidrebirth:little_maid_spawn_egg"
+  }
+}

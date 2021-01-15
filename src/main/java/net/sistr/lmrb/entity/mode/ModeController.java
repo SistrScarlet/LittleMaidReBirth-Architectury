@@ -9,7 +9,6 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Hand;
 import net.sistr.lmrb.entity.InventorySupplier;
-import net.sistr.lmrb.util.ModeManager;
 
 import java.util.Optional;
 import java.util.Set;

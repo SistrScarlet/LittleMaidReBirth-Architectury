@@ -11,7 +11,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
-import net.sistr.lmrb.util.ModeManager;
 
 import java.util.Collection;
 import java.util.Comparator;

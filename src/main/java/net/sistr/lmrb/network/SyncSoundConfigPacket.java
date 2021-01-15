@@ -46,6 +46,7 @@ public class SyncSoundConfigPacket {
                 applySoundConfigClient(id, configName));
     }
 
+    @Environment(EnvType.CLIENT)
     private static void applySoundConfigClient(int id, String configName) {
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return;

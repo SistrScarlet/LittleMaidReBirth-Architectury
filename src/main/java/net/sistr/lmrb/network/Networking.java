@@ -9,21 +9,17 @@ import net.sistr.lmml.SideChecker;
 public class Networking {
     public static Networking INSTANCE = new Networking();
 
-    public void init() {
-        if (SideChecker.isClient()) {
-            clientInit();
-        }
-        serverInit();
-    }
-
     @Environment(EnvType.CLIENT)
-    private void clientInit() {
+    public void clientInit() {
         ClientSidePacketRegistry.INSTANCE.register(SyncSoundConfigPacket.ID, SyncSoundConfigPacket::receiveS2CPacket);
+        ClientSidePacketRegistry.INSTANCE.register(OpenIFFScreenPacket.ID, OpenIFFScreenPacket::receiveS2CPacket);
     }
 
-    private void serverInit() {
+    public void serverInit() {
         ServerSidePacketRegistry.INSTANCE.register(SyncMovingStatePacket.ID, SyncMovingStatePacket::receiveC2SPacket);
         ServerSidePacketRegistry.INSTANCE.register(SyncSoundConfigPacket.ID, SyncSoundConfigPacket::receiveC2SPacket);
+        ServerSidePacketRegistry.INSTANCE.register(OpenIFFScreenPacket.ID, OpenIFFScreenPacket::receiveC2SPacket);
+        ServerSidePacketRegistry.INSTANCE.register(SyncIFFPacket.ID, SyncIFFPacket::receiveC2SPacket);
     }
 
 }

@@ -1,4 +1,4 @@
-package net.sistr.lmrb.entity;
+package net.sistr.lmrb.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
@@ -17,9 +17,11 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.lmml.client.ModelSelectScreen;
-import net.sistr.lmml.entity.compound.IHasMultiModel;
 import net.sistr.lmml.resource.manager.LMConfigManager;
 import net.sistr.lmrb.LittleMaidReBirthMod;
+import net.sistr.lmrb.entity.LittleMaidEntity;
+import net.sistr.lmrb.entity.LittleMaidScreenHandler;
+import net.sistr.lmrb.network.OpenIFFScreenPacket;
 import net.sistr.lmrb.network.SyncMovingStatePacket;
 import net.sistr.lmrb.network.SyncSoundConfigPacket;
 
@@ -29,7 +31,10 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final Identifier GUI =
             new Identifier("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
     private static final Identifier ICONS = new Identifier("textures/gui/icons.png");
-    private static final ItemStack ARMOR = Items.DIAMOND_CHESTPLATE.getDefaultStack();
+    private static final ItemStack ARMOR = Items.LEATHER_CHESTPLATE.getDefaultStack();
+    private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
+    private static final ItemStack NOTE = Items.NOTE_BLOCK.getDefaultStack();
+    private static final ItemStack FEATHER = Items.FEATHER.getDefaultStack();
     private final LittleMaidEntity openAt;
     private Text stateText;
 
@@ -46,35 +51,43 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             client.openScreen(null);
             return;
         }
-        int left = (int) ((this.width - backgroundWidth) / 2F);
+        int left = (int) ((this.width - backgroundWidth) / 2F) - 5;
         int top = (int) ((this.height - backgroundHeight) / 2F);
-        this.addButton(new ButtonWidget(left - 20, top + 20, 20, 20, new LiteralText(""), button -> {
-            openAt.setConfigHolder(LMConfigManager.INSTANCE.getAnyConfig());
-            SyncSoundConfigPacket.sendC2SPacket(openAt, openAt.getConfigHolder().getName());
-        }, (button, matrices, x, y) -> {
+        int size = 20;
+        int layer = -1;
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+                button -> OpenIFFScreenPacket.sendC2SPacket(openAt)) {
+            @Override
+            public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+                itemRenderer.renderGuiItemIcon(BOOK, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
+            }
+        });
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+                button -> {
+                    openAt.setConfigHolder(LMConfigManager.INSTANCE.getAnyConfig());
+                    SyncSoundConfigPacket.sendC2SPacket(openAt, openAt.getConfigHolder().getName());
+                }, (button, matrices, x, y) -> {
             String text = openAt.getConfigHolder().getName();
             float renderX = Math.max(0, x - textRenderer.getWidth(text) / 2F);
             textRenderer.drawWithShadow(matrices, text, renderX,
                     y - textRenderer.fontHeight / 2F, 0xFFFFFF);
         }) {
             @Override
-            public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                String text = "S";
-                textRenderer.drawWithShadow(matrices, text,
-                        this.x + (this.width - textRenderer.getWidth(text)) / 2F,
-                        this.y + (this.height - textRenderer.fontHeight) / 2F, 0xFFFFFF);
+            public void renderButton(MatrixStack matrices, int x, int y, float delta) {
+                super.renderButton(matrices, x, y, delta);
+                itemRenderer.renderGuiItemIcon(NOTE, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addButton(new ButtonWidget(left - 20, top + 40, 20, 20, new LiteralText(""), button ->
-                client.openScreen(new ModelSelectScreen(title, openAt.world, openAt))) {
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+                button -> client.openScreen(new ModelSelectScreen(title, openAt.world, openAt))) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
                 itemRenderer.renderGuiItemIcon(ARMOR, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addButton(new ButtonWidget(left - 20, top + 60, 20, 20, new LiteralText(""),
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
                 button -> {
                     openAt.changeMovingState();
                     stateText = getStateText();
@@ -82,10 +95,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             @Override
             public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
                 super.renderButton(matrices, mouseX, mouseY, delta);
-                String state = openAt.getMovingState().substring(0, 2);
-                textRenderer.drawWithShadow(matrices, state,
-                        this.x + (this.width - textRenderer.getWidth(state)) / 2F,
-                        this.y + (this.height - textRenderer.fontHeight) / 2F, 0xFFFFFF);
+                itemRenderer.renderGuiItemIcon(FEATHER, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
         stateText = getStateText();
@@ -127,7 +137,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         float left = (width - backgroundWidth) / 2F;
         float top = (height - backgroundHeight) / 2F;
         if (left + 7 <= mouseX && mouseX < left + 96 && top + 7 <= mouseY && mouseY < top + 60) {
-            drawArmor(matrices, mouseX, mouseY);
+            drawArmor(matrices);
         } else {
             drawHealth(matrices, mouseX, mouseY);
         }
@@ -149,7 +159,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         this.client.getTextureManager().bindTexture(GUI);
     }
 
-    protected void drawArmor(MatrixStack matrices, int mouseX, int mouseY) {
+    protected void drawArmor(MatrixStack matrices) {
         float armor = openAt.getArmor();
         drawArmor(matrices, 98, 7, MathHelper.clamp(armor - 10, 0, 10), 5);
         drawArmor(matrices, 98, 16, MathHelper.clamp(armor, 0, 10), 5);

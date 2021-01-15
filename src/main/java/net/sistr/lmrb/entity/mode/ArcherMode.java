@@ -18,8 +18,6 @@ import net.sistr.lmml.resource.util.LMSounds;
 import net.sistr.lmrb.entity.FakePlayer;
 import net.sistr.lmrb.entity.FakePlayerSupplier;
 import net.sistr.lmrb.entity.AimingPoseable;
-import net.sistr.lmrb.entity.InventorySupplier;
-import net.sistr.lmrb.util.ModeManager;
 
 //todo クロスボウとかも撃てるように調整
 public class ArcherMode implements Mode {
@@ -163,10 +161,6 @@ public class ArcherMode implements Mode {
                     return;
                 }
             }
-
-            fakePlayer.yaw = this.mob.yaw;
-            fakePlayer.pitch = this.mob.pitch;
-            fakePlayer.setPos(mob.getX(), mob.getY(), mob.getZ());
 
             fakePlayer.stopUsingItem();
 

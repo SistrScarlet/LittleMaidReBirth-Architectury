@@ -7,8 +7,8 @@ public interface InventorySupplier {
 
     Inventory getInventory();
 
-    /*void writeInventory(CompoundNBT nbt);
+    void writeInventory(CompoundTag tag);
 
-    void readInventory(CompoundNBT nbt);*/
+    void readInventory(CompoundTag tag);
 
 }

@@ -14,9 +14,9 @@ import net.minecraft.screen.slot.Slot;
 import net.sistr.lmrb.setup.Registration;
 
 public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEntitySupplier<LittleMaidEntity> {
-    private final LittleMaidEntity maid;
     private final PlayerInventory playerInventory;
     private final Inventory maidInventory;
+    private final LittleMaidEntity maid;
 
     public LittleMaidScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf packet) {
         this(syncId, playerInventory, packet.readVarInt());
@@ -28,20 +28,15 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
 
         LittleMaidEntity maid = (LittleMaidEntity) playerInventory.player.world.getEntityById(entityId);
         this.maid = maid;
-        if (maid == null) {
-            this.maidInventory = new SimpleInventory(18);
-            return;
-        }
-        this.maidInventory = maid.getInventory();
+        if (maid == null)
+            this.maidInventory = new SimpleInventory(18 + 4 + 2);
+        else
+            this.maidInventory = maid.getInventory();
 
         maidInventory.onOpen(playerInventory.player);
 
         layoutMaidInventorySlots();
         layoutPlayerInventorySlots(8, 126);
-    }
-
-    public PlayerEntity getPlayer() {
-        return playerInventory.player;
     }
 
     public LittleMaidEntity getGuiEntity() {
@@ -117,62 +112,32 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
 
     private void layoutMaidInventorySlots() {
         //index 0~17
-        addSlotBox(maidInventory, 0, 8, 76, 9, 18, 2, 18);
+        addSlotBox(maidInventory, 1, 8, 76, 9, 18, 2, 18);
 
         //18~19
-        Inventory handsInventory = new SimpleInventory(2) {
-            @Override
-            public void setStack(int slot, ItemStack stack) {
-                if (slot == 0) {
-                    maid.equipStack(EquipmentSlot.MAINHAND, stack);
-                } else {
-                    maid.equipStack(EquipmentSlot.OFFHAND, stack);
-                }
-                super.setStack(slot, stack);
-            }
-        };
-        handsInventory.setStack(0, maid.getMainHandStack());
-        handsInventory.setStack(1, maid.getOffHandStack());
-        addSlot(new Slot(handsInventory, 0, 116, 44));
-        addSlot(new Slot(handsInventory, 1, 152, 44));
+        addSlot(new Slot(maidInventory, 0, 116, 44));
+        addSlot(new Slot(maidInventory, 1 + 18 + 4, 152, 44));
 
         //20~23
-        Inventory armorsInventory = new SimpleInventory(4) {
-            @Override
-            public void setStack(int slot, ItemStack stack) {
-                EquipmentSlot equipmentSlot = EquipmentSlot.fromTypeIndex(EquipmentSlot.Type.ARMOR, slot);
-                maid.equipStack(equipmentSlot, stack);
-                super.setStack(slot, stack);
-            }
-
-            @Override
-            public boolean isValid(int slot, ItemStack stack) {
-                return false;
-            }
-        };
-        for (int i = 0; i < 4; i++) {
-            EquipmentSlot slot = EquipmentSlot.fromTypeIndex(EquipmentSlot.Type.ARMOR, i);
-            armorsInventory.setStack(slot.getEntitySlotId(), maid.getEquippedStack(slot));
-        }
-        addSlot(new Slot(armorsInventory, EquipmentSlot.HEAD.getEntitySlotId(), 8, 8) {
+        addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.HEAD.getEntitySlotId(), 8, 8) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.HEAD;
             }
         });
-        addSlot(new Slot(armorsInventory, EquipmentSlot.CHEST.getEntitySlotId(), 8, 44) {
+        addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.CHEST.getEntitySlotId(), 8, 44) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.CHEST;
             }
         });
-        addSlot(new Slot(armorsInventory, EquipmentSlot.LEGS.getEntitySlotId(), 80, 8) {
+        addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.LEGS.getEntitySlotId(), 80, 8) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.LEGS;
             }
         });
-        addSlot(new Slot(armorsInventory, EquipmentSlot.FEET.getEntitySlotId(), 80, 44) {
+        addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.FEET.getEntitySlotId(), 80, 44) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.FEET;

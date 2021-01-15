@@ -1,4 +1,4 @@
-package net.sistr.lmrb.util;
+package net.sistr.lmrb.entity.mode;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -7,7 +7,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.sistr.lmrb.entity.mode.Mode;
 
 import java.util.Map;
 import java.util.Set;

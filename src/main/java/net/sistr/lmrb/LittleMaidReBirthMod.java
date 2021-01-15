@@ -2,6 +2,7 @@ package net.sistr.lmrb;
 
 import net.fabricmc.api.ModInitializer;
 import net.sistr.lmrb.setup.ModSetup;
+import net.sistr.lmrb.setup.Registration;
 
 public class LittleMaidReBirthMod implements ModInitializer {
 
@@ -9,6 +10,6 @@ public class LittleMaidReBirthMod implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ModSetup.init();
+
     }
 }

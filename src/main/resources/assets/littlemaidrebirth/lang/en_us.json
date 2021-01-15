@@ -14,6 +14,10 @@
   "mode.littlemaidrebirth.Torcher": "Torcher",
 
   "item.littlemaidrebirth.little_maid_spawn_egg": "LittleMaid Spawn Egg",
+  "item.littlemaidrebirth.iff_copy_book": "IFF Copy Book",
+  "item.littlemaidrebirth.iff_copy_book.tooltip": "IFF written",
+  "item.littlemaidrebirth.iff_copy_book.message_written": "IFF has been written.",
+  "item.littlemaidrebirth.iff_copy_book.message_apply": "IFF has been applied.",
 
   "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth"
 

@@ -19,13 +19,14 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.sistr.lmrb.LittleMaidReBirthMod"
+      "net.sistr.lmrb.LittleMaidReBirthMod",
+      "net.sistr.lmrb.setup.ModSetup",
+      "net.sistr.lmrb.setup.Registration"
     ],
     "client": [
       "net.sistr.lmrb.setup.ClientSetup"
     ],
     "server": [
-
     ]
   },
   "accessWidener": "littlemaidrebirth.accesswidener",

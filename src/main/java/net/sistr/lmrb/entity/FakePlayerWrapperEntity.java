@@ -45,12 +45,18 @@ public abstract class FakePlayerWrapperEntity extends FakePlayer {
     public void tick() {
         //Fencer
         ++lastAttackedTicks;
-        ((LivingAccessor)this).applyEquipmentAttributes_LM();
+        ((LivingAccessor) this).applyEquipmentAttributes_LM();
         //Archer
-        ((LivingAccessor)this).tickActiveItemStack_LM();
+        ((LivingAccessor) this).tickActiveItemStack_LM();
 
         //アイテム回収
         pickupItems();
+
+        //InventoryTick
+        this.inventory.updateItems();
+
+        this.refreshPositionAndAngles(getOrigin().getX(), getOrigin().getY(), getOrigin().getZ(),
+                this.getOrigin().yaw, this.getOrigin().pitch);
     }
 
     private void pickupItems() {
@@ -66,10 +72,15 @@ public abstract class FakePlayerWrapperEntity extends FakePlayer {
 
             for (Entity entity : list) {
                 if (!entity.removed && entity != getOrigin()) {
-                    ((PlayerAccessor)this).onCollideWithEntity_LM(entity);
+                    ((PlayerAccessor) this).onCollideWithEntity_LM(entity);
                 }
             }
         }
+    }
+
+    @Override
+    public void sendPickup(Entity item, int count) {
+        //super.sendPickup(item, count);
     }
 
     @Override

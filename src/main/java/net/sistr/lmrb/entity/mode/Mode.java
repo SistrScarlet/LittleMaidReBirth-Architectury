@@ -2,7 +2,6 @@ package net.sistr.lmrb.entity.mode;
 
 import net.minecraft.nbt.CompoundTag;
 
-//todo アイテム交換
 public interface Mode {
 
     String MOVE = "move";

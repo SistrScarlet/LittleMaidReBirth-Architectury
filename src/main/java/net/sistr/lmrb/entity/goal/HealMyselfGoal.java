@@ -14,6 +14,7 @@ import net.sistr.lmrb.entity.InventorySupplier;
 import java.util.EnumSet;
 import java.util.Set;
 
+//todo 19.5とか中途半端な時はどう回復しよう？最後に最大まで回復する？
 public class HealMyselfGoal extends Goal {
     private final PathAwareEntity mob;
     private final InventorySupplier hasInventory;

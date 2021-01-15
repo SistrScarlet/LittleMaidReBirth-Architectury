@@ -14,6 +14,10 @@
   "mode.littlemaidrebirth.Torcher": "照明係",
 
   "item.littlemaidrebirth.little_maid_spawn_egg": "リトルメイドのスポーンエッグ",
+  "item.littlemaidrebirth.iff_copy_book": "IFFをコピーする本",
+  "item.littlemaidrebirth.iff_copy_book.tooltip": "IFF書き込み済み",
+  "item.littlemaidrebirth.iff_copy_book.message_written": "IFFが書き込まれました。",
+  "item.littlemaidrebirth.iff_copy_book.message_apply": "IFFが適用されました。",
 
   "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth"
 

@@ -15,7 +15,6 @@ import net.sistr.lmml.resource.util.LMSounds;
 import net.sistr.lmrb.entity.FakePlayer;
 import net.sistr.lmrb.entity.FakePlayerSupplier;
 import net.sistr.lmrb.util.MeleeAttackAccessor;
-import net.sistr.lmrb.util.ModeManager;
 
 //基本的にはMeleeAttackGoalのラッパー
 //ただしFakePlayerに殴らせるようにしている

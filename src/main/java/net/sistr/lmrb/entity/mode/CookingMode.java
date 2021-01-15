@@ -26,7 +26,6 @@ import net.sistr.lmml.entity.compound.SoundPlayable;
 import net.sistr.lmml.resource.util.LMSounds;
 import net.sistr.lmrb.entity.InventorySupplier;
 import net.sistr.lmrb.util.AbstractFurnaceAccessor;
-import net.sistr.lmrb.util.ModeManager;
 
 import java.util.Optional;
 import java.util.Set;
