@@ -48,13 +48,17 @@ public class IFFImpl implements HasIFF {
             return;
         }
         ListTag list = tag.getList("HasIFFTags", 10);
-        iffs.clear();
         list.stream()
                 .map(t -> (CompoundTag) t)
                 .map(t -> IFFTypeManager.getINSTANCE().loadIFF(t))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .forEach(iffs::add);
+                .forEach(this::addOrReplace);
 
+    }
+
+    public void addOrReplace(IFF iff) {
+        iffs.removeIf(i -> i.getIFFType() == iff.getIFFType());
+        iffs.add(iff);
     }
 }

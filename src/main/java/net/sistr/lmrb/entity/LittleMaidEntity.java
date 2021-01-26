@@ -474,42 +474,35 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
-        if (player.shouldCancelInteraction() || stack.getItem() instanceof IFFCopyBookItem) {
+        if (player.isSneaking() || stack.getItem() instanceof IFFCopyBookItem) {
             return ActionResult.PASS;
         }
-        //ストライキ中、ケーキじゃないなら不満気にしてリターン
-        //クライアント側にはストライキかどうかは判定できない
-        if (isStrike() && LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
-            if (world instanceof ServerWorld)
+        if (!hasTameOwner() && LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
+            return contract(player, stack, false);
+        }
+        if (!player.getUuid().equals(this.getOwnerUuid())) {
+            return ActionResult.PASS;
+        }
+        if (isStrike()) {
+            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
+                return contract(player, stack, true);
+            } else if (world instanceof ServerWorld) {
                 ((ServerWorld) world).spawnParticles(ParticleTypes.SMOKE,
                         this.getX() + (0.5F - random.nextFloat()) * 0.2F,
                         this.getEyeY() + (0.5F - random.nextFloat()) * 0.2F,
                         this.getZ() + (0.5F - random.nextFloat()) * 0.2F,
                         5,
                         0, 1, 0, 0.1);
+            }
             return ActionResult.PASS;
         }
-        if (hasTameOwner()) {
-            if (isStrike()) {
-                if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
-                    return contract(player, stack, true);
-                }
-                return ActionResult.PASS;
-            }
-            if (LMTags.Items.MAIDS_SALARY.contains(stack.getItem())) {
-                return changeState(player, stack);
-            }
-        } else {
-            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
-                return contract(player, stack, false);
-            }
+        if (LMTags.Items.MAIDS_SALARY.contains(stack.getItem())) {
+            return changeState(player, stack);
         }
-        if (player.getUuid().equals(this.getOwnerUuid())) {
-            if (!player.world.isClient)
-                openContainer(player);
-            return ActionResult.success(world.isClient);
+        if (!player.world.isClient) {
+            openContainer(player);
         }
-        return ActionResult.PASS;
+        return ActionResult.success(world.isClient);
     }
 
     public ActionResult changeState(PlayerEntity player, ItemStack stack) {
