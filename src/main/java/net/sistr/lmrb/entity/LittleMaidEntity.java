@@ -477,8 +477,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         if (player.isSneaking() || stack.getItem() instanceof IFFCopyBookItem) {
             return ActionResult.PASS;
         }
-        if (!hasTameOwner() && LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
-            return contract(player, stack, false);
+        if (!hasTameOwner()) {
+            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
+                return contract(player, stack, false);
+            }
+            return ActionResult.PASS;
         }
         if (!player.getUuid().equals(this.getOwnerUuid())) {
             return ActionResult.PASS;
