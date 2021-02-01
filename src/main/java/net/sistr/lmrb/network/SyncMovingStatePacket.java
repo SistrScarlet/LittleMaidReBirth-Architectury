@@ -17,41 +17,21 @@ public class SyncMovingStatePacket {
             new Identifier(LittleMaidReBirthMod.MODID, "sync_moving_state");
 
     @Environment(EnvType.CLIENT)
-    public static void sendC2SPacket(Entity entity, String state) {
+    public static void sendC2SPacket(Entity entity, Tameable.MovingState state) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeVarInt(entity.getEntityId());
-        int num;
-        switch (state) {
-            case Tameable.ESCORT:
-                num = 1;
-                break;
-            case Tameable.WAIT:
-                num = 2;
-                break;
-            default:
-                num = 0;
-                break;
-        }
-        buf.writeByte(num);
+        buf.writeEnumConstant(state);
         ClientSidePacketRegistry.INSTANCE.sendToServer(ID, buf);
     }
 
     public static void receiveC2SPacket(PacketContext context, PacketByteBuf buf) {
         int id = buf.readVarInt();
-        int stateId = buf.readByte();
-        String state;
-        if (stateId <= 0) {
-            state = Tameable.FREEDOM;
-        } else if (stateId == 1) {
-            state = Tameable.ESCORT;
-        } else {
-            state = Tameable.WAIT;
-        }
+        Tameable.MovingState state = buf.readEnumConstant(Tameable.MovingState.class);
         context.getTaskQueue().execute(() ->
                 applyMovingStateServer(context.getPlayer(), id, state));
     }
 
-    private static void applyMovingStateServer(PlayerEntity player, int id, String state) {
+    private static void applyMovingStateServer(PlayerEntity player, int id, Tameable.MovingState state) {
         Entity entity = player.world.getEntityById(id);
         if (!(entity instanceof Tameable)
                 || !((Tameable) entity).getTameOwnerUuid()
@@ -60,6 +40,9 @@ public class SyncMovingStatePacket {
             return;
         }
         ((Tameable) entity).setMovingState(state);
+        if (state == Tameable.MovingState.FREEDOM) {
+            ((Tameable) entity).setFreedomPos(entity.getBlockPos());
+        }
     }
 
 }

@@ -21,6 +21,7 @@ import net.sistr.lmml.resource.manager.LMConfigManager;
 import net.sistr.lmrb.LittleMaidReBirthMod;
 import net.sistr.lmrb.entity.LittleMaidEntity;
 import net.sistr.lmrb.entity.LittleMaidScreenHandler;
+import net.sistr.lmrb.entity.Tameable;
 import net.sistr.lmrb.network.OpenIFFScreenPacket;
 import net.sistr.lmrb.network.SyncMovingStatePacket;
 import net.sistr.lmrb.network.SyncSoundConfigPacket;
@@ -89,7 +90,9 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         });
         this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
                 button -> {
-                    openAt.changeMovingState();
+                    openAt.setMovingState(openAt.getMovingState() == Tameable.MovingState.FREEDOM
+                            ? Tameable.MovingState.WAIT
+                            : Tameable.MovingState.FREEDOM);
                     stateText = getStateText();
                 }) {
             @Override
@@ -102,7 +105,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     public Text getStateText() {
-        MutableText stateText = new TranslatableText("state." + LittleMaidReBirthMod.MODID + "." + openAt.getMovingState());
+        MutableText stateText = new TranslatableText("state." + LittleMaidReBirthMod.MODID + "." + openAt.getMovingState().getName());
         openAt.getModeName().ifPresent(
                 modeName -> stateText.append(" : ")
                         .append(new TranslatableText("mode." + LittleMaidReBirthMod.MODID + "." + modeName)));

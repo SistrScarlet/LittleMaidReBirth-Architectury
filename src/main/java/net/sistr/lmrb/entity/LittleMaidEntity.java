@@ -64,8 +64,10 @@ import net.sistr.lmrb.util.LivingAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static net.sistr.lmrb.entity.Tameable.MovingState.*;
+
 //メイドさん本体
-//todo このクラスの行数を500まで減らす、処理の整理、攻撃できない地点の敵に攻撃しない、遠すぎる場合は水中だろうとTP
+//todo このクラスの行数を500まで減らす、処理の整理、攻撃できない地点の敵に攻撃しない、遠すぎる場合は水中だろうとTP、フリー状態で延々遠出、ランダムテクスチャ
 public class LittleMaidEntity extends TameableEntity implements CustomPacketEntity, InventorySupplier, Tameable,
         NeedSalary, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable {
     //変数群。カオス
@@ -195,7 +197,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
         writeInventory(tag);
 
-        tag.putString("MovingState", getMovingState());
+        tag.putInt("MovingState", getMovingState().getId());
 
         if (freedomPos != null)
             tag.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
@@ -225,8 +227,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         super.readCustomDataFromTag(tag);
         readInventory(tag);
 
-        if (tag.contains("MovingState"))
-            setMovingState(tag.getString("MovingState"));
+        setMovingState(MovingState.fromId(tag.getInt("MovingState")));
 
         if (tag.contains("FreedomPos")) {
             freedomPos = NbtHelper.toBlockPos(tag.getCompound("FreedomPos"));
@@ -525,18 +526,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     public void changeMovingState() {
-        String state = this.getMovingState();
-        switch (state) {
-            case Tameable.WAIT:
-                setMovingState(Tameable.ESCORT);
-                break;
-            case Tameable.ESCORT:
-                setMovingState(Tameable.FREEDOM);
-                this.freedomPos = getBlockPos();
-                break;
-            default:
-                setMovingState(Tameable.WAIT);
-                break;
+        MovingState state = this.getMovingState();
+        if (state == WAIT) {
+            setMovingState(ESCORT);
+        } else {
+            setMovingState(WAIT);
         }
     }
 
@@ -557,7 +551,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         while (receiveSalary(1)) ;//ここに給料処理が混じってるのがちょっとムカつく
         getNavigation().stop();
         this.setOwnerUuid(player.getUuid());
-        setMovingState(Tameable.ESCORT);
+        setMovingState(ESCORT);
         setContract(true);
         if (!player.abilities.creativeMode) {
             stack.decrement(1);
@@ -681,44 +675,45 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
-    public String getMovingState() {
+    public MovingState getMovingState() {
         int num = this.dataTracker.get(MOVING_STATE);
-        if (num <= 0) {
-            return FREEDOM;
-        } else if (num == 1) {
-            return ESCORT;
-        }
-        return WAIT;
+        return MovingState.fromId(num);
     }
 
-    public void setMovingState(String movingState) {
-        int num;
-        switch (movingState) {
-            case ESCORT:
-                num = 1;
-                break;
-            case WAIT:
-                num = 2;
-                break;
-            default:
-                num = 0;
-                break;
-        }
+    public void setMovingState(MovingState movingState) {
+        int num = movingState.getId();
         this.dataTracker.set(MOVING_STATE, (byte) num);
     }
 
     @Override
-    public Optional<BlockPos> getFollowPos() {
-        String state = getMovingState();
-        switch (state) {
-            case WAIT:
-                return Optional.of(this.getBlockPos());
-            case ESCORT:
-                return getTameOwner().map(Entity::getBlockPos);
-            case FREEDOM:
-                return Optional.of(freedomPos == null ? getBlockPos() : freedomPos);
-        }
-        return Optional.empty();
+    public void setFreedomPos(BlockPos freedomPos) {
+        this.freedomPos = freedomPos;
+    }
+
+    @Override
+    public BlockPos getFreedomPos() {
+        if (freedomPos == null) freedomPos = getBlockPos();
+        return freedomPos;
+    }
+
+    @Override
+    public void setInSittingPose(boolean inSittingPose) {
+
+    }
+
+    @Override
+    public boolean isInSittingPose() {
+        return false;
+    }
+
+    @Override
+    public void setSitting(boolean sitting) {
+        setMovingState(sitting ? WAIT : ESCORT);
+    }
+
+    @Override
+    public boolean isSitting() {
+        return getMovingState() == WAIT;
     }
 
     @Override

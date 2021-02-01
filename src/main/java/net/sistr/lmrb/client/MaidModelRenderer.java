@@ -20,7 +20,7 @@ public class MaidModelRenderer extends MultiModelRenderer<LittleMaidEntity> {
     public void syncCaps(LittleMaidEntity entity, ModelMultiBase model, float partialTicks) {
         super.syncCaps(entity, model, partialTicks);
         model.setCapsValue(IModelCaps.caps_aimedBow, entity.isAimingBow());
-        model.setCapsValue(IModelCaps.caps_isWait, entity.getMovingState().equals(Tameable.WAIT));
+        model.setCapsValue(IModelCaps.caps_isWait, entity.getMovingState() == Tameable.MovingState.WAIT);
         model.setCapsValue(IModelCaps.caps_isContract, entity.hasTameOwner());
     }
 

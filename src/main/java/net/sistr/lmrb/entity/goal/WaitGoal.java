@@ -19,7 +19,7 @@ public class WaitGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return tameable.getMovingState().equals(Tameable.WAIT);
+        return tameable.getMovingState() == Tameable.MovingState.WAIT;
     }
 
     @Override

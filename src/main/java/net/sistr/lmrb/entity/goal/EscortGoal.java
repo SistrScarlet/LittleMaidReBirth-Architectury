@@ -14,6 +14,8 @@ import net.sistr.lmrb.entity.Tameable;
 
 import java.util.EnumSet;
 
+import static net.sistr.lmrb.entity.Tameable.MovingState.ESCORT;
+
 public class EscortGoal extends Goal {
     private final PathAwareEntity escort;
     private final Tameable tameable;
@@ -40,7 +42,7 @@ public class EscortGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        if (!this.tameable.getMovingState().equals(Tameable.ESCORT)) {
+        if (this.tameable.getMovingState() != ESCORT) {
             return false;
         }
         LivingEntity owner = this.tameable.getTameOwner().orElse(null);
@@ -62,7 +64,7 @@ public class EscortGoal extends Goal {
         if (this.navigator.isIdle()) {
             return false;
         }
-        if (!this.tameable.getMovingState().equals(Tameable.ESCORT)) {
+        if (this.tameable.getMovingState() != ESCORT) {
             return false;
         }
         return this.minDistanceSq < owner.squaredDistanceTo(this.escort);

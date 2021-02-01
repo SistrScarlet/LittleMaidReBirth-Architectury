@@ -8,11 +8,6 @@ import java.util.UUID;
 
 public interface Tameable {
 
-    String NONE = "None";
-    String WAIT = "Wait";
-    String ESCORT = "Escort";
-    String FREEDOM = "Freedom";
-
     Optional<LivingEntity> getTameOwner();
 
     void setTameOwnerUuid(UUID id);
@@ -21,10 +16,51 @@ public interface Tameable {
 
     boolean hasTameOwner();
 
-    String getMovingState();
+    MovingState getMovingState();
 
-    void setMovingState(String movingState);
+    void setMovingState(MovingState movingState);
 
-    Optional<BlockPos> getFollowPos();
+    void setFreedomPos(BlockPos pos);
+
+    BlockPos getFreedomPos();
+
+    enum MovingState {
+        WAIT("Wait", 0),
+        ESCORT("Escort", 1),
+        FREEDOM("Freedom", 2);
+        private final String name;
+        private final int id;
+
+        MovingState(String name, int id) {
+            this.name = name;
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public static MovingState fromName(String name) {
+            for (MovingState state : MovingState.values()) {
+                if (state.getName().equals(name)) {
+                    return state;
+                }
+            }
+            throw new IllegalArgumentException("存在しないMovingStateです。 : " + name);
+        }
+
+        public static MovingState fromId(int id) {
+            for (MovingState state : MovingState.values()) {
+                if (state.getId() == id) {
+                    return state;
+                }
+            }
+            throw new IllegalArgumentException("存在しないMovingStateです。 : " + id);
+        }
+    }
 
 }

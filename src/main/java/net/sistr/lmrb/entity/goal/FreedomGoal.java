@@ -1,59 +1,68 @@
 package net.sistr.lmrb.entity.goal;
 
-import net.minecraft.entity.ai.TargetFinder;
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.sistr.lmrb.entity.Tameable;
 
 import java.util.EnumSet;
 
 //雇い主が居ない場合も発動する
 public class FreedomGoal extends WanderAroundFarGoal {
-    private BlockPos centerPos;
     private final Tameable tameable;
+    private final double distance;
     private final double distanceSq;
+    private BlockPos freedomPos;
+    private int reCalcCool;
 
     public FreedomGoal(PathAwareEntity creature, Tameable tameable, double speedIn, double distance) {
         super(creature, speedIn);
         this.tameable = tameable;
+        this.distance = distance;
         this.distanceSq = distance * distance;
         setControls(EnumSet.of(Control.MOVE));
     }
 
     @Override
     public boolean canStart() {
-        centerPos = null;
-        if (tameable.getTameOwnerUuid().isPresent()) {
-            if (!tameable.getMovingState().equals(Tameable.FREEDOM)) {
-                return false;
-            }
-            centerPos = tameable.getFollowPos().orElse(null);
-            if (centerPos == null) centerPos = this.mob.getBlockPos();
+        if (!tameable.getTameOwnerUuid().isPresent()) {
+            return false;
         }
-
+        if (tameable.getMovingState() != Tameable.MovingState.FREEDOM) {
+            return false;
+        }
         return super.canStart();
+    }
+
+    @Override
+    public void start() {
+        super.start();
+        freedomPos = this.tameable.getFreedomPos();
     }
 
     @Override
     public void tick() {
         super.tick();
-        if (centerPos == null) {
+        if (freedomPos == null) {
             return;
         }
-        if (centerPos.getSquaredDistance(mob.getPos(), true) < distanceSq) {
+        if (freedomPos.getSquaredDistance(mob.getPos(), true) < distanceSq) {
             return;
         }
-        mob.getNavigation().stop();
-        Vec3d pos = TargetFinder.findTargetTowards(mob, 5, 5,
-                new Vec3d(centerPos.getX(), centerPos.getY(), centerPos.getZ()));
-        if (pos != null) {
-            mob.getNavigation().startMovingTo(centerPos.getX(), centerPos.getY(), centerPos.getZ(), speed);
+        if (0 < --reCalcCool) {
             return;
         }
-        if (mob.world.isSpaceEmpty(mob.getBoundingBox().offset(mob.getPos().multiply(-1)).offset(centerPos))) {
-            mob.teleport(centerPos.getX() + 0.5D, centerPos.getY(), centerPos.getZ() + 0.5D);
+        reCalcCool = 20;
+        //freedomPosを目指して移動
+        mob.getNavigation().startMovingTo(freedomPos.getX(), freedomPos.getY(), freedomPos.getZ(), speed);
+        Path path = mob.getNavigation().getCurrentPath();
+        if (path != null && path.getEnd() != null && path.getEnd().getManhattanDistance(freedomPos) < distance) {
+            return;
+        }
+        //移動しても着きそうにない場合はTP
+        if (mob.world.isSpaceEmpty(mob.getBoundingBox().offset(mob.getPos().multiply(-1)).offset(freedomPos))) {
+            mob.teleport(freedomPos.getX() + 0.5D, freedomPos.getY(), freedomPos.getZ() + 0.5D);
         }
 
     }
@@ -61,6 +70,7 @@ public class FreedomGoal extends WanderAroundFarGoal {
     @Override
     public void stop() {
         super.stop();
-        centerPos = null;
+        freedomPos = null;
+        reCalcCool = 0;
     }
 }
