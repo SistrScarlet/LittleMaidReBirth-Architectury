@@ -15,6 +15,7 @@ repositories {
 	maven {
 		url "https://maven.jamieswhiteshirt.com/libs-release/"
 	}
+	jcenter()
 }
 
 dependencies {
@@ -30,6 +31,9 @@ dependencies {
 
 	// PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
 	// You may need to force-disable transitiveness on them.
+
+	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api:${project.rei_version}"
+	modRuntime "me.shedaniel:RoughlyEnoughItems:${project.rei_version}"
 
 	modImplementation "com.jamieswhiteshirt:reach-entity-attributes:${project.reach_entity_attributes_version}"
 
