@@ -27,6 +27,9 @@
       "net.sistr.lmrb.setup.ClientSetup"
     ],
     "server": [
+    ],
+    "rei_plugins": [
+      "net.sistr.lmrb.rei.ReiPlugin"
     ]
   },
   "accessWidener": "littlemaidrebirth.accesswidener",
