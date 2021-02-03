@@ -3,7 +3,7 @@
     "minVersion": "0.8",
     "package": "net.sistr.lmrb.mixin",
     "compatibilityLevel": "JAVA_8",
-    "mixins": [ "MixinAbstractFurnaceBlockEntity", "MixinBiome", "MixinDefaultedList", "MixinLivingEntity", "MixinMeleeAttackGoal", "MixinPlayerEntity", "MixinServerPlayer", "MixinSpawnSettings" ],
+    "mixins": [ "MixinAbstractFurnaceBlockEntity", "MixinBiome", "MixinDefaultedList", "MixinEntityDamageSource", "MixinLivingEntity", "MixinMeleeAttackGoal", "MixinPlayerEntity", "MixinRangedWeaponItem", "MixinServerPlayer", "MixinSpawnSettings" ],
     "client": [
     ],
     "injectors": {

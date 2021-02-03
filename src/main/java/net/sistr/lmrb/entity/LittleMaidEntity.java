@@ -631,11 +631,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public Iterable<ItemStack> getArmorItems() {
-        return () -> Lists.newArrayList(
+        return Lists.newArrayList(
                 getEquippedStack(EquipmentSlot.FEET),
                 getEquippedStack(EquipmentSlot.LEGS),
                 getEquippedStack(EquipmentSlot.CHEST),
-                getEquippedStack(EquipmentSlot.HEAD)).iterator();
+                getEquippedStack(EquipmentSlot.HEAD));
     }
 
     @Override
