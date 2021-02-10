@@ -231,17 +231,15 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         if (tag.contains("MovingState"))
             setMovingState(MovingState.fromId(tag.getInt("MovingState")));
 
-        if (tag.contains("FreedomPos")) {
+        if (tag.contains("FreedomPos"))
             freedomPos = NbtHelper.toBlockPos(tag.getCompound("FreedomPos"));
-        }
 
         needSalary.readSalary(tag);
 
         readModeData(tag);
 
-        if (tag.contains("SkinColor")) {
+        if (tag.contains("SkinColor"))
             setColor(TextureColors.getColor(tag.getByte("SkinColor")));
-        }
         setContract(tag.getBoolean("IsContract"));
         LMTextureManager textureManager = LMTextureManager.INSTANCE;
         if (tag.contains("SkinTexture")) {
@@ -261,10 +259,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
         }
 
-        if (tag.contains("SoundConfigName")) {
+        if (tag.contains("SoundConfigName"))
             LMConfigManager.INSTANCE.getConfig(tag.getString("SoundConfigName"))
                     .ifPresent(this::setConfigHolder);
-        }
 
         readIFF(tag);
     }
@@ -694,7 +691,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public BlockPos getFreedomPos() {
-        if (freedomPos == null) freedomPos = getBlockPos();
+        if (freedomPos == null) return getBlockPos();
         return freedomPos;
     }
 
