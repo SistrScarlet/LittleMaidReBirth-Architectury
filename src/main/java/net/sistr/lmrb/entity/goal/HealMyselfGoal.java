@@ -35,7 +35,7 @@ public class HealMyselfGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return mob.getHealth() < mob.getMaxHealth() - 1 && getHealItemSlot() != -1;
+        return mob.getHealth() <= mob.getMaxHealth() - 1 && getHealItemSlot() != -1;
     }
 
     @Override
