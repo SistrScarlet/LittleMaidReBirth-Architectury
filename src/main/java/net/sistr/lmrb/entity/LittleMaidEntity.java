@@ -136,8 +136,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     public void addDefaultModes(LittleMaidEntity maid) {
         maid.addMode(new FencerMode(maid, maid, 1D, true));
-        maid.addMode(new ArcherMode(maid, maid, maid,
-                0.1F, 10, 24));
+        maid.addMode(new ArcherMode<>(maid, 15F,
+                entity -> entity instanceof LivingEntity && isFriend((LivingEntity) entity)));
         maid.addMode(new CookingMode(maid, maid));
         maid.addMode(new RipperMode(maid, 8));
         maid.addMode(new TorcherMode(maid, maid, maid, 8));
@@ -183,7 +183,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     protected void initDataTracker() {
         super.initDataTracker();
-        this.dataTracker.startTracking(MOVING_STATE, (byte) 0);
+        this.dataTracker.startTracking(MOVING_STATE, (byte) 2);
         this.dataTracker.startTracking(MODE_NAME, "");
         this.dataTracker.startTracking(AIMING, false);
         this.dataTracker.startTracking(BEGGING, false);
