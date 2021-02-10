@@ -24,6 +24,7 @@ import net.sistr.lmrb.util.PlayerAccessor;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 //エンティティをプレイヤーにラップするクラス
 //基本的にサーバーオンリー
@@ -33,7 +34,6 @@ public abstract class FakePlayerWrapperEntity extends FakePlayer {
     public FakePlayerWrapperEntity(LivingEntity origin) {
         super((ServerWorld) origin.world, new GameProfile(origin.getUuid(),
                 origin.getType().getName().getString() + "_player_wrapper"));
-        setEntityId(origin.getEntityId());
         networkHandler = new FakePlayNetworkHandler(getServer(), this);
     }
 
@@ -91,6 +91,27 @@ public abstract class FakePlayerWrapperEntity extends FakePlayer {
     @Override
     public EntityDimensions getDimensions(EntityPose pose) {
         return getOrigin().getDimensions(pose);
+    }
+
+    //id系
+
+    @Override
+    public int getEntityId() {
+        int id = getOrigin().getEntityId();
+        if (super.getEntityId() != id) setEntityId(id);
+        return id;
+    }
+
+    @Override
+    public UUID getUuid() {
+        UUID uuid = getOrigin().getUuid();
+        if (super.getUuid() != uuid) setUuid(uuid);
+        return uuid;
+    }
+
+    @Override
+    public String getUuidAsString() {
+        return getOrigin().getUuidAsString();
     }
 
     //座標系
