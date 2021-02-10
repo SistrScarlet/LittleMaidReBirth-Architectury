@@ -64,7 +64,8 @@ import net.sistr.lmrb.util.LivingAccessor;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static net.sistr.lmrb.entity.Tameable.MovingState.*;
+import static net.sistr.lmrb.entity.Tameable.MovingState.ESCORT;
+import static net.sistr.lmrb.entity.Tameable.MovingState.WAIT;
 
 //メイドさん本体
 //todo このクラスの行数を500まで減らす、処理の整理、攻撃できない地点の敵に攻撃しない、遠すぎる場合は水中だろうとTP、フリー状態で延々遠出、ランダムテクスチャ
@@ -227,7 +228,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         super.readCustomDataFromTag(tag);
         readInventory(tag);
 
-        setMovingState(MovingState.fromId(tag.getInt("MovingState")));
+        if (tag.contains("MovingState"))
+            setMovingState(MovingState.fromId(tag.getInt("MovingState")));
 
         if (tag.contains("FreedomPos")) {
             freedomPos = NbtHelper.toBlockPos(tag.getCompound("FreedomPos"));
