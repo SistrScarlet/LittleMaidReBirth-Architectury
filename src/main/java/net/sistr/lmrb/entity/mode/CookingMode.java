@@ -15,13 +15,10 @@ import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.RaycastContext;
+import net.minecraft.world.World;
 import net.sistr.lmml.entity.compound.SoundPlayable;
 import net.sistr.lmml.resource.util.LMSounds;
 import net.sistr.lmrb.entity.InventorySupplier;
@@ -35,13 +32,17 @@ import java.util.stream.Stream;
 public class CookingMode implements Mode {
     private final PathAwareEntity mob;
     private final InventorySupplier hasInventory;
+    private final int inventoryStart;
+    private final int inventoryEnd;
     private BlockPos furnacePos;
     private int timeToRecalcPath;
     private int findCool;
 
-    public CookingMode(PathAwareEntity mob, InventorySupplier hasInventory) {
+    public CookingMode(PathAwareEntity mob, InventorySupplier hasInventory, int inventoryStart, int inventoryEnd) {
         this.mob = mob;
         this.hasInventory = hasInventory;
+        this.inventoryStart = inventoryStart;
+        this.inventoryEnd = inventoryEnd;
     }
 
     @Override
@@ -66,7 +67,7 @@ public class CookingMode implements Mode {
 
     public Optional<Integer> getCookable(RecipeType<? extends AbstractCookingRecipe> recipeType) {
         Inventory inventory = this.hasInventory.getInventory();
-        for (int i = 0; i < inventory.size(); ++i) {
+        for (int i = inventoryStart; i < inventoryEnd; ++i) {
             ItemStack slotStack = inventory.getStack(i);
             if (getRecipe(slotStack, recipeType).isPresent()) {
                 return Optional.of(i);
@@ -81,7 +82,7 @@ public class CookingMode implements Mode {
 
     public Optional<Integer> getFuel() {
         Inventory inventory = this.hasInventory.getInventory();
-        for (int i = 0; i < inventory.size(); ++i) {
+        for (int i = inventoryStart; i < inventoryEnd; ++i) {
             ItemStack itemstack = inventory.getStack(i);
             if (isFuel(itemstack)) {
                 return Optional.of(i);
@@ -121,7 +122,7 @@ public class CookingMode implements Mode {
             }
         }
         //何か焼いている場合はtrue
-        if (((AbstractFurnaceAccessor)furnace).isBurningFire_LM()) {
+        if (((AbstractFurnaceAccessor) furnace).isBurningFire_LM()) {
             for (int availableSlot : furnace.getAvailableSlots(Direction.UP)) {
                 if (!furnace.getStack(availableSlot).isEmpty()) {
                     return true;
@@ -129,11 +130,8 @@ public class CookingMode implements Mode {
             }
         }
         //焼くものがあり、燃料もある場合はtrue
-        if (getAllCoockable(((AbstractFurnaceAccessor) furnace).getRecipeType_LM()).findAny().isPresent()) {
-            return true;
-        }
         //待つ必要が無く、焼きたいわけでもない場合はfalse
-        return false;
+        return getAllCoockable(((AbstractFurnaceAccessor) furnace).getRecipeType_LM()).findAny().isPresent();
     }
 
     @Override
@@ -190,7 +188,7 @@ public class CookingMode implements Mode {
             this.mob.swingHand(Hand.MAIN_HAND);
             this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
             if (mob instanceof SoundPlayable) {
-                ((SoundPlayable)mob).play(LMSounds.COOKING_OVER);
+                ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
             }
             ItemStack copy = resultStack.copy();
             ItemStack leftover = HopperBlockEntity.transfer(furnace, inventory, furnace.removeStack(resultSlot, 1), null);
@@ -220,7 +218,7 @@ public class CookingMode implements Mode {
             this.mob.swingHand(Hand.MAIN_HAND);
             this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
             if (mob instanceof SoundPlayable) {
-                ((SoundPlayable)mob).play(LMSounds.COOKING_START);
+                ((SoundPlayable) mob).play(LMSounds.COOKING_START);
             }
             break;
         }
@@ -243,7 +241,7 @@ public class CookingMode implements Mode {
             this.mob.swingHand(Hand.MAIN_HAND);
             this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
             if (mob instanceof SoundPlayable) {
-                ((SoundPlayable)mob).play(LMSounds.ADD_FUEL);
+                ((SoundPlayable) mob).play(LMSounds.ADD_FUEL);
             }
             break;
         }
@@ -329,12 +327,8 @@ public class CookingMode implements Mode {
                     nowSearched.add(checkPos);
                     continue;
                 }
-                //見えないとこのブロックは除外し、これを起点とした調査も打ち切る
-                BlockHitResult result = mob.world.raycast(new RaycastContext(
-                        mob.getCameraPosVec(1F),
-                        new Vec3d(checkPos.getX() + 0.5F, checkPos.getY() + 0.5F, checkPos.getZ() + 0.5F),
-                        RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mob));
-                if (result.getType() != HitResult.Type.MISS && !result.getBlockPos().equals(checkPos)) {
+                //六面埋まったブロックは除外し、これを起点とした調査も打ち切る
+                if (!isTouchAir(mob.world, checkPos)) {
                     allSearched.add(checkPos);
                     nowSearched.remove(checkPos);
                     continue;
@@ -348,6 +342,19 @@ public class CookingMode implements Mode {
         prevSearched.clear();
         prevSearched.addAll(nowSearched);
         return Optional.empty();
+    }
+
+    public boolean isTouchAir(World world, BlockPos pos) {
+        for (Direction dir : Direction.values()) {
+            if (isAir(world, pos, dir)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isAir(World world, BlockPos pos, Direction dir) {
+        return world.isAir(pos.offset(dir));
     }
 
     public Stream<ItemStack> getAllCoockable(RecipeType<? extends AbstractCookingRecipe> recipeType) {

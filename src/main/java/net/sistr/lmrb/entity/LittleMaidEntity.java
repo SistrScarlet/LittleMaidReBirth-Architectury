@@ -139,7 +139,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         maid.addMode(new FencerMode(maid, maid, 1D, true));
         maid.addMode(new ArcherMode<>(maid, 15F,
                 entity -> entity instanceof LivingEntity && isFriend((LivingEntity) entity)));
-        maid.addMode(new CookingMode(maid, maid));
+        maid.addMode(new CookingMode(maid, maid, 1, 1 + 18));
         maid.addMode(new RipperMode(maid, 8));
         maid.addMode(new TorcherMode(maid, maid, maid, 8));
     }
