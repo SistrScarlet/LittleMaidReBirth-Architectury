@@ -2,7 +2,6 @@ package net.sistr.lmrb.entity.mode;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.*;
@@ -24,8 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 //暗所発見->移動->設置
-//ライトエンジンが別スレ化しているので置いてすぐはライトレベルに変化が無い点に注意
-//todo 処理の見直し
+//置いてすぐはライトレベルに変化が無い点に注意
 public class TorcherMode implements Mode {
     protected final PathAwareEntity mob;
     protected final FakePlayerSupplier hasFakePlayer;
@@ -53,30 +51,30 @@ public class TorcherMode implements Mode {
         if (0 < --cool) {
             return false;
         }
-        cool = 10;
-        int ownerLight = this.tameable.getTameOwner()
-                .map(owner -> mob.world.getLightLevel(owner.getBlockPos()))
-                .orElse(0);
-        if (8 < ownerLight) {
-            return false;
+        cool = 20;
+        BlockPos base;
+        if (tameable.getMovingState() == Tameable.MovingState.ESCORT) {
+            Entity owner = tameable.getTameOwner().orElse(null);
+            if (owner == null) {
+                return false;
+            }
+            base = owner.getBlockPos();
+        } else {
+            base = mob.getBlockPos();
         }
-        placePos = findSpawnablePoint().orElse(null);
+        placePos = findSpawnablePoint(base, this.distance)
+                .orElse(null);
         return placePos != null;
     }
 
     //湧けるブロックを探索
-    public Optional<BlockPos> findSpawnablePoint() {
-        Entity owner = tameable.getTameOwner().orElse(null);
-        if (owner == null) {
-            return Optional.empty();
-        }
-        BlockPos ownerPos = owner.getBlockPos();
-        BlockPos start = ownerPos.add(-distance, -1, -distance);
-        BlockPos end = ownerPos.add(distance, 1, distance);
+    public Optional<BlockPos> findSpawnablePoint(BlockPos base, float distance) {
+        BlockPos start = base.add(-distance, -1, -distance);
+        BlockPos end = base.add(distance, 1, distance);
         List<BlockPos> points = new ArrayList<>();
         BlockPos.stream(start, end).forEach(pos -> points.add(pos.toImmutable()));
         return points.stream()
-                .sorted(Comparator.comparingDouble(ownerPos::getManhattanDistance))
+                .sorted(Comparator.comparingDouble(base::getManhattanDistance))
                 .filter(this::isSpawnable)
                 .filter(this::isReachable)
                 .findFirst();
@@ -84,9 +82,8 @@ public class TorcherMode implements Mode {
 
     public boolean isSpawnable(BlockPos pos) {
         BlockPos posUp = pos.up();
-        return mob.world.getBlockState(pos).isFullCube(mob.world, pos) && mob.world.isAir(posUp.up())
-                && mob.world.getLightLevel(posUp) <= 8
-                && mob.world.getBlockState(pos).allowsSpawning(mob.world, pos, EntityType.ZOMBIE);
+        return mob.world.getBlockState(pos).isFullCube(mob.world, pos) && mob.world.isAir(posUp)
+                && mob.world.getLightLevel(posUp) <= 8;
     }
 
     public boolean isReachable(BlockPos pos) {
@@ -105,20 +102,20 @@ public class TorcherMode implements Mode {
         Path path = this.mob.getNavigation().findPathTo(placePos.getX(), placePos.getY(), placePos.getZ(), 3);
         this.mob.getNavigation().startMovingAlong(path, 1);
         if (mob instanceof SoundPlayable) {
-            ((SoundPlayable)mob).play(LMSounds.FIND_TARGET_D);
+            ((SoundPlayable) mob).play(LMSounds.FIND_TARGET_D);
         }
     }
 
     @Override
     public void tick() {
-        //5秒経過しても置けないまたは明るい地点を無視
+        //5秒経過しても置けない、または明るい地点を無視
         if (100 < ++this.timeToIgnore || 8 < mob.world.getLightLevel(placePos.up())) {
             this.placePos = null;
             this.timeToIgnore = 0;
             return;
         }
         //距離が遠すぎる場合は無視
-        if (distance * distance < placePos.getSquaredDistance(mob.getBlockPos())) {
+        if (distance * 2F < placePos.getManhattanDistance(mob.getBlockPos())) {
             this.placePos = null;
             return;
         }
@@ -126,7 +123,7 @@ public class TorcherMode implements Mode {
         if (!(item instanceof BlockItem)) {
             return;
         }
-        if (4 * 4 < this.mob.squaredDistanceTo(placePos.getX(), placePos.getY(), placePos.getZ())) {
+        if (3 * 3 < this.mob.squaredDistanceTo(placePos.getX(), placePos.getY(), placePos.getZ())) {
             if (--timeToRecalcPath < 0) {
                 timeToRecalcPath = 20;
                 Path path = this.mob.getNavigation().findPathTo(placePos.getX(), placePos.getY(), placePos.getZ(), 3);
@@ -145,7 +142,7 @@ public class TorcherMode implements Mode {
                 new ItemUsageContext(fakePlayer, Hand.MAIN_HAND, result))).shouldSwingHand()) {
             mob.swingHand(Hand.MAIN_HAND);
             if (mob instanceof SoundPlayable) {
-                ((SoundPlayable)mob).play(LMSounds.INSTALLATION);
+                ((SoundPlayable) mob).play(LMSounds.INSTALLATION);
             }
         }
         this.placePos = null;
@@ -153,6 +150,7 @@ public class TorcherMode implements Mode {
 
     @Override
     public void resetTask() {
+        this.cool = 20;
         this.timeToIgnore = 0;
         this.timeToRecalcPath = 0;
     }
