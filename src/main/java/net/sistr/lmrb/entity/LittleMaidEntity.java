@@ -68,7 +68,7 @@ import static net.sistr.lmrb.entity.Tameable.MovingState.ESCORT;
 import static net.sistr.lmrb.entity.Tameable.MovingState.WAIT;
 
 //メイドさん本体
-//todo このクラスの行数を500まで減らす、処理の整理、攻撃できない地点の敵に攻撃しない、遠すぎる場合は水中だろうとTP、フリー状態で延々遠出、ランダムテクスチャ
+//todo このクラスの行数を500まで減らす、処理の整理、攻撃できない地点の敵に攻撃しない、遠すぎる場合は水中だろうとTP、ランダムテクスチャ
 public class LittleMaidEntity extends TameableEntity implements CustomPacketEntity, InventorySupplier, Tameable,
         NeedSalary, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable {
     //変数群。カオス
@@ -136,12 +136,13 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     //登録メソッドたち
 
     public void addDefaultModes(LittleMaidEntity maid) {
-        maid.addMode(new FencerMode(maid, maid, 1D, true));
+        maid.addMode(new FencerMode<>(maid, 1D, true));
         maid.addMode(new ArcherMode<>(maid, 15F,
                 entity -> entity instanceof LivingEntity && isFriend((LivingEntity) entity)));
-        maid.addMode(new CookingMode(maid, maid, 1, 1 + 18));
+        maid.addMode(new CookingMode<>(maid, 1, 1 + 18));
         maid.addMode(new RipperMode(maid, 8));
-        maid.addMode(new TorcherMode(maid, maid, maid, 8));
+        maid.addMode(new TorcherMode<>(maid, 8));
+        maid.addMode(new HealerMode<>(maid, 0, 1 + 18));
     }
 
     @Override
@@ -155,8 +156,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         //todo 挙動が怪しい
         /*this.goalSelector.add(12, new WaitWhenOpenGUIGoal<>(this, this,
                 LittleMaidScreenHandler.class));*/
-        this.goalSelector.add(13, new EscortGoal(this, this,
-                16F, 20F, 24F, 1.5D));
+        this.goalSelector.add(13, new EscortGoal<>(this, 1.5D,
+                8F, 16F, 24F, true));
         this.goalSelector.add(15, new ModeWrapperGoal(this));
         this.goalSelector.add(16, new FollowAtHeldItemGoal(this, this, true,
                 Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values())));
@@ -165,10 +166,10 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(17, new LMStareAtHeldItemGoal(this, this, true,
                 Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values())));
         this.goalSelector.add(18, new LMMoveToDropItemGoal(this, 8, 1D));
-        this.goalSelector.add(19, new EscortGoal(this, this,
-                6F, 8F, 12F, 1.5D));
-        this.goalSelector.add(20, new EscortGoal(this, this,
-                4F, 6F, 12F, 1.0D));
+        this.goalSelector.add(19, new EscortGoal<>(this, 1.5D,
+                6F, 8F, 12F, true));
+        this.goalSelector.add(20, new EscortGoal<>(this, 1.0D,
+                4F, 5F, 12F, true));
         this.goalSelector.add(20, new FreedomGoal(this, this, 0.8D, 16D));
         this.goalSelector.add(30, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         this.goalSelector.add(30, new LookAroundGoal(this));
@@ -178,7 +179,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.targetSelector.add(5, new AttackWithOwnerGoal(this));
         this.targetSelector.add(6, new FollowTargetGoal<>(
                 this, LivingEntity.class, 5, true, false,
-                entity -> identify(entity) == IFFTag.ENEMY));
+                this::isEnemy));
     }
 
     @Override
@@ -862,7 +863,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         return identify(entity) == IFFTag.FRIEND;
     }
 
-    //エイム
+    public boolean isEnemy(LivingEntity entity) {
+        return identify(entity) == IFFTag.ENEMY;
+    }
+
+    //構え
 
     @Override
     public boolean isAimingBow() {

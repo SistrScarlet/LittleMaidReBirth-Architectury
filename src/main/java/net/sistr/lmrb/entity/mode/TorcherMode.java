@@ -24,20 +24,16 @@ import java.util.Optional;
 
 //暗所発見->移動->設置
 //置いてすぐはライトレベルに変化が無い点に注意
-public class TorcherMode implements Mode {
-    protected final PathAwareEntity mob;
-    protected final FakePlayerSupplier hasFakePlayer;
-    protected final Tameable tameable;
+public class TorcherMode<T extends PathAwareEntity & FakePlayerSupplier & Tameable> implements Mode {
+    protected final T mob;
     protected final float distance;
     protected BlockPos placePos;
     protected int timeToRecalcPath;
     protected int timeToIgnore;
     protected int cool;
 
-    public TorcherMode(PathAwareEntity mob, FakePlayerSupplier hasFakePlayer, Tameable tameable, float distance) {
+    public TorcherMode(T mob, float distance) {
         this.mob = mob;
-        this.hasFakePlayer = hasFakePlayer;
-        this.tameable = tameable;
         this.distance = distance;
     }
 
@@ -53,8 +49,8 @@ public class TorcherMode implements Mode {
         }
         cool = 20;
         BlockPos base;
-        if (tameable.getMovingState() == Tameable.MovingState.ESCORT) {
-            Entity owner = tameable.getTameOwner().orElse(null);
+        if (mob.getMovingState() == Tameable.MovingState.ESCORT) {
+            Entity owner = mob.getTameOwner().orElse(null);
             if (owner == null) {
                 return false;
             }
@@ -137,7 +133,7 @@ public class TorcherMode implements Mode {
                 placePos.getX() + 0.5D, placePos.getY() + 1D, placePos.getZ() + 0.5D);
         BlockHitResult result = mob.world.raycast(new RaycastContext(
                 start, end, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, this.mob));
-        FakePlayer fakePlayer = hasFakePlayer.getFakePlayer();
+        FakePlayer fakePlayer = mob.getFakePlayer();
         if (((BlockItem) item).place(new ItemPlacementContext(
                 new ItemUsageContext(fakePlayer, Hand.MAIN_HAND, result))).shouldSwingHand()) {
             mob.swingHand(Hand.MAIN_HAND);

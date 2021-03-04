@@ -25,22 +25,20 @@ import net.sistr.lmrb.entity.InventorySupplier;
 import net.sistr.lmrb.util.AbstractFurnaceAccessor;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.stream.Stream;
 
-//todo 少し重いかも？
-public class CookingMode implements Mode {
-    private final PathAwareEntity mob;
-    private final InventorySupplier hasInventory;
+public class CookingMode<T extends PathAwareEntity & InventorySupplier> implements Mode {
+    private final T mob;
     private final int inventoryStart;
     private final int inventoryEnd;
     private BlockPos furnacePos;
     private int timeToRecalcPath;
     private int findCool;
 
-    public CookingMode(PathAwareEntity mob, InventorySupplier hasInventory, int inventoryStart, int inventoryEnd) {
+    public CookingMode(T mob, int inventoryStart, int inventoryEnd) {
         this.mob = mob;
-        this.hasInventory = hasInventory;
         this.inventoryStart = inventoryStart;
         this.inventoryEnd = inventoryEnd;
     }
@@ -63,46 +61,6 @@ public class CookingMode implements Mode {
             }
         }
         return false;
-    }
-
-    public Optional<Integer> getCookable(RecipeType<? extends AbstractCookingRecipe> recipeType) {
-        Inventory inventory = this.hasInventory.getInventory();
-        for (int i = inventoryStart; i < inventoryEnd; ++i) {
-            ItemStack slotStack = inventory.getStack(i);
-            if (getRecipe(slotStack, recipeType).isPresent()) {
-                return Optional.of(i);
-            }
-        }
-        return Optional.empty();
-    }
-
-    public Optional<? extends AbstractCookingRecipe> getRecipe(ItemStack stack, RecipeType<? extends AbstractCookingRecipe> recipeType) {
-        return mob.world.getRecipeManager().getFirstMatch(recipeType, new SimpleInventory(stack), mob.world);
-    }
-
-    public Optional<Integer> getFuel() {
-        Inventory inventory = this.hasInventory.getInventory();
-        for (int i = inventoryStart; i < inventoryEnd; ++i) {
-            ItemStack itemstack = inventory.getStack(i);
-            if (isFuel(itemstack)) {
-                return Optional.of(i);
-            }
-        }
-        return Optional.empty();
-    }
-
-    public boolean isFuel(ItemStack stack) {
-        return AbstractFurnaceBlockEntity.canUseAsFuel(stack);
-    }
-
-    @Override
-    public void startExecuting() {
-        findCool = 0;
-    }
-
-    @Override
-    public boolean shouldContinueExecuting() {
-        return canUseFurnace();
     }
 
     public boolean canUseFurnace() {
@@ -134,119 +92,6 @@ public class CookingMode implements Mode {
         return getAllCoockable(((AbstractFurnaceAccessor) furnace).getRecipeType_LM()).findAny().isPresent();
     }
 
-    @Override
-    public void tick() {
-        AbstractFurnaceBlockEntity furnace = getFurnace(furnacePos)
-                .orElse(getFurnace(findFurnacePos().orElse(null))
-                        .orElse(null));
-        if (furnace == null) {
-            furnacePos = null;
-            return;
-        }
-
-        this.mob.getLookControl().lookAt(
-                furnacePos.getX() + 0.5,
-                furnacePos.getY() + 0.5,
-                furnacePos.getZ() + 0.5);
-
-        if (!this.mob.getBlockPos().isWithinDistance(furnacePos, 2)) {
-            if (this.mob.isSneaking()) {
-                this.mob.setSneaking(false);
-            }
-            if (--this.timeToRecalcPath <= 0) {
-                this.timeToRecalcPath = 10;
-                this.mob.getNavigation().startMovingTo(furnacePos.getX() + 0.5D, furnacePos.getY() + 0.5D, furnacePos.getZ() + 0.5D, 1);
-            }
-            return;
-        }
-        this.mob.getNavigation().stop();
-
-        if (!this.mob.isSneaking()) {
-            this.mob.setSneaking(true);
-        }
-
-        Inventory inventory = this.hasInventory.getInventory();
-
-        RecipeType<? extends AbstractCookingRecipe> recipeType = ((AbstractFurnaceAccessor) furnace).getRecipeType_LM();
-
-        getCookable(recipeType).ifPresent(cookableIndex -> tryInsertCookable(furnace, inventory, cookableIndex));
-        getFuel().ifPresent(fuelIndex -> tryInsertFuel(furnace, inventory, fuelIndex));
-        tryExtractItem(furnace, inventory);
-
-    }
-
-    private void tryExtractItem(AbstractFurnaceBlockEntity furnace, Inventory inventory) {
-        int[] resultSlots = furnace.getAvailableSlots(Direction.DOWN);
-        for (int resultSlot : resultSlots) {
-            ItemStack resultStack = furnace.getStack(resultSlot);
-            if (resultStack.isEmpty()) {
-                continue;
-            }
-            if (!furnace.canExtract(resultSlot, resultStack, Direction.DOWN)) {
-                continue;
-            }
-            this.mob.swingHand(Hand.MAIN_HAND);
-            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            if (mob instanceof SoundPlayable) {
-                ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
-            }
-            ItemStack copy = resultStack.copy();
-            ItemStack leftover = HopperBlockEntity.transfer(furnace, inventory, furnace.removeStack(resultSlot, 1), null);
-            if (leftover.isEmpty()) {
-                furnace.markDirty();
-                continue;
-            }
-
-            furnace.setStack(resultSlot, copy);
-        }
-    }
-
-    private void tryInsertCookable(AbstractFurnaceBlockEntity furnace, Inventory inventory, int cookableIndex) {
-        int[] materialSlots = furnace.getAvailableSlots(Direction.UP);
-        for (int materialSlot : materialSlots) {
-            ItemStack materialSlotStack = furnace.getStack(materialSlot);
-            if (!materialSlotStack.isEmpty()) {
-                continue;
-            }
-            ItemStack material = inventory.getStack(cookableIndex);
-            if (!furnace.canInsert(materialSlot, material, Direction.UP)) {
-                continue;
-            }
-            furnace.setStack(materialSlot, material);
-            inventory.removeStack(cookableIndex);
-            furnace.markDirty();
-            this.mob.swingHand(Hand.MAIN_HAND);
-            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            if (mob instanceof SoundPlayable) {
-                ((SoundPlayable) mob).play(LMSounds.COOKING_START);
-            }
-            break;
-        }
-    }
-
-    private void tryInsertFuel(AbstractFurnaceBlockEntity furnace, Inventory inventory, int fuelIndex) {
-        int[] fuelSlots = furnace.getAvailableSlots(Direction.NORTH);
-        for (int fuelSlot : fuelSlots) {
-            ItemStack fuelSlotStack = furnace.getStack(fuelSlot);
-            if (!fuelSlotStack.isEmpty()) {
-                continue;
-            }
-            ItemStack fuel = inventory.getStack(fuelIndex);
-            if (!furnace.canInsert(fuelSlot, fuel, Direction.NORTH)) {
-                continue;
-            }
-            furnace.setStack(fuelSlot, fuel);
-            inventory.removeStack(fuelIndex);
-            furnace.markDirty();
-            this.mob.swingHand(Hand.MAIN_HAND);
-            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            if (mob instanceof SoundPlayable) {
-                ((SoundPlayable) mob).play(LMSounds.ADD_FUEL);
-            }
-            break;
-        }
-    }
-
     public Optional<AbstractFurnaceBlockEntity> getFurnace(BlockPos pos) {
         if (pos == null) {
             return Optional.empty();
@@ -258,25 +103,40 @@ public class CookingMode implements Mode {
         return Optional.empty();
     }
 
-    public boolean canUseFurnace(AbstractFurnaceBlockEntity tile) {
-        if (tile == null) {
-            return false;
-        }
-        for (int slot : tile.getAvailableSlots(Direction.UP)) {
-            ItemStack stack = tile.getStack(slot);
-            if (!stack.isEmpty()) continue;
-            RecipeType<? extends AbstractCookingRecipe> recipeType = ((AbstractFurnaceAccessor) tile).getRecipeType_LM();
-            if (getAllCoockable(recipeType)
-                    .anyMatch(cookable -> tile.canInsert(slot, cookable, Direction.UP))) {
-                return true;
+    public Stream<ItemStack> getAllCoockable(RecipeType<? extends AbstractCookingRecipe> recipeType) {
+        Inventory inventory = this.mob.getInventory();
+        Stream.Builder<ItemStack> builder = Stream.builder();
+        for (int i = 0; i < inventory.size(); ++i) {
+            ItemStack slotStack = inventory.getStack(i);
+            if (getRecipe(slotStack, recipeType).isPresent()) {
+                builder.accept(slotStack);
             }
         }
-        return false;
+        return builder.build();
+    }
+
+    public Optional<? extends AbstractCookingRecipe> getRecipe(ItemStack stack, RecipeType<? extends AbstractCookingRecipe> recipeType) {
+        return mob.world.getRecipeManager().getFirstMatch(recipeType, new SimpleInventory(stack), mob.world);
+    }
+
+    public OptionalInt getFuel() {
+        Inventory inventory = this.mob.getInventory();
+        for (int i = inventoryStart; i < inventoryEnd; ++i) {
+            ItemStack itemstack = inventory.getStack(i);
+            if (isFuel(itemstack)) {
+                return OptionalInt.of(i);
+            }
+        }
+        return OptionalInt.empty();
+    }
+
+    public boolean isFuel(ItemStack stack) {
+        return AbstractFurnaceBlockEntity.canUseAsFuel(stack);
     }
 
     /**
      * 使用可能なかまどを探索する。
-     * ここで言う使用可能なかまどとは、手持ちのアイテムを焼けるかどうか
+     * ここで言う使用可能なかまどとは、手持ちのアイテムを焼けるかどうかで判定する
      */
     public Optional<BlockPos> findFurnacePos() {
         BlockPos ownerPos = mob.getBlockPos();
@@ -344,6 +204,22 @@ public class CookingMode implements Mode {
         return Optional.empty();
     }
 
+    public boolean canUseFurnace(AbstractFurnaceBlockEntity tile) {
+        if (tile == null) {
+            return false;
+        }
+        for (int slot : tile.getAvailableSlots(Direction.UP)) {
+            ItemStack stack = tile.getStack(slot);
+            if (!stack.isEmpty()) continue;
+            RecipeType<? extends AbstractCookingRecipe> recipeType = ((AbstractFurnaceAccessor) tile).getRecipeType_LM();
+            if (getAllCoockable(recipeType)
+                    .anyMatch(cookable -> tile.canInsert(slot, cookable, Direction.UP))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public boolean isTouchAir(World world, BlockPos pos) {
         for (Direction dir : Direction.values()) {
             if (isAir(world, pos, dir)) {
@@ -357,16 +233,138 @@ public class CookingMode implements Mode {
         return world.isAir(pos.offset(dir));
     }
 
-    public Stream<ItemStack> getAllCoockable(RecipeType<? extends AbstractCookingRecipe> recipeType) {
-        Inventory inventory = this.hasInventory.getInventory();
-        Stream.Builder<ItemStack> builder = Stream.builder();
-        for (int i = 0; i < inventory.size(); ++i) {
+    @Override
+    public void startExecuting() {
+        findCool = 0;
+    }
+
+    @Override
+    public boolean shouldContinueExecuting() {
+        return canUseFurnace();
+    }
+
+    @Override
+    public void tick() {
+        AbstractFurnaceBlockEntity furnace = getFurnace(furnacePos)
+                .orElse(getFurnace(findFurnacePos().orElse(null))
+                        .orElse(null));
+        if (furnace == null) {
+            furnacePos = null;
+            return;
+        }
+
+        this.mob.getLookControl().lookAt(
+                furnacePos.getX() + 0.5,
+                furnacePos.getY() + 0.5,
+                furnacePos.getZ() + 0.5);
+
+        if (!this.mob.getBlockPos().isWithinDistance(furnacePos, 2)) {
+            if (this.mob.isSneaking()) {
+                this.mob.setSneaking(false);
+            }
+            if (--this.timeToRecalcPath <= 0) {
+                this.timeToRecalcPath = 10;
+                this.mob.getNavigation().startMovingTo(furnacePos.getX() + 0.5D, furnacePos.getY() + 0.5D, furnacePos.getZ() + 0.5D, 1);
+            }
+            return;
+        }
+        this.mob.getNavigation().stop();
+
+        if (!this.mob.isSneaking()) {
+            this.mob.setSneaking(true);
+        }
+
+        Inventory inventory = this.mob.getInventory();
+
+        RecipeType<? extends AbstractCookingRecipe> recipeType = ((AbstractFurnaceAccessor) furnace).getRecipeType_LM();
+
+        getCookable(recipeType).ifPresent(cookableIndex -> tryInsertCookable(furnace, inventory, cookableIndex));
+        getFuel().ifPresent(fuelIndex -> tryInsertFuel(furnace, inventory, fuelIndex));
+        tryExtractItem(furnace, inventory);
+
+    }
+
+    public OptionalInt getCookable(RecipeType<? extends AbstractCookingRecipe> recipeType) {
+        Inventory inventory = this.mob.getInventory();
+        for (int i = inventoryStart; i < inventoryEnd; ++i) {
             ItemStack slotStack = inventory.getStack(i);
             if (getRecipe(slotStack, recipeType).isPresent()) {
-                builder.accept(slotStack);
+                return OptionalInt.of(i);
             }
         }
-        return builder.build();
+        return OptionalInt.empty();
+    }
+
+    private void tryInsertCookable(AbstractFurnaceBlockEntity furnace, Inventory inventory, int cookableIndex) {
+        int[] materialSlots = furnace.getAvailableSlots(Direction.UP);
+        for (int materialSlot : materialSlots) {
+            ItemStack materialSlotStack = furnace.getStack(materialSlot);
+            if (!materialSlotStack.isEmpty()) {
+                continue;
+            }
+            ItemStack material = inventory.getStack(cookableIndex);
+            if (!furnace.canInsert(materialSlot, material, Direction.UP)) {
+                continue;
+            }
+            furnace.setStack(materialSlot, material);
+            inventory.removeStack(cookableIndex);
+            furnace.markDirty();
+            this.mob.swingHand(Hand.MAIN_HAND);
+            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
+            if (mob instanceof SoundPlayable) {
+                ((SoundPlayable) mob).play(LMSounds.COOKING_START);
+            }
+            break;
+        }
+    }
+
+    private void tryInsertFuel(AbstractFurnaceBlockEntity furnace, Inventory inventory, int fuelIndex) {
+        int[] fuelSlots = furnace.getAvailableSlots(Direction.NORTH);
+        for (int fuelSlot : fuelSlots) {
+            ItemStack fuelSlotStack = furnace.getStack(fuelSlot);
+            if (!fuelSlotStack.isEmpty()) {
+                continue;
+            }
+            ItemStack fuel = inventory.getStack(fuelIndex);
+            if (!furnace.canInsert(fuelSlot, fuel, Direction.NORTH)) {
+                continue;
+            }
+            furnace.setStack(fuelSlot, fuel);
+            inventory.removeStack(fuelIndex);
+            furnace.markDirty();
+            this.mob.swingHand(Hand.MAIN_HAND);
+            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
+            if (mob instanceof SoundPlayable) {
+                ((SoundPlayable) mob).play(LMSounds.ADD_FUEL);
+            }
+            break;
+        }
+    }
+
+    private void tryExtractItem(AbstractFurnaceBlockEntity furnace, Inventory inventory) {
+        int[] resultSlots = furnace.getAvailableSlots(Direction.DOWN);
+        for (int resultSlot : resultSlots) {
+            ItemStack resultStack = furnace.getStack(resultSlot);
+            if (resultStack.isEmpty()) {
+                continue;
+            }
+            if (!furnace.canExtract(resultSlot, resultStack, Direction.DOWN)) {
+                continue;
+            }
+            this.mob.swingHand(Hand.MAIN_HAND);
+            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
+            if (mob instanceof SoundPlayable) {
+                ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
+            }
+            ItemStack copy = resultStack.copy();
+            ItemStack leftover = HopperBlockEntity.transfer(furnace, inventory, furnace.removeStack(resultSlot, 1), null);
+            if (leftover.isEmpty()) {
+                furnace.markDirty();
+                continue;
+            }
+
+            furnace.setStack(resultSlot, copy);
+        }
     }
 
     @Override
