@@ -9,16 +9,16 @@ import net.sistr.lmrb.entity.Tameable;
 import java.util.EnumSet;
 
 //雇い主が居ない場合も発動する
-public class FreedomGoal extends WanderAroundFarGoal {
-    private final Tameable tameable;
+public class FreedomGoal<T extends PathAwareEntity & Tameable> extends WanderAroundFarGoal {
+    private final T tameable;
     private final double distance;
     private final double distanceSq;
     private BlockPos freedomPos;
     private int reCalcCool;
 
-    public FreedomGoal(PathAwareEntity creature, Tameable tameable, double speedIn, double distance) {
-        super(creature, speedIn);
-        this.tameable = tameable;
+    public FreedomGoal(T mob, double speedIn, double distance) {
+        super(mob, speedIn);
+        this.tameable = mob;
         this.distance = distance;
         this.distanceSq = distance * distance;
         setControls(EnumSet.of(Control.MOVE));
@@ -60,6 +60,7 @@ public class FreedomGoal extends WanderAroundFarGoal {
         if (path != null && path.getEnd() != null && path.getEnd().getManhattanDistance(freedomPos) < distance) {
             return;
         }
+        mob.getNavigation().stop();
         //移動しても着きそうにない場合はTP
         if (mob.world.isSpaceEmpty(mob.getBoundingBox().offset(mob.getPos().multiply(-1)).offset(freedomPos))) {
             mob.teleport(freedomPos.getX() + 0.5D, freedomPos.getY(), freedomPos.getZ() + 0.5D);
