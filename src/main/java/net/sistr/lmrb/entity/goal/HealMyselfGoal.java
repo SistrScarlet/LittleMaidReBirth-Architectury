@@ -1,7 +1,7 @@
 package net.sistr.lmrb.entity.goal;
 
-import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -14,19 +14,16 @@ import net.sistr.lmrb.entity.InventorySupplier;
 import java.util.EnumSet;
 import java.util.Set;
 
-//todo 19.5とか中途半端な時はどう回復しよう？最後に最大まで回復する？
-public class HealMyselfGoal extends Goal {
-    private final PathAwareEntity mob;
-    private final InventorySupplier hasInventory;
+public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> extends Goal {
+    private final T mob;
     private final Set<Item> healItems;
     private final int healInterval;
     private final int healAmount;
     private int cool;
 
-    public HealMyselfGoal(PathAwareEntity mob, InventorySupplier hasInventory, Set<Item> healItems,
+    public HealMyselfGoal(T mob, Set<Item> healItems,
                           int healInterval, int healAmount) {
         this.mob = mob;
-        this.hasInventory = hasInventory;
         this.healItems = healItems;
         this.healInterval = healInterval;
         this.healAmount = healAmount;
@@ -35,7 +32,14 @@ public class HealMyselfGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return mob.getHealth() <= mob.getMaxHealth() - 1 && getHealItemSlot() != -1;
+        assert mob.getMaxHealth() != 0;
+        return (mob.hurtTime <= 0 && mob.getHealth() <= mob.getMaxHealth() - 1 || mob.getHealth() / mob.getMaxHealth() < 0.75F)
+                && getHealItemSlot() != -1;
+    }
+
+    @Override
+    public boolean shouldContinue() {
+        return mob.getHealth() < mob.getMaxHealth();
     }
 
     @Override
@@ -51,7 +55,7 @@ public class HealMyselfGoal extends Goal {
             return;
         }
         cool = healInterval;
-        Inventory inventory = hasInventory.getInventory();
+        Inventory inventory = this.mob.getInventory();
         int slot = getHealItemSlot();
         ItemStack healItem = inventory.getStack(slot);
         if (healItem.isEmpty()) {
@@ -74,7 +78,7 @@ public class HealMyselfGoal extends Goal {
     }
 
     public int getHealItemSlot() {
-        Inventory inventory = hasInventory.getInventory();
+        Inventory inventory = this.mob.getInventory();
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack slotStack = inventory.getStack(i);
             if (healItems.contains(slotStack.getItem())) {
