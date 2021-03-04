@@ -30,10 +30,11 @@ import java.util.UUID;
 //基本的にサーバーオンリー
 //アイテムの使用/アイテム回収/その他
 public abstract class FakePlayerWrapperEntity extends FakePlayer {
+    private static final GameProfile profile = new GameProfile(UUID.fromString("8eabd891-5b4a-44f5-8ea4-89b04100baf6"),
+            "fake_player_name");
 
     public FakePlayerWrapperEntity(LivingEntity origin) {
-        super((ServerWorld) origin.world, new GameProfile(origin.getUuid(),
-                origin.getType().getName().getString() + "_player_wrapper"));
+        super((ServerWorld) origin.world, profile);
         networkHandler = new FakePlayNetworkHandler(getServer(), this);
     }
 
