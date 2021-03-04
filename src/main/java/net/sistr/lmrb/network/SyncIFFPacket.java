@@ -3,19 +3,21 @@ package net.sistr.lmrb.network;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.sistr.lmrb.LittleMaidReBirthMod;
-import net.sistr.lmrb.entity.Tameable;
-import net.sistr.lmrb.entity.iff.IFF;
 import net.sistr.lmrb.entity.iff.HasIFF;
+import net.sistr.lmrb.entity.iff.IFF;
 import net.sistr.lmrb.entity.iff.IFFTypeManager;
 
 import java.util.List;
@@ -35,14 +37,14 @@ public class SyncIFFPacket {
         tag.put("IFFs", list);
         iffs.forEach(iff -> list.add(iff.writeTag()));
         buf.writeCompoundTag(tag);
-        ClientSidePacketRegistry.INSTANCE.sendToServer(ID, buf);
+        ClientPlayNetworking.send(ID, buf);
     }
 
-    public static void receiveC2SPacket(PacketContext context, PacketByteBuf buf) {
+    public static void receiveC2SPacket(MinecraftServer server, ServerPlayerEntity player,
+                                        ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         int id = buf.readVarInt();
         CompoundTag tag = buf.readCompoundTag();
-        context.getTaskQueue().execute(() ->
-                applyIFFServer(id, tag, context.getPlayer()));
+        server.execute(() -> applyIFFServer(id, tag, player));
     }
 
     private static void applyIFFServer(int id, CompoundTag tag, PlayerEntity player) {

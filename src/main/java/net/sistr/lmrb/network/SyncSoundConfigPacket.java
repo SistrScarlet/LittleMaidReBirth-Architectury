@@ -3,14 +3,18 @@ package net.sistr.lmrb.network;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
-import net.fabricmc.fabric.api.server.PlayerStream;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.sistr.lmml.entity.compound.SoundPlayable;
@@ -27,23 +31,22 @@ public class SyncSoundConfigPacket {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeVarInt(entity.getEntityId());
         buf.writeString(configName);
-        ClientSidePacketRegistry.INSTANCE.sendToServer(ID, buf);
+        ClientPlayNetworking.send(ID, buf);
     }
 
     public static void sendS2CPacket(Entity entity, String configName) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeVarInt(entity.getEntityId());
         buf.writeString(configName);
-        PlayerStream.watching(entity).forEach(player ->
-                ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, ID, buf));
+        PlayerLookup.tracking(entity).forEach(player -> ServerPlayNetworking.send(player, ID, buf));
     }
 
     @Environment(EnvType.CLIENT)
-    public static void receiveS2CPacket(PacketContext context, PacketByteBuf buf) {
+    public static void receiveS2CPacket(MinecraftClient client, ClientPlayNetworkHandler handler,
+                                        PacketByteBuf buf, PacketSender responseSender) {
         int id = buf.readVarInt();
         String configName = buf.readString();
-        context.getTaskQueue().execute(() ->
-                applySoundConfigClient(id, configName));
+        client.execute(() -> applySoundConfigClient(id, configName));
     }
 
     @Environment(EnvType.CLIENT)
@@ -58,11 +61,11 @@ public class SyncSoundConfigPacket {
         }
     }
 
-    public static void receiveC2SPacket(PacketContext context, PacketByteBuf buf) {
+    public static void receiveC2SPacket(MinecraftServer server, ServerPlayerEntity player,
+                                        ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         int id = buf.readVarInt();
         String configName = buf.readString(32767);
-        context.getTaskQueue().execute(() ->
-                applySoundConfigServer(context.getPlayer(), id, configName));
+        server.execute(() -> applySoundConfigServer(player, id, configName));
     }
 
     private static void applySoundConfigServer(PlayerEntity player, int id, String configName) {

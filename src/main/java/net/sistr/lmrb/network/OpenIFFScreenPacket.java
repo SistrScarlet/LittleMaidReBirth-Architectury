@@ -3,16 +3,20 @@ package net.sistr.lmrb.network;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.network.ClientSidePacketRegistry;
-import net.fabricmc.fabric.api.network.PacketContext;
-import net.fabricmc.fabric.api.network.ServerSidePacketRegistry;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.sistr.lmrb.LittleMaidReBirthMod;
 import net.sistr.lmrb.client.IFFScreen;
@@ -36,7 +40,7 @@ public class OpenIFFScreenPacket {
         tag.put("IFFs", list);
         iffs.forEach(iff -> list.add(iff.writeTag()));
         buf.writeCompoundTag(tag);
-        ServerSidePacketRegistry.INSTANCE.sendToPlayer(player, ID, buf);
+        ServerPlayNetworking.send((ServerPlayerEntity) player, ID, buf);
     }
 
     public static void sendC2SPacket(Entity entity) {
@@ -45,15 +49,17 @@ public class OpenIFFScreenPacket {
         }
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeVarInt(entity.getEntityId());
-        ClientSidePacketRegistry.INSTANCE.sendToServer(ID, buf);
+        ClientPlayNetworking.send(ID, buf);
     }
 
     @Environment(EnvType.CLIENT)
-    public static void receiveS2CPacket(PacketContext context, PacketByteBuf buf) {
+    public static void receiveS2CPacket(MinecraftClient client, ClientPlayNetworkHandler handler,
+                                        PacketByteBuf buf, PacketSender responseSender) {
+        PlayerEntity player = client.player;
+        if (player == null) return;
         int id = buf.readVarInt();
         CompoundTag tag = buf.readCompoundTag();
-        context.getTaskQueue().execute(() ->
-                openIFFScreen(id, tag, context.getPlayer()));
+        client.execute(() -> openIFFScreen(id, tag, player));
     }
 
     @Environment(EnvType.CLIENT)
@@ -73,11 +79,10 @@ public class OpenIFFScreenPacket {
         MinecraftClient.getInstance().openScreen(new IFFScreen(entity, iffs));
     }
 
-    public static void receiveC2SPacket(PacketContext context, PacketByteBuf buf) {
+    public static void receiveC2SPacket(MinecraftServer server, ServerPlayerEntity player,
+                                        ServerPlayNetworkHandler handler, PacketByteBuf buf, PacketSender responseSender) {
         int id = buf.readVarInt();
-        PlayerEntity player = context.getPlayer();
-        context.getTaskQueue().execute(() ->
-                openIFFScreen(id, player));
+        server.execute(() -> openIFFScreen(id, player));
     }
 
     private static void openIFFScreen(int id, PlayerEntity player) {
