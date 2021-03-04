@@ -156,7 +156,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         super.initGoals();
         this.goalSelector.add(0, new SwimGoal(this));
         this.goalSelector.add(1, new LongDoorInteractGoal(this, true));
-        this.goalSelector.add(5, new HealMyselfGoal(this, this,
+        this.goalSelector.add(5, new HealMyselfGoal<>(this,
                 Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values()), 2, 1));
         this.goalSelector.add(10, new WaitGoal(this, this));
         //todo 挙動が怪しい
