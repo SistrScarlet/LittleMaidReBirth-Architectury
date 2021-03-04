@@ -170,7 +170,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 6F, 8F, 12F, true));
         this.goalSelector.add(20, new EscortGoal<>(this, 1.0D,
                 4F, 5F, 12F, true));
-        this.goalSelector.add(20, new FreedomGoal(this, this, 0.8D, 16D));
+        this.goalSelector.add(20, new FreedomGoal<>(this, 0.8D, 16D));
         this.goalSelector.add(30, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         this.goalSelector.add(30, new LookAroundGoal(this));
 
