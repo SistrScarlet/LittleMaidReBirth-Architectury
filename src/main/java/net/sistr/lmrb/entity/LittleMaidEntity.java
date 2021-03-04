@@ -58,6 +58,7 @@ import net.sistr.lmrb.entity.goal.*;
 import net.sistr.lmrb.entity.iff.*;
 import net.sistr.lmrb.entity.mode.*;
 import net.sistr.lmrb.item.IFFCopyBookItem;
+import net.sistr.lmrb.setup.Registration;
 import net.sistr.lmrb.tags.LMTags;
 import net.sistr.lmrb.util.LivingAccessor;
 
@@ -113,6 +114,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         addDefaultModes(this);
         iff = new IFFImpl(IFFTypeManager.getINSTANCE().getIFFTypes(world).stream()
                 .map(IFFType::createIFF).collect(Collectors.toList()));
+    }
+
+    //基本使わない
+    public LittleMaidEntity(World world) {
+        this(Registration.LITTLE_MAID_MOB, world);
     }
 
     //スタティックなメソッド
