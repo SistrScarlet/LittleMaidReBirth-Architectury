@@ -81,7 +81,7 @@ public abstract class FakePlayerWrapperEntity extends FakePlayer {
 
     @Override
     public void sendPickup(Entity item, int count) {
-        //super.sendPickup(item, count);
+        getOrigin().sendPickup(item, count);
     }
 
     @Override
