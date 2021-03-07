@@ -25,9 +25,9 @@ public interface Tameable {
     BlockPos getFreedomPos();
 
     enum MovingState {
-        WAIT("Wait", 0),
+        FREEDOM("Freedom", 0),
         ESCORT("Escort", 1),
-        FREEDOM("Freedom", 2);
+        WAIT("Wait", 2);
         private final String name;
         private final int id;
 

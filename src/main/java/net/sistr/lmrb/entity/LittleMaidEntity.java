@@ -14,7 +14,6 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -124,7 +123,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     //スタティックなメソッド
 
     public static DefaultAttributeContainer.Builder createLittleMaidAttributes() {
-        return MobEntity.createMobAttributes()
+        return TameableEntity.createMobAttributes()
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE)
                 .add(EntityAttributes.GENERIC_ATTACK_SPEED)
@@ -191,10 +190,10 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     protected void initDataTracker() {
         super.initDataTracker();
-        this.dataTracker.startTracking(MOVING_STATE, (byte) 2);
-        this.dataTracker.startTracking(MODE_NAME, "");
+        this.dataTracker.startTracking(MOVING_STATE, (byte) 0);
         this.dataTracker.startTracking(AIMING, false);
         this.dataTracker.startTracking(BEGGING, false);
+        this.dataTracker.startTracking(MODE_NAME, "");
     }
 
     //読み書き系
@@ -206,6 +205,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         writeInventory(tag);
 
         tag.putInt("MovingState", getMovingState().getId());
+        //後で消す
+        String old = tag.getString("MovingState");
+        if (!old.isEmpty()) {
+            setMovingState(MovingState.fromName(old));
+        }
 
         if (freedomPos != null)
             tag.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
@@ -235,8 +239,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         super.readCustomDataFromTag(tag);
         readInventory(tag);
 
-        if (tag.contains("MovingState"))
-            setMovingState(MovingState.fromId(tag.getInt("MovingState")));
+        setMovingState(MovingState.fromId(tag.getInt("MovingState")));
 
         if (tag.contains("FreedomPos"))
             freedomPos = NbtHelper.toBlockPos(tag.getCompound("FreedomPos"));
@@ -335,7 +338,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
-        return super.canImmediatelyDespawn(distanceSquared);
+        return false;
     }
 
     //canSpawnとかでも使われる
@@ -686,6 +689,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         return MovingState.fromId(num);
     }
 
+    @Override
     public void setMovingState(MovingState movingState) {
         int num = movingState.getId();
         this.dataTracker.set(MOVING_STATE, (byte) num);

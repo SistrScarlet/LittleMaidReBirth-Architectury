@@ -33,7 +33,8 @@ public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> exten
     @Override
     public boolean canStart() {
         assert mob.getMaxHealth() != 0;
-        return (mob.hurtTime <= 0 && mob.getHealth() <= mob.getMaxHealth() - 1 || mob.getHealth() / mob.getMaxHealth() < 0.75F)
+        return (mob.hurtTime <= 0 && mob.getHealth() <= mob.getMaxHealth() - 1
+                || mob.getHealth() / mob.getMaxHealth() < 0.75F)
                 && getHealItemSlot() != -1;
     }
 
