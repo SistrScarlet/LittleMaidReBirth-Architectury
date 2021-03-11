@@ -26,9 +26,6 @@ public class FreedomGoal<T extends PathAwareEntity & Tameable> extends WanderAro
 
     @Override
     public boolean canStart() {
-        if (!tameable.getTameOwnerUuid().isPresent()) {
-            return false;
-        }
         if (tameable.getMovingState() != Tameable.MovingState.FREEDOM) {
             return false;
         }
