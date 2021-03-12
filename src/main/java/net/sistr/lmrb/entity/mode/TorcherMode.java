@@ -13,6 +13,8 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.sistr.lmml.entity.compound.SoundPlayable;
 import net.sistr.lmml.resource.util.LMSounds;
+import net.sistr.lmrb.api.mode.Mode;
+import net.sistr.lmrb.api.mode.ModeManager;
 import net.sistr.lmrb.entity.FakePlayer;
 import net.sistr.lmrb.entity.FakePlayerSupplier;
 import net.sistr.lmrb.entity.Tameable;

@@ -8,6 +8,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Hand;
+import net.sistr.lmrb.api.mode.Mode;
+import net.sistr.lmrb.api.mode.ModeManager;
 import net.sistr.lmrb.entity.InventorySupplier;
 
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package net.sistr.lmrb.entity.mode;
+package net.sistr.lmrb.api.mode;
 
 import net.minecraft.nbt.CompoundTag;
 

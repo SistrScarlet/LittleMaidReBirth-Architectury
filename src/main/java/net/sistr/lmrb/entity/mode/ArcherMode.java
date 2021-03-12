@@ -4,7 +4,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.item.BowItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
@@ -16,7 +15,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.sistr.lmml.entity.compound.SoundPlayable;
 import net.sistr.lmml.resource.util.LMSounds;
-import net.sistr.lmrb.api.item.IRangedWeapon;
+import net.sistr.lmrb.api.mode.IRangedWeapon;
+import net.sistr.lmrb.api.mode.Mode;
+import net.sistr.lmrb.api.mode.ModeManager;
 import net.sistr.lmrb.entity.AimingPoseable;
 import net.sistr.lmrb.entity.FakePlayer;
 import net.sistr.lmrb.entity.FakePlayerSupplier;
@@ -45,7 +46,8 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
     }
 
     public boolean shouldExecute() {
-        return this.mob.getTarget() != null && this.mob.getTarget().isAlive();
+        return this.mob.getTarget() != null && this.mob.getTarget().isAlive()
+                && this.mob.getMainHandStack().getItem() instanceof IRangedWeapon;
     }
 
     public boolean shouldContinueExecuting() {
@@ -64,8 +66,9 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
         }
         double distanceSq = this.mob.squaredDistanceTo(target.getX(), target.getY(), target.getZ());
         boolean canSee = this.mob.getVisibilityCache().canSee(target);
-        Item item = this.mob.getMainHandStack().getItem();
-        float maxRange = ((IRangedWeapon) item).getMaxRange_LMRB();
+        ItemStack itemStack = this.mob.getMainHandStack();
+        Item item = itemStack.getItem();
+        float maxRange = ((IRangedWeapon) item).getMaxRange_LMRB(itemStack, this.mob);
         Vec3d start = this.mob.getCameraPosVec(1F);
         Vec3d end = start.add(this.mob.getRotationVec(1F)
                 .multiply(maxRange));
@@ -115,7 +118,6 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
         this.mob.getMoveControl().strafeTo(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
         this.mob.lookAtEntity(target, 30.0F, 30.0F);
 
-
         FakePlayer fakePlayer = this.mob.getFakePlayer();
         Vec3d vec3d = fakePlayer.getCameraPosVec(1F);
         Vec3d targetPos = target.getCameraPosVec(1F);
@@ -158,7 +160,7 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
 
         //十分に引き絞ったか
         int useCount = fakePlayer.getItemUseTime();
-        int interval = ((IRangedWeapon) item).getInterval_LMRB();
+        int interval = ((IRangedWeapon) item).getInterval_LMRB(itemStack, this.mob);
         if (interval <= useCount) {
             //簡易誤射チェック、射線にターゲット以外が居る場合は撃たない
             float distance = MathHelper.sqrt(distanceSq);
@@ -213,7 +215,6 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
 
     static {
         ModeManager.ModeItems items = new ModeManager.ModeItems();
-        items.add(BowItem.class);
         items.add(IRangedWeapon.class);
         ModeManager.INSTANCE.register(ArcherMode.class, items);
     }

@@ -1,4 +1,4 @@
-package net.sistr.lmrb.entity.mode;
+package net.sistr.lmrb.api.mode;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -9,14 +9,15 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
-//todo モード切替判定用のインターフェースとデフォルト実装を用意してここではそれのインスタンスを保持する
+//todo ここからモード追加ができるようにする
 public class ModeManager {
 
     public static ModeManager INSTANCE = new ModeManager();
 
-    public final Map<Class<?>, ModeItems> MODES = Maps.newHashMap();
+    private final Map<Class<?>, ModeItems> MODES = Maps.newHashMap();
 
     public void register(Class<?> mode, ModeItems items) {
         MODES.put(mode, items);
@@ -28,26 +29,26 @@ public class ModeManager {
         return modeItems.contains(stack);
     }
 
+    public Optional<ModeItems> getModeItems(Class<?> clazz) {
+        return Optional.ofNullable(MODES.get(clazz));
+    }
+
     //todo 除外判定
     public static class ModeItems {
-        public final Set<String> itemNames = Sets.newHashSet();
-        public final Set<String> excludeItemNames = Sets.newHashSet();
+        public final Set<String> names = Sets.newHashSet();
         public final Set<Item> items = Sets.newHashSet();
-        public final Set<Item> excludeItems = Sets.newHashSet();
-        public final Set<Class<?>> itemClasses = Sets.newHashSet();
-        public final Set<Class<?>> excludeItemClasses = Sets.newHashSet();
-        public final Set<Tag<Item>> itemTags = Sets.newHashSet();
-        public final Set<Tag<Item>> excludeItemTags = Sets.newHashSet();
+        public final Set<Class<?>> classes = Sets.newHashSet();
+        public final Set<Class<?>> interfaces = Sets.newHashSet();
+        public final Set<Tag<Item>> tags = Sets.newHashSet();
         public final Set<CheckModeItem> checkModeItems = Sets.newHashSet();
-        public final Set<CheckModeItem> excludeCheckModeItems = Sets.newHashSet();
 
         public ModeItems add(String name) {
-            itemNames.add(name);
+            names.add(name);
             return this;
         }
 
         public ModeItems add(Identifier name) {
-            itemNames.add(name.toString());
+            names.add(name.toString());
             return this;
         }
 
@@ -62,12 +63,13 @@ public class ModeManager {
         }
 
         public ModeItems add(Class<?> itemClass) {
-            itemClasses.add(itemClass);
+            if (itemClass.isInterface()) interfaces.add(itemClass);
+            else classes.add(itemClass);
             return this;
         }
 
         public ModeItems add(Tag<Item> itemTag) {
-            itemTags.add(itemTag);
+            tags.add(itemTag);
             return this;
         }
 
@@ -83,29 +85,34 @@ public class ModeManager {
                 }
             }
             Item item = stack.getItem();
-            if (items.contains(item)) {
-                return true;
-            }
+            if (items.contains(item)) return true;
+
             String itemName = Registry.ITEM.getId(item).toString();
-            if (itemNames.contains(itemName)) {
-                return true;
-            }
-            for (Tag<Item> itemTag : itemTags) {
-                if (itemTag.contains(item)) {
+            if (names.contains(itemName)) return true;
+
+            for (Tag<Item> itemTag : tags) if (itemTag.contains(item)) return true;
+
+            Class<?> itemClass = item.getClass();
+            if (classes.contains(itemClass)) return true;
+
+            for (Class<?> interfaceClass : interfaces) {
+                if (interfaceClass.isAssignableFrom(itemClass)) {
+                    classes.add(itemClass);
                     return true;
                 }
             }
-            Class<?> itemClass = item.getClass();
-            if (itemClasses.contains(itemClass)) {
+
+            if (isContainsSuperLoop(itemClass)) {
+                classes.add(itemClass);
                 return true;
             }
-            return isContainsSuperLoop(itemClass);
+            return false;
         }
 
         private boolean isContainsSuperLoop(Class<?> itemClass) {
             Class<?> superItem = itemClass.getSuperclass();
             if (superItem == null) return false;
-            if (itemClasses.contains(superItem)) {
+            if (classes.contains(superItem)) {
                 return true;
             }
             return isContainsSuperLoop(superItem);

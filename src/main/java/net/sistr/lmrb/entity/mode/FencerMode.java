@@ -12,6 +12,8 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.lmml.entity.compound.SoundPlayable;
 import net.sistr.lmml.resource.util.LMSounds;
+import net.sistr.lmrb.api.mode.Mode;
+import net.sistr.lmrb.api.mode.ModeManager;
 import net.sistr.lmrb.entity.FakePlayer;
 import net.sistr.lmrb.entity.FakePlayerSupplier;
 import net.sistr.lmrb.util.MeleeAttackAccessor;

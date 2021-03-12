@@ -1,7 +1,9 @@
 package net.sistr.lmrb.mixin;
 
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.RangedWeaponItem;
-import net.sistr.lmrb.api.item.IRangedWeapon;
+import net.sistr.lmrb.api.mode.IRangedWeapon;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
@@ -10,12 +12,12 @@ public abstract class MixinRangedWeaponItem implements IRangedWeapon {
     @Shadow public abstract int getRange();
 
     @Override
-    public float getMaxRange_LMRB() {
+    public float getMaxRange_LMRB(ItemStack stack, LivingEntity user) {
         return getRange();
     }
 
     @Override
-    public int getInterval_LMRB() {
+    public int getInterval_LMRB(ItemStack stack, LivingEntity user) {
         return 25;
     }
 }

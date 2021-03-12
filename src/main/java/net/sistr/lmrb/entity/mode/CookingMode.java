@@ -21,6 +21,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.sistr.lmml.entity.compound.SoundPlayable;
 import net.sistr.lmml.resource.util.LMSounds;
+import net.sistr.lmrb.api.mode.Mode;
+import net.sistr.lmrb.api.mode.ModeManager;
 import net.sistr.lmrb.entity.InventorySupplier;
 import net.sistr.lmrb.util.AbstractFurnaceAccessor;
 
