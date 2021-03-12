@@ -1,6 +1,7 @@
 package net.sistr.lmrb.entity;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.datafixers.DataFixer;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.advancement.PlayerAdvancementTracker;
@@ -13,6 +14,8 @@ import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerManager;
+import net.minecraft.server.ServerAdvancementLoader;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -21,7 +24,9 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.sistr.lmrb.util.LivingAccessor;
 import net.sistr.lmrb.util.PlayerAccessor;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,12 +35,31 @@ import java.util.UUID;
 //基本的にサーバーオンリー
 //アイテムの使用/アイテム回収/その他
 public abstract class FakePlayerWrapperEntity extends FakePlayer {
-    private static final GameProfile profile = new GameProfile(UUID.fromString("8eabd891-5b4a-44f5-8ea4-89b04100baf6"),
-            "fake_player_name");
+    private static final UUID FPWE_UUID = UUID.fromString("8eabd891-5b4a-44f5-8ea4-89b04100baf6");
+    private static final GameProfile FPWE_PROFILE = new GameProfile(FPWE_UUID, "fake_player_name");
+    @Nullable
+    private static PlayerAdvancementTracker advancementTracker;
 
     public FakePlayerWrapperEntity(LivingEntity origin) {
-        super((ServerWorld) origin.world, profile);
+        super((ServerWorld) origin.world, FPWE_PROFILE);
         networkHandler = new FakePlayNetworkHandler(getServer(), this);
+    }
+
+    public static UUID getFPWEUuid() {
+        return FPWE_UUID;
+    }
+
+    public static Optional<PlayerAdvancementTracker> getFPWEAdvancementTracker() {
+        return Optional.ofNullable(advancementTracker);
+    }
+
+    public static PlayerAdvancementTracker initFPWEAdvancementTracker(DataFixer dataFixer, PlayerManager playerManager,
+                                                                      ServerAdvancementLoader serverAdvancementLoader,
+                                                                      File file, ServerPlayerEntity serverPlayerEntity) {
+        if (advancementTracker == null)
+            advancementTracker = new PlayerAdvancementTracker(dataFixer, playerManager,
+                    serverAdvancementLoader, file, serverPlayerEntity);
+        return advancementTracker;
     }
 
     public abstract LivingEntity getOrigin();
