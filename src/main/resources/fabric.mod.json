@@ -19,17 +19,17 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.sistr.lmrb.LittleMaidReBirthMod",
-      "net.sistr.lmrb.setup.ModSetup",
-      "net.sistr.lmrb.setup.Registration"
+      "net.sistr.littlemaidrebirth.LittleMaidReBirthMod",
+      "net.sistr.littlemaidrebirth.setup.ModSetup",
+      "net.sistr.littlemaidrebirth.setup.Registration"
     ],
     "client": [
-      "net.sistr.lmrb.setup.ClientSetup"
+      "net.sistr.littlemaidrebirth.setup.ClientSetup"
     ],
     "server": [
     ],
     "rei_plugins": [
-      "net.sistr.lmrb.rei.ReiPlugin"
+      "net.sistr.littlemaidrebirth.rei.ReiPlugin"
     ]
   },
   "accessWidener": "littlemaidrebirth.accesswidener",
