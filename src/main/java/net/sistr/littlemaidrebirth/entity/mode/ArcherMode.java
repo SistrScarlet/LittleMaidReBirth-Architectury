@@ -46,8 +46,7 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
     }
 
     public boolean shouldExecute() {
-        return this.mob.getTarget() != null && this.mob.getTarget().isAlive()
-                && this.mob.getMainHandStack().getItem() instanceof IRangedWeapon;
+        return this.mob.getTarget() != null && this.mob.getTarget().isAlive();
     }
 
     public boolean shouldContinueExecuting() {
@@ -68,7 +67,7 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
         boolean canSee = this.mob.getVisibilityCache().canSee(target);
         ItemStack itemStack = this.mob.getMainHandStack();
         Item item = itemStack.getItem();
-        float maxRange = ((IRangedWeapon) item).getMaxRange_LMRB(itemStack, this.mob);
+        float maxRange = item instanceof IRangedWeapon ? ((IRangedWeapon) item).getMaxRange_LMRB(itemStack, this.mob) : 16F;
         Vec3d start = this.mob.getCameraPosVec(1F);
         Vec3d end = start.add(this.mob.getRotationVec(1F)
                 .multiply(maxRange));
@@ -109,9 +108,9 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
             this.strafingTime = 0;
         }
 
-        if (distanceSq > (double) (maxRange * 0.75F)) {
+        if (maxRange < distanceSq) {
             this.strafingBackwards = false;
-        } else if (distanceSq < (double) (maxRange * 0.25F)) {
+        } else if (distanceSq < maxRange * 0.75F) {
             this.strafingBackwards = true;
         }
 
@@ -160,7 +159,7 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
 
         //十分に引き絞ったか
         int useCount = fakePlayer.getItemUseTime();
-        int interval = ((IRangedWeapon) item).getInterval_LMRB(itemStack, this.mob);
+        int interval = item instanceof IRangedWeapon ? ((IRangedWeapon) item).getInterval_LMRB(itemStack, this.mob) : 25;
         if (interval <= useCount) {
             //簡易誤射チェック、射線にターゲット以外が居る場合は撃たない
             float distance = MathHelper.sqrt(distanceSq);
