@@ -38,6 +38,14 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
+import net.sistr.littlemaidrebirth.api.mode.Mode;
+import net.sistr.littlemaidrebirth.entity.goal.*;
+import net.sistr.littlemaidrebirth.entity.iff.*;
+import net.sistr.littlemaidrebirth.entity.mode.*;
+import net.sistr.littlemaidrebirth.item.IFFCopyBookItem;
+import net.sistr.littlemaidrebirth.setup.Registration;
+import net.sistr.littlemaidrebirth.tags.LMTags;
+import net.sistr.littlemaidrebirth.util.LivingAccessor;
 import net.sistr.lmml.entity.compound.IHasMultiModel;
 import net.sistr.lmml.entity.compound.MultiModelCompound;
 import net.sistr.lmml.entity.compound.SoundPlayable;
@@ -53,14 +61,6 @@ import net.sistr.lmml.resource.manager.LMModelManager;
 import net.sistr.lmml.resource.manager.LMTextureManager;
 import net.sistr.lmml.resource.util.LMSounds;
 import net.sistr.lmml.resource.util.TextureColors;
-import net.sistr.littlemaidrebirth.api.mode.Mode;
-import net.sistr.littlemaidrebirth.entity.goal.*;
-import net.sistr.littlemaidrebirth.entity.iff.*;
-import net.sistr.littlemaidrebirth.entity.mode.*;
-import net.sistr.littlemaidrebirth.item.IFFCopyBookItem;
-import net.sistr.littlemaidrebirth.setup.Registration;
-import net.sistr.littlemaidrebirth.tags.LMTags;
-import net.sistr.littlemaidrebirth.util.LivingAccessor;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -180,7 +180,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(30, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         this.goalSelector.add(30, new LookAroundGoal(this));
 
-        this.targetSelector.add(3, new PredicateRevengeGoal(this, this::isFriend));
+        this.targetSelector.add(3, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
         this.targetSelector.add(4, new TrackOwnerAttackerGoal(this));
         this.targetSelector.add(5, new AttackWithOwnerGoal(this));
         this.targetSelector.add(6, new FollowTargetGoal<>(
