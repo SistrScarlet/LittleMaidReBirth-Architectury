@@ -7,9 +7,9 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
+import net.sistr.littlemaidrebirth.entity.InventorySupplier;
 import net.sistr.lmml.entity.compound.SoundPlayable;
 import net.sistr.lmml.resource.util.LMSounds;
-import net.sistr.littlemaidrebirth.entity.InventorySupplier;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -20,6 +20,7 @@ public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> exten
     private final int healInterval;
     private final int healAmount;
     private int cool;
+    private int cache;
 
     public HealMyselfGoal(T mob, Set<Item> healItems,
                           int healInterval, int healAmount) {
@@ -35,12 +36,12 @@ public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> exten
         assert mob.getMaxHealth() != 0;
         return (mob.hurtTime <= 0 && mob.getHealth() <= mob.getMaxHealth() - 1
                 || mob.getHealth() / mob.getMaxHealth() < 0.75F)
-                && getHealItemSlot() != -1;
+                && hasHealItem();
     }
 
     @Override
     public boolean shouldContinue() {
-        return mob.getHealth() < mob.getMaxHealth();
+        return mob.getHealth() < mob.getMaxHealth() && hasHealItem();
     }
 
     @Override
@@ -56,16 +57,12 @@ public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> exten
             return;
         }
         cool = healInterval;
-        Inventory inventory = this.mob.getInventory();
+
         int slot = getHealItemSlot();
-        ItemStack healItem = inventory.getStack(slot);
-        if (healItem.isEmpty()) {
-            return;
-        }
-        healItem.decrement(1);
-        if (healItem.isEmpty()) {
-            inventory.removeStack(slot);
-        }
+        ItemStack healItem = getHealItem(slot);
+        if (healItem.isEmpty()) return;
+        consumeHealItem(slot, healItem);
+
         mob.heal(healAmount);
         mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, mob.getRandom().nextFloat() * 0.1F + 1.0F);
         mob.swingHand(Hand.MAIN_HAND);
@@ -78,15 +75,40 @@ public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> exten
         }
     }
 
+    public boolean hasHealItem() {
+        return getHealItemSlot() != -1;
+    }
+
     public int getHealItemSlot() {
         Inventory inventory = this.mob.getInventory();
+        if (cache != -1) {
+            ItemStack slotStack = inventory.getStack(cache);
+            if (healItems.contains(slotStack.getItem())) {
+                return cache;
+            } else {
+                cache = -1;
+            }
+        }
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack slotStack = inventory.getStack(i);
             if (healItems.contains(slotStack.getItem())) {
+                cache = i;
                 return i;
             }
         }
         return -1;
+    }
+
+    public ItemStack getHealItem(int slot) {
+        if (slot == -1) return ItemStack.EMPTY;
+        return this.mob.getInventory().getStack(slot);
+    }
+
+    public void consumeHealItem(int slot, ItemStack healItem) {
+        healItem.decrement(1);
+        if (healItem.isEmpty()) {
+            this.mob.getInventory().removeStack(slot);
+        }
     }
 
 }
