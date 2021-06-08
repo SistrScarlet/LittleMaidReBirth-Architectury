@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "id": "littlemaidrebirth",
+  "version": "${version}",
+
+  "name": "LittleMaid ReBirth",
+  "description": "A mod to add a little maid to the game, who will help you with various things or not.",
+  "authors": [
+    "Sistr"
+  ],
+  "contact": {
+    "homepage": "https://forum.civa.jp/viewtopic.php?f=3&t=119",
+    "sources": "https://github.com/SistrScarlet/LittleMaidReBirth"
+  },
+
+  "license": "",
+  "icon": "assets/littlemaidrebirth/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "net.sistr.littlemaidrebirth.entrypoint.ModEntryPoint"
+    ],
+    "client": [
+      "net.sistr.littlemaidrebirth.entrypoint.ClientEntryPoint"
+    ],
+    "server": [
+    ]
+  },
+  "accessWidener": "littlemaidrebirth.accessWidener",
+  "mixins": [
+    "littlemaidrebirth.mixins.json",
+    "littlemaidrebirth-common.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.7.4",
+    "fabric": "*",
+    "minecraft": ">=1.16.5",
+    "littlemaidmodelloader": ">=2.0.0"
+  },
+  "suggests": {
+    "flamingo": "*"
+  }
+}
