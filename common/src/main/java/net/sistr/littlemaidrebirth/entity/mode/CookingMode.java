@@ -8,7 +8,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeType;
@@ -55,7 +55,7 @@ public class CookingMode<T extends PathAwareEntity & InventorySupplier> implemen
         }
         findCool = 60;
         //燃料がないならリターン
-        if (!getFuel().isPresent()) {
+        if (getFuel().isEmpty()) {
             return false;
         }
         if (furnacePos != null && getFurnaceBlockEntity(furnacePos).isPresent()) {
@@ -64,7 +64,7 @@ public class CookingMode<T extends PathAwareEntity & InventorySupplier> implemen
         furnacePos = null;
         Optional<BlockPos> optional = findFurnacePos();
         //かまどがあるか
-        if (!optional.isPresent()) {
+        if (optional.isEmpty()) {
             return false;
         }
         furnacePos = optional.get();
@@ -142,7 +142,7 @@ public class CookingMode<T extends PathAwareEntity & InventorySupplier> implemen
     }
 
     public boolean canSeeThrough(BlockPos pos) {
-        return !mob.world.getBlockState(pos).isSolidBlock(mob.world, pos);
+        return true;//!mob.world.getBlockState(pos).isSolidBlock(mob.world, pos);
     }
 
     @Override
@@ -320,15 +320,15 @@ public class CookingMode<T extends PathAwareEntity & InventorySupplier> implemen
     }
 
     @Override
-    public void writeModeData(CompoundTag tag) {
+    public void writeModeData(NbtCompound nbt) {
         if (furnacePos != null)
-            tag.put("FurnacePos", NbtHelper.fromBlockPos(furnacePos));
+            nbt.put("FurnacePos", NbtHelper.fromBlockPos(furnacePos));
     }
 
     @Override
-    public void readModeData(CompoundTag tag) {
-        if (tag.contains("FurnacePos"))
-            furnacePos = NbtHelper.toBlockPos(tag.getCompound("FurnacePos"));
+    public void readModeData(NbtCompound nbt) {
+        if (nbt.contains("FurnacePos"))
+            furnacePos = NbtHelper.toBlockPos(nbt.getCompound("FurnacePos"));
     }
 
     @Override

@@ -7,7 +7,7 @@ import net.minecraft.entity.Shearable;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShearsItem;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
@@ -114,12 +114,12 @@ public class RipperMode implements Mode {
     }
 
     @Override
-    public void writeModeData(CompoundTag tag) {
+    public void writeModeData(NbtCompound nbt) {
 
     }
 
     @Override
-    public void readModeData(CompoundTag tag) {
+    public void readModeData(NbtCompound nbt) {
 
     }
 

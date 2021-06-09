@@ -6,7 +6,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -123,14 +123,14 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
         double xD = targetPos.x - vec3d.x;
         double yD = targetPos.y - vec3d.y;
         double zD = targetPos.z - vec3d.z;
-        double hDist = MathHelper.sqrt(xD * xD + zD * zD);
+        double hDist = MathHelper.sqrt((float) (xD * xD + zD * zD));
         float pitch = (float) (-(MathHelper.atan2(yD, hDist) * (180D / Math.PI)));
         pitch += ((this.mob.getRandom().nextFloat() * 2 - 1) * (this.mob.getRandom().nextFloat() * 2 - 1)) * inaccuracy;
         pitch = MathHelper.wrapDegrees(pitch);
         float yaw = MathHelper.wrapDegrees((float) (MathHelper.atan2(zD, xD) * (180D / Math.PI)) - 90.0F);
         fakePlayer.headYaw = yaw;
-        fakePlayer.yaw = yaw;
-        fakePlayer.pitch = pitch;
+        fakePlayer.setYaw(yaw);
+        fakePlayer.setPitch(pitch);
 
         //FPがアイテムを構えていないとき
         if (--reUseCool < 0 && !fakePlayer.isUsingItem()) {
@@ -162,7 +162,7 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
         int interval = item instanceof IRangedWeapon ? ((IRangedWeapon) item).getInterval_LMRB(itemStack, this.mob) : 25;
         if (interval <= useCount) {
             //簡易誤射チェック、射線にターゲット以外が居る場合は撃たない
-            float distance = MathHelper.sqrt(distanceSq);
+            float distance = MathHelper.sqrt((float) distanceSq);
             EntityHitResult result = ProjectileUtil.getEntityCollision(mob.world, mob,
                     this.mob.getCameraPosVec(1F), target.getCameraPosVec(1F),
                     this.mob.getBoundingBox().expand(distance), entity ->
@@ -198,12 +198,12 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
     }
 
     @Override
-    public void writeModeData(CompoundTag tag) {
+    public void writeModeData(NbtCompound nbt) {
 
     }
 
     @Override
-    public void readModeData(CompoundTag tag) {
+    public void readModeData(NbtCompound nbt) {
 
     }
 

@@ -1,8 +1,8 @@
 package net.sistr.littlemaidrebirth.setup;
 
-import me.shedaniel.architectury.registry.DeferredRegister;
-import me.shedaniel.architectury.registry.MenuRegistry;
-import me.shedaniel.architectury.registry.RegistrySupplier;
+import dev.architectury.registry.menu.MenuRegistry;
+import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.item.Item;

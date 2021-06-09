@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.network;
 
+import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
-import me.shedaniel.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
@@ -23,7 +23,7 @@ public class SyncMovingStatePacket {
 
     public static PacketByteBuf createC2SPacket(Entity entity, Tameable.MovingState state) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getEntityId());
+        buf.writeVarInt(entity.getId());
         buf.writeEnumConstant(state);
         return buf;
     }
@@ -37,9 +37,9 @@ public class SyncMovingStatePacket {
     private static void applyMovingStateServer(PlayerEntity player, int id, Tameable.MovingState state) {
         Entity entity = player.world.getEntityById(id);
         if (!(entity instanceof Tameable)
-                || !((Tameable) entity).getTameOwnerUuid()
+                || ((Tameable) entity).getTameOwnerUuid()
                 .filter(ownerId -> ownerId.equals(player.getUuid()))
-                .isPresent()) {
+                .isEmpty()) {
             return;
         }
         ((Tameable) entity).setMovingState(state);

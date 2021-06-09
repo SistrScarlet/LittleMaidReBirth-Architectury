@@ -1,6 +1,6 @@
 package net.sistr.littlemaidrebirth.entity;
 
-import me.shedaniel.architectury.registry.menu.ExtendedMenuProvider;
+import dev.architectury.registry.menu.ExtendedMenuProvider;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.network.PacketByteBuf;
@@ -16,12 +16,12 @@ public class LMScreenHandlerFactory implements ExtendedMenuProvider {
 
     @Override
     public void saveExtraData(PacketByteBuf buf) {
-        buf.writeVarInt(maid.getEntityId());
+        buf.writeVarInt(maid.getId());
     }
 
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        return new LittleMaidScreenHandler(syncId, inv, maid.getEntityId());
+        return new LittleMaidScreenHandler(syncId, inv, maid.getId());
     }
 
     @Override

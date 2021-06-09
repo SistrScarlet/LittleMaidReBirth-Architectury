@@ -81,8 +81,8 @@ public class FixedMoveControl extends MoveControl {
         moveAmount = speed / moveAmount;
         forward *= moveAmount;
         sideways *= moveAmount;
-        float sinYaw = MathHelper.sin(this.entity.yaw * (float) (Math.PI / 180D));
-        float cosYaw = MathHelper.cos(this.entity.yaw * (float) (Math.PI / 180D));
+        float sinYaw = MathHelper.sin(this.entity.getYaw() * (float) (Math.PI / 180D));
+        float cosYaw = MathHelper.cos(this.entity.getYaw() * (float) (Math.PI / 180D));
         float moveX = forward * cosYaw - sideways * sinYaw;
         float moveZ = sideways * cosYaw + forward * sinYaw;
         return new BlockPos(
@@ -94,9 +94,9 @@ public class FixedMoveControl extends MoveControl {
     protected Vec2f getPosToStrife(float x, float z) {
         float moveX = x - (float) this.entity.getX();
         float moveZ = z - (float) this.entity.getZ();
-        float moveYaw = (float)(MathHelper.atan2(moveX, moveZ) * (180D / Math.PI));
+        float moveYaw = (float) (MathHelper.atan2(moveX, moveZ) * (180D / Math.PI));
         //エンティティの向いている方向を0度として、移動したい方向を調整する
-        moveYaw -= entity.yaw;
+        moveYaw -= entity.getYaw();
         float sideways = -MathHelper.sin(moveYaw * (float) (Math.PI / 180D));
         float forward = -MathHelper.cos(moveYaw * (float) (Math.PI / 180D));
         return new Vec2f(forward, sideways);

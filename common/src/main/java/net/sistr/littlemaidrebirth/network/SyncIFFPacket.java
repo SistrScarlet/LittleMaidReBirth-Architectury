@@ -1,14 +1,14 @@
 package net.sistr.littlemaidrebirth.network;
 
+import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
-import me.shedaniel.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
@@ -27,22 +27,22 @@ public class SyncIFFPacket {
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, List<IFF> iffs) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getEntityId());
-        CompoundTag tag = new CompoundTag();
-        ListTag list = new ListTag();
+        buf.writeVarInt(entity.getId());
+        NbtCompound tag = new NbtCompound();
+        NbtList list = new NbtList();
         tag.put("IFFs", list);
         iffs.forEach(iff -> list.add(iff.writeTag()));
-        buf.writeCompoundTag(tag);
+        buf.writeNbt(tag);
         NetworkManager.sendToServer(ID, buf);
     }
 
     public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
         int id = buf.readVarInt();
-        CompoundTag tag = buf.readCompoundTag();
+        NbtCompound tag = buf.readNbt();
         context.queue(() -> applyIFFServer(context.getPlayer(), id, tag));
     }
 
-    private static void applyIFFServer(PlayerEntity player, int id, CompoundTag tag) {
+    private static void applyIFFServer(PlayerEntity player, int id, NbtCompound tag) {
         Entity entity = player.world.getEntityById(id);
         if (!(entity instanceof HasIFF)) {
             return;
@@ -50,9 +50,9 @@ public class SyncIFFPacket {
         if (entity instanceof TameableEntity && !player.getUuid().equals(((TameableEntity) entity).getOwnerUuid())) {
             return;
         }
-        ListTag list = tag.getList("IFFs", 10);
+        NbtList list = tag.getList("IFFs", 10);
         List<IFF> iffs = list.stream()
-                .map(t -> (CompoundTag) t)
+                .map(t -> (NbtCompound) t)
                 .map(t -> IFFTypeManager.getINSTANCE().loadIFF(t))
                 .filter(Optional::isPresent)
                 .map(Optional::get)

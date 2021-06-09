@@ -5,7 +5,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.*;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -21,7 +21,8 @@ import net.sistr.littlemaidrebirth.entity.FakePlayerSupplier;
 import net.sistr.littlemaidrebirth.entity.Tameable;
 import net.sistr.littlemaidrebirth.util.BlockFinder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Optional;
 
 //暗所発見->移動->設置
 //置いてすぐはライトレベルに変化が無い点に注意
@@ -59,10 +60,8 @@ public class TorcherMode<T extends PathAwareEntity & FakePlayerSupplier & Tameab
         } else {
             base = mob.getBlockPos();
         }
-        long start = System.nanoTime();
         placePos = findSpawnablePoint(base)
                 .orElse(null);
-        System.out.println((System.nanoTime() - start) / 1000F / 1000F);
         return placePos != null;
     }
 
@@ -164,12 +163,12 @@ public class TorcherMode<T extends PathAwareEntity & FakePlayerSupplier & Tameab
     }
 
     @Override
-    public void writeModeData(CompoundTag tag) {
+    public void writeModeData(NbtCompound nbt) {
 
     }
 
     @Override
-    public void readModeData(CompoundTag tag) {
+    public void readModeData(NbtCompound nbt) {
 
     }
 

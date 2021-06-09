@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.network;
 
+import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
-import me.shedaniel.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -28,7 +28,7 @@ public class SyncSoundConfigPacket {
 
     public static PacketByteBuf createC2SPacket(Entity entity, String configName) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getEntityId());
+        buf.writeVarInt(entity.getId());
         buf.writeString(configName);
         return buf;
     }
@@ -40,7 +40,7 @@ public class SyncSoundConfigPacket {
 
     public static PacketByteBuf createS2CPacket(Entity entity, String configName) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getEntityId());
+        buf.writeVarInt(entity.getId());
         buf.writeString(configName);
         return buf;
     }
@@ -77,9 +77,9 @@ public class SyncSoundConfigPacket {
             return;
         }
         if (entity instanceof Tameable
-                && !((Tameable) entity).getTameOwnerUuid()
+                && ((Tameable) entity).getTameOwnerUuid()
                 .filter(ownerId -> ownerId.equals(player.getUuid()))
-                .isPresent()) {
+                .isEmpty()) {
             return;
         }
         LMConfigManager.INSTANCE.getConfig(configName)

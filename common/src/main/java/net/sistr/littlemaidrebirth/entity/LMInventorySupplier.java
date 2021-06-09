@@ -7,8 +7,8 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.sistr.littlemaidrebirth.util.DefaultedListLimiter;
 
 public class LMInventorySupplier implements InventorySupplier {
@@ -30,13 +30,13 @@ public class LMInventorySupplier implements InventorySupplier {
     }
 
     @Override
-    public void writeInventory(CompoundTag tag) {
-        tag.put("Inventory", ((LMInventory) this.inventory).serialize(new ListTag()));
+    public void writeInventory(NbtCompound nbt) {
+        nbt.put("Inventory", ((LMInventory) this.inventory).writeNbt(new NbtList()));
     }
 
     @Override
-    public void readInventory(CompoundTag tag) {
-        ((LMInventory) this.inventory).deserialize(tag.getList("Inventory", 10));
+    public void readInventory(NbtCompound nbt) {
+        ((LMInventory) this.inventory).readNbt(nbt.getList("Inventory", 10));
     }
 
     public static class LMInventory extends PlayerInventory {

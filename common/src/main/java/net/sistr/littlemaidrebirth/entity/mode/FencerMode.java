@@ -6,7 +6,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.SwordItem;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
@@ -30,7 +30,7 @@ public class FencerMode<T extends PathAwareEntity & FakePlayerSupplier> implemen
             @Override
             protected void attack(LivingEntity target, double squaredDistance) {
                 double reachSq = this.getSquaredMaxAttackDistance(target);
-                if (reachSq < squaredDistance || 0 < method_28348() || !this.mob.canSee(target)) {
+                if (reachSq < squaredDistance || 0 < getCooldown() || !this.mob.canSee(target)) {
                     return;
                 }
                 this.mob.getNavigation().stop();
@@ -95,12 +95,12 @@ public class FencerMode<T extends PathAwareEntity & FakePlayerSupplier> implemen
     }
 
     @Override
-    public void writeModeData(CompoundTag tag) {
+    public void writeModeData(NbtCompound nbt) {
 
     }
 
     @Override
-    public void readModeData(CompoundTag tag) {
+    public void readModeData(NbtCompound nbt) {
 
     }
 

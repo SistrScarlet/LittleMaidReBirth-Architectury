@@ -1,6 +1,6 @@
 package net.sistr.littlemaidrebirth.api.mode;
 
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 
 public interface Mode {
 
@@ -31,10 +31,10 @@ public interface Mode {
     void endModeTask();
 
     //ワールド保存時に処理
-    void writeModeData(CompoundTag tag);
+    void writeModeData(NbtCompound nbt);
 
     //ワールド読み込み時に処理
-    void readModeData(CompoundTag tag);
+    void readModeData(NbtCompound nbt);
 
     //モード判別用
     String getName();

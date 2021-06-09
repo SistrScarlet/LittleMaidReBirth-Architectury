@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.entity.iff;
 
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 
 import java.util.List;
 
@@ -13,8 +13,8 @@ public interface HasIFF {
 
     List<IFF> getIFFs();
 
-    void writeIFF(CompoundTag tag);
+    void writeIFF(NbtCompound nbt);
 
-    void readIFF(CompoundTag tag);
+    void readIFF(NbtCompound nbt);
 
 }

@@ -2,8 +2,8 @@ package net.sistr.littlemaidrebirth.entity.iff;
 
 import com.google.common.collect.Lists;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,20 +36,20 @@ public class IFFImpl implements HasIFF {
     }
 
     @Override
-    public void writeIFF(CompoundTag tag) {
-        ListTag list = new ListTag();
-        tag.put("HasIFFTags", list);
+    public void writeIFF(NbtCompound nbt) {
+        NbtList list = new NbtList();
+        nbt.put("HasIFFTags", list);
         iffs.stream().map(IFF::writeTag).forEach(list::add);
     }
 
     @Override
-    public void readIFF(CompoundTag tag) {
-        if (!tag.contains("HasIFFTags")) {
+    public void readIFF(NbtCompound nbt) {
+        if (!nbt.contains("HasIFFTags")) {
             return;
         }
-        ListTag list = tag.getList("HasIFFTags", 10);
+        NbtList list = nbt.getList("HasIFFTags", 10);
         list.stream()
-                .map(t -> (CompoundTag) t)
+                .map(t -> (NbtCompound) t)
                 .map(t -> IFFTypeManager.getINSTANCE().loadIFF(t))
                 .filter(Optional::isPresent)
                 .map(Optional::get)

@@ -8,10 +8,10 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(MeleeAttackGoal.class)
 public class MixinMeleeAttackGoal implements MeleeAttackAccessor {
 
-    @Shadow private int field_24667;
+    @Shadow private int cooldown;
 
     @Override
     public void setCool_LM(int time) {
-        this.field_24667 = time;
+        this.cooldown = time;
     }
 }

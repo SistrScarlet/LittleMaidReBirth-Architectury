@@ -6,6 +6,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
+import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
@@ -55,7 +56,10 @@ public class IFFType {
             immediate.draw();
             EntityRenderDispatcher entityRenderDispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
             entityRenderDispatcher.setRenderShadows(true);
-            RenderSystem.popMatrix();
+            MatrixStack matrixStack = RenderSystem.getModelViewStack();
+            matrixStack.pop();
+            RenderSystem.applyModelViewMatrix();
+            DiffuseLighting.enableGuiDepthLighting();
         }
     }
 

@@ -6,7 +6,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeManager;
@@ -21,7 +21,7 @@ public class ModeController implements ModeSupplier {
     private final Set<Mode> modes = Sets.newHashSet();
     private Mode nowMode;
     private Item prevItem = Items.AIR;
-    private CompoundTag tempModeData;
+    private NbtCompound tempModeData;
 
     public ModeController(LivingEntity owner, InventorySupplier hasInventory, Set<Mode> modes) {
         this.owner = owner;
@@ -39,18 +39,18 @@ public class ModeController implements ModeSupplier {
     }
 
     @Override
-    public void writeModeData(CompoundTag tag) {
+    public void writeModeData(NbtCompound nbt) {
         getMode().ifPresent(mode -> {
-            CompoundTag modeData = new CompoundTag();
+            NbtCompound modeData = new NbtCompound();
             mode.writeModeData(modeData);
-            tag.put("ModeData", modeData);
+            nbt.put("ModeData", modeData);
         });
     }
 
     @Override
-    public void readModeData(CompoundTag tag) {
-        if (tag.contains("ModeData"))
-            this.tempModeData = tag.getCompound("ModeData");
+    public void readModeData(NbtCompound nbt) {
+        if (nbt.contains("ModeData"))
+            this.tempModeData = nbt.getCompound("ModeData");
     }
 
     public void tick() {

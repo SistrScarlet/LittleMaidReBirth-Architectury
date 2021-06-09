@@ -2,7 +2,7 @@ package net.sistr.littlemaidrebirth.entity.iff;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 
 public class IFF {
@@ -20,20 +20,20 @@ public class IFF {
         return entity.getType() == entityType;
     }
 
-    public CompoundTag writeTag() {
-        CompoundTag tag = new CompoundTag();
-        tag.putInt("IFFTag", iffTag.getId());
-        tag.putString("IFFType", IFFTypeManager.getINSTANCE().getId(iffType)
+    public NbtCompound writeTag() {
+        NbtCompound nbt = new NbtCompound();
+        nbt.putInt("IFFTag", iffTag.getId());
+        nbt.putString("IFFType", IFFTypeManager.getINSTANCE().getId(iffType)
                 .orElseThrow(() -> new RuntimeException("存在しないIFFTypeです。")).toString());
-        tag.putString("EntityType", EntityType.getId(entityType).toString());
-        return tag;
+        nbt.putString("EntityType", EntityType.getId(entityType).toString());
+        return nbt;
     }
 
-    public IFF readTag(CompoundTag tag) {
-        iffTag = IFFTag.getTagFromId(tag.getInt("IFFTag"));
-        iffType = IFFTypeManager.getINSTANCE().getIFFType(new Identifier(tag.getString("IFFType")))
+    public IFF readTag(NbtCompound nbt) {
+        iffTag = IFFTag.getTagFromId(nbt.getInt("IFFTag"));
+        iffType = IFFTypeManager.getINSTANCE().getIFFType(new Identifier(nbt.getString("IFFType")))
                 .orElseThrow(() -> new RuntimeException("存在しないIFFTypeです。"));
-        entityType = EntityType.get(tag.getString("EntityType"))
+        entityType = EntityType.get(nbt.getString("EntityType"))
                 .orElseThrow(() -> new RuntimeException("存在しないEntityTypeです。"));
         return this;
     }

@@ -2,7 +2,7 @@ package net.sistr.littlemaidrebirth.entity;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import me.shedaniel.architectury.registry.MenuRegistry;
+import dev.architectury.registry.menu.MenuRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.*;
@@ -22,10 +22,12 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
+import net.minecraft.inventory.StackReference;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
@@ -37,6 +39,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
@@ -69,6 +72,7 @@ import net.sistr.littlemaidrebirth.util.LivingAccessor;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.ESCORT;
@@ -206,8 +210,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     //読み書き系
 
     @Override
-    public void writeCustomDataToTag(CompoundTag tag) {
-        super.writeCustomDataToTag(tag);
+    public void writeCustomDataToNbt(NbtCompound tag) {
+        super.writeCustomDataToNbt(tag);
 
         writeInventory(tag);
 
@@ -242,8 +246,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
-    public void readCustomDataFromTag(CompoundTag tag) {
-        super.readCustomDataFromTag(tag);
+    public void readCustomDataFromNbt(NbtCompound tag) {
+        super.readCustomDataFromNbt(tag);
         readInventory(tag);
 
         setMovingState(MovingState.fromId(tag.getInt("MovingState")));
@@ -345,7 +349,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
-        return LMRBConfig.canDespawnLM() && !getTameOwnerUuid().isPresent();
+        return LMRBConfig.canDespawnLM() && getTameOwnerUuid().isEmpty();
     }
 
     //canSpawnとかでも使われる
@@ -448,7 +452,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     public void onDeath(DamageSource source) {
         if (LMRBConfig.canResurrectionLM()) {
-            this.removed = false;
+            this.unsetRemoved();
             this.dead = false;
             this.deathTime = 0;
             this.setHealth(this.getMaxHealth());
@@ -543,10 +547,10 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 0, this.random.nextGaussian() * 0.02D, 0);
         this.getNavigation().stop();
         changeMovingState();
-        if (!player.abilities.creativeMode) {
+        if (!player.getAbilities().creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
-                player.inventory.removeOne(stack);
+                player.getInventory().removeOne(stack);
             }
         }
         return ActionResult.success(world.isClient);
@@ -580,10 +584,10 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.setOwnerUuid(player.getUuid());
         setMovingState(ESCORT);
         setContract(true);
-        if (!player.abilities.creativeMode) {
+        if (!player.getAbilities().creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
-                player.inventory.removeOne(stack);
+                player.getInventory().removeOne(stack);
             }
         }
         return ActionResult.success(world.isClient);
@@ -598,6 +602,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     //インベントリ関連
+    //todo PlayerEntityでinventoryに対してアクセスしてるメソッドをすべて実装すべき
 
     @Override
     public Inventory getInventory() {
@@ -605,23 +610,93 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
-    public void writeInventory(CompoundTag tag) {
+    public void writeInventory(NbtCompound tag) {
         this.littleMaidInventory.writeInventory(tag);
     }
 
     @Override
-    public void readInventory(CompoundTag tag) {
+    public void readInventory(NbtCompound tag) {
         this.littleMaidInventory.readInventory(tag);
     }
 
     @Override
-    public boolean equip(int slot, ItemStack item) {
-        Inventory inventory = this.getInventory();
-        if (0 <= slot && slot < inventory.size()) {
-            inventory.setStack(slot, item);
-            return true;
+    public Iterable<ItemStack> getItemsHand() {
+        return Lists.newArrayList(getMainHandStack(), getOffHandStack());
+    }
+
+    @Override
+    public Iterable<ItemStack> getArmorItems() {
+        return Lists.newArrayList(
+                getEquippedStack(EquipmentSlot.FEET),
+                getEquippedStack(EquipmentSlot.LEGS),
+                getEquippedStack(EquipmentSlot.CHEST),
+                getEquippedStack(EquipmentSlot.HEAD));
+    }
+
+    @Override
+    protected void damageArmor(DamageSource source, float amount) {
+        ((PlayerInventory) getInventory()).damageArmor(source, amount, PlayerInventory.ARMOR_SLOTS);
+    }
+
+    @Override
+    protected void damageHelmet(DamageSource source, float amount) {
+        ((PlayerInventory) getInventory()).damageArmor(source, amount, PlayerInventory.HELMET_SLOTS);
+    }
+
+    //メイドさんはガードしないので要らないかも
+    @Override
+    protected void damageShield(float amount) {
+        if (this.activeItemStack.isOf(Items.SHIELD)) {
+
+            if (amount >= 3.0F) {
+                int i = 1 + MathHelper.floor(amount);
+                Hand hand = this.getActiveHand();
+                this.activeItemStack.damage(i, (LivingEntity) this, (playerEntity) -> playerEntity.sendToolBreakStatus(hand));
+                if (this.activeItemStack.isEmpty()) {
+                    if (hand == Hand.MAIN_HAND) {
+                        this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+                    } else {
+                        this.equipStack(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
+                    }
+
+                    this.activeItemStack = ItemStack.EMPTY;
+                    this.playSound(SoundEvents.ITEM_SHIELD_BREAK, 0.8F, 0.8F + this.world.random.nextFloat() * 0.4F);
+                }
+            }
+
+        }
+    }
+
+    @Override
+    public StackReference getStackReference(int mappedIndex) {
+        if (mappedIndex >= 0 && mappedIndex < 36) {
+            return StackReference.of(this.getInventory(), mappedIndex);
+        }
+        return super.getStackReference(mappedIndex);
+    }
+
+    //要る？
+    @Override
+    public ItemStack getArrowType(ItemStack stack) {
+        if (!(stack.getItem() instanceof RangedWeaponItem)) {
+            return ItemStack.EMPTY;
         } else {
-            return super.equip(slot, item);
+            Predicate<ItemStack> predicate = ((RangedWeaponItem) stack.getItem()).getHeldProjectiles();
+            ItemStack itemStack = RangedWeaponItem.getHeldProjectile(this, predicate);
+            if (!itemStack.isEmpty()) {
+                return itemStack;
+            } else {
+                predicate = ((RangedWeaponItem) stack.getItem()).getProjectiles();
+
+                for (int i = 0; i < this.getInventory().size(); ++i) {
+                    ItemStack itemStack2 = this.getInventory().getStack(i);
+                    if (predicate.test(itemStack2)) {
+                        return itemStack2;
+                    }
+                }
+
+                return ItemStack.EMPTY;
+            }
         }
     }
 
@@ -652,31 +727,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
-    public Iterable<ItemStack> getItemsHand() {
-        return () -> Lists.newArrayList(getMainHandStack(), getOffHandStack()).iterator();
-    }
-
-    @Override
-    public Iterable<ItemStack> getArmorItems() {
-        return Lists.newArrayList(
-                getEquippedStack(EquipmentSlot.FEET),
-                getEquippedStack(EquipmentSlot.LEGS),
-                getEquippedStack(EquipmentSlot.CHEST),
-                getEquippedStack(EquipmentSlot.HEAD));
-    }
-
-    @Override
     protected void dropInventory() {
         //鯖側でしか動かないが一応チェック
         Inventory inv = this.getInventory();
         if (inv instanceof PlayerInventory)
             ((LMInventorySupplier.LMInventory) inv).dropAll();
-    }
-
-    @Override
-    protected void damageArmor(DamageSource source, float amount) {
-        super.damageArmor(source, amount);
-        ((PlayerInventory) getInventory()).damageArmor(source, amount);
     }
 
     //テイム関連
@@ -760,7 +815,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Environment(EnvType.CLIENT)
     public float getInterestedAngle(float tickDelta) {
         return (prevInterestedAngle + (interestedAngle - prevInterestedAngle) * tickDelta) *
-                ((getEntityId() % 2 == 0 ? 0.08F : -0.08F) * (float) Math.PI);
+                ((getId() % 2 == 0 ? 0.08F : -0.08F) * (float) Math.PI);
     }
 
     @Environment(EnvType.CLIENT)
@@ -819,12 +874,12 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
-    public void writeModeData(CompoundTag tag) {
+    public void writeModeData(NbtCompound tag) {
         modeController.writeModeData(tag);
     }
 
     @Override
-    public void readModeData(CompoundTag tag) {
+    public void readModeData(NbtCompound tag) {
         modeController.readModeData(tag);
     }
 
@@ -861,12 +916,12 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
-    public void writeIFF(CompoundTag tag) {
+    public void writeIFF(NbtCompound tag) {
         iff.writeIFF(tag);
     }
 
     @Override
-    public void readIFF(CompoundTag tag) {
+    public void readIFF(NbtCompound tag) {
         iff.readIFF(tag);
     }
 

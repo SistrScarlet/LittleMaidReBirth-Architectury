@@ -1,15 +1,15 @@
 package net.sistr.littlemaidrebirth.network;
 
+import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
-import me.shedaniel.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -34,12 +34,12 @@ public class OpenIFFScreenPacket {
 
     public static PacketByteBuf createS2CPacket(Entity entity, List<IFF> iffs, PlayerEntity player) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getEntityId());
-        CompoundTag tag = new CompoundTag();
-        ListTag list = new ListTag();
-        tag.put("IFFs", list);
+        buf.writeVarInt(entity.getId());
+        NbtCompound nbt = new NbtCompound();
+        NbtList list = new NbtList();
+        nbt.put("IFFs", list);
         iffs.forEach(iff -> list.add(iff.writeTag()));
-        buf.writeCompoundTag(tag);
+        buf.writeNbt(nbt);
         return buf;
     }
 
@@ -54,7 +54,7 @@ public class OpenIFFScreenPacket {
 
     public static PacketByteBuf createC2SPacket(Entity entity) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getEntityId());
+        buf.writeVarInt(entity.getId());
         return buf;
     }
 
@@ -63,19 +63,19 @@ public class OpenIFFScreenPacket {
         PlayerEntity player = context.getPlayer();
         if (player == null) return;
         int id = buf.readVarInt();
-        CompoundTag tag = buf.readCompoundTag();
-        context.queue(() -> openIFFScreen(id, tag, player));
+        NbtCompound nbt = buf.readNbt();
+        context.queue(() -> openIFFScreen(id, nbt, player));
     }
 
     @Environment(EnvType.CLIENT)
-    private static void openIFFScreen(int id, CompoundTag tag, PlayerEntity player) {
+    private static void openIFFScreen(int id, NbtCompound nbt, PlayerEntity player) {
         Entity entity = player.world.getEntityById(id);
         if (!(entity instanceof HasIFF)) {
             return;
         }
-        ListTag list = tag.getList("IFFs", 10);
+        NbtList list = nbt.getList("IFFs", 10);
         List<IFF> iffs = list.stream()
-                .map(t -> (CompoundTag) t)
+                .map(t -> (NbtCompound) t)
                 .map(t -> IFFTypeManager.getINSTANCE().loadIFF(t))
                 .filter(Optional::isPresent)
                 .map(Optional::get)

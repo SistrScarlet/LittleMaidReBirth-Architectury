@@ -112,7 +112,7 @@ public class EscortGoal<T extends PathAwareEntity & Tameable> extends Goal {
         } else if (!this.canTeleportTo(new BlockPos(x, y, z))) {
             return false;
         } else {
-            this.tameable.refreshPositionAndAngles(x + 0.5D, y, z + 0.5D, this.tameable.yaw, this.tameable.pitch);
+            this.tameable.refreshPositionAndAngles(x + 0.5D, y, z + 0.5D, this.tameable.getYaw(), this.tameable.getPitch());
             this.navigation.stop();
             return true;
         }

@@ -6,8 +6,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -40,7 +40,7 @@ public class IFFCopyBookItem extends Item {
     @Override
     public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
         super.appendTooltip(stack, world, tooltip, context);
-        CompoundTag tag = stack.getTag();
+        NbtCompound tag = stack.getTag();
         if (tag != null && tag.contains("IFFs")) {
             tooltip.add(new TranslatableText("item.littlemaidrebirth.iff_copy_book.tooltip"));
         }
@@ -67,19 +67,19 @@ public class IFFCopyBookItem extends Item {
 
         Entity target = eResult.getEntity();
         if (user.isSneaking()) {
-            ListTag list = new ListTag();
+            NbtList list = new NbtList();
             ((HasIFF) target).getIFFs().forEach(iff -> list.add(iff.writeTag()));
-            CompoundTag tag = stack.getOrCreateTag();
+            NbtCompound tag = stack.getOrCreateTag();
             tag.put("IFFs", list);
             user.sendMessage(new TranslatableText("item.littlemaidrebirth.iff_copy_book.message_written"), true);
         } else {
-            CompoundTag tag = stack.getOrCreateTag();
+            NbtCompound tag = stack.getOrCreateTag();
             if (!tag.contains("IFFs")) {
                 return super.use(world, user, hand);
             }
-            ListTag list = tag.getList("IFFs", 10);
+            NbtList list = tag.getList("IFFs", 10);
             ((HasIFF) target).setIFFs(list.stream()
-                    .map(t -> (CompoundTag) t)
+                    .map(t -> (NbtCompound) t)
                     .map(t -> IFFTypeManager.getINSTANCE().loadIFF(t))
                     .filter(Optional::isPresent)
                     .map(Optional::get)
@@ -101,18 +101,18 @@ public class IFFCopyBookItem extends Item {
             return ActionResult.success(true);
         }
         if (user.isSneaking()) {
-            ListTag list = new ListTag();
+            NbtList list = new NbtList();
             ((HasIFF) entity).getIFFs().forEach(iff -> list.add(iff.writeTag()));
-            CompoundTag tag = stack.getOrCreateTag();
+            NbtCompound tag = stack.getOrCreateTag();
             tag.put("IFFs", list);
         } else {
-            CompoundTag tag = stack.getOrCreateTag();
+            NbtCompound tag = stack.getOrCreateTag();
             if (!tag.contains("IFFs")) {
                 return super.useOnEntity(stack, user, entity, hand);
             }
-            ListTag list = tag.getList("IFFs", 10);
+            NbtList list = tag.getList("IFFs", 10);
             ((HasIFF) entity).setIFFs(list.stream()
-                    .map(t -> (CompoundTag) t)
+                    .map(t -> (NbtCompound) t)
                     .map(t -> IFFTypeManager.getINSTANCE().loadIFF(t))
                     .filter(Optional::isPresent)
                     .map(Optional::get)

@@ -2,7 +2,7 @@ package net.sistr.littlemaidrebirth.entity.mode;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.entity.InventorySupplier;
@@ -56,12 +56,12 @@ public class PharmcistMode<T extends PathAwareEntity & InventorySupplier> implem
     }
 
     @Override
-    public void writeModeData(CompoundTag tag) {
+    public void writeModeData(NbtCompound nbt) {
 
     }
 
     @Override
-    public void readModeData(CompoundTag tag) {
+    public void readModeData(NbtCompound nbt) {
 
     }
 

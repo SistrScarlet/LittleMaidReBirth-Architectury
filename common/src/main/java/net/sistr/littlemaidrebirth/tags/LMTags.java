@@ -1,6 +1,6 @@
 package net.sistr.littlemaidrebirth.tags;
 
-import me.shedaniel.architectury.hooks.TagHooks;
+import dev.architectury.hooks.tags.TagHooks;
 import net.minecraft.item.Item;
 import net.minecraft.tag.Tag;
 import net.minecraft.util.Identifier;
@@ -13,7 +13,7 @@ public class LMTags {
         public static final Tag.Identified<Item> MAIDS_SALARY = register("maids_salary");
 
         private static Tag.Identified<Item> register(String id) {
-            return TagHooks.getItemOptional(new Identifier(LittleMaidReBirthMod.MODID, id));
+            return TagHooks.optionalItem(new Identifier(LittleMaidReBirthMod.MODID, id));
         }
 
     }

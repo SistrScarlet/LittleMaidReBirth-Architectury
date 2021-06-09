@@ -5,7 +5,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 
 import java.util.Collection;
 import java.util.Set;
@@ -108,15 +108,15 @@ public class TickTimeBaseNeedSalary implements NeedSalary {
         isStrike = strike;
     }
 
-    public void writeSalary(CompoundTag tag) {
-        tag.putInt("salary", salary);
-        tag.putInt("nextSalaryTicks", nextSalaryTicks);
-        tag.putBoolean("isStrike", isStrike);
+    public void writeSalary(NbtCompound nbt) {
+        nbt.putInt("salary", salary);
+        nbt.putInt("nextSalaryTicks", nextSalaryTicks);
+        nbt.putBoolean("isStrike", isStrike);
     }
 
-    public void readSalary(CompoundTag tag) {
-        salary = tag.getInt("salary");
-        nextSalaryTicks = tag.getInt("nextSalaryTicks");
-        isStrike = tag.getBoolean("isStrike");
+    public void readSalary(NbtCompound nbt) {
+        salary = nbt.getInt("salary");
+        nextSalaryTicks = nbt.getInt("nextSalaryTicks");
+        isStrike = nbt.getBoolean("isStrike");
     }
 }

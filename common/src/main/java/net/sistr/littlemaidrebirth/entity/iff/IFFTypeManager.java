@@ -3,7 +3,7 @@ package net.sistr.littlemaidrebirth.entity.iff;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Sets;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 
@@ -46,14 +46,14 @@ public class IFFTypeManager {
         return Optional.ofNullable(iffTypes.get(id));
     }
 
-    public Optional<IFF> loadIFF(CompoundTag tag) {
-        return loadIFFType(tag)
+    public Optional<IFF> loadIFF(NbtCompound nbt) {
+        return loadIFFType(nbt)
                 .map(IFFType::createIFF)
-                .map(iff -> iff.readTag(tag));
+                .map(iff -> iff.readTag(nbt));
     }
 
-    public Optional<IFFType> loadIFFType(CompoundTag tag) {
-        Identifier id = new Identifier(tag.getString("IFFType"));
+    public Optional<IFFType> loadIFFType(NbtCompound nbt) {
+        Identifier id = new Identifier(nbt.getString("IFFType"));
         return getIFFType(id);
     }
 
