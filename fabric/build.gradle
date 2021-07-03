@@ -22,6 +22,7 @@ repositories {
             includeGroup "com.jamieswhiteshirt"
         }
     }
+    //maven { url "https://maven.terraformersmc.com/releases/" }
 }
 
 loom {
@@ -33,6 +34,9 @@ dependencies {
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
+
+    //mavenが死んでる
+    //modApi("com.terraformersmc:modmenu:${rootProject.mod_menu_version}") { transitive false }
 
     include modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${rootProject.reach_entity_attributes_version}")
 

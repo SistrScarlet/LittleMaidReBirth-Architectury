@@ -9,9 +9,9 @@ modLoader="javafml" #mandatory
 loaderVersion="[36,)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 # The license for you mod. This is mandatory metadata and allows for easier comprehension of your redistributive properties.
 # Review your options at https://choosealicense.com/. All rights reserved is the default copyright stance, and is thus the default here.
-license="https://github.com/SistrScarlet/LittleMaidModelLoader/blob/master/LICENCE.md"
+license = "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/blob/1.16_Architectury/LICENCE.md"
 # A URL to refer people to when problems occur with this mod
-#issueTrackerURL="http://my.issue.tracker/" #optional
+issueTrackerURL="https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/issues" #optional
 # A list of mods - how many allowed here is determined by the individual mod loader
 [[mods]] #mandatory
 # The modid of the mod
@@ -25,7 +25,7 @@ displayName="LittleMaid ReBirth" #mandatory
 # A URL for the "homepage" for this mod, displayed in the mod UI
 displayURL="https://forum.civa.jp/viewtopic.php?f=3&t=119" #optional
 # A file name (in the root of the mod JAR) containing a logo for display
-logoFile="littlemaidrebirth.png" #optional
+logoFile = "icon.png" #optional
 # A text field displayed in the mod UI
 credits="Created by MMM, remixed by EMB4 & Verclene, patched by firis-games, remade by Sistr" #optional
 # A text field displayed in the mod UI
@@ -57,3 +57,9 @@ description="いろいろ手伝ってくれたりくれなかったりする、�
     versionRange="[2.0.0,)"
     ordering="NONE"
     side="BOTH"
+[[dependencies.littlemaidrebirth]]
+modId = "architectury"
+mandatory = true
+versionRange = "[1.1.55,)"
+ordering = "AFTER"
+side = "BOTH"

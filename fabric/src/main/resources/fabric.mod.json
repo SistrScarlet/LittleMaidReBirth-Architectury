@@ -10,11 +10,12 @@
   ],
   "contact": {
     "homepage": "https://forum.civa.jp/viewtopic.php?f=3&t=119",
-    "sources": "https://github.com/SistrScarlet/LittleMaidReBirth"
+    "sources": "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric",
+    "issues": "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/issues"
   },
 
-  "license": "",
-  "icon": "assets/littlemaidrebirth/icon.png",
+  "license": "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/blob/1.16_Architectury/LICENCE.md",
+  "icon": "icon.png",
 
   "environment": "*",
   "entrypoints": {
@@ -35,8 +36,9 @@
   "depends": {
     "fabricloader": ">=0.7.4",
     "fabric": "*",
-    "minecraft": ">=1.16.5",
-    "littlemaidmodelloader": ">=2.0.0"
+    "minecraft": ">=1.17",
+    "littlemaidmodelloader": ">=3.0.0",
+    "architectury": ">=2.0.7"
   },
   "suggests": {
     "flamingo": "*"
