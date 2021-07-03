@@ -1,6 +1,6 @@
 package net.sistr.littlemaidrebirth.api.mode;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 public abstract class Mode {
     private final ModeType<? extends Mode> modeType;
@@ -59,14 +59,14 @@ public abstract class Mode {
     /**
      * ワールド保存時に処理
      */
-    public void writeModeData(NbtCompound nbt) {
+    public void writeModeData(CompoundTag nbt) {
 
     }
 
     /**
      * ワールド読み込み時に処理
      */
-    public void readModeData(NbtCompound nbt) {
+    public void readModeData(CompoundTag nbt) {
 
     }
 
