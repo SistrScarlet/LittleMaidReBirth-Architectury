@@ -3,11 +3,9 @@ package net.sistr.littlemaidrebirth.entity.mode;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
-import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.recipe.AbstractCookingRecipe;
@@ -19,8 +17,8 @@ import net.minecraft.util.math.Direction;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
-import net.sistr.littlemaidrebirth.api.mode.ModeManager;
-import net.sistr.littlemaidrebirth.entity.InventorySupplier;
+import net.sistr.littlemaidrebirth.api.mode.ModeType;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.util.AbstractFurnaceAccessor;
 import net.sistr.littlemaidrebirth.util.BlockFinder;
 
@@ -29,15 +27,16 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
 
-public class CookingMode<T extends PathAwareEntity & InventorySupplier> implements Mode {
-    private final T mob;
+public class CookingMode extends Mode {
+    private final LittleMaidEntity mob;
     private final int inventoryStart;
     private final int inventoryEnd;
     private BlockPos furnacePos;
     private int timeToRecalcPath;
     private int findCool;
 
-    public CookingMode(T mob, int inventoryStart, int inventoryEnd) {
+    public CookingMode(ModeType<? extends CookingMode> modeType, String name, LittleMaidEntity mob, int inventoryStart, int inventoryEnd) {
+        super(modeType, name);
         this.mob = mob;
         this.inventoryStart = inventoryStart;
         this.inventoryEnd = inventoryEnd;
@@ -253,9 +252,7 @@ public class CookingMode<T extends PathAwareEntity & InventorySupplier> implemen
             furnace.markDirty();
             this.mob.swingHand(Hand.MAIN_HAND);
             this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            if (mob instanceof SoundPlayable) {
-                ((SoundPlayable) mob).play(LMSounds.COOKING_START);
-            }
+            ((SoundPlayable) mob).play(LMSounds.COOKING_START);
             break;
         }
     }
@@ -276,9 +273,7 @@ public class CookingMode<T extends PathAwareEntity & InventorySupplier> implemen
             furnace.markDirty();
             this.mob.swingHand(Hand.MAIN_HAND);
             this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            if (mob instanceof SoundPlayable) {
-                ((SoundPlayable) mob).play(LMSounds.ADD_FUEL);
-            }
+            ((SoundPlayable) mob).play(LMSounds.ADD_FUEL);
             break;
         }
     }
@@ -295,9 +290,7 @@ public class CookingMode<T extends PathAwareEntity & InventorySupplier> implemen
             }
             this.mob.swingHand(Hand.MAIN_HAND);
             this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            if (mob instanceof SoundPlayable) {
-                ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
-            }
+            ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
             ItemStack copy = resultStack.copy();
             ItemStack leftover = HopperBlockEntity.transfer(furnace, inventory, furnace.removeStack(resultSlot, 1), null);
             if (leftover.isEmpty()) {
@@ -331,14 +324,4 @@ public class CookingMode<T extends PathAwareEntity & InventorySupplier> implemen
             furnacePos = NbtHelper.toBlockPos(nbt.getCompound("FurnacePos"));
     }
 
-    @Override
-    public String getName() {
-        return "Cooking";
-    }
-
-    static {
-        ModeManager.ModeItems items = new ModeManager.ModeItems();
-        items.add(Items.BOWL);
-        ModeManager.INSTANCE.register(CookingMode.class, items);
-    }
 }

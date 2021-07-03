@@ -1,11 +1,11 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.item.*;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.item.BlockItem;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -15,9 +15,9 @@ import net.minecraft.world.RaycastContext;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
-import net.sistr.littlemaidrebirth.api.mode.ModeManager;
+import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.FakePlayer;
-import net.sistr.littlemaidrebirth.entity.FakePlayerSupplier;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.Tameable;
 import net.sistr.littlemaidrebirth.util.BlockFinder;
 
@@ -26,22 +26,18 @@ import java.util.Optional;
 
 //暗所発見->移動->設置
 //置いてすぐはライトレベルに変化が無い点に注意
-public class TorcherMode<T extends PathAwareEntity & FakePlayerSupplier & Tameable> implements Mode {
-    protected final T mob;
+public class TorcherMode extends Mode {
+    protected final LittleMaidEntity mob;
     protected final float distance;
     protected BlockPos placePos;
     protected int timeToRecalcPath;
     protected int timeToIgnore;
     protected int cool;
 
-    public TorcherMode(T mob, float distance) {
+    public TorcherMode(ModeType<? extends Mode> modeType, String name, LittleMaidEntity mob, float distance) {
+        super(modeType, name);
         this.mob = mob;
         this.distance = distance;
-    }
-
-    @Override
-    public void startModeTask() {
-
     }
 
     @Override
@@ -103,9 +99,7 @@ public class TorcherMode<T extends PathAwareEntity & FakePlayerSupplier & Tameab
         this.mob.getNavigation().stop();
         Path path = this.mob.getNavigation().findPathTo(placePos.getX(), placePos.getY(), placePos.getZ(), 3);
         this.mob.getNavigation().startMovingAlong(path, 1);
-        if (mob instanceof SoundPlayable) {
-            ((SoundPlayable) mob).play(LMSounds.FIND_TARGET_D);
-        }
+        ((SoundPlayable) mob).play(LMSounds.FIND_TARGET_D);
     }
 
     @Override
@@ -143,9 +137,7 @@ public class TorcherMode<T extends PathAwareEntity & FakePlayerSupplier & Tameab
         if (((BlockItem) item).place(new ItemPlacementContext(
                 new ItemUsageContext(fakePlayer, Hand.MAIN_HAND, result))).shouldSwingHand()) {
             mob.swingHand(Hand.MAIN_HAND);
-            if (mob instanceof SoundPlayable) {
-                ((SoundPlayable) mob).play(LMSounds.INSTALLATION);
-            }
+            ((SoundPlayable) mob).play(LMSounds.INSTALLATION);
         }
         this.placePos = null;
     }
@@ -155,47 +147,6 @@ public class TorcherMode<T extends PathAwareEntity & FakePlayerSupplier & Tameab
         this.cool = 20;
         this.timeToIgnore = 0;
         this.timeToRecalcPath = 0;
-    }
-
-    @Override
-    public void endModeTask() {
-
-    }
-
-    @Override
-    public void writeModeData(NbtCompound nbt) {
-
-    }
-
-    @Override
-    public void readModeData(NbtCompound nbt) {
-
-    }
-
-    @Override
-    public String getName() {
-        return "Torcher";
-    }
-
-    static {
-        ModeManager.ModeItems items = new ModeManager.ModeItems();
-        items.add(new TorcherModeItem());
-        ModeManager.INSTANCE.register(TorcherMode.class, items);
-    }
-
-    public static class TorcherModeItem implements ModeManager.CheckModeItem {
-
-        @Override
-        public boolean checkModeItem(ItemStack stack) {
-            Item item = stack.getItem();
-            if (!(item instanceof BlockItem)) {
-                return false;
-            }
-            Block block = ((BlockItem) item).getBlock();
-            int lightValue = block.getDefaultState().getLuminance();
-            return 13 <= lightValue;
-        }
-
     }
 
 }

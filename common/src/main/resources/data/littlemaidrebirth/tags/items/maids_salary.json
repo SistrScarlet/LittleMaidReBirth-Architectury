@@ -1,6 +1,6 @@
 {
-  "replace": false,
-  "values": [
-    "minecraft:sugar"
-  ]
+    "replace": false,
+    "values": [
+        "minecraft:sugar"
+    ]
 }

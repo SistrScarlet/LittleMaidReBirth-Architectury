@@ -17,6 +17,7 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.iff.IFFType;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
+import net.sistr.littlemaidrebirth.api.mode.Modes;
 import net.sistr.littlemaidrebirth.mixin.SpawnRestrictionAccessor;
 import net.sistr.littlemaidrebirth.network.Networking;
 
@@ -33,6 +34,8 @@ public class ModSetup {
         Registry.ENTITY_TYPE.stream().filter(EntityType::isSummonable).forEach(entityType ->
                 iffTypeManager.register(EntityType.getId(entityType),
                         new IFFType(IFFTag.UNKNOWN, entityType)));
+
+        Modes.init();
     }
 
     private static void registerSpawnSettingLM() {

@@ -1,8 +1,6 @@
 package net.sistr.littlemaidrebirth.entrypoint;
 
 import me.shedaniel.architectury.platform.forge.EventBuses;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -31,7 +29,6 @@ public class ModEntryPoint {
         ModSetup.init();
     }
 
-    @OnlyIn(Dist.CLIENT)
     public void clientInit(FMLClientSetupEvent event) {
         ClientSetup.init();
     }

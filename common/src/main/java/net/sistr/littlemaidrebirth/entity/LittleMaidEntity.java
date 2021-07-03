@@ -61,10 +61,13 @@ import net.sistr.littlemaidmodelloader.resource.manager.LMTextureManager;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidmodelloader.resource.util.TextureColors;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
+import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.goal.*;
 import net.sistr.littlemaidrebirth.entity.iff.*;
-import net.sistr.littlemaidrebirth.entity.mode.*;
+import net.sistr.littlemaidrebirth.entity.mode.ModeController;
+import net.sistr.littlemaidrebirth.entity.mode.ModeSupplier;
+import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.item.IFFCopyBookItem;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
@@ -119,6 +122,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                         .orElseThrow(() -> new IllegalStateException("デフォルトテクスチャが存在しません。")),
                 LMTextureManager.INSTANCE.getTexture("Default")
                         .orElseThrow(() -> new IllegalStateException("デフォルトテクスチャが存在しません。")));
+        setRandomTexture();
         soundPlayer = new SoundPlayableCompound(this, () ->
                 multiModel.getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
         addDefaultModes(this);
@@ -150,16 +154,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     //登録メソッドたち
-
-    public void addDefaultModes(LittleMaidEntity maid) {
-        maid.addMode(new FencerMode<>(maid, 1D, true));
-        maid.addMode(new ArcherMode<>(maid, 15F,
-                entity -> entity instanceof LivingEntity && isFriend((LivingEntity) entity)));
-        maid.addMode(new CookingMode<>(maid, 1, 1 + 18));
-        maid.addMode(new RipperMode(maid, 8));
-        maid.addMode(new TorcherMode<>(maid, 8));
-        maid.addMode(new HealerMode<>(maid, 0, 1 + 18));
-    }
 
     @Override
     protected void initGoals() {
@@ -205,6 +199,31 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.dataTracker.startTracking(AIMING, false);
         this.dataTracker.startTracking(BEGGING, false);
         this.dataTracker.startTracking(MODE_NAME, "");
+    }
+
+    public void addDefaultModes(LittleMaidEntity maid) {
+        ModeManager.INSTANCE.getModes(maid).forEach(maid::addMode);
+    }
+
+    public void setRandomTexture() {
+        List<TextureHolder> holders = LMTextureManager.INSTANCE.getAllTextures().stream()
+                .filter(h -> h.hasSkinTexture(false))
+                .collect(Collectors.toList());
+        Collections.shuffle(holders);
+        List<TextureColors> colors = Lists.newArrayList(TextureColors.values());
+        Collections.shuffle(colors);
+        holders.stream()
+                //モデルがあるやつ
+                .filter(h -> LMModelManager.INSTANCE.hasModel(h.getModelName()))
+                .findAny().ifPresent(h ->
+                colors.stream()
+                        //この色があるやつ
+                        .filter(c -> h.getTexture(c, false, false).isPresent())
+                        .findAny()
+                        .ifPresent(c -> {
+                            this.setColor(c);
+                            this.setTextureHolder(h, Layer.SKIN, Part.HEAD);
+                        }));
     }
 
     //読み書き系

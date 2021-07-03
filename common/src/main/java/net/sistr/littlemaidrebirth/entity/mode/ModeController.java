@@ -9,7 +9,6 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
-import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.entity.InventorySupplier;
 
 import java.util.Optional;
@@ -69,7 +68,7 @@ public class ModeController implements ModeSupplier {
             Inventory inventory = hasInventory.getInventory();
             for (int index = 0; index < inventory.size(); index++) {
                 ItemStack stack = inventory.getStack(index);
-                if (ModeManager.INSTANCE.containModeItem(nowMode, stack)) {
+                if (nowMode.getModeType().isModeItem(stack)) {
                     owner.setStackInHand(Hand.MAIN_HAND, stack.copy());
                     inventory.removeStack(index);
                     prevItem = owner.getMainHandStack().getItem();
@@ -105,7 +104,7 @@ public class ModeController implements ModeSupplier {
 
     public Mode getNewMode() {
         for (Mode mode : modes) {
-            if (ModeManager.INSTANCE.containModeItem(mode, owner.getMainHandStack())) {
+            if (mode.getModeType().isModeItem(owner.getMainHandStack())) {
                 return mode;
             }
         }

@@ -2,41 +2,86 @@ package net.sistr.littlemaidrebirth.api.mode;
 
 import net.minecraft.nbt.NbtCompound;
 
-public interface Mode {
+public abstract class Mode {
+    private final ModeType<? extends Mode> modeType;
+    private final String name;
 
-    String MOVE = "move";
-    String LOOK = "look";
-    String JUMP = "jump";
-    String TARGET = "target";
+    protected Mode(ModeType<? extends Mode> modeType, String name) {
+        this.modeType = modeType;
+        this.name = name;
+    }
 
-    //モード開始時(切り替わった時)に一度だけ処理
-    void startModeTask();
+    /**
+     * モード開始時(切り替わった時)に一度だけ処理
+     */
+    public void startModeTask() {
 
-    //処理を開始すべきか
-    boolean shouldExecute();
+    }
 
-    //処理を続行すべきか
-    boolean shouldContinueExecuting();
+    /**
+     * 処理を開始すべきか
+     */
+    abstract public boolean shouldExecute();
 
-    //処理開始時に一回だけ処理
-    void startExecuting();
+    /**
+     * 処理を続行すべきか
+     */
+    abstract public boolean shouldContinueExecuting();
 
-    //毎tick処理
-    void tick();
+    /**
+     * 処理開始時に一回だけ処理
+     */
+    public void startExecuting() {
 
-    //処理終了時に一回だけ処理
-    void resetTask();
+    }
 
-    //モード終了時(切り替わった時)に一回だけ処理
-    void endModeTask();
+    /**
+     * 毎tick処理
+     */
+    public void tick() {
 
-    //ワールド保存時に処理
-    void writeModeData(NbtCompound nbt);
+    }
 
-    //ワールド読み込み時に処理
-    void readModeData(NbtCompound nbt);
+    /**
+     * 処理終了時に一回だけ処理
+     */
+    public void resetTask() {
 
-    //モード判別用
-    String getName();
+    }
+
+    /**
+     * モード終了時(切り替わった時)に一回だけ処理
+     */
+    public void endModeTask() {
+
+    }
+
+    /**
+     * ワールド保存時に処理
+     */
+    public void writeModeData(NbtCompound nbt) {
+
+    }
+
+    /**
+     * ワールド読み込み時に処理
+     */
+    public void readModeData(NbtCompound nbt) {
+
+    }
+
+    /**
+     * モード名表示用
+     */
+    public final String getName() {
+        return name;
+    }
+
+    /**
+     * モードタイプ取得
+     */
+    public final ModeType<? extends Mode> getModeType() {
+        return modeType;
+    }
 
 }

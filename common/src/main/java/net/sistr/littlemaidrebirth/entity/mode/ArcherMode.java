@@ -2,30 +2,26 @@ package net.sistr.littlemaidrebirth.entity.mode;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.api.mode.IRangedWeapon;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
-import net.sistr.littlemaidrebirth.api.mode.ModeManager;
-import net.sistr.littlemaidrebirth.entity.AimingPoseable;
+import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.FakePlayer;
-import net.sistr.littlemaidrebirth.entity.FakePlayerSupplier;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 import java.util.function.Predicate;
 
-public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerSupplier & SoundPlayable> implements Mode {
-    private final T mob;
+public class ArcherMode extends Mode {
+    private final LittleMaidEntity mob;
     private final float inaccuracy;
     private final Predicate<Entity> friend;
     private int seeTime;
@@ -34,15 +30,11 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
     private int strafingTime = -1;
     private int reUseCool;
 
-    public ArcherMode(T mob, float inaccuracy, Predicate<Entity> friend) {
+    public ArcherMode(ModeType<? extends ArcherMode> modeType, String name, LittleMaidEntity mob, float inaccuracy, Predicate<Entity> friend) {
+        super(modeType, name);
         this.mob = mob;
         this.inaccuracy = inaccuracy;
         this.friend = friend;
-    }
-
-    @Override
-    public void startModeTask() {
-
     }
 
     public boolean shouldExecute() {
@@ -192,29 +184,4 @@ public class ArcherMode<T extends PathAwareEntity & AimingPoseable & FakePlayerS
         fakePlayer.clearActiveItem();
     }
 
-    @Override
-    public void endModeTask() {
-
-    }
-
-    @Override
-    public void writeModeData(NbtCompound nbt) {
-
-    }
-
-    @Override
-    public void readModeData(NbtCompound nbt) {
-
-    }
-
-    @Override
-    public String getName() {
-        return "Archer";
-    }
-
-    static {
-        ModeManager.ModeItems items = new ModeManager.ModeItems();
-        items.add(IRangedWeapon.class);
-        ModeManager.INSTANCE.register(ArcherMode.class, items);
-    }
 }

@@ -1,6 +1,6 @@
 {
-  "replace": false,
-  "values": [
-    "minecraft:cake"
-  ]
+    "replace": false,
+    "values": [
+        "minecraft:cake"
+    ]
 }
