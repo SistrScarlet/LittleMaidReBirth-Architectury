@@ -51,7 +51,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         super.init();
         assert client != null;
         if (openAt == null) {
-            client.openScreen(null);
+            client.setScreen(null);
             return;
         }
         int left = (int) ((this.width - backgroundWidth) / 2F) - 5;
@@ -83,7 +83,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
-                button -> client.openScreen(new ModelSelectScreen(title, openAt.world, openAt))) {
+                button -> client.setScreen(new ModelSelectScreen(title, openAt.world, openAt))) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
@@ -115,8 +115,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     @Override
-    public void tick() {
-        super.tick();
+    public void handledScreenTick() {
+        super.handledScreenTick();
         //少し重たいかもしれないが、screenを開く直前にsetModeNameした場合に取得がズレるので毎tickやる
         stateText = getStateText();
     }

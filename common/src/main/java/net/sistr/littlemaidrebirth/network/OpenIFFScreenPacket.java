@@ -81,7 +81,7 @@ public class OpenIFFScreenPacket {
                 .map(Optional::get)
                 .collect(Collectors.toList());
 
-        MinecraftClient.getInstance().openScreen(new IFFScreen(entity, iffs));
+        MinecraftClient.getInstance().setScreen(new IFFScreen(entity, iffs));
     }
 
     public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {

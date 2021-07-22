@@ -40,7 +40,7 @@ public class IFFCopyBookItem extends Item {
     @Override
     public void appendTooltip(ItemStack stack, World world, List<Text> tooltip, TooltipContext context) {
         super.appendTooltip(stack, world, tooltip, context);
-        NbtCompound tag = stack.getTag();
+        NbtCompound tag = stack.getNbt();
         if (tag != null && tag.contains("IFFs")) {
             tooltip.add(new TranslatableText("item.littlemaidrebirth.iff_copy_book.tooltip"));
         }
@@ -69,11 +69,11 @@ public class IFFCopyBookItem extends Item {
         if (user.isSneaking()) {
             NbtList list = new NbtList();
             ((HasIFF) target).getIFFs().forEach(iff -> list.add(iff.writeTag()));
-            NbtCompound tag = stack.getOrCreateTag();
+            NbtCompound tag = stack.getOrCreateNbt();
             tag.put("IFFs", list);
             user.sendMessage(new TranslatableText("item.littlemaidrebirth.iff_copy_book.message_written"), true);
         } else {
-            NbtCompound tag = stack.getOrCreateTag();
+            NbtCompound tag = stack.getOrCreateNbt();
             if (!tag.contains("IFFs")) {
                 return super.use(world, user, hand);
             }
