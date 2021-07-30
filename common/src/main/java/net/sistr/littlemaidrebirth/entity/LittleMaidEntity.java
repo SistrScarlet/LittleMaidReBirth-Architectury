@@ -40,6 +40,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
@@ -171,8 +172,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(15, new ModeWrapperGoal(this));
         this.goalSelector.add(16, new FollowAtHeldItemGoal(this, this, true,
                 Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values())));
-        this.goalSelector.add(17, new LMStareAtHeldItemGoal(this, this, false
-                , Sets.newHashSet(LMTags.Items.MAIDS_EMPLOYABLE.values())));
+        this.goalSelector.add(17, new LMStareAtHeldItemGoal(this, this, false,
+                Sets.newHashSet(LMTags.Items.MAIDS_EMPLOYABLE.values())));
         this.goalSelector.add(17, new LMStareAtHeldItemGoal(this, this, true,
                 Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values())));
         this.goalSelector.add(18, new LMMoveToDropItemGoal(this, 8, 1D));
@@ -1093,6 +1094,29 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         @Override
         public boolean canStart() {
             return ((PlayerInventory) maid.getInventory()).getEmptySlot() != -1 && super.canStart();
+        }
+
+        @Override
+        public List<ItemEntity> findAroundDropItem() {
+            return maid.getTameOwner()
+                    .filter(owner -> maid.getMovingState() != WAIT)
+                    .map(owner -> {
+                        return super.findAroundDropItem().stream()
+                                .filter(item -> !isOwnerRange(item, owner))
+                                .collect(Collectors.toList());
+                        //ご主人様が存在しない場合は普通にとる
+                    }).orElse(super.findAroundDropItem());
+        }
+
+        private boolean isOwnerRange(Entity entity, Entity owner) {
+            final Vec3d ownerPos = owner.getPos();
+            final Vec3d entityPos = entity.getPos().subtract(ownerPos);
+            final Vec3d ownerRot = owner.getRotationVec(1F).multiply(4);
+            final double dot = entityPos.dotProduct(ownerRot);
+            final double range = 4;
+            //プレイヤー位置を原点としたアイテムの位置と、プレイヤーの向きの内積がプラス
+            //かつ内積の大きさが4m以下
+            return 0 < dot && dot < range * range;
         }
     }
 
