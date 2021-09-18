@@ -7,19 +7,17 @@ import net.sistr.littlemaidrebirth.entity.Tameable;
 
 import java.util.EnumSet;
 
-public class WaitGoal extends Goal {
-    private final PathAwareEntity mob;
-    private final Tameable tameable;
+public class WaitGoal<T extends PathAwareEntity & Tameable> extends Goal {
+    private final T mob;
 
-    public WaitGoal(PathAwareEntity mob, Tameable tameable) {
+    public WaitGoal(T mob) {
         this.mob = mob;
-        this.tameable = tameable;
         setControls(EnumSet.of(Control.MOVE));
     }
 
     @Override
     public boolean canStart() {
-        return tameable.getMovingState() == Tameable.MovingState.WAIT;
+        return mob.getMovingState() == Tameable.MovingState.WAIT;
     }
 
     @Override
