@@ -1,0 +1,25 @@
+{
+  "entity.littlemaidrebirth.little_maid_mob": "女仆酱",
+  "entity.littlemaidrebirth.little_maid_mob.InsideSkirt": "InsideSkirt",
+ 
+  "state.littlemaidrebirth.None": "None",
+  "state.littlemaidrebirth.Wait": "待命",
+  "state.littlemaidrebirth.Escort": "跟随",
+  "state.littlemaidrebirth.Freedom": "自由行动",
+ 
+  "mode.littlemaidrebirth.Fencer": "剑客模式",
+  "mode.littlemaidrebirth.Archer": "射手模式",
+  "mode.littlemaidrebirth.Cooking": "烧炼模式",
+  "mode.littlemaidrebirth.Ripper": "剪刀模式",
+  "mode.littlemaidrebirth.Torcher": "照明模式",
+  "mode.littlemaidrebirth.Healer": "奶妈模式",
+ 
+  "item.littlemaidrebirth.little_maid_spawn_egg": "女仆酱刷怪蛋",
+  "item.littlemaidrebirth.iff_copy_book": "敌我识别复制书",
+  "item.littlemaidrebirth.iff_copy_book.tooltip": "已复制敌我识别信息",
+  "item.littlemaidrebirth.iff_copy_book.message_written": "已复制敌我识别信息",
+  "item.littlemaidrebirth.iff_copy_book.message_apply": "已应用到当前女仆",
+ 
+  "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth"
+ 
+}
