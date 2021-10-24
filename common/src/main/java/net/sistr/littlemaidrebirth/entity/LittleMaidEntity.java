@@ -422,10 +422,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public void playAmbientSound() {
-        if (world.isClient) {
-            return;
-        }
-        if (0.2F < random.nextFloat()) {
+        if (world.isClient || this.dead || 0.2F < random.nextFloat()) {
             return;
         }
         //todo ここ拡張可能にする
