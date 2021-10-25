@@ -10,6 +10,7 @@ public class LittleMaidModelCaps extends EntityCaps {
         this.maid = maid;
     }
 
+    //todo 色々追加
     @Override
     public Object getCapsValue(int pIndex, Object... pArg) {
         switch (pIndex) {

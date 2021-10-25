@@ -479,6 +479,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean damage(DamageSource source, float amount) {
+        if (this.dead) {
+            return super.damage(source, amount);
+        }
         if (!world.isClient) {
             //味方のが当たってもちゃんと動くようにフレンド判定より前
             if (amount <= 0 && source.getSource() instanceof SnowballEntity) {
