@@ -73,7 +73,7 @@ public class EscortGoal<T extends PathAwareEntity & Tameable> extends Goal {
     }
 
     public void tick() {
-        this.tameable.getLookControl().lookAt(this.owner, 10.0F, this.tameable.getLookPitchSpeed());
+        this.tameable.getLookControl().lookAt(this.owner, 10.0F, this.tameable.getMaxLookPitchChange());
         if (--this.updateCountdownTicks <= 0) {
             this.updateCountdownTicks = 10;
             if (!this.tameable.isLeashed() && !this.tameable.hasVehicle()) {

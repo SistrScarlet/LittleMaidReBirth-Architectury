@@ -458,11 +458,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             else if (biome.getPrecipitation() == Biome.Precipitation.SNOW)
                 play(LMSounds.LIVING_SNOW);
         } else {
-            Biome biome = this.world.getBiome(getBlockPos());
-            float temperature = biome.getTemperature(getBlockPos());
-            if (temperature < 0.1F) {
+            BlockPos pos = getBlockPos();
+            Biome biome = this.world.getBiome(pos);
+            if (biome.isCold(pos)) {
                 play(LMSounds.LIVING_COLD);
-            } else if (1 < temperature) {
+            } else if (biome.isHot(pos)) {
                 play(LMSounds.LIVING_HOT);
             } else {
                 play(LMSounds.LIVING_DAYTIME);
