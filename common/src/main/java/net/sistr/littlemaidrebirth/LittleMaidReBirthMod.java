@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth;
 
 
-import net.sistr.littlemaidmodelloader.register.AttributeRegister;
+import dev.architectury.registry.level.entity.EntityAttributeRegistry;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.setup.Registration;
 
@@ -14,7 +14,7 @@ public class LittleMaidReBirthMod {
     }
 
     public static void registerAttribute() {
-        AttributeRegister.register(Registration.LITTLE_MAID_MOB_BEFORE, LittleMaidEntity::createLittleMaidAttributes);
+        EntityAttributeRegistry.register(() -> Registration.LITTLE_MAID_MOB_BEFORE, LittleMaidEntity::createLittleMaidAttributes);
     }
 
 }

@@ -189,7 +189,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.targetSelector.add(3, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
         this.targetSelector.add(4, new TrackOwnerAttackerGoal(this));
         this.targetSelector.add(5, new AttackWithOwnerGoal(this));
-        this.targetSelector.add(6, new FollowTargetGoal<>(
+        this.targetSelector.add(6, new ActiveTargetGoal<>(
                 this, LivingEntity.class, 5, true, false,
                 this::isEnemy));
     }
@@ -218,6 +218,16 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                         .ifPresent(c -> {
                             this.setColor(c);
                             this.setTextureHolder(h, Layer.SKIN, Part.HEAD);
+                            if (h.hasArmorTexture()) {
+                                setTextureHolder(h, Layer.INNER, Part.HEAD);
+                                setTextureHolder(h, Layer.INNER, Part.BODY);
+                                setTextureHolder(h, Layer.INNER, Part.LEGS);
+                                setTextureHolder(h, Layer.INNER, Part.FEET);
+                                setTextureHolder(h, Layer.OUTER, Part.HEAD);
+                                setTextureHolder(h, Layer.OUTER, Part.BODY);
+                                setTextureHolder(h, Layer.OUTER, Part.LEGS);
+                                setTextureHolder(h, Layer.OUTER, Part.FEET);
+                            }
                         }));
     }
 
@@ -590,9 +600,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 play(LMSounds.GET_CAKE);
             }
         }
-        if (isReContract) {
-            setStrike(false);
-        }
+        setStrike(false);
         while (receiveSalary(1)) ;//ここに給料処理が混じってるのがちょっとムカつく
         getNavigation().stop();
         this.setOwnerUuid(player.getUuid());

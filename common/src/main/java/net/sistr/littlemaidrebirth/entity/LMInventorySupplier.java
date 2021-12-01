@@ -10,6 +10,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.sistr.littlemaidrebirth.util.DefaultedListLimiter;
+import net.sistr.littlemaidrebirth.util.PlayerInventoryAccessor;
 
 public class LMInventorySupplier implements InventorySupplier {
     private final Inventory inventory;
@@ -18,7 +19,7 @@ public class LMInventorySupplier implements InventorySupplier {
         if (!owner.world.isClient) {
             FakePlayer fakePlayer = player.getFakePlayer();
             inventory = new LMInventory(fakePlayer, 19);
-            fakePlayer.inventory = (PlayerInventory) inventory;
+            ((PlayerInventoryAccessor)fakePlayer).setPlayerInventory_LMRB((PlayerInventory) inventory);
         } else {
             inventory = new SimpleInventory(18 + 4 + 2);
         }

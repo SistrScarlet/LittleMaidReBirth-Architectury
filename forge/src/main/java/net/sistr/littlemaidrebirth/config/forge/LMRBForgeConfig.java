@@ -1,9 +1,7 @@
 package net.sistr.littlemaidrebirth.config.forge;
 
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 
 @Mod.EventBusSubscriber
 public class LMRBForgeConfig {
@@ -69,15 +67,6 @@ public class LMRBForgeConfig {
         CAN_PICKUP_ITEM_BY_NO_OWNER_LM = COMMON_BUILDER.comment("Whether LMs without owners will pick up items")
                 .define("canPickupItemByNoOwnerLM", true);
         COMMON_BUILDER.pop();
-    }
-
-    @SubscribeEvent
-    public static void onLoad(final ModConfig.Loading configEvent) {
-
-    }
-
-    @SubscribeEvent
-    public static void onReload(final ModConfig.Reloading configEvent) {
     }
 
 }

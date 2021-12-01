@@ -1,5 +1,5 @@
 loom {
-    accessWidener = file("src/main/resources/littlemaidrebirth.accessWidener")
+    accessWidenerPath = file("src/main/resources/littlemaidrebirth.accessWidener")
 }
 
 dependencies {
@@ -13,22 +13,14 @@ dependencies {
 }
 
 architectury {
-    common(false)
-}
-
-java {
-    withSourcesJar()
+    common()
 }
 
 publishing {
     publications {
         mavenCommon(MavenPublication) {
             artifactId = rootProject.archives_base_name
-            // add all the jars that should be included when publishing to maven
-            artifact remapJar
-            artifact(sourcesJar) {
-                builtBy remapSourcesJar
-            }
+            from components.java
         }
     }
 
