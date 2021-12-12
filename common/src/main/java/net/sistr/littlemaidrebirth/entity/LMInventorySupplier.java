@@ -19,7 +19,7 @@ public class LMInventorySupplier implements InventorySupplier {
         if (!owner.world.isClient) {
             FakePlayer fakePlayer = player.getFakePlayer();
             inventory = new LMInventory(fakePlayer, 19);
-            ((PlayerInventoryAccessor)fakePlayer).setPlayerInventory_LMRB((PlayerInventory) inventory);
+            ((PlayerInventoryAccessor) fakePlayer).setPlayerInventory_LMRB((PlayerInventory) inventory);
         } else {
             inventory = new SimpleInventory(18 + 4 + 2);
         }
@@ -32,12 +32,14 @@ public class LMInventorySupplier implements InventorySupplier {
 
     @Override
     public void writeInventory(NbtCompound nbt) {
-        nbt.put("Inventory", ((LMInventory) this.inventory).writeNbt(new NbtList()));
+        if (this.inventory instanceof LMInventory)
+            nbt.put("Inventory", ((LMInventory) this.inventory).writeNbt(new NbtList()));
     }
 
     @Override
     public void readInventory(NbtCompound nbt) {
-        ((LMInventory) this.inventory).readNbt(nbt.getList("Inventory", 10));
+        if (this.inventory instanceof LMInventory)
+            ((LMInventory) this.inventory).readNbt(nbt.getList("Inventory", 10));
     }
 
     public static class LMInventory extends PlayerInventory {
