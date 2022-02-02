@@ -8,6 +8,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.MobNavigation;
+import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
@@ -38,9 +39,13 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
@@ -78,6 +83,7 @@ import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.ESCORT;
@@ -373,7 +379,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
-        return LMRBConfig.canDespawnLM() && getTameOwnerUuid().isEmpty();
+        return LMRBConfig.canDespawnLM() && !getTameOwnerUuid().isPresent();
     }
 
     //canSpawnとかでも使われる
@@ -520,6 +526,131 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
         }
         return result;
+    }
+
+    @Override
+    protected Vec3d adjustMovementForSneaking(Vec3d movement, MovementType type) {
+        if (type != MovementType.SELF && type != MovementType.PLAYER) {
+            return movement;
+        }
+
+        //危険物に絶対触れない
+        if (isDamageSourceEmpty(this.getBoundingBox())
+                && !this.isDamageSourceEmpty(this.getBoundingBox().offset(movement.x, 0, movement.z))) {
+            movement = pushBack(movement, (x, z) -> !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z)));
+        }
+
+        //絶対に飛び降りない
+        if (this.canClipAtLedge()) {
+            if (!isSafeFallHeight(this.getPos().add(movement.x, 0, movement.z))) {
+                movement = pushBack(movement, (x, z) -> this.world.isSpaceEmpty(this, this.getBoundingBox().offset(x, -this.stepHeight, z)));
+            }
+        }
+
+        return movement;
+    }
+
+    private Vec3d pushBack(Vec3d movement, BiPredicate<Double, Double> biPredicate) {
+        double dot = 0.05;
+        double mX = movement.x;
+        double mZ = movement.z;
+        while (mX != 0.0 && biPredicate.test(mX, 0d)) {
+            if (mX < dot && mX >= -dot) {
+                mX = 0.0;
+                continue;
+            }
+            if (mX > 0.0) {
+                mX -= dot;
+                continue;
+            }
+            mX += dot;
+        }
+        while (mZ != 0.0 && biPredicate.test(0d, mZ)) {
+            if (mZ < dot && mZ >= -dot) {
+                mZ = 0.0;
+                continue;
+            }
+            if (mZ > 0.0) {
+                mZ -= dot;
+                continue;
+            }
+            mZ += dot;
+        }
+        while (mX != 0.0 && mZ != 0.0 && biPredicate.test(mX, mZ)) {
+            mX = mX < dot && mX >= -dot ? 0.0 : (mX > 0.0 ? (mX -= dot) : (mX += dot));
+            if (mZ < dot && mZ >= -dot) {
+                mZ = 0.0;
+                continue;
+            }
+            if (mZ > 0.0) {
+                mZ -= dot;
+                continue;
+            }
+            mZ += dot;
+        }
+        return new Vec3d(mX, movement.y, mZ);
+    }
+
+    private boolean isDamageSourceEmpty(Box box) {
+        int minX = MathHelper.floor(box.minX);
+        int maxX = MathHelper.floor(box.maxX);
+        int minY = MathHelper.floor(box.minY);
+        int maxY = MathHelper.floor(box.maxY);
+        int minZ = MathHelper.floor(box.minZ);
+        int maxZ = MathHelper.floor(box.maxZ);
+
+        for (int x = 0; x < maxX - minX + 1; x++) {
+            for (int y = 0; y < maxY - minY + 1; y++) {
+                for (int z = 0; z < maxZ - minZ + 1; z++) {
+                    PathNodeType pathNodeType = this.getNavigation().getNodeMaker()
+                            .getDefaultNodeType(this.world, minX + x, minY + y, minZ + z);
+                    if (pathNodeType == PathNodeType.DAMAGE_FIRE
+                            || pathNodeType == PathNodeType.DAMAGE_CACTUS
+                            || pathNodeType == PathNodeType.DAMAGE_OTHER
+                            || pathNodeType == PathNodeType.LAVA) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private boolean isSafeFallHeight(Vec3d pos) {
+        StatusEffectInstance statusEffectInstance = this.getStatusEffect(StatusEffects.JUMP_BOOST);
+        BlockHitResult result = this.world.raycast(new RaycastContext(
+                pos,
+                pos.subtract(0, 4 + (statusEffectInstance == null ? 0 : statusEffectInstance.getAmplifier() + 1), 0),
+                RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
+        if (result.getType() == HitResult.Type.MISS) {
+            return false;
+        }
+        Vec3d hitPos = result.getPos();
+        if (0 < computeFallDamage((float) (pos.y - hitPos.y - 0.1), 1)) {
+            return false;
+        }
+        BlockPos checkPos = new BlockPos(pos.x, pos.y - 1, pos.z);
+        for (int i = 0; i < pos.y - hitPos.y + 1; i++) {
+            PathNodeType pathNodeType = this.getNavigation().getNodeMaker()
+                    .getDefaultNodeType(this.world, checkPos.getX(), checkPos.getY(), checkPos.getZ());
+            if (pathNodeType == PathNodeType.WALKABLE || pathNodeType == PathNodeType.BLOCKED) {
+                return true;
+            }
+            if (pathNodeType == PathNodeType.DAMAGE_FIRE
+                    || pathNodeType == PathNodeType.DAMAGE_CACTUS
+                    || pathNodeType == PathNodeType.DAMAGE_OTHER
+                    || pathNodeType == PathNodeType.LAVA) {
+                return false;
+            }
+            checkPos = checkPos.down();
+        }
+        return false;
+    }
+
+    private boolean canClipAtLedge() {
+        return this.onGround || this.fallDistance < this.stepHeight
+                && !this.world.isSpaceEmpty(this, this.getBoundingBox()
+                .offset(0.0, this.fallDistance - this.stepHeight, 0.0));
     }
 
     //todo 以下数メソッドにはもうちと整理が必要か
