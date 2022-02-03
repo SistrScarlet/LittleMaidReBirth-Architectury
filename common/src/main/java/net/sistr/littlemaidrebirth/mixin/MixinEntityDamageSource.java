@@ -18,7 +18,7 @@ public class MixinEntityDamageSource {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void onInit(String name, Entity source, CallbackInfo ci) {
-        if (source instanceof FakePlayerWrapperEntity) {
+        if (!name.equals("player") && source instanceof FakePlayerWrapperEntity) {
             this.source = ((FakePlayerWrapperEntity) source).getOrigin();
         }
     }

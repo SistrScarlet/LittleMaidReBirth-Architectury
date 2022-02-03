@@ -20,7 +20,7 @@ public class MixinProjectileDamageSource {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void onInit(String name, Entity projectile, Entity attacker, CallbackInfo ci) {
-        if (attacker instanceof FakePlayerWrapperEntity) {
+        if (!name.equals("player") && attacker instanceof FakePlayerWrapperEntity) {
             this.attacker = ((FakePlayerWrapperEntity<?>) attacker).getOrigin();
         }
     }
