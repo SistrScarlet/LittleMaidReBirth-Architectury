@@ -512,6 +512,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         boolean isHurtTime = 0 < this.hurtTime;
         boolean result = super.damage(source, amount);
         if (!world.isClient && !isHurtTime) {
+            if (getTameOwnerUuid().isPresent() && this.getMovingState() == WAIT && result && 0 < amount) {
+                this.setMovingState(ESCORT);
+            }
             if (!result || amount <= 0F) {
                 play(LMSounds.HURT_NO_DAMAGE);
             } else if (amount > 0F && ((LivingAccessor) this).blockedByShield_LM(source)) {
