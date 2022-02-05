@@ -165,31 +165,40 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     protected void initGoals() {
         super.initGoals();
-        this.goalSelector.add(0, new SwimGoal(this));
-        this.goalSelector.add(1, new LongDoorInteractGoal(this, true));
-        this.goalSelector.add(5, new HealMyselfGoal<>(this,
+        int priority = 0;
+
+        Predicate<Goal> healthPredicate =
+                g -> 0.5 < MathHelper.clamp(
+                        LittleMaidEntity.this.getHealth() / LittleMaidEntity.this.getMaxHealth(),
+                        0, 1);
+
+        this.goalSelector.add(0, new TeleportTameOwnerGoal<>(this, 16.0f));
+        //緊急テレポート
+        this.goalSelector.add(0, new StartPredicateGoalWrapper<>(
+                new TeleportTameOwnerGoal<>(this, 6.0f), healthPredicate.negate()));
+
+        this.goalSelector.add(++priority, new SwimGoal(this));
+        this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
+        this.goalSelector.add(++priority, new HealMyselfGoal<>(this,
                 Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values()), 2, 1));
-        this.goalSelector.add(10, new WaitGoal<>(this));
-        //todo 挙動が怪しい
-        /*this.goalSelector.add(12, new WaitWhenOpenGUIGoal<>(this, this,
-                LittleMaidScreenHandler.class));*/
-        this.goalSelector.add(13, new EscortGoal<>(this, 1.5D,
-                8F, 16F, 24F, true));
-        this.goalSelector.add(15, new ModeWrapperGoal(this));
-        this.goalSelector.add(16, new FollowAtHeldItemGoal(this, this, true,
+        this.goalSelector.add(++priority, new WaitGoal<>(this));
+        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
+                new ModeWrapperGoal<>(this), healthPredicate));
+        this.goalSelector.add(++priority,
+                new FollowTameOwnerGoal<>(this, 1.5f, 8.0f, 6.0f));
+        this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, true,
                 Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values())));
-        this.goalSelector.add(17, new LMStareAtHeldItemGoal(this, this, false,
+        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
                 Sets.newHashSet(LMTags.Items.MAIDS_EMPLOYABLE.values())));
-        this.goalSelector.add(17, new LMStareAtHeldItemGoal(this, this, true,
+        this.goalSelector.add(priority, new LMStareAtHeldItemGoal(this, this, true,
                 Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values())));
-        this.goalSelector.add(18, new LMMoveToDropItemGoal(this, 8, 1D));
-        this.goalSelector.add(19, new EscortGoal<>(this, 1.5D,
-                6F, 8F, 12F, true));
-        this.goalSelector.add(20, new EscortGoal<>(this, 1.0D,
-                4F, 5F, 12F, true));
-        this.goalSelector.add(20, new FreedomGoal<>(this, 0.8D, 16D));
-        this.goalSelector.add(30, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(30, new LookAroundGoal(this));
+        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
+                new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
+        this.goalSelector.add(++priority,
+                new FollowTameOwnerGoal<>(this, 1.0f, 6.0f, 4.0f));
+        this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, 16D));
+        this.goalSelector.add(++priority, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+        this.goalSelector.add(++priority, new LookAroundGoal(this));
 
         this.targetSelector.add(3, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
         this.targetSelector.add(4, new TrackOwnerAttackerGoal(this));
@@ -1219,7 +1228,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     public static class LMMoveToDropItemGoal extends MoveToDropItemGoal {
-        private final LittleMaidEntity maid;
+        protected final LittleMaidEntity maid;
 
         public LMMoveToDropItemGoal(LittleMaidEntity maid, int range, double speed) {
             super(maid, range, speed);

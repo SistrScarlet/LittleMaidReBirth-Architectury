@@ -9,6 +9,7 @@ import net.sistr.littlemaidrebirth.entity.Tameable;
 import java.util.EnumSet;
 
 //雇い主が居ない場合も発動する
+//todo テレポした場合
 public class FreedomGoal<T extends PathAwareEntity & Tameable> extends WanderAroundFarGoal {
     private final T tameable;
     private final double distance;

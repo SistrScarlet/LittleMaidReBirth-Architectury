@@ -1,14 +1,15 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 
 import java.util.EnumSet;
 
 //排他Goal
-public class ModeWrapperGoal extends Goal {
-    private final ModeSupplier owner;
+public class ModeWrapperGoal<T extends LivingEntity & ModeSupplier> extends Goal {
+    protected final T owner;
 
-    public ModeWrapperGoal(ModeSupplier owner) {
+    public ModeWrapperGoal(T owner) {
         this.owner = owner;
         setControls(EnumSet.of(Control.MOVE, Control.LOOK));
     }
