@@ -12,16 +12,20 @@ public class IFFImpl implements HasIFF {
     private final List<IFF> iffs = Lists.newArrayList();
 
     public IFFImpl(List<IFF> iffs) {
+        this();
         this.iffs.addAll(iffs);
     }
 
+    public IFFImpl() {
+
+    }
+
     @Override
-    public IFFTag identify(LivingEntity target) {
+    public Optional<IFFTag> identify(LivingEntity target) {
         return this.iffs.stream()
                 .filter(iff -> iff.identify(target))
                 .map(IFF::getIFFTag)
-                .findFirst()
-                .orElse(IFFTag.UNKNOWN);
+                .findFirst();
     }
 
     @Override

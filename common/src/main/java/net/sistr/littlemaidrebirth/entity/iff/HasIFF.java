@@ -4,10 +4,11 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.nbt.NbtCompound;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface HasIFF {
 
-    IFFTag identify(LivingEntity target);
+    Optional<IFFTag> identify(LivingEntity target);
 
     void setIFFs(List<IFF> iffs);
 

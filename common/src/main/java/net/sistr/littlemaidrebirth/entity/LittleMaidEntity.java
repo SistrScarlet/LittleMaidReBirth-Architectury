@@ -70,7 +70,9 @@ import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.goal.*;
-import net.sistr.littlemaidrebirth.entity.iff.*;
+import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
+import net.sistr.littlemaidrebirth.entity.iff.IFF;
+import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.mode.ModeController;
 import net.sistr.littlemaidrebirth.entity.mode.ModeSupplier;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
@@ -82,8 +84,8 @@ import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Predicate;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.ESCORT;
@@ -111,7 +113,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     private final MultiModelCompound multiModel;
     private final SoundPlayableCompound soundPlayer;
     private final LMScreenHandlerFactory screenFactory = new LMScreenHandlerFactory(this);
-    private final HasIFF iff;
     private final IModelCaps caps = new LittleMaidModelCaps(this);
     private BlockPos freedomPos;
     private LivingEntity prevTarget;
@@ -134,8 +135,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         soundPlayer = new SoundPlayableCompound(this, () ->
                 multiModel.getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
         addDefaultModes(this);
-        iff = new IFFImpl(IFFTypeManager.getINSTANCE().getIFFTypes(world).stream()
-                .map(IFFType::createIFF).collect(Collectors.toList()));
     }
 
     //基本使わない
@@ -1054,53 +1053,53 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     //IFF
 
     @Override
-    public IFFTag identify(LivingEntity target) {
-        return iff.identify(target);
+    public Optional<IFFTag> identify(LivingEntity target) {
+        UUID ownerId = this.getOwnerUuid();
+        if (ownerId != null) {
+            //主はフレンド
+            if (ownerId.equals(target.getUuid())) {
+                return Optional.of(IFFTag.FRIEND);
+            }
+            //同じ主を持つ者はフレンド
+            if (target instanceof Tameable && ownerId.equals(((Tameable) target).getTameOwnerUuid().orElse(null))
+                    || target instanceof TameableEntity && ownerId.equals(((TameableEntity) target).getOwnerUuid())) {
+                return Optional.of(IFFTag.FRIEND);
+            }
+        }
+        return getTameOwner()
+                .filter(owner -> owner instanceof HasIFF)
+                .map(owner -> (HasIFF) owner)
+                .flatMap(t -> t.identify(target));
     }
 
     @Override
     public void setIFFs(List<IFF> iffs) {
-        iff.setIFFs(iffs);
     }
 
     @Override
     public List<IFF> getIFFs() {
-        return iff.getIFFs();
+        return Lists.newArrayList();
     }
 
     @Override
-    public void writeIFF(NbtCompound tag) {
-        iff.writeIFF(tag);
+    public void writeIFF(NbtCompound nbt) {
     }
 
     @Override
-    public void readIFF(NbtCompound tag) {
-        iff.readIFF(tag);
+    public void readIFF(NbtCompound nbt) {
     }
 
     @Override
     public boolean canAttackWithOwner(LivingEntity target, LivingEntity owner) {
-        return identify(target) != IFFTag.FRIEND;
+        return !isFriend(target);
     }
 
     public boolean isFriend(LivingEntity entity) {
-        UUID ownerId = this.getOwnerUuid();
-        if (ownerId != null) {
-            //主はフレンド
-            if (ownerId.equals(entity.getUuid())) {
-                return true;
-            }
-            //同じ主を持つ者はフレンド
-            if (entity instanceof Tameable && ownerId.equals(((Tameable) entity).getTameOwnerUuid().orElse(null))
-                    || entity instanceof TameableEntity && ownerId.equals(((TameableEntity) entity).getOwnerUuid())) {
-                return true;
-            }
-        }
-        return identify(entity) == IFFTag.FRIEND;
+        return identify(entity).orElse(null) == IFFTag.FRIEND;
     }
 
     public boolean isEnemy(LivingEntity entity) {
-        return identify(entity) == IFFTag.ENEMY;
+        return identify(entity).orElse(null) == IFFTag.ENEMY;
     }
 
     //構え

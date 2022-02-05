@@ -37,20 +37,19 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
     private static final ItemStack NOTE = Items.NOTE_BLOCK.getDefaultStack();
     private static final ItemStack FEATHER = Items.FEATHER.getDefaultStack();
-    private final LittleMaidEntity openAt;
+    private final LittleMaidEntity owner;
     private Text stateText;
 
     public LittleMaidScreen(LittleMaidScreenHandler screenContainer, PlayerInventory inv, Text titleIn) {
         super(screenContainer, inv, titleIn);
         this.backgroundHeight = 208;
-        openAt = screenContainer.getGuiEntity();
+        owner = screenContainer.getGuiEntity();
     }
 
     @Override
     protected void init() {
         super.init();
-        assert client != null;
-        if (openAt == null) {
+        if (owner == null) {
             client.setScreen(null);
             return;
         }
@@ -59,7 +58,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int size = 20;
         int layer = -1;
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
-                button -> OpenIFFScreenPacket.sendC2SPacket(openAt)) {
+                button -> owner.getTameOwner().ifPresent(OpenIFFScreenPacket::sendC2SPacket)) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
@@ -68,10 +67,10 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
                 button -> {
-                    openAt.setConfigHolder(LMConfigManager.INSTANCE.getAnyConfig());
-                    SyncSoundConfigPacket.sendC2SPacket(openAt, openAt.getConfigHolder().getName());
+                    owner.setConfigHolder(LMConfigManager.INSTANCE.getAnyConfig());
+                    SyncSoundConfigPacket.sendC2SPacket(owner, owner.getConfigHolder().getName());
                 }, (button, matrices, x, y) -> {
-            String text = openAt.getConfigHolder().getName();
+            String text = owner.getConfigHolder().getName();
             float renderX = Math.max(0, x - textRenderer.getWidth(text) / 2F);
             textRenderer.drawWithShadow(matrices, text, renderX,
                     y - textRenderer.fontHeight / 2F, 0xFFFFFF);
@@ -83,7 +82,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
-                button -> client.setScreen(new ModelSelectScreen(title, openAt.world, openAt))) {
+                button -> client.setScreen(new ModelSelectScreen(title, owner.world, owner))) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
@@ -92,7 +91,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
                 button -> {
-                    openAt.setMovingState(openAt.getMovingState() == Tameable.MovingState.FREEDOM
+                    owner.setMovingState(owner.getMovingState() == Tameable.MovingState.FREEDOM
                             ? Tameable.MovingState.WAIT
                             : Tameable.MovingState.FREEDOM);
                     stateText = getStateText();
@@ -107,8 +106,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     public Text getStateText() {
-        MutableText stateText = new TranslatableText("state." + LittleMaidReBirthMod.MODID + "." + openAt.getMovingState().getName());
-        openAt.getModeName().ifPresent(
+        MutableText stateText = new TranslatableText("state." + LittleMaidReBirthMod.MODID + "." + owner.getMovingState().getName());
+        owner.getModeName().ifPresent(
                 modeName -> stateText.append(" : ")
                         .append(new TranslatableText("mode." + LittleMaidReBirthMod.MODID + "." + modeName)));
         return stateText;
@@ -130,7 +129,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 (this.height - this.backgroundHeight) / 2 + 59,
                 20,
                 (this.width - this.backgroundWidth) / 2F + 52 - mouseX,
-                (this.height - this.backgroundHeight) / 2F + 30 - mouseY, openAt);
+                (this.height - this.backgroundHeight) / 2F + 30 - mouseY, owner);
     }
 
     @Override
@@ -152,12 +151,12 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         float left = (width - backgroundWidth) / 2F;
         float top = (height - backgroundHeight) / 2F;
         if (left + 98 <= mouseX && mouseX < left + 98 + 5 * 9 && top + 7 <= mouseY && mouseY < top + 7 + 2 * 9) {
-            String healthStr = MathHelper.ceil(openAt.getHealth()) + " / " + MathHelper.ceil(openAt.getMaxHealth());
+            String healthStr = MathHelper.ceil(owner.getHealth()) + " / " + MathHelper.ceil(owner.getMaxHealth());
             this.textRenderer.draw(matrices, healthStr,
                     98F + (5F * 9F - textRenderer.getWidth(healthStr)) / 2F,
                     16F - textRenderer.fontHeight / 2F, 0x404040);
         } else {
-            float health = (openAt.getHealth() / openAt.getMaxHealth()) * 20F;
+            float health = (owner.getHealth() / owner.getMaxHealth()) * 20F;
             drawHealth(matrices, 98, 7, MathHelper.clamp(health - 10, 0, 10), 5);
             drawHealth(matrices, 98, 16, MathHelper.clamp(health, 0, 10), 5);
         }
@@ -165,7 +164,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     protected void drawArmor(MatrixStack matrices) {
-        float armor = openAt.getArmor();
+        float armor = owner.getArmor();
         drawArmor(matrices, 98, 7, MathHelper.clamp(armor - 10, 0, 10), 5);
         drawArmor(matrices, 98, 16, MathHelper.clamp(armor, 0, 10), 5);
     }
@@ -207,6 +206,6 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     @Override
     public void onClose() {
         super.onClose();
-        SyncMovingStatePacket.sendC2SPacket(openAt, openAt.getMovingState());
+        SyncMovingStatePacket.sendC2SPacket(owner, owner.getMovingState());
     }
 }
