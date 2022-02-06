@@ -23,6 +23,7 @@ public class MaidModelRenderer extends MultiModelRenderer<LittleMaidEntity> {
         model.setCapsValue(IModelCaps.caps_aimedBow, entity.isAimingBow());
         model.setCapsValue(IModelCaps.caps_isWait, entity.getMovingState() == Tameable.MovingState.WAIT);
         model.setCapsValue(IModelCaps.caps_isContract, entity.hasTameOwner());
+        model.setCapsValue(IModelCaps.caps_isBloodsuck, entity.isBloodSuck());
     }
 
 }

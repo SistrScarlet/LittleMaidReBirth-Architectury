@@ -104,6 +104,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> BEGGING =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> BLOOD_SUCK =
+            DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private final LMFakePlayerSupplier fakePlayer = new LMFakePlayerSupplier(this);
     private final LMInventorySupplier littleMaidInventory = new LMInventorySupplier(this, this);
     //todo お給料機能とテイム機能一緒にした方がよさげ
@@ -215,6 +217,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.dataTracker.startTracking(AIMING, false);
         this.dataTracker.startTracking(BEGGING, false);
         this.dataTracker.startTracking(MODE_NAME, "");
+        this.dataTracker.startTracking(BLOOD_SUCK, false);
     }
 
     public void addDefaultModes(LittleMaidEntity maid) {
@@ -281,6 +284,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
         writeIFF(tag);
 
+        setBloodSuck(tag.getBoolean("isBloodSuck"));
     }
 
     @Override
@@ -323,6 +327,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                     .ifPresent(this::setConfigHolder);
 
         readIFF(tag);
+
+        tag.putBoolean("isBloodSuck", isBloodSuck());
     }
 
     //鯖
@@ -537,6 +543,13 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
         }
         return result;
+    }
+
+    @Override
+    public void onKilledOther(ServerWorld world, LivingEntity other) {
+        if (isBloodSuck()) play(LMSounds.LAUGHTER);
+
+        super.onKilledOther(world, other);
     }
 
     @Override
@@ -976,6 +989,14 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.dataTracker.set(BEGGING, begging);
     }
 
+    public boolean isBloodSuck() {
+        return this.dataTracker.get(BLOOD_SUCK);
+    }
+
+    public void setBloodSuck(boolean isBloodSuck) {
+        this.dataTracker.set(BLOOD_SUCK, isBloodSuck);
+    }
+
     @Environment(EnvType.CLIENT)
     public float getInterestedAngle(float tickDelta) {
         return (prevInterestedAngle + (interestedAngle - prevInterestedAngle) * tickDelta) *
@@ -1111,7 +1132,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     public boolean isEnemy(LivingEntity entity) {
-        return identify(entity).orElse(null) == IFFTag.ENEMY;
+        return isBloodSuck() ? !isFriend(entity) : identify(entity).orElse(null) == IFFTag.ENEMY;
     }
 
     //構え
@@ -1208,6 +1229,13 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public void play(String soundName) {
+        if (isBloodSuck()) {
+            if (soundName.equals(LMSounds.FIND_TARGET_N)) {
+                soundName = LMSounds.FIND_TARGET_B;
+            } else if (soundName.equals(LMSounds.ATTACK)) {
+                soundName = LMSounds.ATTACK_BLOOD_SUCK;
+            }
+        }
         soundPlayer.play(soundName);
     }
 

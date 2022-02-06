@@ -25,6 +25,7 @@ public class Networking {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, SyncSoundConfigPacket.ID, SyncSoundConfigPacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, OpenIFFScreenPacket.ID, OpenIFFScreenPacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, SyncIFFPacket.ID, SyncIFFPacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SyncBloodSuckPacket.ID, SyncBloodSuckPacket::receiveC2SPacket);
     }
 
 }

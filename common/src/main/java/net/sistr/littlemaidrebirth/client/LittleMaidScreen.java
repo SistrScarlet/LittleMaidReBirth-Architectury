@@ -24,10 +24,11 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.Tameable;
 import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
+import net.sistr.littlemaidrebirth.network.SyncBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.SyncMovingStatePacket;
 import net.sistr.littlemaidrebirth.network.SyncSoundConfigPacket;
 
-//todo 体力/防御力表示、モード名表示/移動状態をアイコンで表記
+//todo モード名表示/移動状態をアイコンで表記
 @Environment(EnvType.CLIENT)
 public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final Identifier GUI =
@@ -37,6 +38,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
     private static final ItemStack NOTE = Items.NOTE_BLOCK.getDefaultStack();
     private static final ItemStack FEATHER = Items.FEATHER.getDefaultStack();
+    private static final ItemStack IRON_SWORD = Items.IRON_SWORD.getDefaultStack();
+    private static final ItemStack IRON_AXE = Items.IRON_AXE.getDefaultStack();
     private final LittleMaidEntity owner;
     private Text stateText;
 
@@ -100,6 +103,15 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
                 super.renderButton(matrices, mouseX, mouseY, delta);
                 itemRenderer.renderGuiItemIcon(FEATHER, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
+            }
+        });
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+                button -> SyncBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck())) {
+            @Override
+            public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+                itemRenderer.renderGuiItemIcon(LittleMaidScreen.this.owner.isBloodSuck() ? IRON_AXE : IRON_SWORD,
+                        this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
         stateText = getStateText();
