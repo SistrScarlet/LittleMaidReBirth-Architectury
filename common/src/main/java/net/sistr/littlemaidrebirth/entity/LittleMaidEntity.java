@@ -92,7 +92,6 @@ import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.ESCORT;
 import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.WAIT;
 
 //メイドさん本体
-//todo このクラスの行数を500まで減らす、処理の整理、攻撃できない地点の敵に攻撃しない、遠すぎる場合は水中だろうとTP、ランダムテクスチャ、時計
 public class LittleMaidEntity extends TameableEntity implements CustomPacketEntity, InventorySupplier, Tameable,
         NeedSalary, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable {
     //変数群。カオス
