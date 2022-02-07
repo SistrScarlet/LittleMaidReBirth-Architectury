@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.network;
 
+import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
-import me.shedaniel.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
@@ -23,7 +23,7 @@ public class SyncBloodSuckPacket {
 
     public static PacketByteBuf createC2SPacket(Entity entity, boolean isBloodSuck) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getEntityId());
+        buf.writeVarInt(entity.getId());
         buf.writeBoolean(isBloodSuck);
         return buf;
     }

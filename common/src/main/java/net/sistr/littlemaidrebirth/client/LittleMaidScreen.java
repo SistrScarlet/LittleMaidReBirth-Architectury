@@ -105,7 +105,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 itemRenderer.renderGuiItemIcon(FEATHER, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
                 button -> SyncBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck())) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
