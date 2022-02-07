@@ -65,7 +65,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
 
     @Override
     public void tick() {
-        this.tameable.getLookControl().lookAt(this.owner, 10.0f, this.tameable.getLookPitchSpeed());
+        this.tameable.getLookControl().lookAt(this.owner, 10.0f, this.tameable.getMaxLookPitchChange());
         if (--this.updateCountdownTicks > 0) {
             return;
         }
