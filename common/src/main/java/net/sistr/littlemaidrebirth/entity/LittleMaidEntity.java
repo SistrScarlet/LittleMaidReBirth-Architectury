@@ -444,6 +444,13 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
+    public void copyFrom(Entity original) {
+        super.copyFrom(original);
+        //テレポやディメンション移動の時にテレポしないようにする
+        this.freedomPos = null;
+    }
+
+    @Override
     public void playAmbientSound() {
         if (world.isClient || this.dead || 0.2F < random.nextFloat()) {
             return;
