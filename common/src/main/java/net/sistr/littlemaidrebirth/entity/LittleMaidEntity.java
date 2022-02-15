@@ -451,6 +451,16 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
+    public boolean isInWalkTargetRange(BlockPos pos) {
+        //自身または主人から16ブロック以内
+        if (pos.isWithinDistance(pos, 16)
+                || getTameOwner().filter(owner -> owner.getBlockPos().isWithinDistance(pos, 16)).isPresent()) {
+            return super.isInWalkTargetRange(pos);
+        }
+        return false;
+    }
+
+    @Override
     public void playAmbientSound() {
         if (world.isClient || this.dead || 0.2F < random.nextFloat()) {
             return;
