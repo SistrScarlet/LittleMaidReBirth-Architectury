@@ -448,7 +448,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     public Entity moveToWorld(ServerWorld destination) {
         //ディメンション移動の時に、テレポ先を新たな自由行動地点とする
-        this.freedomPos = null;
         Entity entity = super.moveToWorld(destination);
         if (entity == null) return null;
         if (entity instanceof LittleMaidEntity) {
