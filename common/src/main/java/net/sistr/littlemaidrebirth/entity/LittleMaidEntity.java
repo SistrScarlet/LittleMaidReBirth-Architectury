@@ -81,6 +81,7 @@ import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LivingAccessor;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -443,11 +444,17 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         return dimensions.scaled(getScaleFactor());
     }
 
+    @Nullable
     @Override
-    public void copyFrom(Entity original) {
-        super.copyFrom(original);
-        //テレポやディメンション移動の時にテレポしないようにする
+    public Entity moveToWorld(ServerWorld destination) {
+        //ディメンション移動の時に、テレポ先を新たな自由行動地点とする
         this.freedomPos = null;
+        Entity entity = super.moveToWorld(destination);
+        if (entity == null) return null;
+        if (entity instanceof LittleMaidEntity) {
+            ((LittleMaidEntity) entity).setFreedomPos(((LittleMaidEntity) entity).getFreedomPos());
+        }
+        return entity;
     }
 
     @Override
