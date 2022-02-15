@@ -4,6 +4,7 @@ import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.entity.Tameable;
 
 import java.util.EnumSet;
@@ -51,11 +52,12 @@ public class FreedomGoal<T extends PathAwareEntity & Tameable> extends WanderAro
         if (0 < --reCalcCool) {
             return;
         }
-        reCalcCool = 20;
+        reCalcCool = 100;
         //freedomPosを目指して移動
-        mob.getNavigation().startMovingTo(freedomPos.getX(), freedomPos.getY(), freedomPos.getZ(), speed);
-        Path path = mob.getNavigation().getCurrentPath();
+        Path path = mob.getNavigation().findPathTo(
+                freedomPos.getX(), freedomPos.getY(), freedomPos.getZ(), MathHelper.floor(distance * 0.5));
         if (path != null && path.getEnd() != null && path.getEnd().getManhattanDistance(freedomPos) < distance) {
+            mob.getNavigation().startMovingAlong(path, speed);
             return;
         }
         mob.getNavigation().stop();
