@@ -48,6 +48,7 @@ public class ArcherMode extends Mode {
     public void startExecuting() {
         this.mob.setAttacking(true);
         this.mob.setAimingBow(true);
+        this.mob.play(LMSounds.FIND_TARGET_N);
     }
 
     public void tick() {

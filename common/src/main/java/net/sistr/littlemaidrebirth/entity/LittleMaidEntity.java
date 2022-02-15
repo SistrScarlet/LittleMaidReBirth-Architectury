@@ -116,7 +116,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     private final LMScreenHandlerFactory screenFactory = new LMScreenHandlerFactory(this);
     private final IModelCaps caps = new LittleMaidModelCaps(this);
     private BlockPos freedomPos;
-    private LivingEntity prevTarget;
     @Environment(EnvType.CLIENT)
     private float interestedAngle;
     @Environment(EnvType.CLIENT)
@@ -383,11 +382,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     protected void mobTick() {
         super.mobTick();
         modeController.tick();
-        LivingEntity target = getTarget();
-        if (target != null && target != prevTarget) {
-            play(LMSounds.FIND_TARGET_N);
-        }
-        prevTarget = target;
     }
 
     @Override

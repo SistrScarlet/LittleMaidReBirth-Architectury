@@ -71,6 +71,7 @@ public class FencerMode extends Mode {
     @Override
     public void startExecuting() {
         melee.start();
+        this.mob.play(LMSounds.FIND_TARGET_N);
     }
 
     @Override
