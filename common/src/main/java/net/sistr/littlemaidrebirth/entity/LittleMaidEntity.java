@@ -94,7 +94,7 @@ import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.WAIT;
 
 //メイドさん本体
 public class LittleMaidEntity extends TameableEntity implements CustomPacketEntity, InventorySupplier, Tameable,
-        NeedSalary, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable {
+        Contractable, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable {
     //変数群。カオス
     private static final TrackedData<Byte> MOVING_STATE =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
@@ -108,9 +108,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private final LMFakePlayerSupplier fakePlayer = new LMFakePlayerSupplier(this);
     private final LMInventorySupplier littleMaidInventory = new LMInventorySupplier(this, this);
-    //todo お給料機能とテイム機能一緒にした方がよさげ
-    private final TickTimeBaseNeedSalary needSalary =
-            new TickTimeBaseNeedSalary(this, this, 7, LMTags.Items.MAIDS_SALARY.values());
+    private final ItemContractable<LittleMaidEntity> itemContractable =
+            new ItemContractable<>(this, 24000, 7,
+                    stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem()));
     private final ModeController modeController = new ModeController(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
     private final SoundPlayableCompound soundPlayer;
@@ -250,84 +250,84 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     //読み書き系
 
     @Override
-    public void writeCustomDataToNbt(NbtCompound tag) {
-        super.writeCustomDataToNbt(tag);
+    public void writeCustomDataToNbt(NbtCompound nbt) {
+        super.writeCustomDataToNbt(nbt);
 
-        writeInventory(tag);
+        writeInventory(nbt);
 
-        tag.putInt("MovingState", getMovingState().getId());
+        nbt.putInt("MovingState", getMovingState().getId());
         //後で消す
-        String old = tag.getString("MovingState");
+        String old = nbt.getString("MovingState");
         if (!old.isEmpty()) {
             setMovingState(MovingState.fromName(old));
         }
 
         if (freedomPos != null)
-            tag.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
+            nbt.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
 
-        needSalary.writeSalary(tag);
+        writeContractable(nbt);
 
-        writeModeData(tag);
+        writeModeData(nbt);
 
-        tag.putByte("SkinColor", (byte) getColor().getIndex());
-        tag.putBoolean("IsContract", isContract());
-        tag.putString("SkinTexture", getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
+        nbt.putByte("SkinColor", (byte) getColor().getIndex());
+        nbt.putBoolean("IsContract", isContract());
+        nbt.putString("SkinTexture", getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
         for (Part part : Part.values()) {
-            tag.putString("ArmorTextureInner" + part.getPartName(),
+            nbt.putString("ArmorTextureInner" + part.getPartName(),
                     getTextureHolder(Layer.INNER, part).getTextureName());
-            tag.putString("ArmorTextureOuter" + part.getPartName(),
+            nbt.putString("ArmorTextureOuter" + part.getPartName(),
                     getTextureHolder(Layer.OUTER, part).getTextureName());
         }
 
-        tag.putString("SoundConfigName", getConfigHolder().getName());
+        nbt.putString("SoundConfigName", getConfigHolder().getName());
 
-        writeIFF(tag);
+        writeIFF(nbt);
 
-        setBloodSuck(tag.getBoolean("isBloodSuck"));
+        setBloodSuck(nbt.getBoolean("isBloodSuck"));
     }
 
     @Override
-    public void readCustomDataFromNbt(NbtCompound tag) {
-        super.readCustomDataFromNbt(tag);
-        readInventory(tag);
+    public void readCustomDataFromNbt(NbtCompound nbt) {
+        super.readCustomDataFromNbt(nbt);
+        readInventory(nbt);
 
-        setMovingState(MovingState.fromId(tag.getInt("MovingState")));
+        setMovingState(MovingState.fromId(nbt.getInt("MovingState")));
 
-        if (tag.contains("FreedomPos"))
-            freedomPos = NbtHelper.toBlockPos(tag.getCompound("FreedomPos"));
+        if (nbt.contains("FreedomPos"))
+            freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
 
-        needSalary.readSalary(tag);
+        readContractable(nbt);
 
-        readModeData(tag);
+        readModeData(nbt);
 
-        if (tag.contains("SkinColor"))
-            setColor(TextureColors.getColor(tag.getByte("SkinColor")));
-        setContract(tag.getBoolean("IsContract"));
+        if (nbt.contains("SkinColor"))
+            setColor(TextureColors.getColor(nbt.getByte("SkinColor")));
+        setContract(nbt.getBoolean("IsContract"));
         LMTextureManager textureManager = LMTextureManager.INSTANCE;
-        if (tag.contains("SkinTexture")) {
-            textureManager.getTexture(tag.getString("SkinTexture"))
+        if (nbt.contains("SkinTexture")) {
+            textureManager.getTexture(nbt.getString("SkinTexture"))
                     .ifPresent(textureHolder -> setTextureHolder(textureHolder, Layer.SKIN, Part.HEAD));
         }
         for (Part part : Part.values()) {
             String inner = "ArmorTextureInner" + part.getPartName();
             String outer = "ArmorTextureOuter" + part.getPartName();
-            if (tag.contains(inner)) {
-                textureManager.getTexture(tag.getString(inner))
+            if (nbt.contains(inner)) {
+                textureManager.getTexture(nbt.getString(inner))
                         .ifPresent(textureHolder -> setTextureHolder(textureHolder, Layer.INNER, part));
             }
-            if (tag.contains(outer)) {
-                textureManager.getTexture(tag.getString(outer))
+            if (nbt.contains(outer)) {
+                textureManager.getTexture(nbt.getString(outer))
                         .ifPresent(textureHolder -> setTextureHolder(textureHolder, Layer.OUTER, part));
             }
         }
 
-        if (tag.contains("SoundConfigName"))
-            LMConfigManager.INSTANCE.getConfig(tag.getString("SoundConfigName"))
+        if (nbt.contains("SoundConfigName"))
+            LMConfigManager.INSTANCE.getConfig(nbt.getString("SoundConfigName"))
                     .ifPresent(this::setConfigHolder);
 
-        readIFF(tag);
+        readIFF(nbt);
 
-        tag.putBoolean("isBloodSuck", isBloodSuck());
+        nbt.putBoolean("isBloodSuck", isBloodSuck());
     }
 
     //鯖
@@ -373,7 +373,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         super.tick();
         fakePlayer.tick();
         tickHandSwing();
-        if (hasTameOwner()) needSalary.tick();
+        itemContractable.tick();
         if (world.isClient) {
             tickInterestedAngle();
         }
@@ -772,11 +772,12 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
         }
         setStrike(false);
-        while (receiveSalary(1)) ;//ここに給料処理が混じってるのがちょっとムカつく
+        itemContractable.setUnpaidTimes(0);
         getNavigation().stop();
         this.setOwnerUuid(player.getUuid());
         setMovingState(ESCORT);
         setContract(true);
+        itemContractable.setContract(true);
         if (!player.getAbilities().creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
@@ -1032,39 +1033,23 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     //お給料
 
     @Override
-    public boolean receiveSalary(int num) {
-        return needSalary.receiveSalary(num);
-    }
-
-    @Override
-    public boolean consumeSalary(int num) {
-        boolean result = needSalary.consumeSalary(num);
-        if (result) {
-            this.playSound(SoundEvents.ENTITY_ITEM_PICKUP,
-                    1.0F, this.getRandom().nextFloat() * 0.1F + 1.0F);
-            this.swingHand(Hand.MAIN_HAND);
-        }
-        return result;
-    }
-
-    @Override
-    public int getSalary() {
-        return needSalary.getSalary();
-    }
-
-    @Override
-    public boolean isSalary(ItemStack stack) {
-        return needSalary.isSalary(stack);
-    }
-
-    @Override
     public boolean isStrike() {
-        return needSalary.isStrike();
+        return itemContractable.isStrike();
     }
 
     @Override
     public void setStrike(boolean strike) {
-        needSalary.setStrike(strike);
+        itemContractable.setStrike(strike);
+    }
+
+    @Override
+    public void writeContractable(NbtCompound nbt) {
+        itemContractable.writeContractable(nbt);
+    }
+
+    @Override
+    public void readContractable(NbtCompound nbt) {
+        itemContractable.readContractable(nbt);
     }
 
     //モード機能
@@ -1203,6 +1188,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     public void setContract(boolean isContract) {
         multiModel.setContract(isContract);
+        itemContractable.setContract(isContract);
     }
 
     /**
