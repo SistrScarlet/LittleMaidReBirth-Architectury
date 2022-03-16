@@ -17,11 +17,12 @@ public class LMScreenHandlerFactory implements ExtendedMenuProvider {
     @Override
     public void saveExtraData(PacketByteBuf buf) {
         buf.writeVarInt(maid.getId());
+        buf.writeByte(maid.getUnpaidDays());
     }
 
     @Override
     public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        return new LittleMaidScreenHandler(syncId, inv, maid.getId());
+        return new LittleMaidScreenHandler(syncId, inv, maid.getId(), maid.getUnpaidDays());
     }
 
     @Override

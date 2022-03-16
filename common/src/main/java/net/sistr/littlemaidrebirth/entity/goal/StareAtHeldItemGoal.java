@@ -3,19 +3,19 @@ package net.sistr.littlemaidrebirth.entity.goal;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 
 import java.util.EnumSet;
-import java.util.Set;
+import java.util.function.Predicate;
 
 public class StareAtHeldItemGoal extends Goal {
     protected final PathAwareEntity mob;
-    protected final Set<Item> items;
+    protected final Predicate<ItemStack> targetItem;
     protected PlayerEntity stareAt;
 
-    public StareAtHeldItemGoal(PathAwareEntity mob, Set<Item> items) {
+    public StareAtHeldItemGoal(PathAwareEntity mob, Predicate<ItemStack> targetItem) {
         this.mob = mob;
-        this.items = items;
+        this.targetItem = targetItem;
         setControls(EnumSet.of(Control.LOOK));
     }
 
@@ -31,7 +31,7 @@ public class StareAtHeldItemGoal extends Goal {
     }
 
     public boolean isHeldTargetItem(PlayerEntity player) {
-        return items.contains(player.getMainHandStack().getItem()) || items.contains(player.getOffHandStack().getItem());
+        return targetItem.test(player.getMainHandStack()) || targetItem.test(player.getOffHandStack());
     }
 
     @Override

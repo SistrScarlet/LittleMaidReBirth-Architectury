@@ -46,7 +46,7 @@ public class FreedomGoal<T extends PathAwareEntity & Tameable> extends WanderAro
         if (freedomPos == null) {
             return;
         }
-        if (freedomPos.getSquaredDistance(mob.getPos(), true) < distanceSq) {
+        if (freedomPos.getSquaredDistance(mob.getPos()) < distanceSq) {
             return;
         }
         if (0 < --reCalcCool) {

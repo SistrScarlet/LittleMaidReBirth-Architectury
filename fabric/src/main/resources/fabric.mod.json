@@ -13,10 +13,8 @@
     "sources": "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric",
     "issues": "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/issues"
   },
-
   "license": "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/blob/1.16_Architectury/LICENCE.md",
   "icon": "icon.png",
-
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -28,19 +26,14 @@
     "server": [
     ]
   },
-  "accessWidener": "littlemaidrebirth.accessWidener",
   "mixins": [
     "littlemaidrebirth.mixins.json",
     "littlemaidrebirth-common.mixins.json"
   ],
   "depends": {
-    "fabricloader": ">=0.7.4",
     "fabric": "*",
-    "minecraft": ">=1.18",
-    "littlemaidmodelloader": ">=4.0.0",
-    "architectury": ">=3.0.39"
-  },
-  "suggests": {
-    "flamingo": "*"
+    "minecraft": ">=1.18.2",
+    "architectury": ">=4.0.29",
+    "littlemaidmodelloader": ">=4.1.0"
   }
 }

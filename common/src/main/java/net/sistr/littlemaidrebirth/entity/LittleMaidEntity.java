@@ -1,7 +1,6 @@
 package net.sistr.littlemaidrebirth.entity;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -24,7 +23,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.StackReference;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
@@ -110,7 +108,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     private final LMInventorySupplier littleMaidInventory = new LMInventorySupplier(this, this);
     private final ItemContractable<LittleMaidEntity> itemContractable =
             new ItemContractable<>(this, 24000, 7,
-                    stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem()));
+                    stack -> stack.isIn(LMTags.Items.MAIDS_SALARY));
     private final ModeController modeController = new ModeController(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
     private final SoundPlayableCompound soundPlayer;
@@ -180,19 +178,19 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
-        this.goalSelector.add(++priority, new HealMyselfGoal<>(this,
-                Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values()), 2, 1));
+        this.goalSelector.add(++priority, new HealMyselfGoal<>(this, 2, 1,
+                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
         this.goalSelector.add(++priority, new WaitGoal<>(this));
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new ModeWrapperGoal<>(this), healthPredicate));
         this.goalSelector.add(++priority,
                 new FollowTameOwnerGoal<>(this, 1.5f, 8.0f, 6.0f));
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, true,
-                Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values())));
+                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
         this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
-                Sets.newHashSet(LMTags.Items.MAIDS_EMPLOYABLE.values())));
+                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
         this.goalSelector.add(priority, new LMStareAtHeldItemGoal(this, this, true,
-                Sets.newHashSet(LMTags.Items.MAIDS_SALARY.values())));
+                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
         this.goalSelector.add(++priority,
@@ -488,14 +486,14 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                     play(LMSounds.LIVING_NIGHT);
             }
         } else if (world.isRaining()) {
-            Biome biome = this.world.getBiome(getBlockPos());
+            Biome biome = this.world.getBiome(getBlockPos()).value();
             if (biome.getPrecipitation() == Biome.Precipitation.RAIN)
                 play(LMSounds.LIVING_RAIN);
             else if (biome.getPrecipitation() == Biome.Precipitation.SNOW)
                 play(LMSounds.LIVING_SNOW);
         } else {
             BlockPos pos = getBlockPos();
-            Biome biome = this.world.getBiome(pos);
+            Biome biome = this.world.getBiome(pos).value();
             if (biome.isCold(pos)) {
                 play(LMSounds.LIVING_COLD);
             } else if (biome.isHot(pos)) {
@@ -705,7 +703,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             return ActionResult.PASS;
         }
         if (!hasTameOwner()) {
-            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
+            if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
                 return contract(player, stack, false);
             }
             return ActionResult.PASS;
@@ -714,7 +712,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             return ActionResult.PASS;
         }
         if (isStrike()) {
-            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
+            if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
                 return contract(player, stack, true);
             } else if (world instanceof ServerWorld) {
                 ((ServerWorld) world).spawnParticles(ParticleTypes.SMOKE,
@@ -726,7 +724,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
             return ActionResult.PASS;
         }
-        if (LMTags.Items.MAIDS_SALARY.contains(stack.getItem())) {
+        if (stack.isIn(LMTags.Items.MAIDS_SALARY)) {
             return changeState(player, stack);
         }
         if (!player.world.isClient) {
@@ -1052,6 +1050,10 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         itemContractable.readContractable(nbt);
     }
 
+    public int getUnpaidDays() {
+        return itemContractable.getUnpaidTimes();
+    }
+
     //モード機能
 
     @Override
@@ -1297,8 +1299,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     public static class LMStareAtHeldItemGoal extends TameableStareAtHeldItemGoal {
         private final LittleMaidEntity maid;
 
-        public LMStareAtHeldItemGoal(LittleMaidEntity maid, Tameable tameable, boolean isTamed, Set<Item> items) {
-            super(maid, tameable, isTamed, items);
+        public LMStareAtHeldItemGoal(LittleMaidEntity maid, Tameable tameable, boolean isTamed, Predicate<ItemStack> targetItem) {
+            super(maid, tameable, isTamed, targetItem);
             this.maid = maid;
         }
 

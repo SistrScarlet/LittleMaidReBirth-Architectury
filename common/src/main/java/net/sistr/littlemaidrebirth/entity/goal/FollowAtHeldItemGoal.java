@@ -2,16 +2,18 @@ package net.sistr.littlemaidrebirth.entity.goal;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.sistr.littlemaidrebirth.entity.Tameable;
 
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class FollowAtHeldItemGoal extends TameableStareAtHeldItemGoal {
     protected int reCalcCool;
 
-    public FollowAtHeldItemGoal(PathAwareEntity mob, Tameable tameable, boolean isTamed, Set<Item> items) {
-        super(mob, tameable, isTamed, items);
+    public FollowAtHeldItemGoal(PathAwareEntity mob, Tameable tameable, boolean isTamed, Predicate<ItemStack> targetItem) {
+        super(mob, tameable, isTamed, targetItem);
         setControls(EnumSet.of(Control.MOVE));
     }
 

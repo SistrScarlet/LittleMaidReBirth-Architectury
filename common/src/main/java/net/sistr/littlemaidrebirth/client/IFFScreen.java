@@ -140,19 +140,18 @@ public class IFFScreen extends Screen {
     }
 
     @Override
-    public void onClose() {
-        super.onClose();
+    public void close() {
+        super.close();
         SyncIFFPacket.sendC2SPacket(entity, iffs);
     }
 
     public static class IFFGUIElement extends GUIElement implements ListGUIElement {
         private final IFF iff;
         private final MarginedClickable clickable = new MarginedClickable(4);
-        private int x;
-        private int y;
         private boolean renderClashed;
 
         public IFFGUIElement(IFF iff) {
+            super(15 * 16, 15 * 3);
             this.iff = iff;
         }
 
@@ -238,11 +237,6 @@ public class IFFScreen extends Screen {
             return false;
         }
 
-        @Override
-        public void setPos(int x, int y) {
-            this.x = x;
-            this.y = y;
-        }
     }
 
 }

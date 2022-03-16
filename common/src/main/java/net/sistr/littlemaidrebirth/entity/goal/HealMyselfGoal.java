@@ -3,31 +3,30 @@ package net.sistr.littlemaidrebirth.entity.goal;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
-import net.sistr.littlemaidrebirth.entity.InventorySupplier;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
+import net.sistr.littlemaidrebirth.entity.InventorySupplier;
 
 import java.util.EnumSet;
-import java.util.Set;
+import java.util.function.Predicate;
 
 public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> extends Goal {
     private final T mob;
-    private final Set<Item> healItems;
     private final int healInterval;
     private final int healAmount;
+    private final Predicate<ItemStack> healItem;
     private int cool;
     private int cache;
 
-    public HealMyselfGoal(T mob, Set<Item> healItems,
-                          int healInterval, int healAmount) {
+    public HealMyselfGoal(T mob,
+                          int healInterval, int healAmount, Predicate<ItemStack> healItem) {
         this.mob = mob;
-        this.healItems = healItems;
         this.healInterval = healInterval;
         this.healAmount = healAmount;
+        this.healItem = healItem;
         setControls(EnumSet.of(Control.MOVE, Control.LOOK));
     }
 
@@ -83,7 +82,7 @@ public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> exten
         Inventory inventory = this.mob.getInventory();
         if (cache != -1) {
             ItemStack slotStack = inventory.getStack(cache);
-            if (healItems.contains(slotStack.getItem())) {
+            if (healItem.test(slotStack)) {
                 return cache;
             } else {
                 cache = -1;
@@ -91,7 +90,7 @@ public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> exten
         }
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack slotStack = inventory.getStack(i);
-            if (healItems.contains(slotStack.getItem())) {
+            if (healItem.test(slotStack)) {
                 cache = i;
                 return i;
             }
