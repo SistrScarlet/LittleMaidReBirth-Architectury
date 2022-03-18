@@ -17,14 +17,16 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
     private final PlayerInventory playerInventory;
     private final Inventory maidInventory;
     private final LittleMaidEntity maid;
+    private final int unpaidDays;
 
     public LittleMaidScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf packet) {
-        this(syncId, playerInventory, packet.readVarInt());
+        this(syncId, playerInventory, packet.readVarInt(), packet.readByte());
     }
 
-    public LittleMaidScreenHandler(int syncId, PlayerInventory playerInventory, int entityId) {
+    public LittleMaidScreenHandler(int syncId, PlayerInventory playerInventory, int entityId, int unpaidDays) {
         super(Registration.LITTLE_MAID_SCREEN_HANDLER.get(), syncId);
         this.playerInventory = playerInventory;
+        this.unpaidDays = unpaidDays;
 
         LittleMaidEntity maid = (LittleMaidEntity) playerInventory.player.world.getEntityById(entityId);
         this.maid = maid;
@@ -41,6 +43,10 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
 
     public LittleMaidEntity getGuiEntity() {
         return maid;
+    }
+
+    public int getUnpaidDays() {
+        return unpaidDays;
     }
 
     @Override

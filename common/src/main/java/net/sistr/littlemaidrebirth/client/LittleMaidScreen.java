@@ -1,12 +1,15 @@
 package net.sistr.littlemaidrebirth.client;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.GameRenderer;
+import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -17,6 +20,7 @@ import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
+import net.sistr.littlemaidmodelloader.client.screen.GUIElement;
 import net.sistr.littlemaidmodelloader.client.screen.ModelSelectScreen;
 import net.sistr.littlemaidmodelloader.resource.manager.LMConfigManager;
 import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
@@ -33,6 +37,8 @@ import net.sistr.littlemaidrebirth.network.SyncSoundConfigPacket;
 public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final Identifier GUI =
             new Identifier("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
+    private static final Identifier SALARY_WINDOW_TEXTURE =
+            new Identifier("littlemaidrebirth", "textures/gui/salary_window.png");
     private static final Identifier ICONS = new Identifier("textures/gui/icons.png");
     private static final ItemStack ARMOR = Items.LEATHER_CHESTPLATE.getDefaultStack();
     private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
@@ -40,13 +46,18 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final ItemStack FEATHER = Items.FEATHER.getDefaultStack();
     private static final ItemStack IRON_SWORD = Items.IRON_SWORD.getDefaultStack();
     private static final ItemStack IRON_AXE = Items.IRON_AXE.getDefaultStack();
+    private static final ItemStack SUGAR = Items.SUGAR.getDefaultStack();
     private final LittleMaidEntity owner;
+    private final int unpaidDays;
+    private WindowGUIComponent salaryWindow;
+    private boolean showSalaryWindow;
     private Text stateText;
 
     public LittleMaidScreen(LittleMaidScreenHandler screenContainer, PlayerInventory inv, Text titleIn) {
         super(screenContainer, inv, titleIn);
         this.backgroundHeight = 208;
         owner = screenContainer.getGuiEntity();
+        unpaidDays = screenContainer.getUnpaidDays();
     }
 
     @Override
@@ -114,6 +125,31 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                         this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
+        this.salaryWindow = new WindowGUIComponent(
+                this.width / 2 - 40, this.height / 2 - 40, 80, 80,
+                ImmutableList.<GUIElement>builder()
+                        .add(new SalaryGUI(80, 80, 0, 0,
+                                this.itemRenderer, this.textRenderer, 7, unpaidDays))
+                        .build()) {
+            @Override
+            public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+                RenderSystem.setShader(GameRenderer::getPositionTexShader);
+                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                RenderSystem.setShaderTexture(0, SALARY_WINDOW_TEXTURE);
+                drawTexture(matrices, this.x, this.y, 0, 0, 80, 80, 128, 128);
+                super.render(matrices, mouseX, mouseY, delta);
+            }
+        };
+        this.addDrawableChild(new ButtonWidget(left - size, top + size * (layer += 2), size, size, new LiteralText(""),
+                button -> {//ウィンドウを出す
+                    showSalaryWindow = true;
+                }) {
+            @Override
+            public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+                itemRenderer.renderGuiItemIcon(SUGAR, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
+            }
+        });
         stateText = getStateText();
     }
 
@@ -142,6 +178,38 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 20,
                 (this.width - this.backgroundWidth) / 2F + 52 - mouseX,
                 (this.height - this.backgroundHeight) / 2F + 30 - mouseY, owner);
+
+        if (showSalaryWindow) {
+            salaryWindow.render(matrices, mouseX, mouseY, partialTicks);
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (showSalaryWindow) {
+            if (!salaryWindow.mouseClicked(mouseX, mouseY, button)) {
+                showSalaryWindow = false;
+            }
+            return true;
+        }
+
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (showSalaryWindow && salaryWindow.mouseReleased(mouseX, mouseY, button)) {
+            return true;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        if (showSalaryWindow && salaryWindow.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
+            return true;
+        }
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
@@ -220,4 +288,35 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         super.close();
         SyncMovingStatePacket.sendC2SPacket(owner, owner.getMovingState());
     }
+
+    public static class SalaryGUI extends GUIElement {
+        private final ItemRenderer itemRenderer;
+        private final TextRenderer textRenderer;
+        private final int maxUnpaidDays;
+        private final int unpaidDays;
+
+        protected SalaryGUI(int width, int height, int x, int y, ItemRenderer itemRenderer, TextRenderer textRenderer, int maxUnpaidDays, int unpaidDays) {
+            super(width, height);
+            this.x = x;
+            this.y = y;
+            this.itemRenderer = itemRenderer;
+            this.textRenderer = textRenderer;
+            this.maxUnpaidDays = maxUnpaidDays;
+            this.unpaidDays = unpaidDays;
+        }
+
+        @Override
+        public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+            matrices.push();
+            RenderSystem.enableDepthTest();
+            String unpaid = (maxUnpaidDays - unpaidDays) + " / " + maxUnpaidDays;
+            int textWidth = textRenderer.getWidth(unpaid);
+            matrices.translate(0, 0, 300);
+            textRenderer.draw(matrices, unpaid,
+                    this.width / 2f - textWidth / 2f, this.height / 2f - textRenderer.fontHeight / 2f, 0x0);
+            matrices.pop();
+        }
+
+    }
+
 }
