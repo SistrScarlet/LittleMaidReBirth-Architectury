@@ -197,7 +197,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 new FollowTameOwnerGoal<>(this, 1.0f, 6.0f, 4.0f));
         this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, 16D));
         this.goalSelector.add(++priority, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
-        this.goalSelector.add(++priority, new LookAroundGoal(this));
+        this.goalSelector.add(priority, new LookAroundGoal(this));
 
         this.targetSelector.add(3, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
         this.targetSelector.add(4, new TrackOwnerAttackerGoal(this));
