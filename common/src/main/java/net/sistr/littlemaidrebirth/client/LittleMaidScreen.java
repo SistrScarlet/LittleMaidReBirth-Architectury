@@ -128,7 +128,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         this.salaryWindow = new WindowGUIComponent(
                 this.width / 2 - 40, this.height / 2 - 40, 80, 80,
                 ImmutableList.<GUIElement>builder()
-                        .add(new SalaryGUI(80, 80, 0, 0,
+                        .add(new SalaryGUI(80, 80, this.width / 2 - 40, this.height / 2 - 40,
                                 this.itemRenderer, this.textRenderer, 7, unpaidDays))
                         .build()) {
             @Override
@@ -313,7 +313,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             int textWidth = textRenderer.getWidth(unpaid);
             matrices.translate(0, 0, 300);
             textRenderer.draw(matrices, unpaid,
-                    this.width / 2f - textWidth / 2f, this.height / 2f - textRenderer.fontHeight / 2f, 0x0);
+                    this.x + this.width / 2f - textWidth / 2f,
+                    this.y + this.height / 2f - textRenderer.fontHeight / 2f, 0x0);
             matrices.pop();
         }
 

@@ -161,7 +161,7 @@ public class IFFScreen extends Screen {
                 EntityType<?> entityType = entity.getType();
                 TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
                 textRenderer.drawWithShadow(matrices, new TranslatableText(entityType.getTranslationKey()),
-                        0, 0, 0xFFFFFFFF);
+                        this.x, this.y, 0xFFFFFFFF);
                 int color;
                 switch (iff.getIFFTag()) {
                     case FRIEND:
@@ -174,12 +174,12 @@ public class IFFScreen extends Screen {
                         color = 0xFFFFFF40;
                 }
                 textRenderer.drawWithShadow(matrices, iff.getIFFTag().getName(),
-                        0, textRenderer.fontHeight * 2, color);
+                        this.x, this.y + textRenderer.fontHeight * 2, color);
                 if (renderClashed) return;
                 try {
                     InventoryScreen.drawEntity(x + 15 * 12 + 15 / 2, y + 15 * 3, 15,
-                            15 * 12 + 15 / 2f - mouseX,
-                            15 * 3 - entity.getEyeHeight(EntityPose.STANDING) * 15 - mouseY, entity);
+                            x + 15 * 12 + 15 / 2f - mouseX,
+                            y + 15 * 3 - mouseY - entity.getEyeHeight(EntityPose.STANDING) * 15, entity);
                 } catch (Exception e) {
                     LittleMaidReBirthMod.LOGGER.warn("描画処理がクラッシュしました。" + entityType + ":" + entity);
                     e.printStackTrace();
