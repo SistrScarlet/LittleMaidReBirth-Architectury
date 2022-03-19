@@ -54,14 +54,14 @@ shadowJar {
     exclude "architectury.common.json"
 
     configurations = [project.configurations.shadowCommon]
-    classifier "dev-shadow"
+    classifier "fabric-dev"
 }
 
 remapJar {
     injectAccessWidener = true
     input.set shadowJar.archiveFile
     dependsOn shadowJar
-    classifier null
+    classifier "Fabric"
 }
 
 jar {
