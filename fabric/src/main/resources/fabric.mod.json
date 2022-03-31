@@ -18,10 +18,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.sistr.littlemaidrebirth.entrypoint.ModEntryPoint"
+      "net.sistr.littlemaidrebirth.entrypoint.LittleMaidReBirthFabric"
     ],
     "client": [
-      "net.sistr.littlemaidrebirth.entrypoint.ClientEntryPoint"
+      "net.sistr.littlemaidrebirth.entrypoint.LittleMaidReBirthFabric"
     ],
     "server": [
     ]

@@ -16,17 +16,16 @@ import net.sistr.littlemaidrebirth.setup.ModSetup;
 import net.sistr.littlemaidrebirth.setup.Registration;
 
 @Mod(LittleMaidReBirthMod.MODID)
-public class ModEntryPoint {
+public class LittleMaidReBirthForge {
 
-    public ModEntryPoint() {
+    public LittleMaidReBirthForge() {
         EventBuses.registerModEventBus(LittleMaidReBirthMod.MODID, FMLJavaModLoadingContext.get().getModEventBus());
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, LMRBForgeConfig.COMMON_CONFIG);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, LMRBForgeConfig.CLIENT_CONFIG);
 
+        LittleMaidReBirthMod.init();
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
-        LittleMaidReBirthMod.init();
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::rendererInit);
     }
 
     public void modInit(FMLCommonSetupEvent event) {
@@ -35,10 +34,6 @@ public class ModEntryPoint {
 
     public void clientInit(FMLClientSetupEvent event) {
         ClientSetup.init();
-    }
-
-    public void rendererInit(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(Registration.LITTLE_MAID_MOB_BEFORE, MaidModelRenderer::new);
     }
 
 }

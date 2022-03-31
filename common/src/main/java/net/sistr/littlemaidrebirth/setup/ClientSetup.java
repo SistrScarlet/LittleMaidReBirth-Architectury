@@ -1,6 +1,6 @@
 package net.sistr.littlemaidrebirth.setup;
 
-import dev.architectury.registry.level.entity.EntityRendererRegistry;
+import dev.architectury.registry.client.level.entity.EntityRendererRegistry;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.sistr.littlemaidrebirth.client.LittleMaidScreen;
 import net.sistr.littlemaidrebirth.client.MaidModelRenderer;

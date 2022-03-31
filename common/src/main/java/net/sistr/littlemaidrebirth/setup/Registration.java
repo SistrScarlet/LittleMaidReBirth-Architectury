@@ -27,22 +27,18 @@ public class Registration {
     }
 
     //エンティティ
-    public static final EntityType<LittleMaidEntity> LITTLE_MAID_MOB_BEFORE =
-            EntityType.Builder.<LittleMaidEntity>create(LittleMaidEntity::new, SpawnGroup.CREATURE)
-                    .setDimensions(0.5F, 1.35F).build("little_maid_mob");
     public static final RegistrySupplier<EntityType<LittleMaidEntity>> LITTLE_MAID_MOB =
-            ENTITIES.register("little_maid_mob", () -> LITTLE_MAID_MOB_BEFORE);
+            ENTITIES.register("little_maid_mob", () ->
+                    EntityType.Builder.<LittleMaidEntity>create(LittleMaidEntity::new, SpawnGroup.CREATURE)
+                            .setDimensions(0.5F, 1.35F).build("little_maid_mob"));
 
     //アイテム
     public static final RegistrySupplier<Item> LITTLE_MAID_SPAWN_EGG_ITEM =
             ITEMS.register("little_maid_spawn_egg", LittleMaidSpawnEggItem::new);
-    public static final Item IFF_COPY_BOOK_ITEM_BEFORE = new IFFCopyBookItem();
     public static final RegistrySupplier<Item> IFF_COPY_BOOK_ITEM =
-            ITEMS.register("iff_copy_book", () -> IFF_COPY_BOOK_ITEM_BEFORE);
+            ITEMS.register("iff_copy_book", IFFCopyBookItem::new);
 
-    //スクリーンハンドラー
-    public static final ScreenHandlerType<LittleMaidScreenHandler> LITTLE_MAID_SCREEN_HANDLER_BEFORE =
-            MenuRegistry.ofExtended(LittleMaidScreenHandler::new);
+    //スクリーンハンドラ
     public static final RegistrySupplier<ScreenHandlerType<LittleMaidScreenHandler>> LITTLE_MAID_SCREEN_HANDLER =
-            SCREEN_HANDLERS.register("little_maid", () -> LITTLE_MAID_SCREEN_HANDLER_BEFORE);
+            SCREEN_HANDLERS.register("little_maid", () -> MenuRegistry.ofExtended(LittleMaidScreenHandler::new));
 }

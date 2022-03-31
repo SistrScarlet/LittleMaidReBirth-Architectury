@@ -17,7 +17,7 @@ public class LittleMaidReBirthMod {
     }
 
     public static void registerAttribute() {
-        EntityAttributeRegistry.register(() -> Registration.LITTLE_MAID_MOB_BEFORE, LittleMaidEntity::createLittleMaidAttributes);
+        EntityAttributeRegistry.register(Registration.LITTLE_MAID_MOB::get, LittleMaidEntity::createLittleMaidAttributes);
     }
 
 }
