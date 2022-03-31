@@ -22,7 +22,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.client.screen.GUIElement;
 import net.sistr.littlemaidmodelloader.client.screen.ModelSelectScreen;
-import net.sistr.littlemaidmodelloader.resource.manager.LMConfigManager;
+import net.sistr.littlemaidmodelloader.client.screen.SoundPackSelectScreen;
 import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
@@ -30,7 +30,6 @@ import net.sistr.littlemaidrebirth.entity.Tameable;
 import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
 import net.sistr.littlemaidrebirth.network.SyncBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.SyncMovingStatePacket;
-import net.sistr.littlemaidrebirth.network.SyncSoundConfigPacket;
 
 //todo モード名表示/移動状態をアイコンで表記
 @Environment(EnvType.CLIENT)
@@ -80,15 +79,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
-                button -> {
-                    owner.setConfigHolder(LMConfigManager.INSTANCE.getAnyConfig());
-                    SyncSoundConfigPacket.sendC2SPacket(owner, owner.getConfigHolder().getName());
-                }, (button, matrices, x, y) -> {
-            String text = owner.getConfigHolder().getName();
-            float renderX = Math.max(0, x - textRenderer.getWidth(text) / 2F);
-            textRenderer.drawWithShadow(matrices, text, renderX,
-                    y - textRenderer.fontHeight / 2F, 0xFFFFFF);
-        }) {
+                button -> client.setScreen(new SoundPackSelectScreen<>(title, owner))) {
             @Override
             public void renderButton(MatrixStack matrices, int x, int y, float delta) {
                 super.renderButton(matrices, x, y, delta);
@@ -96,7 +87,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
-                button -> client.setScreen(new ModelSelectScreen(title, owner.world, owner))) {
+                button -> client.setScreen(new ModelSelectScreen<>(title, owner.world, owner))) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
