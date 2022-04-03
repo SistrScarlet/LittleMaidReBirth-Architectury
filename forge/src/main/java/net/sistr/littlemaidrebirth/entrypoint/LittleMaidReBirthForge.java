@@ -26,6 +26,7 @@ public class LittleMaidReBirthForge {
         LittleMaidReBirthMod.init();
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::renderInit);
     }
 
     public void modInit(FMLCommonSetupEvent event) {
@@ -34,6 +35,11 @@ public class LittleMaidReBirthForge {
 
     public void clientInit(FMLClientSetupEvent event) {
         ClientSetup.init();
+    }
+
+    //ClientSetupよりこちらの方が実行が早いため、ClientSetupからArchitecturyのメソッド登録しようとすると無視される
+    public void renderInit(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerEntityRenderer(Registration.LITTLE_MAID_MOB.get(), MaidModelRenderer::new);
     }
 
 }
