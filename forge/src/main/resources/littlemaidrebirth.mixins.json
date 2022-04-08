@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "net.sistr.littlemaidrebirth.forge.mixin",
+  "package": "net.sistr.littlemaidrebirth.mixin.forge",
   "compatibilityLevel": "JAVA_8",
   "mixins": [],
   "client": [
