@@ -469,37 +469,36 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         if (world.isClient || this.dead || 0.2F < random.nextFloat()) {
             return;
         }
-        //todo ここ拡張可能にする
         if (getHealth() / getMaxHealth() < 0.3F) {
             play(LMSounds.LIVING_WHINE);
-        } else if (this.getMainHandStack().getItem() == Items.CLOCK) {
-            long time = world.getTimeOfDay();
-            if (0 <= time && time < 1000) {
-                if (time % 2 == 0)
-                    play(LMSounds.GOOD_MORNING);
-                else
-                    play(LMSounds.LIVING_MORNING);
-            } else if (12542 <= time && time < 13500) {
-                if (time % 2 == 0)
-                    play(LMSounds.GOOD_NIGHT);
-                else
-                    play(LMSounds.LIVING_NIGHT);
-            }
-        } else if (world.isRaining()) {
-            Biome biome = this.world.getBiome(getBlockPos()).value();
-            if (biome.getPrecipitation() == Biome.Precipitation.RAIN)
-                play(LMSounds.LIVING_RAIN);
-            else if (biome.getPrecipitation() == Biome.Precipitation.SNOW)
-                play(LMSounds.LIVING_SNOW);
         } else {
-            BlockPos pos = getBlockPos();
-            Biome biome = this.world.getBiome(pos).value();
-            if (biome.isCold(pos)) {
-                play(LMSounds.LIVING_COLD);
-            } else if (biome.isHot(pos)) {
-                play(LMSounds.LIVING_HOT);
+            if (age % 4 == 0 && this.world.isSkyVisible(this.getBlockPos())) {
+                Biome biome = this.world.getBiome(getBlockPos()).value();
+                if (biome.isCold(getBlockPos())) {
+                    play(LMSounds.LIVING_COLD);
+                } else if (biome.isHot(getBlockPos())) {
+                    play(LMSounds.LIVING_HOT);
+                }
+            } else if (age % 4 == 1 && world.isRaining()) {
+                Biome biome = this.world.getBiome(getBlockPos()).value();
+                if (biome.getPrecipitation() == Biome.Precipitation.RAIN)
+                    play(LMSounds.LIVING_RAIN);
+                else if (biome.getPrecipitation() == Biome.Precipitation.SNOW)
+                    play(LMSounds.LIVING_SNOW);
             } else {
-                play(LMSounds.LIVING_DAYTIME);
+                if (this.getMainHandStack().getItem() == Items.CLOCK) {
+                    int time = (int) world.getTimeOfDay();
+                    int min = 24000 / 20;
+                    //寝起きから1分間
+                    if (1000 <= time && time < 1000 + min) {
+                        play(LMSounds.LIVING_MORNING);
+                    } else if (13000 <= time || time < 1000) {//寝られる時間から朝まで
+                        play(LMSounds.LIVING_NIGHT);
+                    }
+                    play(LMSounds.LIVING_DAYTIME);
+                } else {
+                    play(LMSounds.LIVING_DAYTIME);
+                }
             }
         }
     }

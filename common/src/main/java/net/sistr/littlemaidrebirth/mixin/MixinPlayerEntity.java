@@ -2,6 +2,7 @@ package net.sistr.littlemaidrebirth.mixin;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
@@ -9,8 +10,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.iff.*;
-import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
-import net.sistr.littlemaidrebirth.entity.iff.IFFImpl;
 import net.sistr.littlemaidrebirth.util.PlayerAccessor;
 import net.sistr.littlemaidrebirth.util.PlayerInventoryAccessor;
 import org.spongepowered.asm.mixin.Final;
@@ -26,12 +25,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Mixin(PlayerEntity.class)
-public abstract class MixinPlayerEntity implements PlayerAccessor, PlayerInventoryAccessor, HasIFF {
+public abstract class MixinPlayerEntity extends LivingEntity implements PlayerAccessor, PlayerInventoryAccessor, HasIFF {
     private final HasIFF iff = new IFFImpl();
 
-    @Shadow protected abstract void collideWithEntity(Entity entity);
+    protected MixinPlayerEntity(EntityType<? extends LivingEntity> entityType, World world) {
+        super(entityType, world);
+    }
 
-    @Mutable @Shadow @Final private PlayerInventory inventory;
+    @Shadow
+    protected abstract void collideWithEntity(Entity entity);
+
+    @Mutable
+    @Shadow
+    @Final
+    private PlayerInventory inventory;
 
     @Override
     public void onCollideWithEntity_LM(Entity entity) {
