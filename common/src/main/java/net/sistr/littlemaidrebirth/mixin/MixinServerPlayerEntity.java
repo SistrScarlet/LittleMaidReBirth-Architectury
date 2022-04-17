@@ -58,7 +58,7 @@ public abstract class MixinServerPlayerEntity extends MixinPlayerEntity {
                 .map(e -> (SoundPlayable) e)
                 .filter(s -> !(s instanceof LivingEntity)
                         || (((LivingEntity) s).getMainHandStack().getItem() == Items.CLOCK
-                        || ((LivingEntity) s).getMainHandStack().getItem() == Items.CLOCK)
+                        || ((LivingEntity) s).getOffHandStack().getItem() == Items.CLOCK)
                 );
     }
 

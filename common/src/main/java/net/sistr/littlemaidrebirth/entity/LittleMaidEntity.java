@@ -486,7 +486,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 else if (biome.getPrecipitation() == Biome.Precipitation.SNOW)
                     play(LMSounds.LIVING_SNOW);
             } else {
-                if (this.getMainHandStack().getItem() == Items.CLOCK) {
+                if (this.getMainHandStack().getItem() == Items.CLOCK
+                        || this.getOffHandStack().getItem() == Items.CLOCK) {
                     int time = (int) world.getTimeOfDay();
                     int min = 24000 / 20;
                     //寝起きから1分間

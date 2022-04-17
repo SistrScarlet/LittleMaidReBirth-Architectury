@@ -29,8 +29,7 @@ public class LittleMaidModelCaps extends EntityCaps {
                 return maid.isContract();
             case caps_isClock:
                 return maid.getMainHandStack().getItem() == Items.CLOCK
-                        || maid.getOffHandStack().getItem() == Items.CLOCK
-                        || maid.getInventory().containsAny(ImmutableSet.of(Items.CLOCK));
+                        || maid.getOffHandStack().getItem() == Items.CLOCK;
             case caps_job:
                 return maid.getMode()
                         .map(Mode::getName)
