@@ -46,6 +46,10 @@ public class IFF {
         return iffType;
     }
 
+    public EntityType<?> getEntityType() {
+        return entityType;
+    }
+
     public IFF setTag(IFFTag iffTag) {
         this.iffTag = iffTag;
         return this;

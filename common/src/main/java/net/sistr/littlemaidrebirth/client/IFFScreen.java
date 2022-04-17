@@ -159,22 +159,6 @@ public class IFFScreen extends Screen {
         public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
             this.iff.getIFFType().getEntity().ifPresent(entity -> {
                 EntityType<?> entityType = entity.getType();
-                TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-                textRenderer.drawWithShadow(matrices, new TranslatableText(entityType.getTranslationKey()),
-                        this.x, this.y, 0xFFFFFFFF);
-                int color;
-                switch (iff.getIFFTag()) {
-                    case FRIEND:
-                        color = 0xFF40FF40;
-                        break;
-                    case ENEMY:
-                        color = 0xFFFF4040;
-                        break;
-                    default:
-                        color = 0xFFFFFF40;
-                }
-                textRenderer.drawWithShadow(matrices, iff.getIFFTag().getName(),
-                        this.x, this.y + textRenderer.fontHeight * 2, color);
                 if (renderClashed) return;
                 try {
                     InventoryScreen.drawEntity(x + 15 * 12 + 15 / 2, y + 15 * 3, 15,
@@ -194,6 +178,22 @@ public class IFFScreen extends Screen {
                     DiffuseLighting.enableGuiDepthLighting();
                 }
             });
+            TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
+            textRenderer.drawWithShadow(matrices, new TranslatableText(this.iff.getEntityType().getTranslationKey()),
+                    this.x, this.y, 0xFFFFFFFF);
+            int color;
+            switch (iff.getIFFTag()) {
+                case FRIEND:
+                    color = 0xFF40FF40;
+                    break;
+                case ENEMY:
+                    color = 0xFFFF4040;
+                    break;
+                default:
+                    color = 0xFFFFFF40;
+            }
+            textRenderer.drawWithShadow(matrices, iff.getIFFTag().getName(),
+                    this.x, this.y + textRenderer.fontHeight * 2, color);
         }
 
         @Override

@@ -34,6 +34,7 @@ public class ModSetup {
         Registry.ENTITY_TYPE.stream().filter(EntityType::isSummonable).forEach(entityType ->
                 iffTypeManager.register(EntityType.getId(entityType),
                         new IFFType(IFFTag.UNKNOWN, entityType)));
+        iffTypeManager.register(EntityType.getId(EntityType.PLAYER), new IFFType(IFFTag.UNKNOWN, EntityType.PLAYER));
 
         Modes.init();
     }
