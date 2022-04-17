@@ -2,8 +2,8 @@ package net.sistr.littlemaidrebirth.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.item.Items;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModelRenderer;
 import net.sistr.littlemaidmodelloader.maidmodel.IModelCaps;
 import net.sistr.littlemaidmodelloader.maidmodel.ModelMultiBase;
@@ -24,6 +24,8 @@ public class MaidModelRenderer extends MultiModelRenderer<LittleMaidEntity> {
         model.setCapsValue(IModelCaps.caps_isWait, entity.getMovingState() == Tameable.MovingState.WAIT);
         model.setCapsValue(IModelCaps.caps_isContract, entity.hasTameOwner());
         model.setCapsValue(IModelCaps.caps_isBloodsuck, entity.isBloodSuck());
+        model.setCapsValue(IModelCaps.caps_isClock, entity.getMainHandStack().getItem() == Items.CLOCK
+                || entity.getOffHandStack().getItem() == Items.CLOCK);
     }
 
 }
