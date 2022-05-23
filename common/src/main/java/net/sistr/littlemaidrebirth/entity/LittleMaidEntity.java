@@ -576,24 +576,29 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         //危険物に絶対触れない
         if (isDamageSourceEmpty(this.getBoundingBox())
                 && !this.isDamageSourceEmpty(this.getBoundingBox().offset(movement.x, 0, movement.z))) {
-            movement = pushBack(movement, (x, z) -> !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z)));
+            movement = pushBack(movement, (x, z) ->
+                    !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z)));
         }
 
         //絶対に飛び降りない
         if (this.canClipAtLedge()) {
             if (!isSafeFallHeight(this.getPos().add(movement.x, 0, movement.z))) {
-                movement = pushBack(movement, (x, z) -> this.world.isSpaceEmpty(this, this.getBoundingBox().offset(x, -this.stepHeight, z)));
+                movement = pushBack(movement, (x, z) ->
+                        //着地までにダメージを受けない高さに足場がない
+                        this.world.isSpaceEmpty(this, this.getBoundingBox()
+                                .offset(x, 0, z)
+                                .stretch(0, -(getDangerHeightThreshold() - fallDistance), 0)));
             }
         }
 
         return movement;
     }
 
-    private Vec3d pushBack(Vec3d movement, BiPredicate<Double, Double> biPredicate) {
+    private Vec3d pushBack(Vec3d movement, BiPredicate<Double, Double> pushBackPredicate) {
         double dot = 0.05;
         double mX = movement.x;
         double mZ = movement.z;
-        while (mX != 0.0 && biPredicate.test(mX, 0d)) {
+        while (mX != 0.0 && pushBackPredicate.test(mX, 0d)) {
             if (mX < dot && mX >= -dot) {
                 mX = 0.0;
                 continue;
@@ -604,7 +609,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
             mX += dot;
         }
-        while (mZ != 0.0 && biPredicate.test(0d, mZ)) {
+        while (mZ != 0.0 && pushBackPredicate.test(0d, mZ)) {
             if (mZ < dot && mZ >= -dot) {
                 mZ = 0.0;
                 continue;
@@ -615,7 +620,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
             mZ += dot;
         }
-        while (mX != 0.0 && mZ != 0.0 && biPredicate.test(mX, mZ)) {
+        while (mX != 0.0 && mZ != 0.0 && pushBackPredicate.test(mX, mZ)) {
             mX = mX < dot && mX >= -dot ? 0.0 : (mX > 0.0 ? (mX -= dot) : (mX += dot));
             if (mZ < dot && mZ >= -dot) {
                 mZ = 0.0;
@@ -656,16 +661,15 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     private boolean isSafeFallHeight(Vec3d pos) {
-        StatusEffectInstance statusEffectInstance = this.getStatusEffect(StatusEffects.JUMP_BOOST);
         BlockHitResult result = this.world.raycast(new RaycastContext(
                 pos,
-                pos.subtract(0, 4 + (statusEffectInstance == null ? 0 : statusEffectInstance.getAmplifier() + 1), 0),
+                pos.subtract(0, getDangerHeightThreshold() + 0.1, 0),
                 RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
         if (result.getType() == HitResult.Type.MISS) {
             return false;
         }
         Vec3d hitPos = result.getPos();
-        if (0 < computeFallDamage((float) (pos.y - hitPos.y - 0.1), 1)) {
+        if (getDangerHeightThreshold() < pos.y - hitPos.y) {
             return false;
         }
         BlockPos checkPos = new BlockPos(pos.x, pos.y - 1, pos.z);
@@ -687,9 +691,17 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     private boolean canClipAtLedge() {
-        return this.onGround || this.fallDistance < this.stepHeight
+        float canClipHeight = getDangerHeightThreshold();
+        //着地しているか、落下距離が危険高度未満かつ下に足場があるとき
+        return this.onGround || this.fallDistance < canClipHeight
                 && !this.world.isSpaceEmpty(this, this.getBoundingBox()
-                .offset(0.0, this.fallDistance - this.stepHeight, 0.0));
+                .stretch(0.0, this.fallDistance - canClipHeight, 0.0));
+    }
+
+    private float getDangerHeightThreshold() {
+        //マイナスの値も返すことを利用しているため、バージョンアップ/mixinでの仕様変更に注意が必要
+        int fallDamage = computeFallDamage(0, 1);
+        return -fallDamage;
     }
 
     //todo 以下数メソッドにはもうちと整理が必要か
