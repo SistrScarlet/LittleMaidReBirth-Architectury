@@ -12,7 +12,6 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.SpawnSettings;
 import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
-import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.iff.IFFType;
@@ -28,7 +27,9 @@ public class ModSetup {
     public static void init() {
         Networking.INSTANCE.init();
 
-        if (LMRBConfig.canSpawnLM()) registerSpawnSettingLM();
+        if (LittleMaidReBirthMod.getConfig().isCanSpawnLM()) {
+            registerSpawnSettingLM();
+        }
 
         IFFTypeManager iffTypeManager = IFFTypeManager.getINSTANCE();
         Registry.ENTITY_TYPE.stream().filter(EntityType::isSummonable).forEach(entityType ->
@@ -44,9 +45,9 @@ public class ModSetup {
                 (context, mutable) -> mutable.getSpawnProperties()
                         .addSpawn(Registration.LITTLE_MAID_MOB.get().getSpawnGroup(),
                                 new SpawnSettings.SpawnEntry(Registration.LITTLE_MAID_MOB.get(),
-                                        LMRBConfig.getSpawnWeightLM(),
-                                        LMRBConfig.getMinSpawnGroupSizeLM(),
-                                        LMRBConfig.getMaxSpawnGroupSizeLM())));
+                                        LittleMaidReBirthMod.getConfig().getSpawnWeightLM(),
+                                        LittleMaidReBirthMod.getConfig().getMinSpawnGroupSizeLM(),
+                                        LittleMaidReBirthMod.getConfig().getMaxSpawnGroupSizeLM())));
         SpawnRestrictionAccessor.callRegister(Registration.LITTLE_MAID_MOB.get(),
                 SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
                 (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));

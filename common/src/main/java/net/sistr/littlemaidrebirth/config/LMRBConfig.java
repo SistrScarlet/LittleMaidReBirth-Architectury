@@ -1,43 +1,50 @@
 package net.sistr.littlemaidrebirth.config;
 
 
-import dev.architectury.injectables.annotations.ExpectPlatform;
+import me.shedaniel.autoconfig.ConfigData;
+import me.shedaniel.autoconfig.annotation.Config;
+import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
 
-public class LMRBConfig {
+@Config(name = LittleMaidReBirthMod.MODID)
+public class LMRBConfig implements ConfigData {
+    private boolean canSpawnLM = true;
+    private boolean canDespawnLM;
+    private int spawnWeightLM = 5;
+    private int spawnLimitLM = 20;
+    private int minSpawnGroupSizeLM = 1;
+    private int maxSpawnGroupSizeLM = 3;
+    private boolean canResurrectionLM;
+    private boolean canPickupItemByNoOwnerLM;
 
-    @ExpectPlatform
-    public static boolean canSpawnLM() {
-        throw new AssertionError();
+    public boolean isCanSpawnLM() {
+        return canSpawnLM;
     }
 
-    @ExpectPlatform
-    public static boolean canDespawnLM() {
-        throw new AssertionError();
+    public boolean isCanDespawnLM() {
+        return canDespawnLM;
     }
 
-    @ExpectPlatform
-    public static int getSpawnWeightLM() {
-        throw new AssertionError();
+    public int getSpawnWeightLM() {
+        return spawnWeightLM;
     }
 
-    @ExpectPlatform
-    public static int getMinSpawnGroupSizeLM() {
-        throw new AssertionError();
+    public int getMinSpawnGroupSizeLM() {
+        return minSpawnGroupSizeLM;
     }
 
-    @ExpectPlatform
-    public static int getMaxSpawnGroupSizeLM() {
-        throw new AssertionError();
+    public int getMaxSpawnGroupSizeLM() {
+        return maxSpawnGroupSizeLM;
     }
 
-    @ExpectPlatform
-    public static boolean canResurrectionLM() {
-        throw new AssertionError();
+    public boolean isCanResurrectionLM() {
+        return canResurrectionLM;
     }
 
-    @ExpectPlatform
-    public static boolean canPickupItemByNoOwnerLM() {
-        throw new AssertionError();
+    public boolean isCanPickupItemByNoOwnerLM() {
+        return canPickupItemByNoOwnerLM;
     }
 
+    public int getSpawnLimitLM() {
+        return spawnLimitLM;
+    }
 }

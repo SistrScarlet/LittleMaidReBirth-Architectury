@@ -24,6 +24,9 @@
       "net.sistr.littlemaidrebirth.entrypoint.LittleMaidReBirthFabric"
     ],
     "server": [
+    ],
+    "modmenu": [
+      "net.sistr.littlemaidrebirth.fabric.LMRBModMenuIntegration"
     ]
   },
   "mixins": [
