@@ -489,11 +489,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 if (this.getMainHandStack().getItem() == Items.CLOCK
                         || this.getOffHandStack().getItem() == Items.CLOCK) {
                     int time = (int) (world.getTimeOfDay() % 24000);
-                    int min = 24000 / 20;
-                    //寝起きから1分間
-                    if (1000 <= time && time < 1000 + min) {
+                    //時間約23500-1500はse_living_morning
+                    //時間約12500-23500はse_living_night
+                    if (time < 1500 || 23500 <= time) {
                         play(LMSounds.LIVING_MORNING);
-                    } else if (13000 <= time || time < 1000) {//寝られる時間から朝まで
+                    } else if (12500 <= time) {
                         play(LMSounds.LIVING_NIGHT);
                     } else {
                         play(LMSounds.LIVING_DAYTIME);
