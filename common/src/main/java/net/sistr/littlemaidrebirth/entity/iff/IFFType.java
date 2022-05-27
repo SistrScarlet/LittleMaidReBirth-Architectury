@@ -5,6 +5,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Npc;
 import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.mob.WaterCreatureEntity;
 import net.minecraft.entity.passive.AnimalEntity;
@@ -29,7 +30,8 @@ public class IFFType {
 
     public boolean checkEntity(World world) {
         entity = entityType.create(world);
-        if (entity instanceof Monster && !(entity instanceof CreeperEntity)) {
+        if (entity instanceof Monster && !(entity instanceof CreeperEntity)
+                && !(entity instanceof EndermanEntity)) {
             iffTag = IFFTag.ENEMY;
             return true;
         }
