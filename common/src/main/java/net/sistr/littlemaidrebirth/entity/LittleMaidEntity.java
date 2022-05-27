@@ -474,7 +474,16 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public void playAmbientSound() {
-        if (world.isClient || this.dead || 0.2F < random.nextFloat()) {
+        if (world.isClient || this.dead || getConfigHolder()
+                .getSoundFileName("LivingVoiceRate")
+                .map(s -> {
+                    try {
+                        return Float.parseFloat(s);
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .orElse(0.2f) < random.nextFloat()) {
             return;
         }
         if (getHealth() / getMaxHealth() < 0.3F) {
