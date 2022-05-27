@@ -67,6 +67,7 @@ import net.sistr.littlemaidmodelloader.resource.util.TextureColors;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeManager;
+import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.goal.*;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
@@ -107,7 +108,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     private final LMFakePlayerSupplier fakePlayer = new LMFakePlayerSupplier(this);
     private final LMInventorySupplier littleMaidInventory = new LMInventorySupplier(this, this);
     private final ItemContractable<LittleMaidEntity> itemContractable =
-            new ItemContractable<>(this, 24000, 7,
+            new ItemContractable<>(this,
+                    LMRBMod.getConfig().getConsumeSalaryInterval(),
+                    LMRBMod.getConfig().getUnpaidCountLimit(),
                     stack -> stack.isIn(LMTags.Items.MAIDS_SALARY));
     private final ModeController modeController = new ModeController(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
@@ -167,25 +170,28 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         super.initGoals();
         int priority = 0;
 
+        LMRBConfig config = LMRBMod.getConfig();
+
         Predicate<Goal> healthPredicate =
-                g -> 0.5 < MathHelper.clamp(
+                g -> config.getEmergencyTeleportHealthThreshold()
+                        < MathHelper.clamp(
                         LittleMaidEntity.this.getHealth() / LittleMaidEntity.this.getMaxHealth(),
                         0, 1);
 
-        this.goalSelector.add(0, new TeleportTameOwnerGoal<>(this, 16.0f));
+        this.goalSelector.add(0, new TeleportTameOwnerGoal<>(this, config.getTeleportStartRange()));
         //緊急テレポート
         this.goalSelector.add(0, new StartPredicateGoalWrapper<>(
-                new TeleportTameOwnerGoal<>(this, 6.0f), healthPredicate.negate()));
+                new TeleportTameOwnerGoal<>(this, config.getEmergencyTeleportStartRange()), healthPredicate.negate()));
 
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
-        this.goalSelector.add(++priority, new HealMyselfGoal<>(this, 2, 1,
+        this.goalSelector.add(++priority, new HealMyselfGoal<>(this, config.getHealInterval(), config.getHealAmount(),
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
         this.goalSelector.add(++priority, new WaitGoal<>(this));
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new ModeWrapperGoal<>(this), healthPredicate));
         this.goalSelector.add(++priority,
-                new FollowTameOwnerGoal<>(this, 1.5f, 8.0f, 6.0f));
+                new FollowTameOwnerGoal<>(this, 1.5f, config.getSprintStartRange(), config.getSprintEndRange()));
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, true,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
         this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
@@ -195,8 +201,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
         this.goalSelector.add(++priority,
-                new FollowTameOwnerGoal<>(this, 1.0f, 6.0f, 4.0f));
-        this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, 16D));
+                new FollowTameOwnerGoal<>(this, 1.0f, config.getFollowStartRange(), config.getFollowEndRange()));
+        this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, config.getFreedomRange()));
         this.goalSelector.add(++priority, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
         this.goalSelector.add(priority, new LookAroundGoal(this));
 
@@ -387,7 +393,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
-        return LMRBMod.getConfig().isCanDespawnLM() && !getTameOwnerUuid().isPresent();
+        return LMRBMod.getConfig().isCanDespawn() && !getTameOwnerUuid().isPresent();
     }
 
     //canSpawnとかでも使われる
@@ -509,7 +515,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public void onDeath(DamageSource source) {
-        if (LMRBMod.getConfig().isCanResurrectionLM()) {
+        if (LMRBMod.getConfig().isCanResurrection()) {
             this.unsetRemoved();
             this.dead = false;
             this.deathTime = 0;
@@ -536,9 +542,19 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 return false;
             }
         }
+        LMRBConfig config = LMRBMod.getConfig();
+        if (config.isNonMobDamageImmunity() && source.getAttacker() == null) {
+            return false;
+        }
+        if (config.isImmortal() && source != DamageSource.OUT_OF_WORLD && !source.isSourceCreativePlayer()) {
+            return false;
+        }
+        if (config.isFallImmunity() && source == DamageSource.FALL) {
+            return false;
+        }
         Entity attacker = source.getAttacker();
         //Friendからの攻撃を除外
-        if (attacker instanceof LivingEntity && isFriend((LivingEntity) attacker)) {
+        if (!config.isFriendlyFire() && attacker instanceof LivingEntity && isFriend((LivingEntity) attacker)) {
             return false;
         }
         boolean isHurtTime = 0 < this.hurtTime;
@@ -575,16 +591,21 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             return movement;
         }
 
-        //危険物に絶対触れない
-        if (isDamageSourceEmpty(this.getBoundingBox())
-                && !this.isDamageSourceEmpty(this.getBoundingBox().offset(movement.x, 0, movement.z))) {
-            movement = pushBack(movement, (x, z) ->
-                    !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z)));
-        }
+        LMRBConfig config = LMRBMod.getConfig();
 
-        //絶対に飛び降りない
-        if (this.canClipAtLedge()) {
-            if (!isSafeFallHeight(this.getPos().add(movement.x, 0, movement.z))) {
+        if (!config.isCanMoveToDanger()) {
+
+            //危険物に絶対触れない
+            if (!LMRBMod.getConfig().isNonMobDamageImmunity() && isDamageSourceEmpty(this.getBoundingBox())
+                    && !this.isDamageSourceEmpty(this.getBoundingBox().offset(movement.x, 0, movement.z))) {
+                movement = pushBack(movement, (x, z) ->
+                        !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z)));
+            }
+
+            //絶対に飛び降りない
+            if (!config.isFallImmunity()
+                    && this.canClipAtLedge()
+                    && !isSafeFallHeight(this.getPos().add(movement.x, 0, movement.z))) {
                 movement = pushBack(movement, (x, z) ->
                         //着地までにダメージを受けない高さに足場がない
                         this.world.isSpaceEmpty(this, this.getBoundingBox()

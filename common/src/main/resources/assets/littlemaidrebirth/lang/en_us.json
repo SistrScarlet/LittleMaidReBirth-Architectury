@@ -20,6 +20,43 @@
   "item.littlemaidrebirth.iff_copy_book.message_written": "IFF has been written.",
   "item.littlemaidrebirth.iff_copy_book.message_apply": "IFF has been applied.",
 
-  "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth"
+  "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth",
 
+  "text.autoconfig.littlemaidrebirth.category.spawn": "Spawn",
+  "text.autoconfig.littlemaidrebirth.option.canSpawn": "Can Spawn",
+  "text.autoconfig.littlemaidrebirth.option.canDespawn": "Can Despawn",
+  "text.autoconfig.littlemaidrebirth.option.spawnWeight": "Spawn Weight",
+  "text.autoconfig.littlemaidrebirth.option.minSpawnGroupSize": "Min Spawn Group Size",
+  "text.autoconfig.littlemaidrebirth.option.maxSpawnGroupSize": "Max Spawn Group Size",
+
+  "text.autoconfig.littlemaidrebirth.category.maid": "Maid",
+  "text.autoconfig.littlemaidrebirth.option.healInterval": "Heal Interval",
+  "text.autoconfig.littlemaidrebirth.option.healAmount": "Heal Amount",
+  "text.autoconfig.littlemaidrebirth.option.freedomRange": "Freedom Range",
+  "text.autoconfig.littlemaidrebirth.option.followStartRange": "Follow Start Range",
+  "text.autoconfig.littlemaidrebirth.option.followEndRange": "Follow End Range",
+  "text.autoconfig.littlemaidrebirth.option.sprintStartRange": "Sprint Start Range",
+  "text.autoconfig.littlemaidrebirth.option.sprintEndRange": "Sprint Start Range",
+  "text.autoconfig.littlemaidrebirth.option.teleportStartRange": "Teleport Start Range",
+  "text.autoconfig.littlemaidrebirth.option.emergencyTeleportStartRange": "Emergency Teleport Start Range",
+  "text.autoconfig.littlemaidrebirth.option.emergencyTeleportHealthThreshold": "Emergency Teleport Health Threshold",
+  "text.autoconfig.littlemaidrebirth.option.friendlyFire": "Friendly Fire",
+  "text.autoconfig.littlemaidrebirth.option.canMoveToDanger": "Can Move To Danger",
+  "text.autoconfig.littlemaidrebirth.option.immortal": "Immortal",
+  "text.autoconfig.littlemaidrebirth.option.fallImmunity": "Fall Immunity",
+  "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "Non Mob Damage Immunity",
+  "text.autoconfig.littlemaidrebirth.option.canResurrection": "Can Resurrection(WIP)",
+
+  "text.autoconfig.littlemaidrebirth.category.mode": "Mode",
+  "text.autoconfig.littlemaidrebirth.option.fencerRangeFactor": "Fencer Range Factor",
+  "text.autoconfig.littlemaidrebirth.option.archerInaccuracy": "Archer Inaccuracy",
+  "text.autoconfig.littlemaidrebirth.option.archerRangeFactor": "Archer Range Factor",
+  "text.autoconfig.littlemaidrebirth.option.archerPullLengthFactor": "Archer Pull Length",
+
+  "text.autoconfig.littlemaidrebirth.category.contract": "Contract",
+  "text.autoconfig.littlemaidrebirth.option.consumeSalaryInterval": "Consume Salary Interval",
+  "text.autoconfig.littlemaidrebirth.option.unpaidCountLimit": "Unpaid Count Limit",
+
+  "text.autoconfig.littlemaidrebirth.category.misc": "Misc",
+  "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "Can Pickup Item By No Owner Maid"
 }

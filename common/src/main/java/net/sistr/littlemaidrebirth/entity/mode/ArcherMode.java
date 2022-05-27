@@ -12,6 +12,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.IRangedWeapon;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
@@ -60,7 +61,9 @@ public class ArcherMode extends Mode {
         boolean canSee = this.mob.getVisibilityCache().canSee(target);
         ItemStack itemStack = this.mob.getMainHandStack();
         Item item = itemStack.getItem();
-        float maxRange = item instanceof IRangedWeapon ? ((IRangedWeapon) item).getMaxRange_LMRB(itemStack, this.mob) : 16F;
+        float maxRange = (item instanceof IRangedWeapon
+                ? ((IRangedWeapon) item).getMaxRange_LMRB(itemStack, this.mob)
+                : 16F) * LMRBMod.getConfig().getArcherRangeFactor();
         Vec3d start = this.mob.getCameraPosVec(1F);
         Vec3d end = start.add(this.mob.getRotationVec(1F)
                 .multiply(maxRange));
@@ -152,7 +155,9 @@ public class ArcherMode extends Mode {
 
         //十分に引き絞ったか
         int useCount = fakePlayer.getItemUseTime();
-        int interval = item instanceof IRangedWeapon ? ((IRangedWeapon) item).getInterval_LMRB(itemStack, this.mob) : 25;
+        int interval = (int) ((item instanceof IRangedWeapon
+                ? ((IRangedWeapon) item).getInterval_LMRB(itemStack, this.mob)
+                : 25) * LMRBMod.getConfig().getArcherPullLengthFactor());
         if (interval <= useCount) {
             //簡易誤射チェック、射線にターゲット以外が居る場合は撃たない
             float distance = MathHelper.sqrt((float) distanceSq);

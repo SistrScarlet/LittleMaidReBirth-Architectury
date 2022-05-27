@@ -10,7 +10,7 @@ public abstract class LMFakePlayerWrapperEntity<T extends LittleMaidEntity> exte
 
     @Override
     protected void pickupItems() {
-        if (LMRBMod.getConfig().isCanPickupItemByNoOwnerLM()
+        if (LMRBMod.getConfig().isCanPickupItemByNoOwner()
                 || getOrigin().getTameOwnerUuid().isPresent()) {
             super.pickupItems();
         }

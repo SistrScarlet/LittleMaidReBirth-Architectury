@@ -7,6 +7,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.FakePlayer;
@@ -52,7 +53,8 @@ public class FencerMode extends Mode {
 
             @Override
             protected double getSquaredMaxAttackDistance(LivingEntity entity) {
-                return ReachAttributeUtil.getAttackRangeSq(((FakePlayerSupplier) mob).getFakePlayer());
+                return ReachAttributeUtil.getAttackRangeSq(((FakePlayerSupplier) mob).getFakePlayer())
+                        * LMRBMod.getConfig().getFencerRangeFactor();
             }
         };
     }

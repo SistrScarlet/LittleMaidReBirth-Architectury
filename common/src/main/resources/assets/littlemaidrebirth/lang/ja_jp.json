@@ -20,6 +20,43 @@
   "item.littlemaidrebirth.iff_copy_book.message_written": "IFFが書き込まれました。",
   "item.littlemaidrebirth.iff_copy_book.message_apply": "IFFが適用されました。",
 
-  "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth"
+  "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth",
 
+  "text.autoconfig.littlemaidrebirth.category.spawn": "スポーン",
+  "text.autoconfig.littlemaidrebirth.option.canSpawn": "スポーンできるか",
+  "text.autoconfig.littlemaidrebirth.option.canDespawn": "野良メイドがデスポーンするか",
+  "text.autoconfig.littlemaidrebirth.option.spawnWeight": "スポーン割合",
+  "text.autoconfig.littlemaidrebirth.option.minSpawnGroupSize": "最小スポーングループ",
+  "text.autoconfig.littlemaidrebirth.option.maxSpawnGroupSize": "最大スポーングループ",
+
+  "text.autoconfig.littlemaidrebirth.category.maid": "メイド",
+  "text.autoconfig.littlemaidrebirth.option.healInterval": "回復間隔",
+  "text.autoconfig.littlemaidrebirth.option.healAmount": "回復量",
+  "text.autoconfig.littlemaidrebirth.option.freedomRange": "自由行動範囲",
+  "text.autoconfig.littlemaidrebirth.option.followStartRange": "追従開始範囲",
+  "text.autoconfig.littlemaidrebirth.option.followEndRange": "追従終了範囲",
+  "text.autoconfig.littlemaidrebirth.option.sprintStartRange": "走行開始範囲",
+  "text.autoconfig.littlemaidrebirth.option.sprintEndRange": "走行終了範囲",
+  "text.autoconfig.littlemaidrebirth.option.teleportStartRange": "テレポート開始範囲",
+  "text.autoconfig.littlemaidrebirth.option.emergencyTeleportStartRange": "緊急テレポート開始範囲",
+  "text.autoconfig.littlemaidrebirth.option.emergencyTeleportHealthThreshold": "緊急テレポート体力しきい値",
+  "text.autoconfig.littlemaidrebirth.option.friendlyFire": "フレンドリーファイアできるか",
+  "text.autoconfig.littlemaidrebirth.option.canMoveToDanger": "危険方向へ移動できるか",
+  "text.autoconfig.littlemaidrebirth.option.immortal": "不死者か",
+  "text.autoconfig.littlemaidrebirth.option.fallImmunity": "落下免疫",
+  "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "非モブダメージ免疫",
+  "text.autoconfig.littlemaidrebirth.option.canResurrection": "リザレクション可か(WIP)",
+
+  "text.autoconfig.littlemaidrebirth.category.mode": "モード",
+  "text.autoconfig.littlemaidrebirth.option.fencerRangeFactor": "剣士攻撃範囲係数",
+  "text.autoconfig.littlemaidrebirth.option.archerInaccuracy": "弓兵の精度の悪さ",
+  "text.autoconfig.littlemaidrebirth.option.archerRangeFactor": "弓兵攻撃範囲係数",
+  "text.autoconfig.littlemaidrebirth.option.archerPullLengthFactor": "弓兵の弓引きの長さの係数",
+
+  "text.autoconfig.littlemaidrebirth.category.contract": "契約",
+  "text.autoconfig.littlemaidrebirth.option.consumeSalaryInterval": "給料消費間隔",
+  "text.autoconfig.littlemaidrebirth.option.unpaidCountLimit": "給料未払限度",
+
+  "text.autoconfig.littlemaidrebirth.category.misc": "その他",
+  "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "野良メイドがアイテムを拾えるか"
 }

@@ -27,7 +27,7 @@ public class ModSetup {
     public static void init() {
         Networking.INSTANCE.init();
 
-        if (LMRBMod.getConfig().isCanSpawnLM()) {
+        if (LMRBMod.getConfig().isCanSpawn()) {
             registerSpawnSettingLM();
         }
 
@@ -45,9 +45,9 @@ public class ModSetup {
                 (context, mutable) -> mutable.getSpawnProperties()
                         .addSpawn(Registration.LITTLE_MAID_MOB.get().getSpawnGroup(),
                                 new SpawnSettings.SpawnEntry(Registration.LITTLE_MAID_MOB.get(),
-                                        LMRBMod.getConfig().getSpawnWeightLM(),
-                                        LMRBMod.getConfig().getMinSpawnGroupSizeLM(),
-                                        LMRBMod.getConfig().getMaxSpawnGroupSizeLM())));
+                                        LMRBMod.getConfig().getSpawnWeight(),
+                                        LMRBMod.getConfig().getMinSpawnGroupSize(),
+                                        LMRBMod.getConfig().getMaxSpawnGroupSize())));
         SpawnRestrictionAccessor.callRegister(Registration.LITTLE_MAID_MOB.get(),
                 SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
                 (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));

@@ -3,6 +3,7 @@ package net.sistr.littlemaidrebirth.api.mode;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.*;
 import net.minecraft.util.Identifier;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.mode.*;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 
@@ -35,8 +36,8 @@ public class Modes {
 
     public static ModeType.Builder<ArcherMode> buildArcherMode() {
         return ModeType.<ArcherMode>builder((type, maid) ->
-                new ArcherMode(type, "Archer", maid, 15F, entity ->
-                        entity instanceof LivingEntity && maid.isFriend((LivingEntity) entity)))
+                new ArcherMode(type, "Archer", maid, LMRBMod.getConfig().getArcherInaccuracy(),
+                        entity -> entity instanceof LivingEntity && maid.isFriend((LivingEntity) entity)))
                 .addItemMatcher(ItemMatchers.clazz(IRangedWeapon.class))
                 .addItemMatcher(ItemMatchers.tag(LMTags.Items.ARCHER_MODE));
     }
