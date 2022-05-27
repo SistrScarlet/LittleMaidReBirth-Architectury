@@ -23,6 +23,7 @@ public class RipperMode extends Mode {
     protected final List<Entity> shearable = Lists.newArrayList();
     protected int timeToRecalcPath;
     protected int timeToIgnore;
+    protected int cool;
 
     public RipperMode(ModeType<? extends Mode> modeType, String name, LittleMaidEntity mob, float radius) {
         super(modeType, name);
@@ -32,6 +33,10 @@ public class RipperMode extends Mode {
 
     @Override
     public boolean shouldExecute() {
+        if (0 < cool--) {
+            return false;
+        }
+        cool = 40;
         this.shearable.addAll(findCanShearableMob());
         return !this.shearable.isEmpty();
     }
