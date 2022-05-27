@@ -21,11 +21,12 @@ public class LittleMaidReBirthForge {
 
     public LittleMaidReBirthForge() {
         EventBuses.registerModEventBus(LMRBMod.MODID, FMLJavaModLoadingContext.get().getModEventBus());
+
+        LMRBMod.init();
+
         ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class,
                 () -> new ConfigGuiHandler.ConfigGuiFactory((client, parent) ->
                         AutoConfig.getConfigScreen(LMRBConfig.class, parent).get()));
-
-        LMRBMod.init();
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::renderInit);
