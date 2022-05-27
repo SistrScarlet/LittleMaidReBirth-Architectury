@@ -1,6 +1,7 @@
 package net.sistr.littlemaidrebirth.entity;
 
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.setup.Registration;
 
 public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEntitySupplier<LittleMaidEntity> {
@@ -117,12 +119,18 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
     }
 
     private void layoutMaidInventorySlots() {
+        Identifier atlas = new Identifier("textures/atlas/blocks.png");
         //index 0~17
         addSlotBox(maidInventory, 1, 8, 76, 9, 18, 2, 18);
 
         //18~19
         addSlot(new Slot(maidInventory, 0, 116, 44));
-        addSlot(new Slot(maidInventory, 1 + 18 + 4, 152, 44));
+        addSlot(new Slot(maidInventory, 1 + 18 + 4, 152, 44) {
+            @Override
+            public Pair<Identifier, Identifier> getBackgroundSprite() {
+                return Pair.of(atlas, new Identifier("item/empty_armor_slot_shield"));
+            }
+        });
 
         //20~23
         addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.HEAD.getEntitySlotId(), 8, 8) {
@@ -130,11 +138,21 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.HEAD;
             }
+
+            @Override
+            public Pair<Identifier, Identifier> getBackgroundSprite() {
+                return Pair.of(atlas, new Identifier("item/empty_armor_slot_helmet"));
+            }
         });
         addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.CHEST.getEntitySlotId(), 8, 44) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.CHEST;
+            }
+
+            @Override
+            public Pair<Identifier, Identifier> getBackgroundSprite() {
+                return Pair.of(atlas, new Identifier("item/empty_armor_slot_chestplate"));
             }
         });
         addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.LEGS.getEntitySlotId(), 80, 8) {
@@ -142,11 +160,21 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.LEGS;
             }
+
+            @Override
+            public Pair<Identifier, Identifier> getBackgroundSprite() {
+                return Pair.of(atlas, new Identifier("item/empty_armor_slot_leggings"));
+            }
         });
         addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.FEET.getEntitySlotId(), 80, 44) {
             @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.FEET;
+            }
+
+            @Override
+            public Pair<Identifier, Identifier> getBackgroundSprite() {
+                return Pair.of(atlas, new Identifier("item/empty_armor_slot_boots"));
             }
         });
     }
