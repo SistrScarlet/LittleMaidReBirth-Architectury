@@ -18,7 +18,4 @@ classes/
 .settings
 *.launch
 
-/mods/
-/logs/
-/run_server/
 /.architectury-transformer/

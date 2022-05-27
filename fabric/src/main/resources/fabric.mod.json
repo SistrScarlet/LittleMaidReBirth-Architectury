@@ -2,7 +2,6 @@
   "schemaVersion": 1,
   "id": "littlemaidrebirth",
   "version": "${version}",
-
   "name": "LittleMaid ReBirth",
   "description": "A mod to add a little maid to the game, who will help you with various things or not.",
   "authors": [
@@ -36,7 +35,9 @@
   "depends": {
     "fabric": "*",
     "minecraft": ">=1.18.2",
-    "architectury": ">=4.0.29",
-    "littlemaidmodelloader": ">=4.1.0"
+    "architectury": ">=4.4.59",
+    "modmenu": ">=3.2.2",
+    "cloth-config": "6.2.62",
+    "littlemaidmodelloader": ">=4.2.0"
   }
 }

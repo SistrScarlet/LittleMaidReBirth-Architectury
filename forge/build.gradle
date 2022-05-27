@@ -1,12 +1,6 @@
 plugins {
     id "com.github.johnrengelman.shadow" version "7.1.2"
 }
-loom {
-    forge {
-        mixinConfig "littlemaidrebirth-common.mixins.json"
-        mixinConfig "littlemaidrebirth.mixins.json"
-    }
-}
 
 architectury {
     platformSetupLoomIde()

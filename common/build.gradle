@@ -1,3 +1,11 @@
+architectury {
+    common(rootProject.enabled_platforms.split(","))
+}
+
+loom {
+    accessWidenerPath = file("src/main/resources/littlemaidrebirth.accesswidener")
+}
+
 repositories {
     maven { url "https://maven.shedaniel.me/" }
 }
@@ -14,14 +22,6 @@ dependencies {
     }
 
     modImplementationMapped fileTree(dir: './mods', include: '*.jar')
-}
-
-architectury {
-    common()
-}
-
-loom {
-    accessWidenerPath = file("src/main/resources/littlemaidrebirth.accesswidener")
 }
 
 publishing {

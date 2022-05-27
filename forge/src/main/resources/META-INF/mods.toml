@@ -28,6 +28,20 @@ side = "BOTH"
 [[dependencies.littlemaidrebirth]]
 modId = "architectury"
 mandatory = true
-versionRange = "[4.0.29,)"
+versionRange = "[4.4.59,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.littlemaidrebirth]]
+modId = "cloth-config"
+mandatory = true
+versionRange = "[6.2.62,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.littlemaidrebirth]]
+modId = "littlemaidmodelloader"
+mandatory = true
+versionRange = "[4.2.0,)"
 ordering = "AFTER"
 side = "BOTH"
