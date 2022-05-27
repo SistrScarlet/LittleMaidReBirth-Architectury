@@ -119,6 +119,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     private float interestedAngle;
     @Environment(EnvType.CLIENT)
     private float prevInterestedAngle;
+    private int playSoundCool;
 
     //コンストラクタ
     public LittleMaidEntity(EntityType<LittleMaidEntity> type, World worldIn) {
@@ -375,6 +376,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         if (world.isClient) {
             tickInterestedAngle();
         }
+        playSoundCool = Math.max(0, playSoundCool - 1);
     }
 
     @Override
@@ -1246,6 +1248,10 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public void play(String soundName) {
+        if (0 < this.playSoundCool) {
+            return;
+        }
+        this.playSoundCool = 5;
         if (isBloodSuck()) {
             if (soundName.equals(LMSounds.FIND_TARGET_N)) {
                 soundName = LMSounds.FIND_TARGET_B;
