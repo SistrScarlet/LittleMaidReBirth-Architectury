@@ -30,6 +30,7 @@
   "text.autoconfig.littlemaidrebirth.option.maxSpawnGroupSize": "Max Spawn Group Size",
 
   "text.autoconfig.littlemaidrebirth.category.maid": "Maid",
+  "text.autoconfig.littlemaidrebirth.option.voiceVolume": "Voice Volume",
   "text.autoconfig.littlemaidrebirth.option.healInterval": "Heal Interval",
   "text.autoconfig.littlemaidrebirth.option.healAmount": "Heal Amount",
   "text.autoconfig.littlemaidrebirth.option.freedomRange": "Freedom Range",
