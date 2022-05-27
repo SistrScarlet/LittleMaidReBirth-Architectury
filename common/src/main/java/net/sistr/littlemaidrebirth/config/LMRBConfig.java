@@ -30,6 +30,9 @@ public class LMRBConfig implements ConfigData {
     //maid
 
     @ConfigEntry.Category("maid")
+    private float voiceVolume = 1.0f;
+
+    @ConfigEntry.Category("maid")
     private int healInterval = 2;
 
     @ConfigEntry.Category("maid")
@@ -215,5 +218,9 @@ public class LMRBConfig implements ConfigData {
 
     public float getArcherInaccuracy() {
         return archerInaccuracy;
+    }
+
+    public float getVoiceVolume() {
+        return voiceVolume;
     }
 }

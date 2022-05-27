@@ -48,6 +48,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
+import net.sistr.littlemaidmodelloader.client.resource.manager.LMSoundManager;
 import net.sistr.littlemaidmodelloader.entity.compound.IHasMultiModel;
 import net.sistr.littlemaidmodelloader.entity.compound.MultiModelCompound;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
@@ -1288,6 +1289,14 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             } else if (soundName.equals(LMSounds.ATTACK)) {
                 soundName = LMSounds.ATTACK_BLOOD_SUCK;
             }
+        }
+        if (this.world.isClient) {
+            this.getConfigHolder().getSoundFileName(soundName.toLowerCase())
+                    .ifPresent((soundFileName) ->
+                            LMSoundManager.INSTANCE.play(soundFileName, this.getSoundCategory(),
+                                    LMRBMod.getConfig().getVoiceVolume(), 1.0F,
+                                    this.getX(), this.getEyeY(), this.getZ()));
+            return;
         }
         soundPlayer.play(soundName);
     }
