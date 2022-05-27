@@ -20,7 +20,9 @@
   "item.littlemaidrebirth.iff_copy_book.message_written": "IFFが書き込まれました。",
   "item.littlemaidrebirth.iff_copy_book.message_apply": "IFFが適用されました。",
 
-  "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth",
+  "itemGroup.littlemaidrebirth.common": "LittleMaid ReBirth",
+
+  "text.autoconfig.littlemaidrebirth.title": "LittleMaid ReBirth コンフィグ",
 
   "text.autoconfig.littlemaidrebirth.category.spawn": "スポーン",
   "text.autoconfig.littlemaidrebirth.option.canSpawn": "スポーンできるか",

@@ -4,6 +4,7 @@ package net.sistr.littlemaidrebirth;
 import dev.architectury.registry.level.entity.EntityAttributeRegistry;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
+import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import me.shedaniel.autoconfig.serializer.JanksonConfigSerializer;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
@@ -17,7 +18,7 @@ public class LMRBMod {
     private static ConfigHolder<LMRBConfig> CONFIG_HOLDER;
 
     public static void init() {
-        AutoConfig.register(LMRBConfig.class, JanksonConfigSerializer::new);
+        AutoConfig.register(LMRBConfig.class, GsonConfigSerializer::new);
         CONFIG_HOLDER = AutoConfig.getConfigHolder(LMRBConfig.class);
 
         Registration.init();

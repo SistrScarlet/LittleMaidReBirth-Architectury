@@ -20,7 +20,9 @@
   "item.littlemaidrebirth.iff_copy_book.message_written": "IFF has been written.",
   "item.littlemaidrebirth.iff_copy_book.message_apply": "IFF has been applied.",
 
-  "itemGroup.littlemaidrebirth.common": "LittleMaidReBirth",
+  "itemGroup.littlemaidrebirth.common": "LittleMaid ReBirth",
+
+  "text.autoconfig.littlemaidrebirth.title": "LittleMaid ReBirth Config",
 
   "text.autoconfig.littlemaidrebirth.category.spawn": "Spawn",
   "text.autoconfig.littlemaidrebirth.option.canSpawn": "Can Spawn",
