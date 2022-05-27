@@ -34,6 +34,7 @@ public class CookingMode extends Mode {
     private BlockPos furnacePos;
     private int timeToRecalcPath;
     private int findCool;
+    private int playSoundCool;
 
     public CookingMode(ModeType<? extends CookingMode> modeType, String name, LittleMaidEntity mob, int inventoryStart, int inventoryEnd) {
         super(modeType, name);
@@ -49,6 +50,7 @@ public class CookingMode extends Mode {
 
     @Override
     public boolean shouldExecute() {
+        playSoundCool--;
         if (0 < --findCool) {
             return false;
         }
@@ -250,9 +252,7 @@ public class CookingMode extends Mode {
             furnace.setStack(materialSlot, material);
             inventory.removeStack(cookableIndex);
             furnace.markDirty();
-            this.mob.swingHand(Hand.MAIN_HAND);
-            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            ((SoundPlayable) mob).play(LMSounds.COOKING_START);
+            playSound();
             break;
         }
     }
@@ -271,9 +271,7 @@ public class CookingMode extends Mode {
             furnace.setStack(fuelSlot, fuel);
             inventory.removeStack(fuelIndex);
             furnace.markDirty();
-            this.mob.swingHand(Hand.MAIN_HAND);
-            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            ((SoundPlayable) mob).play(LMSounds.ADD_FUEL);
+            playSound();
             break;
         }
     }
@@ -288,9 +286,7 @@ public class CookingMode extends Mode {
             if (!furnace.canExtract(resultSlot, resultStack, Direction.DOWN)) {
                 continue;
             }
-            this.mob.swingHand(Hand.MAIN_HAND);
-            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
+            playSound();
             ItemStack copy = resultStack.copy();
             ItemStack leftover = HopperBlockEntity.transfer(furnace, inventory, furnace.removeStack(resultSlot, 1), null);
             if (leftover.isEmpty()) {
@@ -299,6 +295,15 @@ public class CookingMode extends Mode {
             }
 
             furnace.setStack(resultSlot, copy);
+        }
+    }
+
+    public void playSound() {
+        if (playSoundCool < 0) {
+            playSoundCool = 20;
+            this.mob.swingHand(Hand.MAIN_HAND);
+            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
+            ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
         }
     }
 
