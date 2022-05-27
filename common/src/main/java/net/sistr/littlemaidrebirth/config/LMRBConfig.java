@@ -3,9 +3,9 @@ package net.sistr.littlemaidrebirth.config;
 
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 
-@Config(name = LittleMaidReBirthMod.MODID)
+@Config(name = LMRBMod.MODID)
 public class LMRBConfig implements ConfigData {
     private boolean canSpawnLM = true;
     private boolean canDespawnLM;

@@ -23,7 +23,7 @@ import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.client.screen.GUIElement;
 import net.sistr.littlemaidmodelloader.client.screen.ModelSelectScreen;
 import net.sistr.littlemaidmodelloader.client.screen.SoundPackSelectScreen;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.Tameable;
@@ -145,10 +145,10 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     public Text getStateText() {
-        MutableText stateText = new TranslatableText("state." + LittleMaidReBirthMod.MODID + "." + owner.getMovingState().getName());
+        MutableText stateText = new TranslatableText("state." + LMRBMod.MODID + "." + owner.getMovingState().getName());
         owner.getModeName().ifPresent(
                 modeName -> stateText.append(" : ")
-                        .append(new TranslatableText("mode." + LittleMaidReBirthMod.MODID + "." + modeName)));
+                        .append(new TranslatableText("mode." + LMRBMod.MODID + "." + modeName)));
         return stateText;
     }
 

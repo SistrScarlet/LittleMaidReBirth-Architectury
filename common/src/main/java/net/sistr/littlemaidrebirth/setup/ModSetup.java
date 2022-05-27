@@ -11,7 +11,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.SpawnSettings;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.iff.IFFType;
@@ -22,12 +22,12 @@ import net.sistr.littlemaidrebirth.network.Networking;
 
 public class ModSetup {
     public static final ItemGroup ITEM_GROUP = CreativeTabRegistry
-            .create(new Identifier(LittleMaidReBirthMod.MODID, "common"), Items.CAKE::getDefaultStack);
+            .create(new Identifier(LMRBMod.MODID, "common"), Items.CAKE::getDefaultStack);
 
     public static void init() {
         Networking.INSTANCE.init();
 
-        if (LittleMaidReBirthMod.getConfig().isCanSpawnLM()) {
+        if (LMRBMod.getConfig().isCanSpawnLM()) {
             registerSpawnSettingLM();
         }
 
@@ -45,9 +45,9 @@ public class ModSetup {
                 (context, mutable) -> mutable.getSpawnProperties()
                         .addSpawn(Registration.LITTLE_MAID_MOB.get().getSpawnGroup(),
                                 new SpawnSettings.SpawnEntry(Registration.LITTLE_MAID_MOB.get(),
-                                        LittleMaidReBirthMod.getConfig().getSpawnWeightLM(),
-                                        LittleMaidReBirthMod.getConfig().getMinSpawnGroupSizeLM(),
-                                        LittleMaidReBirthMod.getConfig().getMaxSpawnGroupSizeLM())));
+                                        LMRBMod.getConfig().getSpawnWeightLM(),
+                                        LMRBMod.getConfig().getMinSpawnGroupSizeLM(),
+                                        LMRBMod.getConfig().getMaxSpawnGroupSizeLM())));
         SpawnRestrictionAccessor.callRegister(Registration.LITTLE_MAID_MOB.get(),
                 SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
                 (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));

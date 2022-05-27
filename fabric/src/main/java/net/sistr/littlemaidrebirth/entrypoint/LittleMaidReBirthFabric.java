@@ -3,7 +3,7 @@ package net.sistr.littlemaidrebirth.entrypoint;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.client.MaidModelRenderer;
 import net.sistr.littlemaidrebirth.setup.ClientSetup;
 import net.sistr.littlemaidrebirth.setup.ModSetup;
@@ -13,7 +13,7 @@ public class LittleMaidReBirthFabric implements ModInitializer, ClientModInitial
 
     @Override
     public void onInitialize() {
-        LittleMaidReBirthMod.init();
+        LMRBMod.init();
         ModSetup.init();
     }
 

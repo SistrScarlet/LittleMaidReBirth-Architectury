@@ -13,7 +13,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.client.IFFScreen;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 public class OpenIFFScreenPacket {
     public static final Identifier ID =
-            new Identifier(LittleMaidReBirthMod.MODID, "open_iff_screen");
+            new Identifier(LMRBMod.MODID, "open_iff_screen");
 
     public static void sendS2CPacket(Entity entity, List<IFF> iffs, PlayerEntity player) {
         PacketByteBuf buf = createS2CPacket(entity, iffs, player);

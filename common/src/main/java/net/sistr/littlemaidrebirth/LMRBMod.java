@@ -11,7 +11,7 @@ import net.sistr.littlemaidrebirth.setup.Registration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class LittleMaidReBirthMod {
+public class LMRBMod {
     public static final String MODID = "littlemaidrebirth";
     public static final Logger LOGGER = LogManager.getLogger();
     private static ConfigHolder<LMRBConfig> CONFIG_HOLDER;

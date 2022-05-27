@@ -64,7 +64,7 @@ import net.sistr.littlemaidmodelloader.resource.manager.LMModelManager;
 import net.sistr.littlemaidmodelloader.resource.manager.LMTextureManager;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidmodelloader.resource.util.TextureColors;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.entity.goal.*;
@@ -387,7 +387,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
-        return LittleMaidReBirthMod.getConfig().isCanDespawnLM() && !getTameOwnerUuid().isPresent();
+        return LMRBMod.getConfig().isCanDespawnLM() && !getTameOwnerUuid().isPresent();
     }
 
     //canSpawnとかでも使われる
@@ -509,7 +509,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public void onDeath(DamageSource source) {
-        if (LittleMaidReBirthMod.getConfig().isCanResurrectionLM()) {
+        if (LMRBMod.getConfig().isCanResurrectionLM()) {
             this.unsetRemoved();
             this.dead = false;
             this.deathTime = 0;

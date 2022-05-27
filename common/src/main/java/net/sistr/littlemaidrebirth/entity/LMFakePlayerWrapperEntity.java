@@ -1,6 +1,6 @@
 package net.sistr.littlemaidrebirth.entity;
 
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 
 public abstract class LMFakePlayerWrapperEntity<T extends LittleMaidEntity> extends FakePlayerWrapperEntity<T> {
 
@@ -10,7 +10,7 @@ public abstract class LMFakePlayerWrapperEntity<T extends LittleMaidEntity> exte
 
     @Override
     protected void pickupItems() {
-        if (LittleMaidReBirthMod.getConfig().isCanPickupItemByNoOwnerLM()
+        if (LMRBMod.getConfig().isCanPickupItemByNoOwnerLM()
                 || getOrigin().getTameOwnerUuid().isPresent()) {
             super.pickupItems();
         }

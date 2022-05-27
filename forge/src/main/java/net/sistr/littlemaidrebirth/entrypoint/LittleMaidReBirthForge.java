@@ -9,23 +9,23 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.client.MaidModelRenderer;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.setup.ClientSetup;
 import net.sistr.littlemaidrebirth.setup.ModSetup;
 import net.sistr.littlemaidrebirth.setup.Registration;
 
-@Mod(LittleMaidReBirthMod.MODID)
+@Mod(LMRBMod.MODID)
 public class LittleMaidReBirthForge {
 
     public LittleMaidReBirthForge() {
-        EventBuses.registerModEventBus(LittleMaidReBirthMod.MODID, FMLJavaModLoadingContext.get().getModEventBus());
+        EventBuses.registerModEventBus(LMRBMod.MODID, FMLJavaModLoadingContext.get().getModEventBus());
         ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class,
                 () -> new ConfigGuiHandler.ConfigGuiFactory((client, parent) ->
                         AutoConfig.getConfigScreen(LMRBConfig.class, parent).get()));
 
-        LittleMaidReBirthMod.init();
+        LMRBMod.init();
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::renderInit);

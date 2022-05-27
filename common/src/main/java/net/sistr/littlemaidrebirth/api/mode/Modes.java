@@ -6,7 +6,7 @@ import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.entity.mode.*;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 
-import static net.sistr.littlemaidrebirth.LittleMaidReBirthMod.MODID;
+import static net.sistr.littlemaidrebirth.LMRBMod.MODID;
 
 public class Modes {
     public static final ModeType<FencerMode> FENCER_MODE_TYPE;

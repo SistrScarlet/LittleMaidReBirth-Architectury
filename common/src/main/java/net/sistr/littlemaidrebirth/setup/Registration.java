@@ -13,7 +13,7 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.item.IFFCopyBookItem;
 import net.sistr.littlemaidrebirth.item.LittleMaidSpawnEggItem;
 
-import static net.sistr.littlemaidrebirth.LittleMaidReBirthMod.MODID;
+import static net.sistr.littlemaidrebirth.LMRBMod.MODID;
 
 public class Registration {
     private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(MODID, Registry.ENTITY_TYPE_KEY);

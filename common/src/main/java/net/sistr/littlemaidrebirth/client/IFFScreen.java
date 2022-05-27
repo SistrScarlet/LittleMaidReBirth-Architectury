@@ -23,7 +23,7 @@ import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidmodelloader.LittleMaidModelLoader;
 import net.sistr.littlemaidmodelloader.client.screen.*;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.network.SyncIFFPacket;
@@ -165,7 +165,7 @@ public class IFFScreen extends Screen {
                             x + 15 * 12 + 15 / 2f - mouseX,
                             y + 15 * 3 - mouseY - entity.getEyeHeight(EntityPose.STANDING) * 15, entity);
                 } catch (Exception e) {
-                    LittleMaidReBirthMod.LOGGER.warn("描画処理がクラッシュしました。" + entityType + ":" + entity);
+                    LMRBMod.LOGGER.warn("描画処理がクラッシュしました。" + entityType + ":" + entity);
                     e.printStackTrace();
                     renderClashed = true;
                     //行われない終了処理を行う

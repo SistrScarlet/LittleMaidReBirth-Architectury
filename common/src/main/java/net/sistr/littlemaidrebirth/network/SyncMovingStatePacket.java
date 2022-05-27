@@ -8,12 +8,12 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.Tameable;
 
 public class SyncMovingStatePacket {
     public static final Identifier ID =
-            new Identifier(LittleMaidReBirthMod.MODID, "sync_moving_state");
+            new Identifier(LMRBMod.MODID, "sync_moving_state");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, Tameable.MovingState state) {

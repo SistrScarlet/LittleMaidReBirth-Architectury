@@ -11,7 +11,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class SyncIFFPacket {
     public static final Identifier ID =
-            new Identifier(LittleMaidReBirthMod.MODID, "sync_iff");
+            new Identifier(LMRBMod.MODID, "sync_iff");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, List<IFF> iffs) {

@@ -1,11 +1,10 @@
 package net.sistr.littlemaidrebirth.tags;
 
 import net.minecraft.item.Item;
-import net.minecraft.tag.Tag;
 import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 
 public class LMTags {
 
@@ -21,7 +20,7 @@ public class LMTags {
         public static final TagKey<Item> HEALER_MODE = register("healer_mode");
 
         private static TagKey<Item> register(String id) {
-            return TagKey.of(Registry.ITEM_KEY, new Identifier(LittleMaidReBirthMod.MODID, id));
+            return TagKey.of(Registry.ITEM_KEY, new Identifier(LMRBMod.MODID, id));
         }
     }
 }

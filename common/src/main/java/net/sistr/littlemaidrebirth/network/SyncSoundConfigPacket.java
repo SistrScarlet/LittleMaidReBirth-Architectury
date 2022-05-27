@@ -13,12 +13,12 @@ import net.minecraft.world.World;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.manager.LMConfigManager;
 import net.sistr.littlemaidmodelloader.util.PlayerList;
-import net.sistr.littlemaidrebirth.LittleMaidReBirthMod;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.Tameable;
 
 public class SyncSoundConfigPacket {
     public static final Identifier ID =
-            new Identifier(LittleMaidReBirthMod.MODID, "sync_sound_config");
+            new Identifier(LMRBMod.MODID, "sync_sound_config");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, String configName) {
