@@ -17,9 +17,9 @@ import net.sistr.littlemaidrebirth.setup.ModSetup;
 import net.sistr.littlemaidrebirth.setup.Registration;
 
 @Mod(LMRBMod.MODID)
-public class LittleMaidReBirthForge {
+public class LMRBForge {
 
-    public LittleMaidReBirthForge() {
+    public LMRBForge() {
         EventBuses.registerModEventBus(LMRBMod.MODID, FMLJavaModLoadingContext.get().getModEventBus());
 
         LMRBMod.init();

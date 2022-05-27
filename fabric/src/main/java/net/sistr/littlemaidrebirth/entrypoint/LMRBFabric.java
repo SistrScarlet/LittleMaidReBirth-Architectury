@@ -9,7 +9,7 @@ import net.sistr.littlemaidrebirth.setup.ClientSetup;
 import net.sistr.littlemaidrebirth.setup.ModSetup;
 import net.sistr.littlemaidrebirth.setup.Registration;
 
-public class LittleMaidReBirthFabric implements ModInitializer, ClientModInitializer {
+public class LMRBFabric implements ModInitializer, ClientModInitializer {
 
     @Override
     public void onInitialize() {

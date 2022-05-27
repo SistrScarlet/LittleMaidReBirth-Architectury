@@ -17,10 +17,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.sistr.littlemaidrebirth.entrypoint.LittleMaidReBirthFabric"
+      "net.sistr.littlemaidrebirth.entrypoint.LMRBFabric"
     ],
     "client": [
-      "net.sistr.littlemaidrebirth.entrypoint.LittleMaidReBirthFabric"
+      "net.sistr.littlemaidrebirth.entrypoint.LMRBFabric"
     ],
     "server": [
     ],
