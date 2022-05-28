@@ -140,6 +140,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 multiModel.getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
         if (LMRBMod.getConfig().isSilentDefaultVoice()) {
             soundPlayer.setConfigHolder(LMConfigManager.EMPTY_CONFIG);
+        } else {
+            List<ConfigHolder> configs = LMConfigManager.INSTANCE.getAllConfig();
+            soundPlayer.setConfigHolder(configs.get(Math.abs(getUuid().hashCode()) % configs.size()));
         }
         String defaultSoundPackName = LMRBMod.getConfig().getDefaultSoundPackName();
         if (!defaultSoundPackName.isEmpty()) {
@@ -270,20 +273,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         super.writeCustomDataToNbt(nbt);
 
         writeInventory(nbt);
-
-        nbt.putInt("MovingState", getMovingState().getId());
-        //後で消す
-        String old = nbt.getString("MovingState");
-        if (!old.isEmpty()) {
-            setMovingState(MovingState.fromName(old));
-        }
-
-        if (freedomPos != null)
-            nbt.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
-
         writeContractable(nbt);
-
-        writeModeData(nbt);
 
         nbt.putByte("SkinColor", (byte) getColor().getIndex());
         nbt.putBoolean("IsContract", isContract());
@@ -295,11 +285,16 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                     getTextureHolder(Layer.OUTER, part).getTextureName());
         }
 
-        nbt.putString("SoundConfigName", getConfigHolder().getName());
-
-        writeIFF(nbt);
-
-        setBloodSuck(nbt.getBoolean("isBloodSuck"));
+        if (getTameOwnerUuid().isPresent()) {
+            nbt.putString("SoundConfigName", getConfigHolder().getName());
+            writeIFF(nbt);
+            writeModeData(nbt);
+            setBloodSuck(nbt.getBoolean("isBloodSuck"));
+            nbt.putInt("MovingState", getMovingState().getId());
+            if (freedomPos != null) {
+                nbt.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
+            }
+        }
     }
 
     @Override
