@@ -38,6 +38,6 @@
     "architectury": ">=4.4.59",
     "modmenu": ">=3.2.2",
     "cloth-config": "6.2.62",
-    "littlemaidmodelloader": ">=4.2.0"
+    "littlemaidmodelloader": ">=4.4.0"
   }
 }

@@ -42,6 +42,6 @@ side = "BOTH"
 [[dependencies.littlemaidrebirth]]
 modId = "littlemaidmodelloader"
 mandatory = true
-versionRange = "[4.2.0,)"
+versionRange = "[4.4.0,)"
 ordering = "AFTER"
 side = "BOTH"

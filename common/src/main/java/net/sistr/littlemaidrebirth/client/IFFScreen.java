@@ -21,7 +21,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
-import net.sistr.littlemaidmodelloader.LittleMaidModelLoader;
+import net.sistr.littlemaidmodelloader.LMMLMod;
 import net.sistr.littlemaidmodelloader.client.screen.*;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
@@ -40,7 +40,7 @@ public class IFFScreen extends Screen {
     private static final int GUI_WIDTH = 256;
     private static final int GUI_HEIGHT = 196;
     public static final Identifier MODEL_SELECT_GUI_TEXTURE =
-            new Identifier(LittleMaidModelLoader.MODID, "textures/gui/model_select.png");
+            new Identifier(LMMLMod.MODID, "textures/gui/model_select.png");
     private final Entity entity;
     private final ImmutableList<IFF> iffs;
     private ScrollBar scrollBar;
