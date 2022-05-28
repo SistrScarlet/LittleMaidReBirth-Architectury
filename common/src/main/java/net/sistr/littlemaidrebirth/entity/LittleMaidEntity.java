@@ -701,13 +701,13 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     private boolean isSafeFallHeight(Vec3d pos) {
         BlockHitResult result = this.world.raycast(new RaycastContext(
                 pos,
-                pos.subtract(0, getDangerHeightThreshold() + 0.1, 0),
+                pos.subtract(0, getDangerHeightThreshold() - fallDistance + 0.1, 0),
                 RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
         if (result.getType() == HitResult.Type.MISS) {
             return false;
         }
         Vec3d hitPos = result.getPos();
-        if (getDangerHeightThreshold() < pos.y - hitPos.y) {
+        if (getDangerHeightThreshold() - fallDistance < pos.y - hitPos.y) {
             return false;
         }
         BlockPos checkPos = new BlockPos(pos.x, pos.y - 1, pos.z);
@@ -729,7 +729,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     private boolean canClipAtLedge() {
-        float canClipHeight = getDangerHeightThreshold();
+        float canClipHeight = getDangerHeightThreshold() + 1.0f;
         //着地しているか、落下距離が危険高度未満かつ下に足場があるとき
         return this.onGround || this.fallDistance < canClipHeight
                 && !this.world.isSpaceEmpty(this, this.getBoundingBox()
