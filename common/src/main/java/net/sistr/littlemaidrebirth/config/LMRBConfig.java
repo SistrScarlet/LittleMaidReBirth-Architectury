@@ -27,6 +27,12 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Category("spawn")
     private int maxSpawnGroupSize = 3;
 
+    @ConfigEntry.Category("spawn")
+    private boolean silentDefaultVoice;
+
+    @ConfigEntry.Category("spawn")
+    private String defaultSoundPackName = "";
+
     //maid
 
     @ConfigEntry.Category("maid")
@@ -222,5 +228,13 @@ public class LMRBConfig implements ConfigData {
 
     public float getVoiceVolume() {
         return voiceVolume;
+    }
+
+    public boolean isSilentDefaultVoice() {
+        return silentDefaultVoice;
+    }
+
+    public String getDefaultSoundPackName() {
+        return defaultSoundPackName;
     }
 }

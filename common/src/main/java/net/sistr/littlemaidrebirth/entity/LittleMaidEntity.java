@@ -138,6 +138,16 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         setRandomTexture();
         soundPlayer = new SoundPlayableCompound(this, () ->
                 multiModel.getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
+        if (LMRBMod.getConfig().isSilentDefaultVoice()) {
+            soundPlayer.setConfigHolder(LMConfigManager.EMPTY_CONFIG);
+        }
+        String defaultSoundPackName = LMRBMod.getConfig().getDefaultSoundPackName();
+        if (!defaultSoundPackName.isEmpty()) {
+            LMConfigManager.INSTANCE.getAllConfig().stream()
+                    .filter(c -> c.getPackName().toLowerCase().equals(defaultSoundPackName.toLowerCase()))
+                    .findAny()
+                    .ifPresent(soundPlayer::setConfigHolder);
+        }
         addDefaultModes(this);
     }
 

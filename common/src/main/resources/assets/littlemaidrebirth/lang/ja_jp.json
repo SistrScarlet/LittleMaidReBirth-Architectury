@@ -30,6 +30,8 @@
   "text.autoconfig.littlemaidrebirth.option.spawnWeight": "スポーン割合",
   "text.autoconfig.littlemaidrebirth.option.minSpawnGroupSize": "最小スポーングループ",
   "text.autoconfig.littlemaidrebirth.option.maxSpawnGroupSize": "最大スポーングループ",
+  "text.autoconfig.littlemaidrebirth.option.silentDefaultVoice": "デフォルトボイスが無音か",
+  "text.autoconfig.littlemaidrebirth.option.defaultSoundPackName": "デフォルトサウンドパック",
 
   "text.autoconfig.littlemaidrebirth.category.maid": "メイド",
   "text.autoconfig.littlemaidrebirth.option.voiceVolume": "ボイス音量",

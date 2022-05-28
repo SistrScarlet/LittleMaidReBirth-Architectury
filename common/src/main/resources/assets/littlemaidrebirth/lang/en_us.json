@@ -30,6 +30,8 @@
   "text.autoconfig.littlemaidrebirth.option.spawnWeight": "Spawn Weight",
   "text.autoconfig.littlemaidrebirth.option.minSpawnGroupSize": "Min Spawn Group Size",
   "text.autoconfig.littlemaidrebirth.option.maxSpawnGroupSize": "Max Spawn Group Size",
+  "text.autoconfig.littlemaidrebirth.option.silentDefaultVoice": "Silent Default Voice",
+  "text.autoconfig.littlemaidrebirth.option.defaultSoundPackName": "Default Sound Pack",
 
   "text.autoconfig.littlemaidrebirth.category.maid": "Maid",
   "text.autoconfig.littlemaidrebirth.option.voiceVolume": "Voice Volume",
