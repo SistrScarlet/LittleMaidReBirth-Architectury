@@ -125,8 +125,8 @@ public class ArcherMode extends Mode {
         pitch = MathHelper.wrapDegrees(pitch);
         float yaw = MathHelper.wrapDegrees((float) (MathHelper.atan2(zD, xD) * (180D / Math.PI)) - 90.0F);
         fakePlayer.headYaw = yaw;
-        fakePlayer.setYaw(yaw);
-        fakePlayer.setPitch(pitch);
+        fakePlayer.yaw =yaw;
+        fakePlayer.pitch = pitch;
 
         //FPがアイテムを構えていないとき
         if (--reUseCool < 0 && !fakePlayer.isUsingItem()) {

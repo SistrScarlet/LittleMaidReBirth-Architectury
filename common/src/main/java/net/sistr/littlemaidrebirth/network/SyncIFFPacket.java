@@ -1,6 +1,6 @@
 package net.sistr.littlemaidrebirth.network;
 
-import dev.architectury.networking.NetworkManager;
+import me.shedaniel.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -27,7 +27,7 @@ public class SyncIFFPacket {
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, List<IFF> iffs) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getId());
+        buf.writeVarInt(entity.getEntityId());
         NbtCompound tag = new NbtCompound();
         NbtList list = new NbtList();
         tag.put("IFFs", list);

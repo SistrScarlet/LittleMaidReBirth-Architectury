@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.setup;
 
-import dev.architectury.registry.CreativeTabRegistry;
-import dev.architectury.registry.level.biome.BiomeModifications;
+import me.shedaniel.architectury.registry.BiomeModifications;
+import me.shedaniel.architectury.registry.CreativeTabs;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.item.ItemGroup;
@@ -21,7 +21,7 @@ import net.sistr.littlemaidrebirth.mixin.SpawnRestrictionAccessor;
 import net.sistr.littlemaidrebirth.network.Networking;
 
 public class ModSetup {
-    public static final ItemGroup ITEM_GROUP = CreativeTabRegistry
+    public static final ItemGroup ITEM_GROUP = CreativeTabs
             .create(new Identifier(LMRBMod.MODID, "common"), Items.CAKE::getDefaultStack);
 
     public static void init() {

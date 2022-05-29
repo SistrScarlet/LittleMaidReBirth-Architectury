@@ -56,7 +56,7 @@ public class CookingMode extends Mode {
         }
         findCool = 60;
         //燃料がないならリターン
-        if (getFuel().isEmpty()) {
+        if (!getFuel().isPresent()) {
             return false;
         }
         if (furnacePos != null && getFurnaceBlockEntity(furnacePos).isPresent()) {
@@ -65,7 +65,7 @@ public class CookingMode extends Mode {
         furnacePos = null;
         Optional<BlockPos> optional = findFurnacePos();
         //かまどがあるか
-        if (optional.isEmpty()) {
+        if (!optional.isPresent()) {
             return false;
         }
         furnacePos = optional.get();

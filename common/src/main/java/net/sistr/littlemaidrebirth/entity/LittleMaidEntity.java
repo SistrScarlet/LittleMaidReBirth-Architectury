@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.entity;
 
 import com.google.common.collect.Lists;
-import dev.architectury.registry.menu.MenuRegistry;
+import me.shedaniel.architectury.registry.MenuRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.*;
@@ -22,7 +22,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.StackReference;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
@@ -112,7 +111,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             new ItemContractable<>(this,
                     LMRBMod.getConfig().getConsumeSalaryInterval(),
                     LMRBMod.getConfig().getUnpaidCountLimit(),
-                    stack -> stack.isIn(LMTags.Items.MAIDS_SALARY));
+                    stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem()));
     private final ModeController modeController = new ModeController(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
     private final SoundPlayableCompound soundPlayer;
@@ -200,18 +199,18 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
         this.goalSelector.add(++priority, new HealMyselfGoal<>(this, config.getHealInterval(), config.getHealAmount(),
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())));
         this.goalSelector.add(++priority, new WaitGoal<>(this));
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new ModeWrapperGoal<>(this), healthPredicate));
         this.goalSelector.add(++priority,
                 new FollowTameOwnerGoal<>(this, 1.5f, config.getSprintStartRange(), config.getSprintEndRange()));
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, true,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())));
         this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+                stack -> LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())));
         this.goalSelector.add(priority, new LMStareAtHeldItemGoal(this, this, true,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())));
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
         this.goalSelector.add(++priority,
@@ -223,7 +222,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.targetSelector.add(3, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
         this.targetSelector.add(4, new TrackOwnerAttackerGoal(this));
         this.targetSelector.add(5, new AttackWithOwnerGoal(this));
-        this.targetSelector.add(6, new ActiveTargetGoal<>(
+        this.targetSelector.add(6, new FollowTargetGoal<>(
                 this, LivingEntity.class, 5, true, false,
                 this::isEnemy));
     }
@@ -496,14 +495,14 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             play(LMSounds.LIVING_WHINE);
         } else {
             if (age % 4 == 0 && this.world.isSkyVisible(this.getBlockPos())) {
-                Biome biome = this.world.getBiome(getBlockPos()).value();
-                if (biome.isCold(getBlockPos())) {
+                Biome biome = this.world.getBiome(getBlockPos());
+                if (biome.getTemperature(getBlockPos()) < 0.1) {
                     play(LMSounds.LIVING_COLD);
-                } else if (biome.isHot(getBlockPos())) {
+                } else if (1 < biome.getTemperature(getBlockPos())) {
                     play(LMSounds.LIVING_HOT);
                 }
             } else if (age % 4 == 1 && world.isRaining()) {
-                Biome biome = this.world.getBiome(getBlockPos()).value();
+                Biome biome = this.world.getBiome(getBlockPos());
                 if (biome.getPrecipitation() == Biome.Precipitation.RAIN)
                     play(LMSounds.LIVING_RAIN);
                 else if (biome.getPrecipitation() == Biome.Precipitation.SNOW)
@@ -531,7 +530,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     public void onDeath(DamageSource source) {
         if (LMRBMod.getConfig().isCanResurrection()) {
-            this.unsetRemoved();
+            this.removed = false;
             this.dead = false;
             this.deathTime = 0;
             this.setHealth(this.getMaxHealth());
@@ -754,7 +753,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             return ActionResult.PASS;
         }
         if (!hasTameOwner()) {
-            if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
+            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
                 return contract(player, stack, false);
             }
             return ActionResult.PASS;
@@ -763,7 +762,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             return ActionResult.PASS;
         }
         if (isStrike()) {
-            if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
+            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
                 return contract(player, stack, true);
             } else if (world instanceof ServerWorld) {
                 ((ServerWorld) world).spawnParticles(ParticleTypes.SMOKE,
@@ -775,7 +774,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
             return ActionResult.PASS;
         }
-        if (stack.isIn(LMTags.Items.MAIDS_SALARY)) {
+        if (LMTags.Items.MAIDS_SALARY.contains(stack.getItem())) {
             return changeState(player, stack);
         }
         if (!player.world.isClient) {
@@ -791,10 +790,10 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 0, this.random.nextGaussian() * 0.02D, 0);
         this.getNavigation().stop();
         changeMovingState();
-        if (!player.getAbilities().creativeMode) {
+        if (!player.abilities.creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
-                player.getInventory().removeOne(stack);
+                player.inventory.removeOne(stack);
             }
         }
         return ActionResult.success(world.isClient);
@@ -827,10 +826,10 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         setMovingState(ESCORT);
         setContract(true);
         itemContractable.setContract(true);
-        if (!player.getAbilities().creativeMode) {
+        if (!player.abilities.creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
-                player.getInventory().removeOne(stack);
+                player.inventory.removeOne(stack);
             }
         }
         return ActionResult.success(world.isClient);
@@ -878,18 +877,13 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     protected void damageArmor(DamageSource source, float amount) {
-        ((PlayerInventory) getInventory()).damageArmor(source, amount, PlayerInventory.ARMOR_SLOTS);
-    }
-
-    @Override
-    protected void damageHelmet(DamageSource source, float amount) {
-        ((PlayerInventory) getInventory()).damageArmor(source, amount, PlayerInventory.HELMET_SLOTS);
+        ((PlayerInventory) getInventory()).damageArmor(source, amount);
     }
 
     //メイドさんはガードしないので要らないかも
     @Override
     protected void damageShield(float amount) {
-        if (this.activeItemStack.isOf(Items.SHIELD)) {
+        if (this.activeItemStack.getItem() == Items.SHIELD) {
 
             if (amount >= 3.0F) {
                 int i = 1 + MathHelper.floor(amount);
@@ -908,14 +902,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
 
         }
-    }
-
-    @Override
-    public StackReference getStackReference(int mappedIndex) {
-        if (mappedIndex >= 0 && mappedIndex < 36) {
-            return StackReference.of(this.getInventory(), mappedIndex);
-        }
-        return super.getStackReference(mappedIndex);
     }
 
     //要る？
@@ -1066,7 +1052,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Environment(EnvType.CLIENT)
     public float getInterestedAngle(float tickDelta) {
         return (prevInterestedAngle + (interestedAngle - prevInterestedAngle) * tickDelta) *
-                ((getId() % 2 == 0 ? 0.08F : -0.08F) * (float) Math.PI);
+                ((getEntityId() % 2 == 0 ? 0.08F : -0.08F) * (float) Math.PI);
     }
 
     @Environment(EnvType.CLIENT)

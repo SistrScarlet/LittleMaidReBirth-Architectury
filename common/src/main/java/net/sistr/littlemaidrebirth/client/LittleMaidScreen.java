@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
@@ -63,14 +63,14 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     protected void init() {
         super.init();
         if (owner == null) {
-            client.setScreen(null);
+            client.openScreen(null);
             return;
         }
         int left = (int) ((this.width - backgroundWidth) / 2F) - 5;
         int top = (int) ((this.height - backgroundHeight) / 2F);
         int size = 20;
         int layer = -1;
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
                 button -> owner.getTameOwner().ifPresent(OpenIFFScreenPacket::sendC2SPacket)) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
@@ -78,23 +78,23 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 itemRenderer.renderGuiItemIcon(BOOK, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
-                button -> client.setScreen(new SoundPackSelectScreen<>(title, owner))) {
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+                button -> client.openScreen(new SoundPackSelectScreen<>(title, owner))) {
             @Override
             public void renderButton(MatrixStack matrices, int x, int y, float delta) {
                 super.renderButton(matrices, x, y, delta);
                 itemRenderer.renderGuiItemIcon(NOTE, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
-                button -> client.setScreen(new ModelSelectScreen<>(title, owner.world, owner))) {
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+                button -> client.openScreen(new ModelSelectScreen<>(title, owner.world, owner))) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
                 itemRenderer.renderGuiItemIcon(ARMOR, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
                 button -> {
                     owner.setMovingState(owner.getMovingState() == Tameable.MovingState.FREEDOM
                             ? Tameable.MovingState.WAIT
@@ -107,7 +107,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 itemRenderer.renderGuiItemIcon(FEATHER, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+        this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
                 button -> SyncBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck())) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
@@ -124,14 +124,12 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                         .build()) {
             @Override
             public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-                RenderSystem.setShader(GameRenderer::getPositionTexShader);
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                RenderSystem.setShaderTexture(0, SALARY_WINDOW_TEXTURE);
+                MinecraftClient.getInstance().getTextureManager().bindTexture(SALARY_WINDOW_TEXTURE);
                 drawTexture(matrices, this.x, this.y, 0, 0, 80, 80, 128, 128);
                 super.render(matrices, mouseX, mouseY, delta);
             }
         };
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * (layer += 2), size, size, new LiteralText(""),
+        this.addButton(new ButtonWidget(left - size, top + size * (layer += 2), size, size, new LiteralText(""),
                 button -> {//ウィンドウを出す
                     showSalaryWindow = true;
                 }) {
@@ -153,8 +151,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     @Override
-    public void handledScreenTick() {
-        super.handledScreenTick();
+    public void tick() {
+        super.tick();
         //少し重たいかもしれないが、screenを開く直前にsetModeNameした場合に取得がズレるので毎tickやる
         stateText = getStateText();
     }
@@ -231,7 +229,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             drawHealth(matrices, 98, 7, MathHelper.clamp(health - 10, 0, 10), 5);
             drawHealth(matrices, 98, 16, MathHelper.clamp(health, 0, 10), 5);
         }
-        RenderSystem.setShaderTexture(0, GUI);
+        assert this.client != null;
+        this.client.getTextureManager().bindTexture(GUI);
     }
 
     protected void drawArmor(MatrixStack matrices) {
@@ -250,9 +249,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
 
     protected void drawIcon(MatrixStack matrices, int x, int y, float num, int row,
                             int baseU, int baseV, int overU, int overV, int halfU, int halfV) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, ICONS);
+        assert this.client != null;
+        this.client.getTextureManager().bindTexture(ICONS);
         for (int i = 0; i < row; i++) {
             this.drawTexture(matrices, x + i * 9, y, baseU, baseV, 9, 9);
             if (1 < num) {
@@ -266,17 +264,16 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
 
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, GUI);
+        assert this.client != null;
+        this.client.getTextureManager().bindTexture(GUI);
         int relX = (this.width - this.backgroundWidth) / 2;
         int relY = (this.height - this.backgroundHeight) / 2;
         this.drawTexture(matrices, relX, relY, 0, 0, this.backgroundWidth, this.backgroundHeight);
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void onClose() {
+        super.onClose();
         SyncMovingStatePacket.sendC2SPacket(owner, owner.getMovingState());
     }
 

@@ -1,9 +1,9 @@
 package net.sistr.littlemaidrebirth.entrypoint;
 
-import dev.architectury.platform.forge.EventBuses;
+import me.shedaniel.architectury.platform.forge.EventBuses;
+import me.shedaniel.architectury.registry.entity.EntityRenderers;
 import me.shedaniel.autoconfig.AutoConfig;
-import net.minecraftforge.client.ConfigGuiHandler;
-import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -24,12 +24,11 @@ public class LMRBForge {
 
         LMRBMod.init();
 
-        ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class,
-                () -> new ConfigGuiHandler.ConfigGuiFactory((client, parent) ->
-                        AutoConfig.getConfigScreen(LMRBConfig.class, parent).get()));
+        ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.CONFIGGUIFACTORY,
+                () -> (client, parent) ->
+                        AutoConfig.getConfigScreen(LMRBConfig.class, parent).get());
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::renderInit);
     }
 
     public void modInit(FMLCommonSetupEvent event) {
@@ -38,11 +37,7 @@ public class LMRBForge {
 
     public void clientInit(FMLClientSetupEvent event) {
         ClientSetup.init();
-    }
-
-    //ClientSetupよりこちらの方が実行が早いため、ClientSetupからArchitecturyのメソッド登録しようとすると無視される
-    public void renderInit(EntityRenderersEvent.RegisterRenderers event) {
-        event.registerEntityRenderer(Registration.LITTLE_MAID_MOB.get(), MaidModelRenderer::new);
+        EntityRenderers.register(Registration.LITTLE_MAID_MOB.get(), MaidModelRenderer::new);
     }
 
 }

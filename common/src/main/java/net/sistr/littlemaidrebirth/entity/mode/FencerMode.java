@@ -29,7 +29,7 @@ public class FencerMode extends Mode {
             @Override
             protected void attack(LivingEntity target, double squaredDistance) {
                 double reachSq = this.getSquaredMaxAttackDistance(target);
-                if (reachSq < squaredDistance || 0 < getCooldown() || !this.mob.canSee(target)) {
+                if (reachSq < squaredDistance || 0 < method_28348() || !this.mob.canSee(target)) {
                     return;
                 }
                 this.mob.getNavigation().stop();

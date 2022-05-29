@@ -76,7 +76,7 @@ public class FollowTameOwnerGoal<T extends PathAwareEntity & Tameable> extends G
 
     @Override
     public void tick() {
-        this.tameable.getLookControl().lookAt(this.owner, 10.0f, this.tameable.getMaxLookPitchChange());
+        this.tameable.getLookControl().lookAt(this.owner, 10.0f, this.tameable.getLookPitchSpeed());
         if (--this.updateCountdownTicks > 0) {
             return;
         }

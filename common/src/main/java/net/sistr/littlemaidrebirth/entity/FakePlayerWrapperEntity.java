@@ -1,12 +1,14 @@
 package net.sistr.littlemaidrebirth.entity;
 
-import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.DataFixer;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.advancement.PlayerAdvancementTracker;
-import net.minecraft.entity.*;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
+import net.minecraft.entity.EntityPose;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
@@ -17,7 +19,6 @@ import net.minecraft.server.ServerAdvancementLoader;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Util;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
@@ -78,34 +79,27 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
         pickupItems();
 
         //InventoryTick
-        ((PlayerInventoryAccessor)this).getPlayerInventory_LMRB().updateItems();
+        ((PlayerInventoryAccessor) this).getPlayerInventory_LMRB().updateItems();
 
         this.refreshPositionAndAngles(getOrigin().getX(), getOrigin().getY(), getOrigin().getZ(),
-                this.getOrigin().getYaw(), this.getOrigin().getPitch());
+                this.getOrigin().yaw, this.getOrigin().pitch);
     }
 
     protected void pickupItems() {
         if (this.getHealth() > 0.0F && !this.isSpectator()) {
             Box box2;
-            if (this.hasVehicle() && !this.getVehicle().isRemoved()) {
+            if (this.hasVehicle() && !this.getVehicle().removed) {
                 box2 = this.getBoundingBox().union(this.getVehicle().getBoundingBox()).expand(1.0D, 0.0D, 1.0D);
             } else {
                 box2 = this.getBoundingBox().expand(1.0D, 0.5D, 1.0D);
             }
 
             List<Entity> list = this.world.getOtherEntities(this, box2);
-            List<Entity> list2 = Lists.newArrayList();
 
             for (Entity entity : list) {
-                if (entity.getType() == EntityType.EXPERIENCE_ORB) {
-                    list2.add(entity);
-                } else if (!entity.isRemoved()) {
+                if (!entity.removed && entity != getOrigin()) {
                     ((PlayerAccessor) this).onCollideWithEntity_LM(entity);
                 }
-            }
-
-            if (!list2.isEmpty()) {
-                ((PlayerAccessor) this).onCollideWithEntity_LM(Util.getRandom(list2, this.random));
             }
         }
     }
@@ -128,9 +122,9 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
     //id系
 
     @Override
-    public int getId() {
-        int id = getOrigin().getId();
-        if (super.getId() != id) setId(id);
+    public int getEntityId() {
+        int id = getOrigin().getEntityId();
+        if (super.getEntityId() != id) setEntityId(id);
         return id;
     }
 

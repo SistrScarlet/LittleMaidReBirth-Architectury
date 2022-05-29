@@ -65,7 +65,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
 
     @Override
     public void tick() {
-        this.tameable.getLookControl().lookAt(this.owner, 10.0f, this.tameable.getMaxLookPitchChange());
+        this.tameable.getLookControl().lookAt(this.owner, 10.0f, this.tameable.getLookPitchSpeed());
         if (--this.updateCountdownTicks > 0) {
             return;
         }
@@ -95,7 +95,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
         if (!this.canTeleportTo(new BlockPos(x, y, z))) {
             return false;
         }
-        this.tameable.refreshPositionAndAngles((double) x + 0.5, y, (double) z + 0.5, this.tameable.getYaw(), this.tameable.getPitch());
+        this.tameable.refreshPositionAndAngles((double) x + 0.5, y, (double) z + 0.5, this.tameable.yaw, this.tameable.pitch);
         this.navigation.stop();
         return true;
     }

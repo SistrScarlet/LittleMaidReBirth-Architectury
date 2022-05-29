@@ -2,7 +2,7 @@ package net.sistr.littlemaidrebirth.client;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.item.Items;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModelRenderer;
 import net.sistr.littlemaidmodelloader.maidmodel.IModelCaps;
@@ -13,8 +13,8 @@ import net.sistr.littlemaidrebirth.entity.Tameable;
 @Environment(EnvType.CLIENT)
 public class MaidModelRenderer extends MultiModelRenderer<LittleMaidEntity> {
 
-    public MaidModelRenderer(EntityRendererFactory.Context ctx) {
-        super(ctx);
+    public MaidModelRenderer(EntityRenderDispatcher dispatcher) {
+        super(dispatcher);
     }
 
     @Override

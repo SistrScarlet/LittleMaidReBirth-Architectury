@@ -30,7 +30,7 @@ public class ItemContractable<T extends LivingEntity & InventorySupplier> implem
             return;
         }
         this.consumeInterval++;
-        if ((mob.getId() + mob.age) % 20 != 0) {
+        if ((mob.getEntityId() + mob.age) % 20 != 0) {
             return;
         }
 
