@@ -112,7 +112,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             new ItemContractable<>(this,
                     LMRBMod.getConfig().getConsumeSalaryInterval(),
                     LMRBMod.getConfig().getUnpaidCountLimit(),
-                    stack -> stack.isIn(LMTags.Items.MAIDS_SALARY));
+                    stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem()));
     private final ModeController modeController = new ModeController(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
     private final SoundPlayableCompound soundPlayer;
@@ -200,18 +200,18 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
         this.goalSelector.add(++priority, new HealMyselfGoal<>(this, config.getHealInterval(), config.getHealAmount(),
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())));
         this.goalSelector.add(++priority, new WaitGoal<>(this));
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new ModeWrapperGoal<>(this), healthPredicate));
         this.goalSelector.add(++priority,
                 new FollowTameOwnerGoal<>(this, 1.5f, config.getSprintStartRange(), config.getSprintEndRange()));
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, true,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())));
         this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+                stack -> LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())));
         this.goalSelector.add(priority, new LMStareAtHeldItemGoal(this, this, true,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())));
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
         this.goalSelector.add(++priority,
@@ -496,14 +496,14 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             play(LMSounds.LIVING_WHINE);
         } else {
             if (age % 4 == 0 && this.world.isSkyVisible(this.getBlockPos())) {
-                Biome biome = this.world.getBiome(getBlockPos()).value();
+                Biome biome = this.world.getBiome(getBlockPos());
                 if (biome.isCold(getBlockPos())) {
                     play(LMSounds.LIVING_COLD);
-                } else if (biome.isHot(getBlockPos())) {
+                } else if (1 < biome.getTemperature(getBlockPos())) {
                     play(LMSounds.LIVING_HOT);
                 }
             } else if (age % 4 == 1 && world.isRaining()) {
-                Biome biome = this.world.getBiome(getBlockPos()).value();
+                Biome biome = this.world.getBiome(getBlockPos());
                 if (biome.getPrecipitation() == Biome.Precipitation.RAIN)
                     play(LMSounds.LIVING_RAIN);
                 else if (biome.getPrecipitation() == Biome.Precipitation.SNOW)
@@ -768,7 +768,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             return ActionResult.PASS;
         }
         if (!hasTameOwner()) {
-            if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
+            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
                 return contract(player, stack, false);
             }
             return ActionResult.PASS;
@@ -777,7 +777,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             return ActionResult.PASS;
         }
         if (isStrike()) {
-            if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
+            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
                 return contract(player, stack, true);
             } else if (world instanceof ServerWorld) {
                 ((ServerWorld) world).spawnParticles(ParticleTypes.SMOKE,
@@ -789,7 +789,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             }
             return ActionResult.PASS;
         }
-        if (stack.isIn(LMTags.Items.MAIDS_SALARY)) {
+        if (LMTags.Items.MAIDS_SALARY.contains(stack.getItem())) {
             return changeState(player, stack);
         }
         if (!player.world.isClient) {

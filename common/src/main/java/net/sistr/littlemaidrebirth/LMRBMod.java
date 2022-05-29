@@ -26,7 +26,7 @@ public class LMRBMod {
     }
 
     public static void registerAttribute() {
-        EntityAttributeRegistry.register(Registration.LITTLE_MAID_MOB, LittleMaidEntity::createLittleMaidAttributes);
+        EntityAttributeRegistry.register(Registration.LITTLE_MAID_MOB::get, LittleMaidEntity::createLittleMaidAttributes);
     }
 
     public static LMRBConfig getConfig() {

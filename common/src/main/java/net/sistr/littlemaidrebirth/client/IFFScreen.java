@@ -140,8 +140,8 @@ public class IFFScreen extends Screen {
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void onClose() {
+        super.onClose();
         SyncIFFPacket.sendC2SPacket(entity, iffs);
     }
 

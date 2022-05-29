@@ -1,5 +1,5 @@
 modLoader = "javafml"
-loaderVersion = "[40,)"
+loaderVersion = "[37,)"
 issueTrackerURL = "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/issues"
 license = "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/blob/1.16_Architectury/LICENCE.md"
 
@@ -14,34 +14,34 @@ logoFile = "icon.png"
 [[dependencies.littlemaidrebirth]]
 modId = "forge"
 mandatory = true
-versionRange = "[40,)"
+versionRange = "[37,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.littlemaidrebirth]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.18.2,)"
+versionRange = "[1.17.1,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.littlemaidrebirth]]
 modId = "architectury"
 mandatory = true
-versionRange = "[4.4.59,)"
+versionRange = "[2.10.9,)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.littlemaidrebirth]]
 modId = "cloth_config"
 mandatory = true
-versionRange = "[6.2.62,)"
+versionRange = "[5.3.63,)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.littlemaidrebirth]]
 modId = "littlemaidmodelloader"
 mandatory = true
-versionRange = "[4.4.0,)"
+versionRange = "[3.4.0,)"
 ordering = "AFTER"
 side = "BOTH"

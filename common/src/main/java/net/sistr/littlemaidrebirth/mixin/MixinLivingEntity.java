@@ -14,11 +14,11 @@ public abstract class MixinLivingEntity implements LivingAccessor {
 
     @Shadow public abstract boolean blockedByShield(DamageSource source);
 
-    @Shadow protected abstract void sendEquipmentChanges();
+    @Shadow protected abstract void method_30128();
 
     @Override
     public void applyEquipmentAttributes_LM() {
-        sendEquipmentChanges();
+        method_30128();
     }
 
     @Override

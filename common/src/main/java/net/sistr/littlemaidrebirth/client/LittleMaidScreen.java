@@ -275,8 +275,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void onClose() {
+        super.onClose();
         SyncMovingStatePacket.sendC2SPacket(owner, owner.getMovingState());
     }
 
