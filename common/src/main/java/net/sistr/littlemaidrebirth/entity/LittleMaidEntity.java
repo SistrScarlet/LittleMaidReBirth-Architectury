@@ -620,14 +620,14 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                     BiPredicate<Double, Double> finalPredicate = shouldBackPredicate;
                     shouldBackPredicate = (x, z) -> finalPredicate.test(x, z)
                             //危険物がbox内にある
-                            && !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z));
+                            || !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z));
                 }
 
                 if (shouldBackByFall) {
                     BiPredicate<Double, Double> finalPredicate = shouldBackPredicate;
                     shouldBackPredicate = (x, z) -> finalPredicate.test(x, z)
                             //足場がbox内にない
-                            && this.world.isSpaceEmpty(this, this.getBoundingBox()
+                            || this.world.isSpaceEmpty(this, this.getBoundingBox()
                             .offset(x, 0, z)
                             .stretch(0, -(getDangerHeightThreshold() - fallDistance), 0))
                             //または、すぐ下に足場がなく、危険物がbox内にある
