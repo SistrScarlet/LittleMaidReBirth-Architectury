@@ -607,24 +607,38 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
         LMRBConfig config = LMRBMod.getConfig();
 
-        if (!config.isCanMoveToDanger()) {
+        if (!config.isImmortal() && !LMRBMod.getConfig().isNonMobDamageImmunity() && !config.isCanMoveToDanger()
+                && this.canClipAtLedge()) {
+            boolean shouldBackByDamage = isDamageSourceEmpty(this.getBoundingBox())
+                    && !this.isDamageSourceEmpty(this.getBoundingBox().offset(movement.x, 0, movement.z));
+            boolean shouldBackByFall = !config.isFallImmunity()
+                    && !isSafeFallHeight(this.getPos().add(movement.x, 0, movement.z));
 
-            //危険物に絶対触れない
-            if (!LMRBMod.getConfig().isNonMobDamageImmunity() && isDamageSourceEmpty(this.getBoundingBox())
-                    && !this.isDamageSourceEmpty(this.getBoundingBox().offset(movement.x, 0, movement.z))) {
-                movement = pushBack(movement, (x, z) ->
-                        !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z)));
-            }
+            if (shouldBackByDamage || shouldBackByFall) {
+                BiPredicate<Double, Double> shouldBackPredicate = (x, z) -> false;
+                if (shouldBackByDamage) {
+                    BiPredicate<Double, Double> finalPredicate = shouldBackPredicate;
+                    shouldBackPredicate = (x, z) -> finalPredicate.test(x, z)
+                            //危険物がbox内にある
+                            && !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z));
+                }
 
-            //絶対に飛び降りない
-            if (!config.isFallImmunity()
-                    && this.canClipAtLedge()
-                    && !isSafeFallHeight(this.getPos().add(movement.x, 0, movement.z))) {
-                movement = pushBack(movement, (x, z) ->
-                        //着地までにダメージを受けない高さに足場がない
-                        this.world.isSpaceEmpty(this, this.getBoundingBox()
-                                .offset(x, 0, z)
-                                .stretch(0, -(getDangerHeightThreshold() - fallDistance), 0)));
+                if (shouldBackByFall) {
+                    BiPredicate<Double, Double> finalPredicate = shouldBackPredicate;
+                    shouldBackPredicate = (x, z) -> finalPredicate.test(x, z)
+                            //足場がbox内にない
+                            && this.world.isSpaceEmpty(this, this.getBoundingBox()
+                            .offset(x, 0, z)
+                            .stretch(0, -(getDangerHeightThreshold() - fallDistance), 0))
+                            //または、すぐ下に足場がなく、危険物がbox内にある
+                            || (this.world.isSpaceEmpty(this, this.getBoundingBox()
+                            .offset(x, 0, z)
+                            .stretch(0, -stepHeight, 0))
+                            && !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z)
+                            .stretch(0, -getDangerHeightThreshold(), 0)));
+                }
+
+                movement = pushBack(movement, shouldBackPredicate);
             }
         }
 
