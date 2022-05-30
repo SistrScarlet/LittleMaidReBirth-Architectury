@@ -12,13 +12,13 @@ import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.SpawnSettings;
 import net.sistr.littlemaidrebirth.LMRBMod;
+import net.sistr.littlemaidrebirth.api.mode.Modes;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.iff.IFFType;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
-import net.sistr.littlemaidrebirth.api.mode.Modes;
-import net.sistr.littlemaidrebirth.mixin.SpawnRestrictionAccessor;
 import net.sistr.littlemaidrebirth.network.Networking;
+import net.sistr.littlemaidrebirth.util.SpawnRestrictionRegister;
 
 public class ModSetup {
     public static final ItemGroup ITEM_GROUP = CreativeTabs
@@ -48,7 +48,7 @@ public class ModSetup {
                                         LMRBMod.getConfig().getSpawnWeight(),
                                         LMRBMod.getConfig().getMinSpawnGroupSize(),
                                         LMRBMod.getConfig().getMaxSpawnGroupSize())));
-        SpawnRestrictionAccessor.callRegister(Registration.LITTLE_MAID_MOB.get(),
+        SpawnRestrictionRegister.callRegister(Registration.LITTLE_MAID_MOB.get(),
                 SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
                 (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }

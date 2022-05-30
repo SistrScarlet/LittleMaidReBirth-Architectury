@@ -14,8 +14,7 @@
     "MixinProjectileDamageSource",
     "MixinRangedWeaponItem",
     "MixinServerPlayer",
-    "MixinServerPlayerEntity",
-    "SpawnRestrictionAccessor"
+    "MixinServerPlayerEntity"
   ],
   "client": [
   ],
