@@ -113,6 +113,9 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Category("misc")
     private boolean canPickupItemByNoOwner;
 
+    @ConfigEntry.Category("misc")
+    private boolean canMilking;
+
 
     public boolean isCanSpawn() {
         return canSpawn;
@@ -140,6 +143,10 @@ public class LMRBConfig implements ConfigData {
 
     public boolean isCanPickupItemByNoOwner() {
         return canPickupItemByNoOwner;
+    }
+
+    public boolean isCanMilking() {
+        return canMilking;
     }
 
     public float getArcherRangeFactor() {
