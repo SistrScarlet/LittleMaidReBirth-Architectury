@@ -2,7 +2,6 @@ package net.sistr.littlemaidrebirth.api.mode;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tag.Tag;
 import net.minecraft.tag.TagKey;
 import net.minecraft.util.registry.Registry;
 

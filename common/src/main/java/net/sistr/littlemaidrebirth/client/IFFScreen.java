@@ -18,8 +18,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.TranslatableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidmodelloader.LMMLMod;
 import net.sistr.littlemaidmodelloader.client.screen.*;
@@ -47,7 +46,7 @@ public class IFFScreen extends Screen {
     private ListGUI<IFFGUIElement> iffGui;
 
     public IFFScreen(Entity entity, List<IFF> iffs) {
-        super(new LiteralText(""));
+        super(Text.empty());
         this.entity = entity;
         this.iffs = ImmutableList.copyOf(iffs);
     }
@@ -179,19 +178,13 @@ public class IFFScreen extends Screen {
                 }
             });
             TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-            textRenderer.drawWithShadow(matrices, new TranslatableText(this.iff.getEntityType().getTranslationKey()),
+            textRenderer.drawWithShadow(matrices, Text.translatable(this.iff.getEntityType().getTranslationKey()),
                     this.x, this.y, 0xFFFFFFFF);
-            int color;
-            switch (iff.getIFFTag()) {
-                case FRIEND:
-                    color = 0xFF40FF40;
-                    break;
-                case ENEMY:
-                    color = 0xFFFF4040;
-                    break;
-                default:
-                    color = 0xFFFFFF40;
-            }
+            int color = switch (iff.getIFFTag()) {
+                case FRIEND -> 0xFF40FF40;
+                case ENEMY -> 0xFFFF4040;
+                default -> 0xFFFFFF40;
+            };
             textRenderer.drawWithShadow(matrices, iff.getIFFTag().getName(),
                     this.x, this.y + textRenderer.fontHeight * 2, color);
         }

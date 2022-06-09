@@ -1,5 +1,6 @@
 package net.sistr.littlemaidrebirth.setup;
 
+import com.google.common.collect.Streams;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.level.biome.BiomeModifications;
 import net.minecraft.entity.EntityType;
@@ -9,7 +10,6 @@ import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.Heightmap;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.SpawnSettings;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Modes;
@@ -41,7 +41,7 @@ public class ModSetup {
     }
 
     private static void registerSpawnSettingLM() {
-        BiomeModifications.addProperties(context -> canSpawnBiome(context.getProperties().getCategory()),
+        BiomeModifications.addProperties(ModSetup::canSpawnBiome,
                 (context, mutable) -> mutable.getSpawnProperties()
                         .addSpawn(Registration.LITTLE_MAID_MOB.get().getSpawnGroup(),
                                 new SpawnSettings.SpawnEntry(Registration.LITTLE_MAID_MOB.get(),
@@ -53,12 +53,12 @@ public class ModSetup {
                 (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }
 
-    private static boolean canSpawnBiome(Biome.Category category) {
-        return category != Biome.Category.NONE
-                && category != Biome.Category.OCEAN
-                && category != Biome.Category.RIVER
-                && category != Biome.Category.THEEND
-                && category != Biome.Category.NETHER;
+    private static boolean canSpawnBiome(BiomeModifications.BiomeContext context) {
+        var generationProperties = context.getProperties().getGenerationProperties();
+        return generationProperties.getFeatures().stream()
+                .anyMatch(iterable -> Streams.stream(iterable)
+                        .anyMatch(registryEntry -> registryEntry.streamTags()
+                                .anyMatch(tagKey -> tagKey.id().getPath().contains("village"))));
     }
 
 }

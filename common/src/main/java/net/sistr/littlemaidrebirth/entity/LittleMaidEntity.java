@@ -1,6 +1,8 @@
 package net.sistr.littlemaidrebirth.entity;
 
 import com.google.common.collect.Lists;
+import dev.architectury.extensions.network.EntitySpawnExtension;
+import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -44,6 +46,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
@@ -57,8 +60,6 @@ import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayableCompound;
 import net.sistr.littlemaidmodelloader.maidmodel.IModelCaps;
 import net.sistr.littlemaidmodelloader.multimodel.IMultiModel;
 import net.sistr.littlemaidmodelloader.multimodel.layer.MMPose;
-import net.sistr.littlemaidmodelloader.network.CustomMobSpawnPacket;
-import net.sistr.littlemaidmodelloader.network.util.CustomPacketEntity;
 import net.sistr.littlemaidmodelloader.resource.holder.ConfigHolder;
 import net.sistr.littlemaidmodelloader.resource.holder.TextureHolder;
 import net.sistr.littlemaidmodelloader.resource.manager.LMConfigManager;
@@ -94,8 +95,8 @@ import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.ESCORT;
 import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.WAIT;
 
 //メイドさん本体
-public class LittleMaidEntity extends TameableEntity implements CustomPacketEntity, InventorySupplier, Tameable,
-        Contractable, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable {
+public class LittleMaidEntity extends TameableEntity implements InventorySupplier, Tameable,
+        Contractable, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable, EntitySpawnExtension {
     //変数群。カオス
     private static final TrackedData<Byte> MOVING_STATE =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
@@ -344,7 +345,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     //鯖
     @Override
-    public void writeCustomPacket(PacketByteBuf buf) {
+    public void saveAdditionalSpawnData(PacketByteBuf buf) {
         //モデル
         buf.writeEnumConstant(getColor());
         buf.writeBoolean(isContract());
@@ -359,7 +360,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     //蔵
     @Override
-    public void readCustomPacket(PacketByteBuf buf) {
+    public void loadAdditionalSpawnData(PacketByteBuf buf) {
         //モデル
         //readString()はクラ処理。このメソッドでは、クラ側なので問題なし
         setColor(buf.readEnumConstant(TextureColors.class));
@@ -595,10 +596,12 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
-    public void onKilledOther(ServerWorld world, LivingEntity other) {
-        if (isBloodSuck()) play(LMSounds.LAUGHTER);
+    public boolean onKilledOther(ServerWorld world, LivingEntity other) {
+        if (isBloodSuck()) {
+            play(LMSounds.LAUGHTER);
+        }
 
-        super.onKilledOther(world, other);
+        return super.onKilledOther(world, other);
     }
 
     @Override
@@ -1320,7 +1323,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             this.getConfigHolder().getSoundFileName(soundName.toLowerCase())
                     .ifPresent((soundFileName) ->
                             LMSoundManager.INSTANCE.play(soundFileName, this.getSoundCategory(),
-                                    LMRBMod.getConfig().getVoiceVolume(), 1.0F,
+                                    LMRBMod.getConfig().getVoiceVolume(), 1.0F, Random.create(),
                                     this.getX(), this.getEyeY(), this.getZ()));
             return;
         }
@@ -1340,7 +1343,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     //オーバーライドしなくても動くが、CustomPacketEntityが機能しない
     @Override
     public Packet<?> createSpawnPacket() {
-        return CustomMobSpawnPacket.createPacket(this);
+        return NetworkManager.createAddEntityPacket(this);
     }
 
     public static class LMMoveToDropItemGoal extends MoveToDropItemGoal {
