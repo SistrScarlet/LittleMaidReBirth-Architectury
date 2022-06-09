@@ -23,6 +23,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsage;
 import net.minecraft.item.Items;
 import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.nbt.NbtCompound;
@@ -763,6 +764,12 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         ItemStack stack = player.getStackInHand(hand);
+        if (LMRBMod.getConfig().isCanMilking() && player.getUuid().equals(this.getOwnerUuid()) && stack.getItem() == Items.BUCKET) {
+            player.playSound(SoundEvents.ENTITY_COW_MILK, 1.0F, 1.0F);
+            ItemStack itemStack2 = ItemUsage.method_30012(stack, player, Items.MILK_BUCKET.getDefaultStack());
+            player.setStackInHand(hand, itemStack2);
+            return ActionResult.success(this.world.isClient);
+        }
         if (player.isSneaking() || stack.getItem() instanceof IFFCopyBookItem) {
             return ActionResult.PASS;
         }
