@@ -63,5 +63,6 @@
   "text.autoconfig.littlemaidrebirth.option.unpaidCountLimit": "給料未払限度",
 
   "text.autoconfig.littlemaidrebirth.category.misc": "その他",
-  "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "野良メイドがアイテムを拾えるか"
+  "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "野良メイドがアイテムを拾えるか",
+  "text.autoconfig.littlemaidrebirth.option.canMilking": "メイドからミルクを得られるか"
 }

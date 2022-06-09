@@ -63,5 +63,6 @@
   "text.autoconfig.littlemaidrebirth.option.unpaidCountLimit": "Unpaid Count Limit",
 
   "text.autoconfig.littlemaidrebirth.category.misc": "Misc",
-  "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "Can Pickup Item By No Owner Maid"
+  "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "Can Pickup Item By No Owner Maid",
+  "text.autoconfig.littlemaidrebirth.option.canMilking": "Can Get Milk From Your Maid"
 }
