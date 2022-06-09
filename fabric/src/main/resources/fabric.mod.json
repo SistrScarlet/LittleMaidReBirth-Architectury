@@ -37,7 +37,7 @@
     "minecraft": ">=1.16.5",
     "architectury": ">=1.31.61",
     "modmenu": ">=1.16.22",
-    "cloth-config2": "4.14.64",
+    "cloth-config2": ">=4.14.64",
     "littlemaidmodelloader": ">=2.5.0"
   }
 }
