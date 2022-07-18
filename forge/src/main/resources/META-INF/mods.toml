@@ -9,7 +9,7 @@ version = "${version}"
 displayName = "LittleMaid ReBirth"
 authors = "Sistr"
 description = "いろいろ手伝ってくれたりくれなかったりする、ちいさなメイドさんを追加するMOD"
-logoFile = "icon.png"
+logoFile = "assets/littlemaidrebirth/icon.png"
 
 [[dependencies.littlemaidrebirth]]
 modId = "forge"

@@ -13,19 +13,19 @@
     "issues": "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/issues"
   },
   "license": "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/blob/1.16_Architectury/LICENCE.md",
-  "icon": "icon.png",
+  "icon": "assets/littlemaidrebirth/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.sistr.littlemaidrebirth.entrypoint.LMRBFabric"
+      "net.sistr.littlemaidrebirth.fabric.LMRBFabric"
     ],
     "client": [
-      "net.sistr.littlemaidrebirth.entrypoint.LMRBFabric"
+      "net.sistr.littlemaidrebirth.fabric.LMRBFabric"
     ],
     "server": [
     ],
     "modmenu": [
-      "net.sistr.littlemaidrebirth.fabric.LMRBModMenuIntegration"
+      "net.sistr.littlemaidrebirth.modmenu.fabric.LMRBModMenuIntegration"
     ]
   },
   "mixins": [

@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.entrypoint;
+package net.sistr.littlemaidrebirth.fabric;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
