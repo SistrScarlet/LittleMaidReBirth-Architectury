@@ -181,6 +181,7 @@ public class LittleMaidEntity extends TameableEntity implements InventorySupplie
 
     //登録メソッドたち
 
+    //todo 野良メイドのGoalも合わせて持つのは非効率では？
     @Override
     protected void initGoals() {
         super.initGoals();
@@ -208,10 +209,12 @@ public class LittleMaidEntity extends TameableEntity implements InventorySupplie
                 new ModeWrapperGoal<>(this), healthPredicate));
         this.goalSelector.add(++priority,
                 new FollowTameOwnerGoal<>(this, 1.5f, config.getSprintStartRange(), config.getSprintEndRange()));
-        this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, true,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+        this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, false,
+                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
         this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
                 stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+        this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, true,
+                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
         this.goalSelector.add(priority, new LMStareAtHeldItemGoal(this, this, true,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
