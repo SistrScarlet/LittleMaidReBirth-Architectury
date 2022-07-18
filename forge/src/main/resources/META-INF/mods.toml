@@ -28,14 +28,14 @@ side = "BOTH"
 [[dependencies.littlemaidrebirth]]
 modId = "architectury"
 mandatory = true
-versionRange = "[5.5.18,)"
+versionRange = "[5.9.31,)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.littlemaidrebirth]]
 modId = "cloth_config"
 mandatory = true
-versionRange = "[7.0.69,)"
+versionRange = "[7.0.73,)"
 ordering = "AFTER"
 side = "BOTH"
 
