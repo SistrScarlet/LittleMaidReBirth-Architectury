@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.entrypoint;
+package net.sistr.littlemaidrebirth.forge;
 
 import dev.architectury.platform.forge.EventBuses;
 import me.shedaniel.autoconfig.AutoConfig;
@@ -27,6 +27,7 @@ public class LMRBForge {
         ModLoadingContext.get().registerExtensionPoint(ConfigGuiHandler.ConfigGuiFactory.class,
                 () -> new ConfigGuiHandler.ConfigGuiFactory((client, parent) ->
                         AutoConfig.getConfigScreen(LMRBConfig.class, parent).get()));
+
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::renderInit);

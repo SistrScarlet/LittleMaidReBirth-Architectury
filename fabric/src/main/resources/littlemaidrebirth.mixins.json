@@ -1,6 +1,6 @@
 {
   "required": true,
-  "package": "net.sistr.littlemaidrebirth.mixin",
+  "package": "net.sistr.littlemaidrebirth.mixin.fabric",
   "compatibilityLevel": "JAVA_16",
   "mixins": [],
   "client": [

@@ -13,9 +13,6 @@ loom {
     forge {
         convertAccessWideners = true
         extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
-        //テンプレートにはないが、これないとMixin動かん
-        mixinConfig "littlemaidrebirth-common.mixins.json"
-        mixinConfig "littlemaidrebirth.mixins.json"
     }
 }
 

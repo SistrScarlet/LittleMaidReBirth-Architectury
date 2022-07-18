@@ -9,7 +9,7 @@ version = "${version}"
 displayName = "LittleMaid ReBirth"
 authors = "Sistr"
 description = "いろいろ手伝ってくれたりくれなかったりする、ちいさなメイドさんを追加するMOD"
-logoFile = "icon.png"
+logoFile = "assets/littlemaidrebirth/icon.png"
 
 [[dependencies.littlemaidrebirth]]
 modId = "forge"
@@ -28,7 +28,7 @@ side = "BOTH"
 [[dependencies.littlemaidrebirth]]
 modId = "architectury"
 mandatory = true
-versionRange = "[4.4.59,)"
+versionRange = "[4.5.76,)"
 ordering = "AFTER"
 side = "BOTH"
 
@@ -43,5 +43,3 @@ side = "BOTH"
 modId = "littlemaidmodelloader"
 mandatory = true
 versionRange = "[4.4.0,)"
-ordering = "AFTER"
-side = "BOTH"
