@@ -25,10 +25,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.StackReference;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsage;
-import net.minecraft.item.Items;
-import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.Packet;
@@ -763,6 +760,11 @@ public class LittleMaidEntity extends TameableEntity implements InventorySupplie
         return -fallDamage;
     }
 
+    @Override
+    public Vec3d getLeashOffset() {
+        return new Vec3d(0.0, this.getStandingEyeHeight() - 0.15f, 1f / 16f);
+    }
+
     //todo 以下数メソッドにはもうちと整理が必要か
 
     //trueでアイテムが使用された、falseでされなかった
@@ -777,7 +779,7 @@ public class LittleMaidEntity extends TameableEntity implements InventorySupplie
             player.setStackInHand(hand, itemStack2);
             return ActionResult.success(this.world.isClient);
         }
-        if (player.isSneaking() || stack.getItem() instanceof IFFCopyBookItem) {
+        if (player.isSneaking() || stack.getItem() instanceof IFFCopyBookItem || stack.getItem() instanceof LeadItem) {
             return ActionResult.PASS;
         }
         if (!hasTameOwner()) {
