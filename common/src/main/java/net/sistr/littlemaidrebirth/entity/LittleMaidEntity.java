@@ -18,6 +18,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -171,9 +172,9 @@ public class LittleMaidEntity extends TameableEntity implements InventorySupplie
         return builder;
     }
 
-    public static boolean isValidNaturalSpawn(WorldAccess world, BlockPos pos) {
-        return world.getBlockState(pos.down()).isFullCube(world, pos)
-                && world.getBaseLightLevel(pos, 0) > 8;
+    public static boolean isValidNaturalSpawnLM(EntityType<? extends LittleMaidEntity> type, WorldAccess world, SpawnReason spawnReason, BlockPos pos, Random random) {
+        return world.getBlockState(pos.down()).isFullCube(world, pos.down())
+                && AnimalEntity.isLightLevelValidForNaturalSpawn(world, pos);
     }
 
     //登録メソッドたち
@@ -407,7 +408,10 @@ public class LittleMaidEntity extends TameableEntity implements InventorySupplie
     //canSpawnとかでも使われる
     @Override
     public float getPathfindingFavor(BlockPos pos, WorldView world) {
-        return world.getBlockState(pos.down()).isFullCube(world, pos) ? 10.0F : world.getBrightness(pos) - 0.5F;
+        if (world.getBlockState(pos.down()).isFullCube(world, pos.down())) {
+            return 10.0f;
+        }
+        return world.getPhototaxisFavor(pos);
     }
 
     @Override
