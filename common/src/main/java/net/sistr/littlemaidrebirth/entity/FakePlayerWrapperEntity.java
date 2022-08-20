@@ -11,6 +11,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
+import net.minecraft.network.PacketCallbacks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.ServerAdvancementLoader;
@@ -203,7 +204,7 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
         }
 
         @Override
-        public void sendPacket(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> listener) {
+        public void sendPacket(Packet<?> packet, @Nullable PacketCallbacks callbacks) {
         }
     }
 
@@ -218,7 +219,7 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
         }
 
         @Override
-        public void send(Packet<?> packet, GenericFutureListener<? extends Future<? super Void>> callback) {
+        public void send(Packet<?> packet, @Nullable PacketCallbacks callbacks) {
         }
     }
 }

@@ -896,7 +896,7 @@ public class LittleMaidEntity extends TameableEntity implements InventorySupplie
     }
 
     @Override
-    public Iterable<ItemStack> getItemsHand() {
+    public Iterable<ItemStack> getHandItems() {
         return Lists.newArrayList(getMainHandStack(), getOffHandStack());
     }
 

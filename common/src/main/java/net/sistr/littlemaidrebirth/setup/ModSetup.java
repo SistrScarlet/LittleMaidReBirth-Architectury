@@ -48,6 +48,7 @@ public class ModSetup {
                                         LMRBMod.getConfig().getSpawnWeight(),
                                         LMRBMod.getConfig().getMinSpawnGroupSize(),
                                         LMRBMod.getConfig().getMaxSpawnGroupSize())));
+
         SpawnRestrictionRegister.callRegister(Registration.LITTLE_MAID_MOB.get(),
                 SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
                 LittleMaidEntity::isValidNaturalSpawnLM);
