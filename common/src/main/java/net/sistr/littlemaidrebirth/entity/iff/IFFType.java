@@ -9,6 +9,7 @@ import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.Monster;
 import net.minecraft.entity.mob.WaterCreatureEntity;
 import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.village.Merchant;
 import net.minecraft.world.World;
 
@@ -35,7 +36,7 @@ public class IFFType {
             iffTag = IFFTag.ENEMY;
             return true;
         }
-        if (entity instanceof AnimalEntity || entity instanceof WaterCreatureEntity
+        if (entity instanceof TameableEntity || entity instanceof WaterCreatureEntity
                 || entity instanceof Npc || entity instanceof Merchant) {
             iffTag = IFFTag.FRIEND;
             return true;
