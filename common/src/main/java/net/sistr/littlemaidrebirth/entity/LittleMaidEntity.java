@@ -16,6 +16,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -177,12 +178,34 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     //登録メソッドたち
 
-    //todo 野良メイドのGoalも合わせて持つのは非効率では？
     @Override
     protected void initGoals() {
-        super.initGoals();
-        int priority = 0;
+        initWildGoals();
+    }
 
+    protected void initWildGoals() {
+        int priority = -1;
+        LMRBConfig config = LMRBMod.getConfig();
+
+        this.goalSelector.add(++priority, new SwimGoal(this));
+        this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
+
+        this.goalSelector.add(++priority, new HealMyselfGoal<>(this, config.getHealInterval(), config.getHealAmount(),
+                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+
+        this.goalSelector.add(++priority, new EscapeDangerGoal(this, 1.25));
+
+        this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, false,
+                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
+                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+
+        this.goalSelector.add(++priority, new LookAtEntityGoal(this, MobEntity.class, 8.0F));
+        this.goalSelector.add(priority, new LookAroundGoal(this));
+    }
+
+    protected void initContractGoals() {
+        int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
         Predicate<Goal> healthPredicate =
@@ -191,40 +214,46 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                         LittleMaidEntity.this.getHealth() / LittleMaidEntity.this.getMaxHealth(),
                         0, 1);
 
-        this.goalSelector.add(0, new TeleportTameOwnerGoal<>(this, config.getTeleportStartRange()));
+        this.goalSelector.add(++priority, new TeleportTameOwnerGoal<>(this, config.getTeleportStartRange()));
         //緊急テレポート
-        this.goalSelector.add(0, new StartPredicateGoalWrapper<>(
+        this.goalSelector.add(priority, new StartPredicateGoalWrapper<>(
                 new TeleportTameOwnerGoal<>(this, config.getEmergencyTeleportStartRange()), healthPredicate.negate()));
 
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
+
         this.goalSelector.add(++priority, new HealMyselfGoal<>(this, config.getHealInterval(), config.getHealAmount(),
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+
         this.goalSelector.add(++priority, new WaitGoal<>(this));
+
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new ModeWrapperGoal<>(this), healthPredicate));
+
         this.goalSelector.add(++priority,
                 new FollowTameOwnerGoal<>(this, 1.5f, config.getSprintStartRange(), config.getSprintEndRange()));
-        this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
-        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, true,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
         this.goalSelector.add(priority, new LMStareAtHeldItemGoal(this, this, true,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
-        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
-                new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
+
         this.goalSelector.add(++priority,
                 new FollowTameOwnerGoal<>(this, 1.0f, config.getFollowStartRange(), config.getFollowEndRange()));
+
         this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, config.getFreedomRange()));
-        this.goalSelector.add(++priority, new LookAtEntityGoal(this, PlayerEntity.class, 8.0F));
+
+        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
+                new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
+
+        this.goalSelector.add(++priority, new LookAtEntityGoal(this, MobEntity.class, 8.0F));
         this.goalSelector.add(priority, new LookAroundGoal(this));
 
-        this.targetSelector.add(3, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
-        this.targetSelector.add(4, new TrackOwnerAttackerGoal(this));
-        this.targetSelector.add(5, new AttackWithOwnerGoal(this));
-        this.targetSelector.add(6, new ActiveTargetGoal<>(
+        priority = -1;
+        this.targetSelector.add(++priority, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
+        this.targetSelector.add(++priority, new TrackOwnerAttackerGoal(this));
+        this.targetSelector.add(++priority, new AttackWithOwnerGoal(this));
+        this.targetSelector.add(++priority, new ActiveTargetGoal<>(
                 this, LivingEntity.class, 5, true, false,
                 this::isEnemy));
     }
@@ -309,6 +338,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
 
         readContractable(nbt);
+        if (this.isContract()) {
+            this.goalSelector.clear();
+            this.targetSelector.clear();
+            initContractGoals();
+        }
 
         readModeData(nbt);
 
@@ -852,7 +886,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.setOwnerUuid(player.getUuid());
         setMovingState(ESCORT);
         setContract(true);
-        itemContractable.setContract(true);
         if (!player.getAbilities().creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
@@ -1268,6 +1301,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     public void setContract(boolean isContract) {
         multiModel.setContract(isContract);
         itemContractable.setContract(isContract);
+        if (isContract) {
+            this.goalSelector.clear();
+            this.targetSelector.clear();
+            initContractGoals();
+        }
     }
 
     /**
