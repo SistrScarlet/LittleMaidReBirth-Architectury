@@ -15,7 +15,6 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 //ドロップアイテムに向かうGoal
-//todo 主人の目の前のには行かないようにする
 public class MoveToDropItemGoal extends Goal {
     private final PathAwareEntity mob;
     private final int range;
