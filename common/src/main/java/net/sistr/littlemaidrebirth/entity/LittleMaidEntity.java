@@ -836,6 +836,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             return ActionResult.PASS;
         }
         if (stack.isIn(LMTags.Items.MAIDS_SALARY)) {
+            var config = LMRBMod.getConfig();
+            heal(config.getHealAmount());
             return changeState(player, stack);
         }
         if (!player.world.isClient) {
