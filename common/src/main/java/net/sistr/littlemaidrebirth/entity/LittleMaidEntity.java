@@ -243,6 +243,12 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
         this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, config.getFreedomRange()));
 
+        this.goalSelector.add(++priority, new LMStoreItemToContainerGoal<>(this,
+                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)
+                        || this.modeController.getMode()
+                        .filter(mode -> mode.getModeType().isModeItem(stack))
+                        .isPresent()));
+
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
 
