@@ -395,6 +395,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         }
         //サウンド
         buf.writeString(getConfigHolder().getName());
+        //頭の装飾品が表示されない対策
+        //原因はインベントリを開くまで同期されないため
+        buf.writeItemStack(getInventory().getStack(18));
     }
 
     //蔵
@@ -416,6 +419,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         //サウンド
         LMConfigManager.INSTANCE.getConfig(buf.readString())
                 .ifPresent(this::setConfigHolder);
+
+        getInventory().setStack(18, buf.readItemStack());
     }
 
     //バニラメソッズ

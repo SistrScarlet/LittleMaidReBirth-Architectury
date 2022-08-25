@@ -12,7 +12,6 @@ import net.minecraft.util.Arm;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.profiler.Profiler;
-import net.sistr.littlemaidmodelloader.client.renderer.MultiModel;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModelArmorLayer;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModelHeldItemLayer;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModelLightLayer;
@@ -27,14 +26,16 @@ import net.sistr.littlemaidrebirth.entity.Tameable;
 import static net.sistr.littlemaidmodelloader.maidmodel.IModelCaps.*;
 
 @Environment(EnvType.CLIENT)
-public class MaidModelRenderer extends MobEntityRenderer<LittleMaidEntity, MultiModel<LittleMaidEntity>> {
+public class MaidModelRenderer extends MobEntityRenderer<LittleMaidEntity, LMMultiModel<LittleMaidEntity>> {
     private static final Identifier NULL_TEXTURE = new Identifier(LMRBMod.MODID, "null");
 
     public MaidModelRenderer(EntityRendererFactory.Context ctx) {
-        super(ctx, new MultiModel<>(), 0.5F);
-        this.addFeature(new MultiModelArmorLayer<>(this));
-        this.addFeature(new MultiModelHeldItemLayer<>(this));
-        this.addFeature(new MultiModelLightLayer<>(this));
+        super(ctx, new LMMultiModel<>(), 0.5F);
+        //エラー吐くので<>消した(ゴリ押し)
+        this.addFeature(new MultiModelArmorLayer(this));
+        this.addFeature(new MultiModelHeldItemLayer(this));
+        this.addFeature(new MultiModelLightLayer(this));
+        this.addFeature(new LMHeadFeatureRenderer<>(this, ctx.getModelLoader()));
     }
 
     @Override
