@@ -200,7 +200,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
                 stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
 
-        this.goalSelector.add(++priority, new LookAtEntityGoal(this, MobEntity.class, 8.0F));
+        this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
         this.goalSelector.add(priority, new LookAroundGoal(this));
     }
 
@@ -252,7 +252,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
 
-        this.goalSelector.add(++priority, new LookAtEntityGoal(this, MobEntity.class, 8.0F));
+        this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
         this.goalSelector.add(priority, new LookAroundGoal(this));
 
         priority = -1;
