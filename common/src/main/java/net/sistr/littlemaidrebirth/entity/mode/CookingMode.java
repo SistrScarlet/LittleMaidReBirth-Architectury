@@ -93,7 +93,7 @@ public class CookingMode extends Mode {
      */
     public Optional<BlockPos> findFurnacePos() {
         return BlockFinder.searchTargetBlock(mob.getBlockPos(), this::canUseFurnace, this::canSeeThrough,
-                Arrays.asList(Direction.values()), 1000)
+                        Arrays.asList(Direction.values()), 1000)
                 .filter(pos -> pos.getManhattanDistance(mob.getBlockPos()) < 8);
     }
 

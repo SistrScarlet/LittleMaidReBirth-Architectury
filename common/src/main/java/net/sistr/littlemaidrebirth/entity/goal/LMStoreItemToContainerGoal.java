@@ -10,7 +10,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Direction;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.MovingMode;
 
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -23,12 +23,16 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
 
     @Override
     public boolean canStart() {
-        return this.mob.getMovingState() == Tameable.MovingState.FREEDOM && super.canStart();
+        return !this.mob.isWait()
+                && this.mob.getMovingMode() == MovingMode.FREEDOM
+                && super.canStart();
     }
 
     @Override
     public boolean shouldContinue() {
-        return this.mob.getMovingState() == Tameable.MovingState.FREEDOM && super.shouldContinue();
+        return !this.mob.isWait()
+                && this.mob.getMovingMode() == MovingMode.FREEDOM
+                && super.shouldContinue();
     }
 
     @Override

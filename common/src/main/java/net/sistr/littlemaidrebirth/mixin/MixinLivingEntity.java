@@ -10,11 +10,14 @@ import org.spongepowered.asm.mixin.Shadow;
 public abstract class MixinLivingEntity implements LivingAccessor {
 
 
-    @Shadow protected abstract void tickActiveItemStack();
+    @Shadow
+    protected abstract void tickActiveItemStack();
 
-    @Shadow public abstract boolean blockedByShield(DamageSource source);
+    @Shadow
+    public abstract boolean blockedByShield(DamageSource source);
 
-    @Shadow protected abstract void sendEquipmentChanges();
+    @Shadow
+    protected abstract void sendEquipmentChanges();
 
     @Override
     public void applyEquipmentAttributes_LM() {

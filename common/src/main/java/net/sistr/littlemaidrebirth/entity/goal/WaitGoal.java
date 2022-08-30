@@ -17,7 +17,7 @@ public class WaitGoal<T extends PathAwareEntity & Tameable> extends Goal {
 
     @Override
     public boolean canStart() {
-        return mob.getMovingState() == Tameable.MovingState.WAIT;
+        return mob.isWait();
     }
 
     @Override

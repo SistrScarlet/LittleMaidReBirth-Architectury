@@ -18,7 +18,7 @@ import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.FakePlayer;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.MovingMode;
 import net.sistr.littlemaidrebirth.util.BlockFinder;
 
 import java.util.Arrays;
@@ -47,7 +47,7 @@ public class TorcherMode extends Mode {
         }
         cool = 20;
         BlockPos base;
-        if (mob.getMovingState() == Tameable.MovingState.ESCORT) {
+        if (this.mob.getMovingMode() == MovingMode.ESCORT) {
             Entity owner = mob.getTameOwner().orElse(null);
             if (owner == null) {
                 return false;

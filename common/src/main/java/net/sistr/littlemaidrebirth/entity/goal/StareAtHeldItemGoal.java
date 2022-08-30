@@ -8,12 +8,12 @@ import net.minecraft.item.ItemStack;
 import java.util.EnumSet;
 import java.util.function.Predicate;
 
-public class StareAtHeldItemGoal extends Goal {
-    protected final PathAwareEntity mob;
+public class StareAtHeldItemGoal<T extends PathAwareEntity> extends Goal {
+    protected final T mob;
     protected final Predicate<ItemStack> targetItem;
     protected PlayerEntity stareAt;
 
-    public StareAtHeldItemGoal(PathAwareEntity mob, Predicate<ItemStack> targetItem) {
+    public StareAtHeldItemGoal(T mob, Predicate<ItemStack> targetItem) {
         this.mob = mob;
         this.targetItem = targetItem;
         setControls(EnumSet.of(Control.LOOK));
