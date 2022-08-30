@@ -184,6 +184,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         initWildGoals();
     }
 
+    //todo 速度をconfig化
     protected void initWildGoals() {
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
@@ -265,8 +266,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 100,
                 64));
 
-        this.goalSelector.add(++priority, new RedstoneTraceGoal(this));
-        this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, config.getFreedomRange()));
+        this.goalSelector.add(++priority, new RedstoneTraceGoal(this, 0.65f));
+        this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.65D, config.getFreedomRange()));
 
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));

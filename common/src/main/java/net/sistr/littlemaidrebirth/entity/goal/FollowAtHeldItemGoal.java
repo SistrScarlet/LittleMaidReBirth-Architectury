@@ -18,7 +18,8 @@ public class FollowAtHeldItemGoal<T extends PathAwareEntity & Tameable> extends 
     @Override
     public void tick() {
         super.tick();
-        if (mob.squaredDistanceTo(stareAt) < 2 * 2) {
+        //todo config化
+        if (mob.squaredDistanceTo(stareAt) < 1.5f * 1.5f) {
             mob.getNavigation().stop();
             return;
         }

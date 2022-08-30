@@ -51,7 +51,7 @@ public class LMRBConfig implements ConfigData {
     private float followStartRange = 6.0f;
 
     @ConfigEntry.Category("maid")
-    private float followEndRange = 4.0f;
+    private float followEndRange = 5.0f;
 
     @ConfigEntry.Category("maid")
     private float sprintStartRange = 8.0f;
