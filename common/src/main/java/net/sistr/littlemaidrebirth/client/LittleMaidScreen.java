@@ -26,7 +26,7 @@ import net.sistr.littlemaidmodelloader.client.screen.SoundPackSelectScreen;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.MovingMode;
 import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
 import net.sistr.littlemaidrebirth.network.SyncBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.SyncMovingStatePacket;
@@ -51,12 +51,14 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private WindowGUIComponent salaryWindow;
     private boolean showSalaryWindow;
     private Text stateText;
+    private MovingMode movingMode;
 
     public LittleMaidScreen(LittleMaidScreenHandler screenContainer, PlayerInventory inv, Text titleIn) {
         super(screenContainer, inv, titleIn);
         this.backgroundHeight = 208;
         owner = screenContainer.getGuiEntity();
         unpaidDays = screenContainer.getUnpaidDays();
+        movingMode = owner.getMovingMode();
     }
 
     @Override
@@ -96,9 +98,11 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
                 button -> {
-                    owner.setMovingState(owner.getMovingState() == Tameable.MovingState.FREEDOM
-                            ? Tameable.MovingState.WAIT
-                            : Tameable.MovingState.FREEDOM);
+                    switch (movingMode) {
+                        case ESCORT -> movingMode = MovingMode.FREEDOM;
+                        case FREEDOM -> movingMode = MovingMode.TRACER;
+                        case TRACER -> movingMode = MovingMode.ESCORT;
+                    }
                     stateText = getStateText();
                 }) {
             @Override
@@ -145,7 +149,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     public Text getStateText() {
-        MutableText stateText = new TranslatableText("state." + LMRBMod.MODID + "." + owner.getMovingState().getName());
+        MutableText stateText = new TranslatableText("state." + LMRBMod.MODID + "." + movingMode.getName());
         owner.getModeName().ifPresent(
                 modeName -> stateText.append(" : ")
                         .append(new TranslatableText("mode." + LMRBMod.MODID + "." + modeName)));
@@ -277,7 +281,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     @Override
     public void close() {
         super.close();
-        SyncMovingStatePacket.sendC2SPacket(owner, owner.getMovingState());
+        SyncMovingStatePacket.sendC2SPacket(owner, movingMode);
     }
 
     public static class SalaryGUI extends GUIElement {

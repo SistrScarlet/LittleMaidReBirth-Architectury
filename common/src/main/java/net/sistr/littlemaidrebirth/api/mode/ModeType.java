@@ -26,7 +26,7 @@ public class ModeType<T extends Mode> {
     }
 
     public static <T extends Mode> Builder<T> builder(BiFunction<ModeType<T>, LittleMaidEntity, T> function) {
-        return  new Builder<>(function);
+        return new Builder<>(function);
     }
 
     public static class Builder<T extends Mode> {

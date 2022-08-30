@@ -11,9 +11,12 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(AbstractFurnaceBlockEntity.class)
 public abstract class MixinAbstractFurnaceBlockEntity implements AbstractFurnaceAccessor {
 
-    @Shadow @Final protected RecipeType<? extends AbstractCookingRecipe> recipeType;
+    @Shadow
+    @Final
+    protected RecipeType<? extends AbstractCookingRecipe> recipeType;
 
-    @Shadow protected abstract boolean isBurning();
+    @Shadow
+    protected abstract boolean isBurning();
 
     @Override
     public RecipeType<? extends AbstractCookingRecipe> getRecipeType_LM() {

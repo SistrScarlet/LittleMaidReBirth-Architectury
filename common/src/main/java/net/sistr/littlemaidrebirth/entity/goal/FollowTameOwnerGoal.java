@@ -40,7 +40,7 @@ public class FollowTameOwnerGoal<T extends PathAwareEntity & Tameable> extends G
             return false;
         } else if (tameOwner.isSpectator()) {
             return false;
-        } else if (this.tameable.getMovingState() != Tameable.MovingState.ESCORT) {
+        } else if (this.tameable.isWait()) {
             return false;
         } else if (this.tameable.squaredDistanceTo(tameOwner) < followStartSq) {
             return false;
@@ -53,7 +53,7 @@ public class FollowTameOwnerGoal<T extends PathAwareEntity & Tameable> extends G
     public boolean shouldContinue() {
         if (this.navigation.isIdle()) {
             return false;
-        } else if (this.tameable.getMovingState() != Tameable.MovingState.ESCORT) {
+        } else if (this.tameable.isWait()) {
             return false;
         } else {
             return followEndSq < this.tameable.squaredDistanceTo(this.owner);

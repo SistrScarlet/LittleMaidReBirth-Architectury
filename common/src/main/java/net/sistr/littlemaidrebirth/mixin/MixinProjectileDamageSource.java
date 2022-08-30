@@ -16,7 +16,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinProjectileDamageSource {
 
     @Mutable
-    @Shadow @Final @Nullable private Entity attacker;
+    @Shadow
+    @Final
+    @Nullable
+    private Entity attacker;
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void onInit(String name, Entity projectile, Entity attacker, CallbackInfo ci) {

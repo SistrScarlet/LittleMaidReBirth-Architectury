@@ -78,7 +78,7 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
         pickupItems();
 
         //InventoryTick
-        ((PlayerInventoryAccessor)this).getPlayerInventory_LMRB().updateItems();
+        ((PlayerInventoryAccessor) this).getPlayerInventory_LMRB().updateItems();
 
         this.refreshPositionAndAngles(getOrigin().getX(), getOrigin().getY(), getOrigin().getZ(),
                 this.getOrigin().getYaw(), this.getOrigin().getPitch());

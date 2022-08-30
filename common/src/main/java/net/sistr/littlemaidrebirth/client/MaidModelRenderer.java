@@ -21,7 +21,6 @@ import net.sistr.littlemaidmodelloader.maidmodel.ModelMultiBase;
 import net.sistr.littlemaidmodelloader.multimodel.layer.MMMatrixStack;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.entity.Tameable;
 
 import static net.sistr.littlemaidmodelloader.maidmodel.IModelCaps.*;
 
@@ -102,7 +101,7 @@ public class MaidModelRenderer extends MobEntityRenderer<LittleMaidEntity, LMMul
         model.setCapsValue(caps_ticksExisted, entity.age);
 
         model.setCapsValue(IModelCaps.caps_aimedBow, entity.isAimingBow());
-        model.setCapsValue(IModelCaps.caps_isWait, entity.getMovingState() == Tameable.MovingState.WAIT);
+        model.setCapsValue(IModelCaps.caps_isWait, entity.isWait());
         model.setCapsValue(IModelCaps.caps_isContract, entity.hasTameOwner());
         model.setCapsValue(IModelCaps.caps_isBloodsuck, entity.isBloodSuck());
         model.setCapsValue(IModelCaps.caps_isClock, entity.getMainHandStack().getItem() == Items.CLOCK

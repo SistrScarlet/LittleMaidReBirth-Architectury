@@ -1,11 +1,11 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.MovingMode;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -23,47 +23,27 @@ public class RedstoneTraceGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return mob.getMainHandStack().getItem() == Items.REDSTONE_TORCH;
+        return !mob.isWait()
+                && mob.getMovingMode() == MovingMode.TRACER
+                && this.mob.getNavigation().isIdle();
     }
 
     @Override
     public void start() {
-
-    }
-
-    @Override
-    public void tick() {
-        /*getAroundSignalPoses()
-                .forEach(pos -> {
-                    float score = getScore(pos);
-                    ((ServerWorld) this.mob.world).spawnParticles(
-                            new DustParticleEffect(new Vec3f(score, 0, 1 - score), 1.0f),
-                            pos.getX() + 0.5f,
-                            pos.getY() + 1f,
-                            pos.getZ() + 0.5f,
-                            1, 0, 0, 0, 0);
-                });*/
-        var navigation = this.mob.getNavigation();
-        if (!navigation.isIdle()) {
-            return;
-        }
-        var mobPos = this.mob.getBlockPos();
         getAroundSignalPoses()
                 //現在位置にあるposは除外する。ただし高度は無視
-                .filter(pos -> pos.getX() != mobPos.getX() || pos.getZ() != mobPos.getZ())
+                .filter(pos -> {
+                    var mobPos = this.mob.getBlockPos();
+                    return pos.getX() != mobPos.getX() || pos.getZ() != mobPos.getZ();
+                })
                 .min(Comparator.comparingDouble(pos ->
                         //左55度を0として時計回りに一周回し、角度が浅いposを取る
                         //あと高度が高い位置を優先して取る
                         -MathHelper.subtractAngles(getRelYaw(pos), 55f) + 180f - pos.getY()))
-                .ifPresent(pos -> navigation.startMovingAlong(navigation.findPathTo(pos, 0), this.speed));
-    }
-
-    protected float getRelYaw(BlockPos pos) {
-        float x = (float) (pos.getX() + 0.5f - this.mob.getX());
-        float z = (float) (pos.getZ() + 0.5f - this.mob.getZ());
-        float yaw = (float) (-MathHelper.atan2(x, z) * (180 / Math.PI));
-        float mobYaw = this.mob.getYaw();
-        return MathHelper.subtractAngles(mobYaw, yaw);
+                .ifPresent(pos -> {
+                    var navigation = this.mob.getNavigation();
+                    navigation.startMovingAlong(navigation.findPathTo(pos, 0), this.speed);
+                });
     }
 
     protected Stream<BlockPos> getAroundSignalPoses() {
@@ -80,12 +60,12 @@ public class RedstoneTraceGoal extends Goal {
                 .anyMatch(direction -> 0 < state.getStrongRedstonePower(this.mob.world, pos, direction));
     }
 
-    protected int getEmitPower(BlockPos pos) {
-        var state = mob.world.getBlockState(pos);
-        return Arrays.stream(Direction.values())
-                .mapToInt(direction -> state.getStrongRedstonePower(this.mob.world, pos, direction))
-                .max()
-                .orElse(0);
+    protected float getRelYaw(BlockPos pos) {
+        float x = (float) (pos.getX() + 0.5f - this.mob.getX());
+        float z = (float) (pos.getZ() + 0.5f - this.mob.getZ());
+        float yaw = (float) (-MathHelper.atan2(x, z) * (180 / Math.PI));
+        float mobYaw = this.mob.getYaw();
+        return MathHelper.subtractAngles(mobYaw, yaw);
     }
 
 }

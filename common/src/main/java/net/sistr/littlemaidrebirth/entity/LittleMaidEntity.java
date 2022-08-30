@@ -23,11 +23,15 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.StackReference;
-import net.minecraft.item.*;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsage;
+import net.minecraft.item.Items;
+import net.minecraft.item.RangedWeaponItem;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -37,10 +41,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
@@ -74,7 +75,6 @@ import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.mode.ModeController;
 import net.sistr.littlemaidrebirth.entity.mode.ModeSupplier;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
-import net.sistr.littlemaidrebirth.item.IFFCopyBookItem;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LivingAccessor;
@@ -87,30 +87,32 @@ import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.ESCORT;
-import static net.sistr.littlemaidrebirth.entity.Tameable.MovingState.WAIT;
-
 //メイドさん本体
 public class LittleMaidEntity extends TameableEntity implements CustomPacketEntity, InventorySupplier, Tameable,
-        Contractable, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable {
+        Contractable, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable, HasMovingMode {
     //変数群。カオス
-    private static final TrackedData<Byte> MOVING_STATE =
+    private static final int WAIT_INDEX = 0;
+    private static final int AIMING_INDEX = 1;
+    private static final int BEGGING_INDEX = 2;
+    private static final int BLOOD_SUCK_INDEX = 3;
+    private static final int STRIKE_INDEX = 3;
+    private static final TrackedData<Byte> LMM_FLAGS =
+            DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
+    private static final TrackedData<Byte> MOVING_MODE =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
     private static final TrackedData<String> MODE_NAME =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.STRING);
-    private static final TrackedData<Boolean> AIMING =
-            DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> BEGGING =
-            DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Boolean> BLOOD_SUCK =
-            DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private final LMFakePlayerSupplier fakePlayer = new LMFakePlayerSupplier(this);
     private final LMInventorySupplier littleMaidInventory = new LMInventorySupplier(this, this);
     private final ItemContractable<LittleMaidEntity> itemContractable =
             new ItemContractable<>(this,
                     LMRBMod.getConfig().getConsumeSalaryInterval(),
                     LMRBMod.getConfig().getUnpaidCountLimit(),
-                    stack -> stack.isIn(LMTags.Items.MAIDS_SALARY));
+                    stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
+                    mob -> {
+                        this.setLMMFlag(STRIKE_INDEX, true);
+                        mob.setMovingMode(MovingMode.FREEDOM);
+                    });
     private final ModeController modeController = new ModeController(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
     private final SoundPlayableCompound soundPlayer;
@@ -194,9 +196,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
         this.goalSelector.add(++priority, new EscapeDangerGoal(this, 1.25));
 
-        this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, false,
+        this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this, false,
                 stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
-        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal(this, this, false,
+        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal<>(this, false,
                 stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
 
         this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
@@ -213,15 +215,20 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                         LittleMaidEntity.this.getHealth() / LittleMaidEntity.this.getMaxHealth(),
                         0, 1);
 
-        this.goalSelector.add(++priority, new TeleportTameOwnerGoal<>(this, config.getTeleportStartRange()));
+        this.goalSelector.add(++priority, new HasMMTeleportTameOwnerGoal<>(this,
+                config.getTeleportStartRange()));
         //緊急テレポート
         this.goalSelector.add(priority, new StartPredicateGoalWrapper<>(
-                new TeleportTameOwnerGoal<>(this, config.getEmergencyTeleportStartRange()), healthPredicate.negate()));
+                new HasMMTeleportTameOwnerGoal<>(this,
+                        config.getEmergencyTeleportStartRange()),
+                healthPredicate.negate()));
 
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
 
-        this.goalSelector.add(++priority, new HealMyselfGoal<>(this, config.getHealInterval(), config.getHealAmount(),
+        this.goalSelector.add(++priority, new HealMyselfGoal<>(this,
+                config.getHealInterval(),
+                config.getHealAmount(),
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
 
         this.goalSelector.add(++priority, new WaitGoal<>(this));
@@ -230,24 +237,34 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 new ModeWrapperGoal<>(this), healthPredicate));
 
         this.goalSelector.add(++priority,
-                new FollowTameOwnerGoal<>(this, 1.5f, config.getSprintStartRange(), config.getSprintEndRange()));
+                new HasMMFollowTameOwnerGoal<>(
+                        this,
+                        1.5f,
+                        config.getSprintStartRange(),
+                        config.getSprintEndRange()));
 
-        this.goalSelector.add(++priority, new FollowAtHeldItemGoal(this, this, true,
+        this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this,
+                true,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
-        this.goalSelector.add(priority, new LMStareAtHeldItemGoal(this, this, true,
+        this.goalSelector.add(priority, new LMStareAtHeldItemGoal<>(this,
+                true,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
 
         this.goalSelector.add(++priority,
-                new FollowTameOwnerGoal<>(this, 1.0f, config.getFollowStartRange(), config.getFollowEndRange()));
-
-        this.goalSelector.add(++priority, new RedstoneTraceGoal(this));
-        this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, config.getFreedomRange()));
+                new HasMMFollowTameOwnerGoal<>(
+                        this,
+                        1.0f,
+                        config.getFollowStartRange(),
+                        config.getFollowEndRange()));
 
         this.goalSelector.add(++priority, new LMStoreItemToContainerGoal<>(this,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)
                         || this.modeController.getMode()
                         .filter(mode -> mode.getModeType().isModeItem(stack))
                         .isPresent()));
+
+        this.goalSelector.add(++priority, new RedstoneTraceGoal(this));
+        this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, config.getFreedomRange()));
 
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
@@ -267,11 +284,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     @Override
     protected void initDataTracker() {
         super.initDataTracker();
-        this.dataTracker.startTracking(MOVING_STATE, (byte) 0);
-        this.dataTracker.startTracking(AIMING, false);
-        this.dataTracker.startTracking(BEGGING, false);
+        this.dataTracker.startTracking(LMM_FLAGS, (byte) 0);
+        this.dataTracker.startTracking(MOVING_MODE, (byte) 0);
         this.dataTracker.startTracking(MODE_NAME, "");
-        this.dataTracker.startTracking(BLOOD_SUCK, false);
     }
 
     public void addDefaultModes(LittleMaidEntity maid) {
@@ -308,6 +323,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
 
+        nbt.putBoolean("Wait", this.isWait());
+        nbt.putByte("MovingMode", (byte) this.getMovingMode().getId());
+
         writeInventory(nbt);
         writeContractable(nbt);
 
@@ -325,8 +343,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
             nbt.putString("SoundConfigName", getConfigHolder().getName());
             writeIFF(nbt);
             writeModeData(nbt);
-            setBloodSuck(nbt.getBoolean("isBloodSuck"));
-            nbt.putInt("MovingState", getMovingState().getId());
+            nbt.putBoolean("isBloodSuck", isBloodSuck());
             if (freedomPos != null) {
                 nbt.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
             }
@@ -338,10 +355,12 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         super.readCustomDataFromNbt(nbt);
         readInventory(nbt);
 
-        setMovingState(MovingState.fromId(nbt.getInt("MovingState")));
-
-        if (nbt.contains("FreedomPos"))
-            freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
+        setWait(nbt.getBoolean("Wait"));
+        setMovingMode(MovingMode.fromId(nbt.getInt("MovingMode")));
+        if (this.getMovingMode() == MovingMode.FREEDOM) {
+            if (nbt.contains("FreedomPos")) freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
+            else freedomPos = this.getBlockPos();
+        }
 
         readContractable(nbt);
         if (this.isContract()) {
@@ -379,7 +398,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
         readIFF(nbt);
 
-        nbt.putBoolean("isBloodSuck", isBloodSuck());
+        setBloodSuck(nbt.getBoolean("isBloodSuck"));
     }
 
     //鯖
@@ -423,6 +442,62 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         getInventory().setStack(18, buf.readItemStack());
     }
 
+    @Override
+    public void handleStatus(byte status) {
+        switch (status) {
+            case 70 -> {//雇用時
+                showEmoteParticle(true);
+                play(LMSounds.GET_CAKE);
+            }
+            case 71 -> {//再雇用時
+                showEmoteParticle(true);
+                play(LMSounds.RECONTRACT);
+            }
+            case 72 -> {//砂糖あげた時
+                this.world.addParticle(ParticleTypes.NOTE,
+                        this.getX(),
+                        this.getY() + this.getHeight(),
+                        this.getZ(),
+                        6 / 24f, 0, 0);
+            }
+            case 73 -> showFreedomParticle();//toFreedom
+            case 74 -> showEmoteParticle(false);//toEscort
+            case 75 -> showTracerParticle();//toTracer
+            default -> super.handleStatus(status);
+        }
+    }
+
+    protected void showFreedomParticle() {
+        for (int i = 0; i < 7; ++i) {
+            double d = this.random.nextGaussian() * 0.02;
+            double e = this.random.nextGaussian() * 0.02;
+            double f = this.random.nextGaussian() * 0.02;
+            this.world.addParticle(new DustParticleEffect(
+                            new Vec3f(
+                                    this.random.nextFloat(),
+                                    this.random.nextFloat(),
+                                    this.random.nextFloat()),
+                            1.0f),
+                    this.getParticleX(1.0),
+                    this.getRandomBodyY() + 0.5,
+                    this.getParticleZ(1.0),
+                    d, e, f);
+        }
+    }
+
+    protected void showTracerParticle() {
+        for (int i = 0; i < 7; ++i) {
+            double d = this.random.nextGaussian() * 0.02;
+            double e = this.random.nextGaussian() * 0.02;
+            double f = this.random.nextGaussian() * 0.02;
+            this.world.addParticle(ParticleTypes.CLOUD,
+                    this.getParticleX(1.0),
+                    this.getRandomBodyY() + 0.5,
+                    this.getParticleZ(1.0),
+                    d, e, f);
+        }
+    }
+
     //バニラメソッズ
 
     @Override
@@ -445,7 +520,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
-        return LMRBMod.getConfig().isCanDespawn() && !getTameOwnerUuid().isPresent();
+        return LMRBMod.getConfig().isCanDespawn() && getTameOwnerUuid().isEmpty();
     }
 
     //canSpawnとかでも使われる
@@ -621,8 +696,8 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         boolean isHurtTime = 0 < this.hurtTime;
         boolean result = super.damage(source, amount);
         if (!world.isClient && !isHurtTime) {
-            if (getTameOwnerUuid().isPresent() && this.getMovingState() == WAIT && result && 0 < amount) {
-                this.setMovingState(ESCORT);
+            if (result && 0 < amount && this.isWait() && getTameOwnerUuid().isPresent()) {
+                this.setWait(false);
             }
             if (!result || amount <= 0F) {
                 play(LMSounds.HURT_NO_DAMAGE);
@@ -807,63 +882,84 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         return new Vec3d(0.0, this.getStandingEyeHeight() - 0.15f, 1f / 16f);
     }
 
-    //todo 以下数メソッドにはもうちと整理が必要か
-
-    //trueでアイテムが使用された、falseでされなかった
-    //trueならItemStack.interactWithEntity()が起こらず、またアイテム使用が必ずキャンセルされる
+    //success 動作を実行し、手を振る
+    //consume 動作を実行するが、手を振らない
+    //pass 動作を実行しないが、他の動作を許可する
+    //fail 動作を実行せず、他の動作も許可しない
+    //下二つならここ以外で手に持ったアイテムが使用される場合がある
     //継承元のコードは無視
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
-        ItemStack stack = player.getStackInHand(hand);
-        if (LMRBMod.getConfig().isCanMilking() && player.getUuid().equals(this.getOwnerUuid()) && stack.isOf(Items.BUCKET)) {
-            player.playSound(SoundEvents.ENTITY_COW_MILK, 1.0F, 1.0F);
-            ItemStack itemStack2 = ItemUsage.exchangeStack(stack, player, Items.MILK_BUCKET.getDefaultStack());
-            player.setStackInHand(hand, itemStack2);
-            return ActionResult.success(this.world.isClient);
-        }
-        if (player.isSneaking() || stack.getItem() instanceof IFFCopyBookItem || stack.getItem() instanceof LeadItem) {
+        if (player.isSneaking()) {
             return ActionResult.PASS;
         }
+        ItemStack stack = player.getStackInHand(hand);
+        //オーナーが居ない場合
         if (!hasTameOwner()) {
             if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
                 return contract(player, stack, false);
             }
             return ActionResult.PASS;
         }
+        //オーナーじゃない場合
         if (!player.getUuid().equals(this.getOwnerUuid())) {
             return ActionResult.PASS;
         }
+        //ストライキ時
         if (isStrike()) {
             if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
                 return contract(player, stack, true);
-            } else if (world instanceof ServerWorld) {
-                ((ServerWorld) world).spawnParticles(ParticleTypes.SMOKE,
-                        this.getX() + (0.5F - random.nextFloat()) * 0.2F,
-                        this.getEyeY() + (0.5F - random.nextFloat()) * 0.2F,
-                        this.getZ() + (0.5F - random.nextFloat()) * 0.2F,
-                        5,
-                        0, 1, 0, 0.1);
             }
+            this.world.sendEntityStatus(this, (byte) 6);
             return ActionResult.PASS;
         }
+        //砂糖
         if (stack.isIn(LMTags.Items.MAIDS_SALARY)) {
             var config = LMRBMod.getConfig();
             heal(config.getHealAmount());
             return changeState(player, stack);
         }
-        if (!player.world.isClient) {
-            openContainer(player);
+        //Freedom切替
+        if (stack.getItem() == Items.FEATHER) {
+            if (getMovingMode() == MovingMode.ESCORT) {
+                this.world.sendEntityStatus(this, (byte) 73);
+                this.setMovingMode(MovingMode.FREEDOM);
+                this.setFreedomPos(this.getBlockPos());
+            } else {
+                this.world.sendEntityStatus(this, (byte) 74);
+                this.setMovingMode(MovingMode.ESCORT);
+            }
+            return ActionResult.success(this.world.isClient);
         }
-        return ActionResult.success(world.isClient);
+        //Tracer切替
+        if ((this.getMovingMode() == MovingMode.FREEDOM
+                || this.getMovingMode() == MovingMode.TRACER)
+                && stack.getItem() == Items.REDSTONE) {
+            if (this.getMovingMode() == MovingMode.FREEDOM) {
+                this.world.sendEntityStatus(this, (byte) 75);
+                this.setMovingMode(MovingMode.TRACER);
+            } else {
+                this.world.sendEntityStatus(this, (byte) 73);
+                this.setMovingMode(MovingMode.FREEDOM);
+            }
+            return ActionResult.success(this.world.isClient);
+        }
+        //モブミルク
+        if (LMRBMod.getConfig().isCanMilking() && stack.isOf(Items.BUCKET)) {
+            player.playSound(SoundEvents.ENTITY_COW_MILK, 1.0F, 1.0F);
+            ItemStack itemStack2 = ItemUsage.exchangeStack(stack, player, Items.MILK_BUCKET.getDefaultStack());
+            player.setStackInHand(hand, itemStack2);
+            return ActionResult.success(this.world.isClient);
+        }
+        openInventory(player);
+        return ActionResult.success(this.world.isClient);
     }
 
     public ActionResult changeState(PlayerEntity player, ItemStack stack) {
+        this.world.sendEntityStatus(this, (byte) 72);
         this.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.random.nextFloat() * 0.1F + 1.0F);
-        this.world.addParticle(ParticleTypes.NOTE, this
-                        .getX(), this.getY() + this.getStandingEyeHeight(), this.getZ(),
-                0, this.random.nextGaussian() * 0.02D, 0);
         this.getNavigation().stop();
-        changeMovingState();
+        this.setWait(!this.isWait());
         if (!player.getAbilities().creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
@@ -873,32 +969,18 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         return ActionResult.success(world.isClient);
     }
 
-    public void changeMovingState() {
-        MovingState state = this.getMovingState();
-        if (state == WAIT) {
-            setMovingState(ESCORT);
-        } else {
-            setMovingState(WAIT);
-        }
-    }
-
     public ActionResult contract(PlayerEntity player, ItemStack stack, boolean isReContract) {
-        this.world.addParticle(ParticleTypes.HEART,
-                getX(), getY() + getStandingEyeHeight(), getZ(),
-                0, this.random.nextGaussian() * 0.02D, 0);
-        if (!world.isClient) {
-            if (isReContract) {
-                play(LMSounds.RECONTRACT);
-            } else {
-                play(LMSounds.GET_CAKE);
-            }
+        if (!isReContract) {
+            this.world.sendEntityStatus(this, (byte) 70);
+            setContract(true);
+            this.setOwnerUuid(player.getUuid());
+        } else {
+            this.world.sendEntityStatus(this, (byte) 71);
+            setStrike(false);
         }
-        setStrike(false);
         itemContractable.setUnpaidTimes(0);
         getNavigation().stop();
-        this.setOwnerUuid(player.getUuid());
-        setMovingState(ESCORT);
-        setContract(true);
+        setMovingMode(MovingMode.ESCORT);
         if (!player.getAbilities().creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
@@ -909,15 +991,50 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     //GUI開くやつ
-    public void openContainer(PlayerEntity player) {
+    public void openInventory(PlayerEntity player) {
+        if (player.world.isClient) {
+            return;
+        }
         setAttacker(null);
         getNavigation().stop();
         setModeName(getMode().map(Mode::getName).orElse(""));
         MenuRegistry.openExtendedMenu((ServerPlayerEntity) player, screenFactory);
     }
 
+    /**
+     * 0:wait
+     * 1:freedom
+     * 2:tracer
+     * 3:aiming
+     * 4:begging
+     * 5:blood suck
+     */
+    public void setLMMFlag(int index, boolean value) {
+        int i = this.dataTracker.get(LMM_FLAGS);
+        int mask = (1 << index);
+        if (value) {
+            i |= mask;
+        } else {
+            i &= ~mask;
+        }
+        this.dataTracker.set(LMM_FLAGS, (byte) i);
+    }
+
+    public boolean getLMMFlag(int index) {
+        return (this.dataTracker.get(LMM_FLAGS) & (1 << index)) == 1;
+    }
+
+    @Override
+    public MovingMode getMovingMode() {
+        return MovingMode.fromId(this.dataTracker.get(MOVING_MODE));
+    }
+
+    @Override
+    public void setMovingMode(MovingMode movingMode) {
+        this.dataTracker.set(MOVING_MODE, (byte) movingMode.getId());
+    }
+
     //インベントリ関連
-    //todo PlayerEntityでinventoryに対してアクセスしてるメソッドをすべて実装すべき
 
     @Override
     public Inventory getInventory() {
@@ -1072,23 +1189,19 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     @Override
-    public MovingState getMovingState() {
-        int num = this.dataTracker.get(MOVING_STATE);
-        return MovingState.fromId(num);
+    public boolean isWait() {
+        return this.getLMMFlag(WAIT_INDEX);
     }
 
     @Override
-    public void setMovingState(MovingState movingState) {
-        int num = movingState.getId();
-        this.dataTracker.set(MOVING_STATE, (byte) num);
+    public void setWait(boolean isWait) {
+        this.setLMMFlag(WAIT_INDEX, isWait);
     }
 
-    @Override
     public void setFreedomPos(BlockPos freedomPos) {
         this.freedomPos = freedomPos;
     }
 
-    @Override
     public BlockPos getFreedomPos() {
         if (freedomPos == null) return getBlockPos();
         return freedomPos;
@@ -1101,17 +1214,17 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean isInSittingPose() {
-        return false;
+        return this.isWait();
     }
 
     @Override
     public void setSitting(boolean sitting) {
-        setMovingState(sitting ? WAIT : ESCORT);
+        this.setWait(sitting);
     }
 
     @Override
     public boolean isSitting() {
-        return getMovingState() == WAIT;
+        return this.isWait();
     }
 
     @Override
@@ -1120,19 +1233,19 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     public boolean isBegging() {
-        return this.dataTracker.get(BEGGING);
+        return this.getLMMFlag(BEGGING_INDEX);
     }
 
     public void setBegging(boolean begging) {
-        this.dataTracker.set(BEGGING, begging);
+        this.setLMMFlag(BEGGING_INDEX, begging);
     }
 
     public boolean isBloodSuck() {
-        return this.dataTracker.get(BLOOD_SUCK);
+        return this.getLMMFlag(BLOOD_SUCK_INDEX);
     }
 
     public void setBloodSuck(boolean isBloodSuck) {
-        this.dataTracker.set(BLOOD_SUCK, isBloodSuck);
+        this.setLMMFlag(BLOOD_SUCK_INDEX, isBloodSuck);
     }
 
     @Environment(EnvType.CLIENT)
@@ -1155,12 +1268,13 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean isStrike() {
-        return itemContractable.isStrike();
+        return this.getLMMFlag(STRIKE_INDEX);
     }
 
     @Override
     public void setStrike(boolean strike) {
         itemContractable.setStrike(strike);
+        this.setLMMFlag(STRIKE_INDEX, strike);
     }
 
     @Override
@@ -1265,12 +1379,12 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public boolean isAimingBow() {
-        return this.dataTracker.get(AIMING);
+        return this.getLMMFlag(AIMING_INDEX);
     }
 
     @Override
     public void setAimingBow(boolean aiming) {
-        this.dataTracker.set(AIMING, aiming);
+        this.setLMMFlag(AIMING_INDEX, aiming);
     }
 
     //Fake関連、クライアントで実行するとクラッシュする
@@ -1409,13 +1523,13 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
         @Override
         public boolean canStart() {
-            return maid.getMovingState() != WAIT && ((PlayerInventory) maid.getInventory()).getEmptySlot() != -1 && super.canStart();
+            return !maid.isWait() && ((PlayerInventory) maid.getInventory()).getEmptySlot() != -1 && super.canStart();
         }
 
         @Override
         public List<ItemEntity> findAroundDropItem() {
             return maid.getTameOwner()
-                    .filter(owner -> maid.getMovingState() != WAIT)
+                    .filter(owner -> !maid.isWait())
                     .map(owner -> {
                         return super.findAroundDropItem().stream()
                                 .filter(item -> !isOwnerRange(item, owner))
@@ -1436,11 +1550,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         }
     }
 
-    public static class LMStareAtHeldItemGoal extends TameableStareAtHeldItemGoal {
+    public static class LMStareAtHeldItemGoal<T extends LittleMaidEntity> extends TameableStareAtHeldItemGoal<T> {
         private final LittleMaidEntity maid;
 
-        public LMStareAtHeldItemGoal(LittleMaidEntity maid, Tameable tameable, boolean isTamed, Predicate<ItemStack> targetItem) {
-            super(maid, tameable, isTamed, targetItem);
+        public LMStareAtHeldItemGoal(T maid, boolean isTamed, Predicate<ItemStack> targetItem) {
+            super(maid, isTamed, targetItem);
             this.maid = maid;
         }
 

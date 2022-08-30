@@ -34,7 +34,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
             return false;
         } else if (tameOwner.isSpectator()) {
             return false;
-        } else if (this.tameable.getMovingState() != Tameable.MovingState.ESCORT) {
+        } else if (this.tameable.isWait()) {
             return false;
         } else if (this.tameable.squaredDistanceTo(tameOwner) < teleportStartSq) {
             return false;
@@ -45,7 +45,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
     }
 
     public boolean shouldContinue() {
-        if (this.tameable.getMovingState() != Tameable.MovingState.ESCORT) {
+        if (this.tameable.isWait()) {
             return false;
         } else {
             return teleportStartSq < this.tameable.squaredDistanceTo(this.owner);

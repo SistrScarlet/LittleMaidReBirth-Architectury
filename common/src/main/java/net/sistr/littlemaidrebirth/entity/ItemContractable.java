@@ -5,6 +5,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 //クライアント側では概ね役に立たない
@@ -13,16 +14,18 @@ public class ItemContractable<T extends LivingEntity & InventorySupplier> implem
     private final int maxConsumeInterval;
     private final int maxUnpaidTimes;
     private final Predicate<ItemStack> salaryItems;
+    private final Consumer<T> strikeCallback;
     private int consumeInterval;
     private int unpaidTimes;
     private boolean contract;
     private boolean strike;
 
-    public ItemContractable(T mob, int maxConsumeInterval, int maxUnpaidTimes, Predicate<ItemStack> salaryItems) {
+    public ItemContractable(T mob, int maxConsumeInterval, int maxUnpaidTimes, Predicate<ItemStack> salaryItems, Consumer<T> strikeCallback) {
         this.mob = mob;
         this.maxConsumeInterval = maxConsumeInterval;
         this.maxUnpaidTimes = maxUnpaidTimes;
         this.salaryItems = salaryItems;
+        this.strikeCallback = strikeCallback;
     }
 
     public void tick() {
@@ -47,6 +50,7 @@ public class ItemContractable<T extends LivingEntity & InventorySupplier> implem
             receiveSalary(mob.getInventory());
             if (maxUnpaidTimes < unpaidTimes) {
                 this.strike = true;
+                this.strikeCallback.accept(this.mob);
             }
         }
     }

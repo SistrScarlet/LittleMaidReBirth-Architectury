@@ -2,17 +2,17 @@ package net.sistr.littlemaidrebirth.entity.goal;
 
 import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
 import net.minecraft.entity.ai.pathing.Path;
-import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.MovingMode;
 
 import java.util.EnumSet;
 
 //雇い主が居ない場合も発動する
 //todo テレポした場合
-public class FreedomGoal<T extends PathAwareEntity & Tameable> extends WanderAroundFarGoal {
-    private final T tameable;
+public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal {
+    private final T maid;
     private final double distance;
     private final double distanceSq;
     private BlockPos freedomPos;
@@ -20,7 +20,7 @@ public class FreedomGoal<T extends PathAwareEntity & Tameable> extends WanderAro
 
     public FreedomGoal(T mob, double speedIn, double distance) {
         super(mob, speedIn);
-        this.tameable = mob;
+        this.maid = mob;
         this.distance = distance;
         this.distanceSq = distance * distance;
         setControls(EnumSet.of(Control.MOVE));
@@ -28,16 +28,13 @@ public class FreedomGoal<T extends PathAwareEntity & Tameable> extends WanderAro
 
     @Override
     public boolean canStart() {
-        if (tameable.getMovingState() != Tameable.MovingState.FREEDOM) {
-            return false;
-        }
-        return super.canStart();
+        return !maid.isWait() && maid.getMovingMode() == MovingMode.FREEDOM && super.canStart();
     }
 
     @Override
     public void start() {
         super.start();
-        freedomPos = this.tameable.getFreedomPos();
+        freedomPos = this.maid.getFreedomPos();
     }
 
     @Override

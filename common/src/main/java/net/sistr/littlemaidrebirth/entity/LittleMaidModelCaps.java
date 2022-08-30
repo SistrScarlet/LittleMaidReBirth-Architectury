@@ -1,6 +1,5 @@
 package net.sistr.littlemaidrebirth.entity;
 
-import com.google.common.collect.ImmutableSet;
 import net.minecraft.item.Items;
 import net.sistr.littlemaidmodelloader.maidmodel.EntityCaps;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
@@ -24,7 +23,7 @@ public class LittleMaidModelCaps extends EntityCaps {
             case caps_interestedAngle:
                 return maid.getInterestedAngle((Float) pArg[0]);
             case caps_isFreedom:
-                return maid.getMovingState() == Tameable.MovingState.FREEDOM;
+                return maid.getMovingMode() == MovingMode.FREEDOM || maid.getMovingMode() == MovingMode.TRACER;
             case caps_isContract:
                 return maid.isContract();
             case caps_isClock:

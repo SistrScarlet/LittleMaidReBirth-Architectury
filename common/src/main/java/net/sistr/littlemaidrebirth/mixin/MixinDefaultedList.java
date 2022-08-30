@@ -14,7 +14,9 @@ import java.util.List;
 @Mixin(DefaultedList.class)
 public abstract class MixinDefaultedList<E> implements DefaultedListLimiter {
 
-    @Shadow @Final private List<E> delegate;
+    @Shadow
+    @Final
+    private List<E> delegate;
     private int fakeLimit;
 
     @Inject(at = @At("RETURN"), method = "size", cancellable = true)
