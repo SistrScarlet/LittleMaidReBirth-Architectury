@@ -17,14 +17,15 @@ import java.util.function.Predicate;
 
 public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends StoreItemToContainerGoal<T> {
 
-    public LMStoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems) {
-        super(mob, exceptItems);
+    public LMStoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems, int maxStartInterval, int maxSearchCount) {
+        super(mob, exceptItems, maxStartInterval, maxSearchCount);
     }
 
     @Override
     public boolean canStart() {
         return !this.mob.isWait()
-                && this.mob.getMovingMode() == MovingMode.FREEDOM
+                && (this.mob.getMovingMode() == MovingMode.FREEDOM
+                || this.mob.getMovingMode() == MovingMode.TRACER)
                 && super.canStart();
     }
 

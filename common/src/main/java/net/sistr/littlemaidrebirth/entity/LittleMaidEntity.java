@@ -261,7 +261,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)
                         || this.modeController.getMode()
                         .filter(mode -> mode.getModeType().isModeItem(stack))
-                        .isPresent()));
+                        .isPresent(),
+                100,
+                64));
 
         this.goalSelector.add(++priority, new RedstoneTraceGoal(this));
         this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, config.getFreedomRange()));

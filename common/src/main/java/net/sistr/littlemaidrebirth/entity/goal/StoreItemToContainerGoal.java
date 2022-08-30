@@ -18,12 +18,16 @@ import java.util.function.Predicate;
 public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extends Goal {
     protected final T mob;
     protected final Predicate<ItemStack> exceptItems;
+    protected final int maxSearchCount;
+    protected final int maxStartInterval;
     @Nullable
     protected BlockPos containerPos;
 
-    public StoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems) {
+    public StoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems, int maxStartInterval, int maxSearchCount) {
         this.mob = mob;
         this.exceptItems = exceptItems;
+        this.maxStartInterval = maxStartInterval;
+        this.maxSearchCount = maxSearchCount;
         this.setControls(EnumSet.of(Control.MOVE));
     }
 
@@ -46,9 +50,9 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
         return BlockFinder.searchTargetBlock(
                 this.mob.getBlockPos(),
                 this::isContainer,
-                pos -> mob.world.getBlockState(pos).isFullCube(mob.world, pos),
+                pos -> !mob.world.isAir(pos),
                 Arrays.asList(Direction.values()),
-                15);
+                this.maxSearchCount);
     }
 
     protected boolean isContainer(BlockPos pos) {
