@@ -39,7 +39,7 @@ public class LMRBConfig implements ConfigData {
     private float voiceVolume = 1.0f;
 
     @ConfigEntry.Category("maid")
-    private int healInterval = 2;
+    private int healInterval = 0;
 
     @ConfigEntry.Category("maid")
     private int healAmount = 1;
