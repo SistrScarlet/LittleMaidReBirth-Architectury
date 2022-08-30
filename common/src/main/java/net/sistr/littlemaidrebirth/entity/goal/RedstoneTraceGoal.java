@@ -14,10 +14,11 @@ import java.util.stream.Stream;
 
 public class RedstoneTraceGoal extends Goal {
     protected final LittleMaidEntity mob;
-    protected final float speed = 0.8f;
+    protected final float speed;
 
-    public RedstoneTraceGoal(LittleMaidEntity mob) {
+    public RedstoneTraceGoal(LittleMaidEntity mob, float speed) {
         this.mob = mob;
+        this.speed = speed;
         this.setControls(EnumSet.of(Control.LOOK, Control.MOVE));
     }
 
