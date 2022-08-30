@@ -16,7 +16,6 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -241,6 +240,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(++priority,
                 new FollowTameOwnerGoal<>(this, 1.0f, config.getFollowStartRange(), config.getFollowEndRange()));
 
+        this.goalSelector.add(++priority, new RedstoneTraceGoal(this));
         this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.8D, config.getFreedomRange()));
 
         this.goalSelector.add(++priority, new LMStoreItemToContainerGoal<>(this,
