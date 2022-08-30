@@ -28,7 +28,11 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
 
     @Override
     public boolean canStart() {
-        return !maid.isWait() && maid.getMovingMode() == MovingMode.FREEDOM && super.canStart();
+        return !maid.isWait()
+                && maid.getNavigation().isIdle()
+                && (maid.getMovingMode() == MovingMode.FREEDOM
+                || maid.getMovingMode() == MovingMode.TRACER)
+                && super.canStart();
     }
 
     @Override
