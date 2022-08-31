@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.stream.Stream;
 
+//todo 180度ターン時に首がグリッとなるのがこわい
 public class RedstoneTraceGoal extends Goal {
     protected final LittleMaidEntity mob;
     protected final float speed;
@@ -27,6 +28,13 @@ public class RedstoneTraceGoal extends Goal {
         return !mob.isWait()
                 && mob.getMovingMode() == MovingMode.TRACER
                 && this.mob.getNavigation().isIdle();
+    }
+
+    @Override
+    public boolean shouldContinue() {
+        return !mob.isWait()
+                && mob.getMovingMode() == MovingMode.TRACER
+                && !this.mob.getNavigation().isIdle();
     }
 
     @Override
