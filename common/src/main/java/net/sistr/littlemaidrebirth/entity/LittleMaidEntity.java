@@ -95,7 +95,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     private static final int AIMING_INDEX = 1;
     private static final int BEGGING_INDEX = 2;
     private static final int BLOOD_SUCK_INDEX = 3;
-    private static final int STRIKE_INDEX = 3;
+    private static final int STRIKE_INDEX = 4;
     private static final TrackedData<Byte> LMM_FLAGS =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
     private static final TrackedData<Byte> MOVING_MODE =
@@ -110,8 +110,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                     LMRBMod.getConfig().getUnpaidCountLimit(),
                     stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
                     mob -> {
-                        this.setLMMFlag(STRIKE_INDEX, true);
+                        mob.setStrike(true);
                         mob.setMovingMode(MovingMode.FREEDOM);
+                        mob.freedomPos = mob.getBlockPos();
                     });
     private final ModeController modeController = new ModeController(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
@@ -186,6 +187,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     //todo 速度をconfig化
     protected void initWildGoals() {
+        this.goalSelector.getRunningGoals().forEach(PrioritizedGoal::stop);
+        this.goalSelector.clear();
+        this.targetSelector.getRunningGoals().forEach(PrioritizedGoal::stop);
+        this.targetSelector.clear();
+
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
@@ -207,6 +213,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     protected void initContractGoals() {
+        this.goalSelector.getRunningGoals().forEach(PrioritizedGoal::stop);
+        this.goalSelector.clear();
+        this.targetSelector.getRunningGoals().forEach(PrioritizedGoal::stop);
+        this.targetSelector.clear();
+
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
@@ -366,11 +377,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         }
 
         readContractable(nbt);
-        if (this.isContract()) {
-            this.goalSelector.clear();
-            this.targetSelector.clear();
-            initContractGoals();
-        }
 
         readModeData(nbt);
 
@@ -1278,6 +1284,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     public void setStrike(boolean strike) {
         itemContractable.setStrike(strike);
         this.setLMMFlag(STRIKE_INDEX, strike);
+        if (strike) {
+            initWildGoals();
+        }
     }
 
     @Override
@@ -1432,8 +1441,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         multiModel.setContract(isContract);
         itemContractable.setContract(isContract);
         if (isContract) {
-            this.goalSelector.clear();
-            this.targetSelector.clear();
             initContractGoals();
         }
     }
