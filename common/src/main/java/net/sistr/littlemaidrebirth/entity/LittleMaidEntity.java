@@ -975,12 +975,12 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     public ActionResult contract(PlayerEntity player, ItemStack stack, boolean isReContract) {
         if (!isReContract) {
             this.world.sendEntityStatus(this, (byte) 70);
-            setContract(true);
-            this.setOwnerUuid(player.getUuid());
         } else {
             this.world.sendEntityStatus(this, (byte) 71);
-            setStrike(false);
         }
+        this.setOwnerUuid(player.getUuid());
+        setContract(true);
+        setStrike(false);
         itemContractable.setUnpaidTimes(0);
         getNavigation().stop();
         setMovingMode(MovingMode.ESCORT);
