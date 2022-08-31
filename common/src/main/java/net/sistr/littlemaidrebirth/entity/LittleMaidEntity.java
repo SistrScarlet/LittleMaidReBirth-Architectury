@@ -269,6 +269,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                         config.getFollowStartRange(),
                         config.getFollowEndRange()));
 
+        //todo 頭の装飾品を仕舞わないようにする
         this.goalSelector.add(++priority, new LMStoreItemToContainerGoal<>(this,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)
                         || this.modeController.getMode()
