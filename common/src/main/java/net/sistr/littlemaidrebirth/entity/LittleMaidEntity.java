@@ -207,6 +207,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
         this.goalSelector.add(++priority, new LMStareAtHeldItemGoal<>(this, false,
                 stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+        this.goalSelector.add(++priority, new WanderAroundFarGoal(this, 0.65f));
 
         this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
         this.goalSelector.add(priority, new LookAroundGoal(this));
