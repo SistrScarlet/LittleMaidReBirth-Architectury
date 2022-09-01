@@ -309,27 +309,34 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     public void setRandomTexture() {
-        LMTextureManager.INSTANCE.getAllTextures().stream()
+        var textureHolderList = LMTextureManager.INSTANCE.getAllTextures().stream()
                 .filter(h -> h.hasSkinTexture(false))//野生テクスチャがある
-                .filter(h -> LMModelManager.INSTANCE.hasModel(h.getModelName()))//モデルがある
-                .min(Comparator.comparingInt(h -> ThreadLocalRandom.current().nextInt()))//ランダム抽出
-                .ifPresent(h -> Arrays.stream(TextureColors.values())
-                        .filter(c -> h.getTexture(c, false, false).isPresent())
-                        .min(Comparator.comparingInt(c -> ThreadLocalRandom.current().nextInt()))
-                        .ifPresent(c -> {
-                            this.setColor(c);
-                            this.setTextureHolder(h, Layer.SKIN, Part.HEAD);
-                            if (h.hasArmorTexture()) {
-                                setTextureHolder(h, Layer.INNER, Part.HEAD);
-                                setTextureHolder(h, Layer.INNER, Part.BODY);
-                                setTextureHolder(h, Layer.INNER, Part.LEGS);
-                                setTextureHolder(h, Layer.INNER, Part.FEET);
-                                setTextureHolder(h, Layer.OUTER, Part.HEAD);
-                                setTextureHolder(h, Layer.OUTER, Part.BODY);
-                                setTextureHolder(h, Layer.OUTER, Part.LEGS);
-                                setTextureHolder(h, Layer.OUTER, Part.FEET);
-                            }
-                        }));
+                .filter(h -> LMModelManager.INSTANCE.hasModel(h.getModelName()))
+                .toList();
+        if (textureHolderList.isEmpty()) {
+            return;
+        }
+        var random = ThreadLocalRandom.current();
+        var textureHolder = textureHolderList.get(random.nextInt(textureHolderList.size()));
+        var colorList = Arrays.stream(TextureColors.values())
+                .filter(c -> textureHolder.getTexture(c, false, false).isPresent())
+                .toList();
+        if (colorList.isEmpty()) {
+            return;
+        }
+        var color = colorList.get(random.nextInt(colorList.size()));
+        this.setColor(color);
+        this.setTextureHolder(textureHolder, Layer.SKIN, Part.HEAD);
+        if (textureHolder.hasArmorTexture()) {
+            setTextureHolder(textureHolder, Layer.INNER, Part.HEAD);
+            setTextureHolder(textureHolder, Layer.INNER, Part.BODY);
+            setTextureHolder(textureHolder, Layer.INNER, Part.LEGS);
+            setTextureHolder(textureHolder, Layer.INNER, Part.FEET);
+            setTextureHolder(textureHolder, Layer.OUTER, Part.HEAD);
+            setTextureHolder(textureHolder, Layer.OUTER, Part.BODY);
+            setTextureHolder(textureHolder, Layer.OUTER, Part.LEGS);
+            setTextureHolder(textureHolder, Layer.OUTER, Part.FEET);
+        }
     }
 
     //読み書き系
