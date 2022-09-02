@@ -41,17 +41,18 @@ public class RedstoneTraceGoal extends Goal {
     public void start() {
         getAroundSignalPoses()
                 //現在位置にあるposは除外する。ただし高度は無視
-                .filter(pos -> {
-                    var mobPos = this.mob.getBlockPos();
-                    return pos.getX() != mobPos.getX() || pos.getZ() != mobPos.getZ();
-                })
+                //getBlockPos()で判定してもいいが、実装的に動作しない場合があり得るので安全のためこちらに
+                .filter(pos -> MathHelper.floor(this.mob.getX()) != pos.getX()
+                        || MathHelper.floor(this.mob.getZ()) != pos.getZ())
                 .min(Comparator.comparingDouble(pos ->
                         //左55度を0として時計回りに一周回し、角度が浅いposを取る
                         //あと高度が高い位置を優先して取る
                         -MathHelper.subtractAngles(getRelYaw(pos), 55f) + 180f - pos.getY()))
                 .ifPresent(pos -> {
                     var navigation = this.mob.getNavigation();
-                    navigation.startMovingAlong(navigation.findPathTo(pos, 0), this.speed);
+                    if (!navigation.startMovingAlong(navigation.findPathTo(pos, 0), this.speed)) {
+                        navigation.stop();
+                    }
                 });
     }
 
