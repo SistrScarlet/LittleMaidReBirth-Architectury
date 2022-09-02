@@ -6,16 +6,20 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.MovingMode;
+import org.apache.commons.compress.utils.Lists;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.stream.Stream;
 
 //todo 180度ターン時に首がグリッとなるのがこわい
 public class RedstoneTraceGoal extends Goal {
     protected final LittleMaidEntity mob;
     protected final float speed;
+    protected final List<BlockPos> aroundSignalPos = Lists.newArrayList();
+    protected int recalcTimer;
 
     public RedstoneTraceGoal(LittleMaidEntity mob, float speed) {
         this.mob = mob;
@@ -25,9 +29,27 @@ public class RedstoneTraceGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        return !mob.isWait()
-                && mob.getMovingMode() == MovingMode.TRACER
-                && this.mob.getNavigation().isIdle();
+        //実行に失敗した場合、遅延される
+        if (0 < recalcTimer) {
+            recalcTimer--;
+            return false;
+        }
+        if (mob.isWait()
+                || mob.getMovingMode() != MovingMode.TRACER
+                || !this.mob.getNavigation().isIdle()) {
+            return false;
+        }
+        this.aroundSignalPos.clear();
+        getAroundSignalPoses()
+                //現在位置にあるposは除外する。ただし高度は無視
+                //getBlockPos()で判定してもいいが、実装的に動作しない場合があり得るので安全のためこちらに
+                .filter(pos -> MathHelper.floor(this.mob.getX()) != pos.getX()
+                        || MathHelper.floor(this.mob.getZ()) != pos.getZ())
+                .forEach(this.aroundSignalPos::add);
+        //このタイマーは実行完了時にリセットされる
+        //そのため、連続実行時は遅延無し
+        recalcTimer = 20;
+        return !this.aroundSignalPos.isEmpty();
     }
 
     @Override
@@ -39,11 +61,8 @@ public class RedstoneTraceGoal extends Goal {
 
     @Override
     public void start() {
-        getAroundSignalPoses()
-                //現在位置にあるposは除外する。ただし高度は無視
-                //getBlockPos()で判定してもいいが、実装的に動作しない場合があり得るので安全のためこちらに
-                .filter(pos -> MathHelper.floor(this.mob.getX()) != pos.getX()
-                        || MathHelper.floor(this.mob.getZ()) != pos.getZ())
+        this.aroundSignalPos
+                .stream()
                 .min(Comparator.comparingDouble(pos ->
                         //左55度を0として時計回りに一周回し、角度が浅いposを取る
                         //あと高度が高い位置を優先して取る
@@ -54,6 +73,11 @@ public class RedstoneTraceGoal extends Goal {
                         navigation.stop();
                     }
                 });
+    }
+
+    @Override
+    public void stop() {
+        this.recalcTimer = 0;
     }
 
     protected Stream<BlockPos> getAroundSignalPoses() {
