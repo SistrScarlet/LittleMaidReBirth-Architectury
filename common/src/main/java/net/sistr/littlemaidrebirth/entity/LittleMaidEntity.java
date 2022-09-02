@@ -1039,7 +1039,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     }
 
     public boolean getLMMFlag(int index) {
-        return (this.dataTracker.get(LMM_FLAGS) & (1 << index)) == 1;
+        return (this.dataTracker.get(LMM_FLAGS) & (1 << index)) != 0;
     }
 
     @Override
