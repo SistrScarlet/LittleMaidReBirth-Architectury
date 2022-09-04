@@ -1,12 +1,12 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
+import com.google.common.collect.Lists;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.MovingMode;
-import org.apache.commons.compress.utils.Lists;
 
 import java.util.Arrays;
 import java.util.Comparator;
