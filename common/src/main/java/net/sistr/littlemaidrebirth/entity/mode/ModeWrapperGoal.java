@@ -16,31 +16,31 @@ public class ModeWrapperGoal<T extends LivingEntity & ModeSupplier> extends Goal
 
     @Override
     public boolean canStart() {
-        if (!owner.getMode().isPresent()) return false;
+        if (owner.getMode().isEmpty()) return false;
         return owner.getMode().get().shouldExecute();
     }
 
     @Override
     public boolean shouldContinue() {
-        if (!owner.getMode().isPresent()) return false;
+        if (owner.getMode().isEmpty()) return false;
         return owner.getMode().get().shouldContinueExecuting();
     }
 
     @Override
     public void start() {
-        if (!owner.getMode().isPresent()) return;
+        if (owner.getMode().isEmpty()) return;
         owner.getMode().get().startExecuting();
     }
 
     @Override
     public void stop() {
-        if (!owner.getMode().isPresent()) return;
+        if (owner.getMode().isEmpty()) return;
         owner.getMode().get().resetTask();
     }
 
     @Override
     public void tick() {
-        if (!owner.getMode().isPresent()) return;
+        if (owner.getMode().isEmpty()) return;
         owner.getMode().get().tick();
     }
 }

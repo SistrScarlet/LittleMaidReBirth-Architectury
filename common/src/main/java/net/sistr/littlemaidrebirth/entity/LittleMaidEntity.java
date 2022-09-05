@@ -111,6 +111,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                     stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
                     mob -> {
                         mob.setStrike(true);
+                        mob.setWait(false);
                         mob.setMovingMode(MovingMode.FREEDOM);
                         mob.freedomPos = mob.getBlockPos();
                     });
@@ -148,7 +149,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         String defaultSoundPackName = LMRBMod.getConfig().getDefaultSoundPackName();
         if (!defaultSoundPackName.isEmpty()) {
             LMConfigManager.INSTANCE.getAllConfig().stream()
-                    .filter(c -> c.getPackName().toLowerCase().equals(defaultSoundPackName.toLowerCase()))
+                    .filter(c -> c.getPackName().equalsIgnoreCase(defaultSoundPackName))
                     .findAny()
                     .ifPresent(soundPlayer::setConfigHolder);
         }
@@ -180,45 +181,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     //登録メソッドたち
 
+    //todo 速度をconfig化
     @Override
     protected void initGoals() {
-        initWildGoals();
-    }
-
-    //todo 速度をconfig化
-    protected void initWildGoals() {
-        this.goalSelector.getRunningGoals().forEach(PrioritizedGoal::stop);
-        this.goalSelector.clear();
-        this.targetSelector.getRunningGoals().forEach(PrioritizedGoal::stop);
-        this.targetSelector.clear();
-
-        int priority = -1;
-        LMRBConfig config = LMRBMod.getConfig();
-
-        this.goalSelector.add(++priority, new SwimGoal(this));
-        this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
-
-        this.goalSelector.add(++priority, new HealMyselfGoal<>(this, config.getHealInterval(), config.getHealAmount(),
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
-
-        this.goalSelector.add(++priority, new EscapeDangerGoal(this, 1.25));
-
-        this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
-        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal<>(this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
-        this.goalSelector.add(++priority, new WanderAroundFarGoal(this, 0.65f));
-
-        this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
-        this.goalSelector.add(priority, new LookAroundGoal(this));
-    }
-
-    protected void initContractGoals() {
-        this.goalSelector.getRunningGoals().forEach(PrioritizedGoal::stop);
-        this.goalSelector.clear();
-        this.targetSelector.getRunningGoals().forEach(PrioritizedGoal::stop);
-        this.targetSelector.clear();
-
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
@@ -285,9 +250,23 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
 
+        //野良
+        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
+                new EscapeDangerGoal(this, 1.25),
+                goal -> this.getTameOwner().isEmpty()));
+        this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this, false,
+                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal<>(this, false,
+                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
+                new WanderAroundFarGoal(this, 0.65f),
+                goal -> this.getTameOwner().isEmpty()));
+
+        //視線
         this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
         this.goalSelector.add(priority, new LookAroundGoal(this));
 
+        //ターゲット系
         priority = -1;
         this.targetSelector.add(++priority, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
         this.targetSelector.add(++priority, new TrackOwnerAttackerGoal(this));
@@ -1293,9 +1272,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     public void setStrike(boolean strike) {
         itemContractable.setStrike(strike);
         this.setLMMFlag(STRIKE_INDEX, strike);
-        if (strike) {
-            initWildGoals();
-        }
     }
 
     @Override
@@ -1316,6 +1292,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Override
     public Optional<Mode> getMode() {
+        if (this.isStrike()) {
+            return Optional.empty();
+        }
         return modeController.getMode();
     }
 
@@ -1339,6 +1318,10 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
     @Environment(EnvType.CLIENT)
     public Optional<String> getModeName() {
+        if (this.isStrike()) {
+            //todo ストライキ時の表記
+            return Optional.empty();
+        }
         String modeName = this.dataTracker.get(MODE_NAME);
         if (modeName.isEmpty()) return Optional.empty();
         return Optional.of(modeName);
@@ -1449,9 +1432,6 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     public void setContract(boolean isContract) {
         multiModel.setContract(isContract);
         itemContractable.setContract(isContract);
-        if (isContract) {
-            initContractGoals();
-        }
     }
 
     /**
@@ -1542,7 +1522,11 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
 
         @Override
         public boolean canStart() {
-            return !maid.isWait() && ((PlayerInventory) maid.getInventory()).getEmptySlot() != -1 && super.canStart();
+            return (maid.getTameOwner().isPresent()
+                    || LMRBMod.getConfig().isCanPickupItemByNoOwner())
+                    && !maid.isWait()
+                    && ((PlayerInventory) maid.getInventory()).getEmptySlot() != -1
+                    && super.canStart();
         }
 
         @Override
