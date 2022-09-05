@@ -110,6 +110,7 @@ public class LMRBConfig implements ConfigData {
 
     //misc
 
+    //todo デフォtrue
     @ConfigEntry.Category("misc")
     private boolean canPickupItemByNoOwner;
 

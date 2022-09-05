@@ -23,7 +23,9 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
 
     @Override
     public boolean canStart() {
-        return !this.mob.isWait()
+        return !this.mob.isStrike()
+                && this.mob.hasTameOwner()
+                && !this.mob.isWait()
                 && (this.mob.getMovingMode() == MovingMode.FREEDOM
                 || this.mob.getMovingMode() == MovingMode.TRACER)
                 && super.canStart();
