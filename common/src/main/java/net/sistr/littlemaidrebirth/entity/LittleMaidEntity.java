@@ -1132,6 +1132,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     //防具の更新およびオフハンドの位置ズラし
     @Override
     public void equipStack(EquipmentSlot slot, ItemStack stack) {
+        //lithium導入下でのバグ修正のためsuperを呼ぶ
+        super.equipStack(slot, stack);
+
         if (slot.getType() == EquipmentSlot.Type.ARMOR) {
             Inventory inv = getInventory();
             inv.setStack(1 + 18 + slot.getEntitySlotId(), stack);
