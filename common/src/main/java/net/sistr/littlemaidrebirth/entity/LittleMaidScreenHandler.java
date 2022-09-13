@@ -2,6 +2,7 @@ package net.sistr.littlemaidrebirth.entity;
 
 
 import com.mojang.datafixers.util.Pair;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -134,6 +135,12 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
 
         //20~23
         addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.HEAD.getEntitySlotId(), 8, 8) {
+
+            @Override
+            public int getMaxItemCount() {
+                return 1;
+            }
+
             @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.HEAD;
@@ -146,6 +153,11 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
         });
         addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.CHEST.getEntitySlotId(), 8, 44) {
             @Override
+            public int getMaxItemCount() {
+                return 1;
+            }
+
+            @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.CHEST;
             }
@@ -157,6 +169,11 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
         });
         addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.LEGS.getEntitySlotId(), 80, 8) {
             @Override
+            public int getMaxItemCount() {
+                return 1;
+            }
+
+            @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.LEGS;
             }
@@ -167,6 +184,11 @@ public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEnti
             }
         });
         addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.FEET.getEntitySlotId(), 80, 44) {
+            @Override
+            public int getMaxItemCount() {
+                return 1;
+            }
+
             @Override
             public boolean canInsert(ItemStack stack) {
                 return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.FEET;
