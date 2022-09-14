@@ -5,6 +5,7 @@ import dev.architectury.registry.level.entity.EntityAttributeRegistry;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
+import net.sistr.littlemaidrebirth.advancement.criterion.LMRBCriteria;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.setup.Registration;
@@ -22,6 +23,8 @@ public class LMRBMod {
 
         Registration.init();
         registerAttribute();
+
+        LMRBCriteria.init();
     }
 
     public static void registerAttribute() {

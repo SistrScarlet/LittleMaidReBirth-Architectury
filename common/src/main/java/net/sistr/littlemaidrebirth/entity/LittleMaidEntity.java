@@ -65,6 +65,7 @@ import net.sistr.littlemaidmodelloader.resource.manager.LMTextureManager;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidmodelloader.resource.util.TextureColors;
 import net.sistr.littlemaidrebirth.LMRBMod;
+import net.sistr.littlemaidrebirth.advancement.criterion.LMRBCriteria;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
@@ -969,6 +970,9 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
     public ActionResult contract(PlayerEntity player, ItemStack stack, boolean isReContract) {
         if (!isReContract) {
             this.world.sendEntityStatus(this, (byte) 70);
+            if (player instanceof ServerPlayerEntity) {
+                LMRBCriteria.CONTRACT_MAID.trigger((ServerPlayerEntity) player, this);
+            }
         } else {
             this.world.sendEntityStatus(this, (byte) 71);
         }

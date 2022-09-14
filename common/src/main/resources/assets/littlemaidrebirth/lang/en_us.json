@@ -23,6 +23,9 @@
 
   "itemGroup.littlemaidrebirth.common": "LittleMaid ReBirth",
 
+  "advancements.husbandry.contract_maid.title": "Realization",
+  "advancements.husbandry.contract_maid.description": "Employ a LittleMaid",
+
   "text.autoconfig.littlemaidrebirth.title": "LittleMaid ReBirth Config",
 
   "text.autoconfig.littlemaidrebirth.category.spawn": "Spawn",
