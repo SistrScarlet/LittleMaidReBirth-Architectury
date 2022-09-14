@@ -13,6 +13,7 @@
     "MixinPlayerManager",
     "MixinProjectileDamageSource",
     "MixinRangedWeaponItem",
+    "MixinSaddleItem",
     "MixinServerPlayer",
     "MixinServerPlayerEntity"
   ],
