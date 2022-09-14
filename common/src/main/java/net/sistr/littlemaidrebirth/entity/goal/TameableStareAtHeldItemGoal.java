@@ -2,7 +2,7 @@ package net.sistr.littlemaidrebirth.entity.goal;
 
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.Tameable;
 
 import java.util.function.Predicate;
 

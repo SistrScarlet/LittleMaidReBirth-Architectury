@@ -4,6 +4,8 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.sistr.littlemaidrebirth.entity.util.Contractable;
+import net.sistr.littlemaidrebirth.entity.util.InventorySupplier;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;

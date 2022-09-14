@@ -4,8 +4,8 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.screen.ScreenHandler;
-import net.sistr.littlemaidrebirth.entity.HasGuiEntitySupplier;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.HasGuiEntitySupplier;
+import net.sistr.littlemaidrebirth.entity.util.Tameable;
 
 import java.util.EnumSet;
 

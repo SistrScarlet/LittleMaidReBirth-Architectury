@@ -76,6 +76,8 @@ import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.mode.ModeController;
 import net.sistr.littlemaidrebirth.entity.mode.ModeSupplier;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
+import net.sistr.littlemaidrebirth.entity.util.*;
+import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LivingAccessor;
@@ -89,7 +91,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 //メイドさん本体
-public class LittleMaidEntity extends TameableEntity implements CustomPacketEntity, InventorySupplier, Tameable,
+public class LittleMaidEntity extends TameableEntity implements CustomPacketEntity, InventorySupplier, net.sistr.littlemaidrebirth.entity.util.Tameable,
         Contractable, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable, HasMovingMode {
     //変数群。カオス
     private static final int WAIT_INDEX = 0;
@@ -1345,7 +1347,7 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 return Optional.of(IFFTag.FRIEND);
             }
             //同じ主を持つ者はフレンド
-            if (target instanceof Tameable && ownerId.equals(((Tameable) target).getTameOwnerUuid().orElse(null))
+            if (target instanceof net.sistr.littlemaidrebirth.entity.util.Tameable && ownerId.equals(((Tameable) target).getTameOwnerUuid().orElse(null))
                     || target instanceof TameableEntity && ownerId.equals(((TameableEntity) target).getOwnerUuid())) {
                 return Optional.of(IFFTag.FRIEND);
             }

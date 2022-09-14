@@ -10,7 +10,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Direction;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.entity.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
 import java.util.Optional;
 import java.util.function.Predicate;

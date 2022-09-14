@@ -3,6 +3,7 @@ package net.sistr.littlemaidrebirth.entity;
 import net.minecraft.item.Items;
 import net.sistr.littlemaidmodelloader.maidmodel.EntityCaps;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
+import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
 public class LittleMaidModelCaps extends EntityCaps {
     private final LittleMaidEntity maid;

@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.entity;
+package net.sistr.littlemaidrebirth.entity.util;
 
 public enum MovingMode {
     FREEDOM("Freedom", 0),

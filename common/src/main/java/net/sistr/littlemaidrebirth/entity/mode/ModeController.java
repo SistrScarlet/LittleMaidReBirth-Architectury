@@ -9,7 +9,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
-import net.sistr.littlemaidrebirth.entity.InventorySupplier;
+import net.sistr.littlemaidrebirth.entity.util.InventorySupplier;
 
 import java.util.Optional;
 import java.util.Set;

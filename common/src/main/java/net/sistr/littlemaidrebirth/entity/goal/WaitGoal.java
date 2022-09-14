@@ -3,7 +3,7 @@ package net.sistr.littlemaidrebirth.entity.goal;
 
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.Tameable;
 
 import java.util.EnumSet;
 
