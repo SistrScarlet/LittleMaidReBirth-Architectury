@@ -23,10 +23,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.StackReference;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsage;
-import net.minecraft.item.Items;
-import net.minecraft.item.RangedWeaponItem;
+import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.network.Packet;
@@ -76,8 +73,8 @@ import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.mode.ModeController;
 import net.sistr.littlemaidrebirth.entity.mode.ModeSupplier;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
-import net.sistr.littlemaidrebirth.entity.util.*;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.*;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LivingAccessor;
@@ -911,6 +908,25 @@ public class LittleMaidEntity extends TameableEntity implements CustomPacketEnti
                 return contract(player, stack, true);
             }
             this.world.sendEntityStatus(this, (byte) 6);
+            return ActionResult.PASS;
+        }
+        //サドル持ってるとき
+        if (stack.getItem() instanceof SaddleItem) {
+            if (!this.hasVehicle()) {
+                if (player.hasPassengers()) {
+                    player.removeAllPassengers();
+                }
+                this.startRiding(player);
+            } else {
+                var vehicle = this.getVehicle();
+                if (vehicle == player) {
+                    this.stopRiding();
+                }
+            }
+            return ActionResult.success(this.world.isClient);
+        }
+        //肩車されてるとき
+        if (this.getVehicle() == player) {
             return ActionResult.PASS;
         }
         //砂糖

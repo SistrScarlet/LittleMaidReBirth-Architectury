@@ -9,7 +9,10 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.*;
 import net.sistr.littlemaidrebirth.util.PlayerAccessor;
 import net.sistr.littlemaidrebirth.util.PlayerInventoryAccessor;
@@ -95,5 +98,38 @@ public abstract class MixinPlayerEntity extends LivingEntity implements PlayerAc
     @Override
     public void readIFF(NbtCompound nbt) {
         iff.readIFF(nbt);
+    }
+
+    @Override
+    public void updatePassengerPosition(Entity passenger) {
+        if (!(passenger instanceof LittleMaidEntity)) {
+            super.updatePassengerPosition(passenger);
+        }
+        if (!this.hasPassenger(passenger)) {
+            return;
+        }
+        float z = -6 / 16f * 0.9375F;
+        float y = (float) (this.getMountedHeightOffset() - 4 / 16f * 0.9375F + passenger.getHeightOffset());
+        Vec3d pos = new Vec3d(z, 0.0, 0.0).rotateY((float) (-this.bodyYaw * (Math.PI / 180.0) - Math.PI / 2.0));
+        passenger.setPosition(this.getX() + pos.x, this.getY() + (double) y, this.getZ() + pos.z);
+        this.copyEntityData(passenger);
+    }
+
+    @Override
+    public void onPassengerLookAround(Entity passenger) {
+        if (!(passenger instanceof LittleMaidEntity)) {
+            super.onPassengerLookAround(passenger);
+        }
+        copyEntityData(passenger);
+    }
+
+    protected void copyEntityData(Entity entity) {
+        float yaw = this.bodyYaw;
+        entity.setBodyYaw(yaw);
+        float f = MathHelper.wrapDegrees(yaw - this.getYaw());
+        float f1 = MathHelper.clamp(f, -105.0F, 105.0F);
+        entity.prevYaw += f1 - f;
+        entity.setYaw(yaw + f1 - f);
+        entity.setHeadYaw(yaw);
     }
 }
