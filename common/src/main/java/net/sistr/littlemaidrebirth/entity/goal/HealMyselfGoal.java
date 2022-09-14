@@ -8,7 +8,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
-import net.sistr.littlemaidrebirth.entity.InventorySupplier;
+import net.sistr.littlemaidrebirth.entity.util.InventorySupplier;
 
 import java.util.EnumSet;
 import java.util.function.Predicate;

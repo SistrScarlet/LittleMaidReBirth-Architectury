@@ -10,7 +10,7 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.Tameable;
 
 public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends Goal {
     protected final T tameable;

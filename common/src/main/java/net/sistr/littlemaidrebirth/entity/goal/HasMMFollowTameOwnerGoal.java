@@ -1,9 +1,9 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.sistr.littlemaidrebirth.entity.HasMovingMode;
-import net.sistr.littlemaidrebirth.entity.MovingMode;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.HasMovingMode;
+import net.sistr.littlemaidrebirth.entity.util.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.Tameable;
 
 public class HasMMFollowTameOwnerGoal
         <T extends PathAwareEntity

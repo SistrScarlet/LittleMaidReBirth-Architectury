@@ -10,7 +10,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.entity.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
 public class SyncMovingStatePacket {
     public static final Identifier ID =

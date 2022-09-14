@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.entity;
+package net.sistr.littlemaidrebirth.entity.util;
 
 import net.minecraft.nbt.NbtCompound;
 

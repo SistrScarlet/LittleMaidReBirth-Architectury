@@ -11,7 +11,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.FakePlayer;
-import net.sistr.littlemaidrebirth.entity.FakePlayerSupplier;
+import net.sistr.littlemaidrebirth.entity.util.FakePlayerSupplier;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.util.MeleeAttackAccessor;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;

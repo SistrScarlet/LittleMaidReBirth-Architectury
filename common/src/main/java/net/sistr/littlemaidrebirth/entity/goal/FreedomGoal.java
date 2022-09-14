@@ -5,7 +5,7 @@ import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.entity.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
 import java.util.EnumSet;
 

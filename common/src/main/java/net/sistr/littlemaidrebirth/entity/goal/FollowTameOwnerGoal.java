@@ -7,7 +7,7 @@ import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.sistr.littlemaidrebirth.entity.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.Tameable;
 
 import java.util.EnumSet;
 

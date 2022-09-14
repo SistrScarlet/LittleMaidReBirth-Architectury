@@ -9,6 +9,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.sistr.littlemaidrebirth.entity.util.FakePlayerSupplier;
+import net.sistr.littlemaidrebirth.entity.util.InventorySupplier;
 import net.sistr.littlemaidrebirth.util.DefaultedListLimiter;
 import net.sistr.littlemaidrebirth.util.PlayerInventoryAccessor;
 

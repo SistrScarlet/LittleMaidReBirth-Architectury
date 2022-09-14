@@ -26,7 +26,7 @@ import net.sistr.littlemaidmodelloader.client.screen.SoundPackSelectScreen;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
-import net.sistr.littlemaidrebirth.entity.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
 import net.sistr.littlemaidrebirth.network.SyncBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.SyncMovingStatePacket;

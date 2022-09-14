@@ -2,6 +2,7 @@ package net.sistr.littlemaidrebirth.entity;
 
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.sistr.littlemaidrebirth.entity.util.FakePlayerSupplier;
 
 import java.util.Optional;
 
