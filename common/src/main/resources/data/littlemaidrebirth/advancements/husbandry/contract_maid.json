@@ -1,0 +1,29 @@
+{
+  "parent": "minecraft:husbandry/root",
+  "display": {
+    "icon": {
+      "item": "minecraft:cake"
+    },
+    "title": {
+      "translate": "advancements.husbandry.contract_maid.title"
+    },
+    "description": {
+      "translate": "advancements.husbandry.contract_maid.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "contracted_maid": {
+      "trigger": "littlemaidrebirth:contract_maid",
+      "conditions": {}
+    }
+  },
+  "requirements": [
+    [
+      "contracted_maid"
+    ]
+  ]
+}

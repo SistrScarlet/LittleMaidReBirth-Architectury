@@ -23,6 +23,9 @@
 
   "itemGroup.littlemaidrebirth.common": "LittleMaid ReBirth",
 
+  "advancements.husbandry.contract_maid.title": "悟り。",
+  "advancements.husbandry.contract_maid.description": "リトルメイドを雇用する",
+
   "text.autoconfig.littlemaidrebirth.title": "LittleMaid ReBirth コンフィグ",
 
   "text.autoconfig.littlemaidrebirth.category.spawn": "スポーン",
