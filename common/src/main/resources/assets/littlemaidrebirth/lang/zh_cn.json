@@ -50,7 +50,7 @@
   "text.autoconfig.littlemaidrebirth.option.emergencyTeleportStartRange": "紧急传送开始距离",
   "text.autoconfig.littlemaidrebirth.option.emergencyTeleportHealthThreshold": "紧急传送血量值",
   "text.autoconfig.littlemaidrebirth.option.friendlyFire": "友军伤害",
-  "text.autoconfig.littlemaidrebirth.option.canMoveToDanger": "允许女仆无视危险",
+  "text.autoconfig.littlemaidrebirth.option.canMoveToDanger": "允许女仆无视危险寻路",
   "text.autoconfig.littlemaidrebirth.option.immortal": "无敌",
   "text.autoconfig.littlemaidrebirth.option.fallImmunity": "免疫摔落",
   "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "免疫伤害",
@@ -68,5 +68,5 @@
 
   "text.autoconfig.littlemaidrebirth.category.misc": "其他",
   "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "允许野生女仆拾起掉落物",
-  "text.autoconfig.littlemaidrebirth.option.canMilking": "从契约女仆那里获得牛奶"
+  "text.autoconfig.littlemaidrebirth.option.canMilking": "允许从契约女仆那里获得牛奶"
 }
