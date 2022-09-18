@@ -8,6 +8,7 @@ modId = "littlemaidrebirth"
 version = "${version}"
 displayName = "LittleMaid ReBirth"
 authors = "Sistr"
+credits = "erer00gg, utsudashinou"
 description = "いろいろ手伝ってくれたりくれなかったりする、ちいさなメイドさんを追加するMOD"
 logoFile = "assets/littlemaidrebirth/icon.png"
 
