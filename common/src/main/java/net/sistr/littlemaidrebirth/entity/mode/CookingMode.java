@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
 
+//todo　モード終了時に燃料類を取り出す
 public class CookingMode extends Mode {
     private final LittleMaidEntity mob;
     private final int inventoryStart;
