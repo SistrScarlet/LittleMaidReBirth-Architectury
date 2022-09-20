@@ -14,10 +14,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.client.screen.GUIElement;
@@ -72,7 +70,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int top = (int) ((this.height - backgroundHeight) / 2F);
         int size = 20;
         int layer = -1;
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> owner.getTameOwner().ifPresent(OpenIFFScreenPacket::sendC2SPacket)) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
@@ -80,7 +78,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 itemRenderer.renderGuiItemIcon(BOOK, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> client.setScreen(new SoundPackSelectScreen<>(title, owner))) {
             @Override
             public void renderButton(MatrixStack matrices, int x, int y, float delta) {
@@ -88,7 +86,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 itemRenderer.renderGuiItemIcon(NOTE, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> client.setScreen(new ModelSelectScreen<>(title, owner.world, owner))) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
@@ -96,7 +94,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 itemRenderer.renderGuiItemIcon(ARMOR, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> {
                     switch (movingMode) {
                         case ESCORT -> movingMode = MovingMode.FREEDOM;
@@ -111,7 +109,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 itemRenderer.renderGuiItemIcon(FEATHER, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
             }
         });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, new LiteralText(""),
+        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> SyncBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck())) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
@@ -135,7 +133,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 super.render(matrices, mouseX, mouseY, delta);
             }
         };
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * (layer += 2), size, size, new LiteralText(""),
+        this.addDrawableChild(new ButtonWidget(left - size, top + size * (layer += 2), size, size, Text.of(""),
                 button -> {//ウィンドウを出す
                     showSalaryWindow = true;
                 }) {
@@ -149,10 +147,10 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     public Text getStateText() {
-        MutableText stateText = new TranslatableText("state." + LMRBMod.MODID + "." + movingMode.getName());
+        MutableText stateText = Text.translatable("state." + LMRBMod.MODID + "." + movingMode.getName());
         owner.getModeName().ifPresent(
                 modeName -> stateText.append(" : ")
-                        .append(new TranslatableText("mode." + LMRBMod.MODID + "." + modeName)));
+                        .append(Text.translatable("mode." + LMRBMod.MODID + "." + modeName)));
         return stateText;
     }
 
@@ -211,7 +209,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
         RenderSystem.disableBlend();
         this.textRenderer.draw(matrices, this.stateText.getString(), 8F, 65F, 0x404040);
-        String insideSkirt = new TranslatableText("entity.littlemaidrebirth.little_maid_mob.InsideSkirt").getString();
+        String insideSkirt = Text.translatable("entity.littlemaidrebirth.little_maid_mob.InsideSkirt").getString();
         this.textRenderer.draw(matrices, insideSkirt, 168F - textRenderer.getWidth(insideSkirt), 65F, 0x404040);
         float left = (width - backgroundWidth) / 2F;
         float top = (height - backgroundHeight) / 2F;

@@ -51,18 +51,15 @@ public class ModSetup {
 
         SpawnRestrictionRegister.callRegister(Registration.LITTLE_MAID_MOB.get(),
                 SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-                LittleMaidEntity::isValidNaturalSpawnLM);
+                (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }
 
     private static boolean canSpawnBiome(BiomeModifications.BiomeContext context) {
-        var result = context.hasTag(BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE)
+        return context.hasTag(BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE)
                 || context.hasTag(BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE)
                 || context.hasTag(BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE)
                 || context.hasTag(BiomeTags.VILLAGE_SNOWY_HAS_STRUCTURE)
                 || context.hasTag(BiomeTags.VILLAGE_TAIGA_HAS_STRUCTURE);
-        System.out.print(result + " : ");
-        System.out.println(context.getKey().orElse(new Identifier("null")));
-        return result;
     }
 
 }

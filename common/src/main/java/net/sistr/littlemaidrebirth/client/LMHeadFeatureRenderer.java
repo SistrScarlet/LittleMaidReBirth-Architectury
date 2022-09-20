@@ -101,7 +101,7 @@ public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityM
                 SkullBlockEntityRenderer.renderSkull(null, 180.0f, animationProgress, matrixStack, vertexConsumerProvider, light, skullBlockEntityModel, renderLayer);
             } else if (!(item instanceof ArmorItem) || ((ArmorItem) item).getSlotType() != EquipmentSlot.HEAD) {
                 translate(matrixStack, false);
-                MinecraftClient.getInstance().getHeldItemRenderer()
+                MinecraftClient.getInstance().getEntityRenderDispatcher().getHeldItemRenderer()
                         .renderItem(livingEntity, itemStack, ModelTransformation.Mode.HEAD,
                                 false, matrixStack, vertexConsumerProvider, light);
             }
