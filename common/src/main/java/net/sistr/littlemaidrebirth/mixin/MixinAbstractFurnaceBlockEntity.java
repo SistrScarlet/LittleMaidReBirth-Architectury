@@ -15,11 +15,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(AbstractFurnaceBlockEntity.class)
 public abstract class MixinAbstractFurnaceBlockEntity implements AbstractFurnaceAccessor {
-    private RecipeType<? extends AbstractCookingRecipe> recipeType;
+    private RecipeType<? extends AbstractCookingRecipe> lmrbRecipeType;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onInit(BlockEntityType blockEntityType, BlockPos pos, BlockState state, RecipeType recipeType, CallbackInfo ci) {
-        this.recipeType = recipeType;
+    private void onInit(BlockEntityType<?> blockEntityType, BlockPos pos, BlockState state, RecipeType<? extends AbstractCookingRecipe> recipeType, CallbackInfo ci) {
+        this.lmrbRecipeType = recipeType;
     }
 
     @Shadow
@@ -27,7 +27,7 @@ public abstract class MixinAbstractFurnaceBlockEntity implements AbstractFurnace
 
     @Override
     public RecipeType<? extends AbstractCookingRecipe> getRecipeType_LM() {
-        return this.recipeType;
+        return this.lmrbRecipeType;
     }
 
     @Override
