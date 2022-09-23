@@ -58,7 +58,7 @@
 
   "text.autoconfig.littlemaidrebirth.category.mode": "女仆模式",
   "text.autoconfig.littlemaidrebirth.option.fencerRangeFactor": "剑客模式攻击范围",
-  "text.autoconfig.littlemaidrebirth.option.archerInaccuracy": "射手模式偏差值",
+  "text.autoconfig.littlemaidrebirth.option.archerInaccuracy": "射手模式误差",
   "text.autoconfig.littlemaidrebirth.option.archerRangeFactor": "射手模式攻击范围",
   "text.autoconfig.littlemaidrebirth.option.archerPullLengthFactor": "射手模式拉弓时间",
 
