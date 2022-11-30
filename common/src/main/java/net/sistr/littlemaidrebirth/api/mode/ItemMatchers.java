@@ -23,12 +23,7 @@ public class ItemMatchers {
         return new ClassMatcher(clazz);
     }
 
-    private static class ItemInstance implements ItemMatcher {
-        private final Item item;
-
-        public ItemInstance(Item item) {
-            this.item = item;
-        }
+    private record ItemInstance(Item item) implements ItemMatcher {
 
         @Override
         public boolean isMatch(ItemStack stack) {
@@ -36,12 +31,7 @@ public class ItemMatchers {
         }
     }
 
-    private static class NameMatcher implements ItemMatcher {
-        private final String name;
-
-        public NameMatcher(String name) {
-            this.name = name;
-        }
+    private record NameMatcher(String name) implements ItemMatcher {
 
         @Override
         public boolean isMatch(ItemStack stack) {
@@ -50,12 +40,7 @@ public class ItemMatchers {
         }
     }
 
-    private static class TagMatcher implements ItemMatcher {
-        private final TagKey<Item> tag;
-
-        public TagMatcher(TagKey<Item> tag) {
-            this.tag = tag;
-        }
+    private record TagMatcher(TagKey<Item> tag) implements ItemMatcher {
 
         @Override
         public boolean isMatch(ItemStack stack) {
@@ -63,12 +48,7 @@ public class ItemMatchers {
         }
     }
 
-    private static class ClassMatcher implements ItemMatcher {
-        private final Class<?> clazz;
-
-        public ClassMatcher(Class<?> clazz) {
-            this.clazz = clazz;
-        }
+    private record ClassMatcher(Class<?> clazz) implements ItemMatcher {
 
         @Override
         public boolean isMatch(ItemStack stack) {

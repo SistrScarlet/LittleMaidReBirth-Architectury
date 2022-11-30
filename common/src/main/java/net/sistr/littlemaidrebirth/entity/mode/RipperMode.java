@@ -65,7 +65,7 @@ public class RipperMode extends Mode {
         this.mob.getNavigation().stop();
         List<Entity> tempList = this.shearable.stream()
                 .sorted(Comparator.comparingDouble(entity -> entity.squaredDistanceTo(this.mob)))
-                .collect(Collectors.toList());
+                .toList();
         this.shearable.clear();
         this.shearable.addAll(tempList);
     }

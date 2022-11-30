@@ -16,28 +16,21 @@ public class LittleMaidModelCaps extends EntityCaps {
     //todo インベントリ系、トレーサー
     @Override
     public Object getCapsValue(int pIndex, Object... pArg) {
-        switch (pIndex) {
-            case caps_aimedBow:
-                return maid.isAimingBow();
-            case caps_isLookSuger:
-                return maid.isBegging();
-            case caps_interestedAngle:
-                return maid.getInterestedAngle((Float) pArg[0]);
-            case caps_isFreedom:
-                return maid.getMovingMode() == MovingMode.FREEDOM || maid.getMovingMode() == MovingMode.TRACER;
-            case caps_isContract:
-                return maid.isContractMM();
-            case caps_isClock:
-                return maid.getMainHandStack().getItem() == Items.CLOCK
-                        || maid.getOffHandStack().getItem() == Items.CLOCK;
-            case caps_job:
-                return maid.getMode()
-                        .map(Mode::getName)
-                        .map(String::toLowerCase)
-                        .orElse(null);
-            case caps_isLeeding:
-                return maid.isLeashed();
-        }
-        return super.getCapsValue(pIndex, pArg);
+        return switch (pIndex) {
+            case caps_aimedBow -> maid.isAimingBow();
+            case caps_isLookSuger -> maid.isBegging();
+            case caps_interestedAngle -> maid.getInterestedAngle((Float) pArg[0]);
+            case caps_isFreedom -> maid.getMovingMode() == MovingMode.FREEDOM
+                    || maid.getMovingMode() == MovingMode.TRACER;
+            case caps_isContract -> maid.isContractMM();
+            case caps_isClock -> maid.getMainHandStack().getItem() == Items.CLOCK
+                    || maid.getOffHandStack().getItem() == Items.CLOCK;
+            case caps_job -> maid.getMode()
+                    .map(Mode::getName)
+                    .map(String::toLowerCase)
+                    .orElse(null);
+            case caps_isLeeding -> maid.isLeashed();
+            default -> super.getCapsValue(pIndex, pArg);
+        };
     }
 }

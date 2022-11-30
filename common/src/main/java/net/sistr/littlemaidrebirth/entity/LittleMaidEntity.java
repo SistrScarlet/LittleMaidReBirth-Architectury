@@ -90,7 +90,7 @@ import java.util.stream.Collectors;
 //メイドさん本体
 public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, InventorySupplier, net.sistr.littlemaidrebirth.entity.util.Tameable,
         Contractable, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable, HasMovingMode {
-    //変数群。カオス
+    //LMM_FLAGSのindex
     private static final int WAIT_INDEX = 0;
     private static final int AIMING_INDEX = 1;
     private static final int BEGGING_INDEX = 2;
@@ -102,6 +102,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
     private static final TrackedData<String> MODE_NAME =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.STRING);
+    //移譲s
     private final LMFakePlayerSupplier fakePlayer = new LMFakePlayerSupplier(this);
     private final LMInventorySupplier littleMaidInventory = new LMInventorySupplier(this, this);
     private final ItemContractable<LittleMaidEntity> itemContractable =
@@ -120,7 +121,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     private final SoundPlayableCompound soundPlayer;
     private final LMScreenHandlerFactory screenFactory = new LMScreenHandlerFactory(this);
     private final IModelCaps caps = new LittleMaidModelCaps(this);
+
+    @Nullable
     private BlockPos freedomPos;
+    //首傾げのやつ
     @Environment(EnvType.CLIENT)
     private float interestedAngle;
     @Environment(EnvType.CLIENT)
@@ -398,7 +402,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         setBloodSuck(nbt.getBoolean("isBloodSuck"));
     }
 
-
     //鯖
     @Override
     public void saveAdditionalSpawnData(PacketByteBuf buf) {
@@ -524,7 +527,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //canSpawnとかでも使われる
     @Override
     public float getPathfindingFavor(BlockPos pos, WorldView world) {
-        return world.getBlockState(pos.down()).isFullCube(world, pos) ? 10.0F : world.getBrightness(pos) - 0.5F;
+        return world.getBlockState(pos.down()).isFullCube(world, pos) ? 10.0F : world.getPhototaxisFavor(pos);
     }
 
     @Override
@@ -537,6 +540,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return super.canTarget(target) && !isFriend(target);
     }
 
+    @Nullable
     @Override
     public PassiveEntity createChild(ServerWorld world, PassiveEntity entity) {
         return null;
@@ -582,7 +586,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         Entity entity = super.moveToWorld(destination);
         if (entity == null) return null;
         if (entity instanceof LittleMaidEntity) {
-            ((LittleMaidEntity) entity).setFreedomPos(((LittleMaidEntity) entity).getFreedomPos());
+            this.getFreedomPos().ifPresent(freedomPos ->
+                    ((LittleMaidEntity) entity).setFreedomPos(freedomPos));
         }
         return entity;
     }
@@ -591,7 +596,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public boolean isInWalkTargetRange(BlockPos pos) {
         //自身または主人から16ブロック以内
         if (pos.isWithinDistance(pos, 16)
-                || getTameOwner().filter(owner -> owner.getBlockPos().isWithinDistance(pos, 16)).isPresent()) {
+                || getTameOwner()
+                .filter(owner -> owner.getBlockPos().isWithinDistance(pos, 16))
+                .isPresent()) {
             return super.isInWalkTargetRange(pos);
         }
         return false;
@@ -1221,13 +1228,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.setLMMFlag(WAIT_INDEX, isWait);
     }
 
-    public void setFreedomPos(BlockPos freedomPos) {
+    public void setFreedomPos(@Nullable BlockPos freedomPos) {
         this.freedomPos = freedomPos;
     }
 
-    public BlockPos getFreedomPos() {
-        if (freedomPos == null) return getBlockPos();
-        return freedomPos;
+    public Optional<BlockPos> getFreedomPos() {
+        return Optional.ofNullable(freedomPos);
     }
 
     @Override

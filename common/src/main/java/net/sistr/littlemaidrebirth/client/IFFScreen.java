@@ -203,15 +203,9 @@ public class IFFScreen extends Screen {
                 if (clickable.release(mouseX, mouseY)) {
                     IFFTag tag = this.iff.getIFFTag();
                     switch (tag) {
-                        case ENEMY:
-                            this.iff.setTag(IFFTag.FRIEND);
-                            break;
-                        case FRIEND:
-                            this.iff.setTag(IFFTag.UNKNOWN);
-                            break;
-                        default:
-                            this.iff.setTag(IFFTag.ENEMY);
-                            break;
+                        case ENEMY -> this.iff.setTag(IFFTag.FRIEND);
+                        case FRIEND -> this.iff.setTag(IFFTag.UNKNOWN);
+                        default -> this.iff.setTag(IFFTag.ENEMY);
                     }
                     MinecraftClient.getInstance().getSoundManager()
                             .play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));

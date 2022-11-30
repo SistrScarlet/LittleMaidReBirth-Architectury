@@ -17,7 +17,7 @@ public class LMFakePlayerSupplier implements FakePlayerSupplier {
     @Override
     public FakePlayer getFakePlayer() {
         if (this.fakePlayer == null) {
-            this.fakePlayer = new LMFakePlayerWrapperEntity<LittleMaidEntity>(this.origin) {
+            this.fakePlayer = new LMFakePlayerWrapperEntity<>(this.origin) {
 
                 @Override
                 public LittleMaidEntity getOrigin() {

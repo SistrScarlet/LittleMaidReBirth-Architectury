@@ -38,7 +38,7 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
     @Override
     public void start() {
         super.start();
-        freedomPos = this.maid.getFreedomPos();
+        freedomPos = this.maid.getFreedomPos().orElse(null);
     }
 
     @Override
