@@ -26,7 +26,7 @@ public class LittleMaidModelCaps extends EntityCaps {
             case caps_isFreedom:
                 return maid.getMovingMode() == MovingMode.FREEDOM || maid.getMovingMode() == MovingMode.TRACER;
             case caps_isContract:
-                return maid.isContract();
+                return maid.isContractMM();
             case caps_isClock:
                 return maid.getMainHandStack().getItem() == Items.CLOCK
                         || maid.getOffHandStack().getItem() == Items.CLOCK;

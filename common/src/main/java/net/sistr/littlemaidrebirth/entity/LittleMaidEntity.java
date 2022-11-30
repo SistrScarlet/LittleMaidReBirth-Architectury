@@ -305,7 +305,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             return;
         }
         var color = colorList.get(random.nextInt(colorList.size()));
-        this.setColor(color);
+        this.setColorMM(color);
         this.setTextureHolder(textureHolder, Layer.SKIN, Part.HEAD);
         if (textureHolder.hasArmorTexture()) {
             setTextureHolder(textureHolder, Layer.INNER, Part.HEAD);
@@ -331,8 +331,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         writeInventory(nbt);
         writeContractable(nbt);
 
-        nbt.putByte("SkinColor", (byte) getColor().getIndex());
-        nbt.putBoolean("IsContract", isContract());
+        nbt.putByte("SkinColor", (byte) getColorMM().getIndex());
+        nbt.putBoolean("IsContract", isContractMM());
         nbt.putString("SkinTexture", getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
         for (Part part : Part.values()) {
             nbt.putString("ArmorTextureInner" + part.getPartName(),
@@ -369,8 +369,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         readModeData(nbt);
 
         if (nbt.contains("SkinColor"))
-            setColor(TextureColors.getColor(nbt.getByte("SkinColor")));
-        setContract(nbt.getBoolean("IsContract"));
+            setColorMM(TextureColors.getColor(nbt.getByte("SkinColor")));
+        setContractMM(nbt.getBoolean("IsContract"));
         LMTextureManager textureManager = LMTextureManager.INSTANCE;
         if (nbt.contains("SkinTexture")) {
             textureManager.getTexture(nbt.getString("SkinTexture"))
@@ -403,7 +403,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void saveAdditionalSpawnData(PacketByteBuf buf) {
         //モデル
-        buf.writeEnumConstant(getColor());
+        buf.writeEnumConstant(getColorMM());
         buf.writeBoolean(isContract());
         buf.writeString(getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
         for (Part part : Part.values()) {
@@ -422,8 +422,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public void loadAdditionalSpawnData(PacketByteBuf buf) {
         //モデル
         //readString()はクラ処理。このメソッドでは、クラ側なので問題なし
-        setColor(buf.readEnumConstant(TextureColors.class));
-        setContract(buf.readBoolean());
+        setColorMM(buf.readEnumConstant(TextureColors.class));
+        setContractMM(buf.readBoolean());
         LMTextureManager textureManager = LMTextureManager.INSTANCE;
         textureManager.getTexture(buf.readString())
                 .ifPresent(textureHolder -> setTextureHolder(textureHolder, Layer.SKIN, Part.HEAD));
@@ -1290,6 +1290,17 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //お給料
 
     @Override
+    public boolean isContract() {
+        return this.hasTameOwner();
+    }
+
+    @Override
+    public void setContract(boolean isContract) {
+        //正直あまり意味のないメソッド
+        setContractMM(isContract);
+    }
+
+    @Override
     public boolean isStrike() {
         return this.getLMMFlag(STRIKE_INDEX);
     }
@@ -1445,19 +1456,18 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     @Override
-    public void setColor(TextureColors textureColor) {
-        multiModel.setColor(textureColor);
+    public void setColorMM(TextureColors textureColor) {
+        multiModel.setColorMM(textureColor);
     }
 
     @Override
-    public TextureColors getColor() {
-        return multiModel.getColor();
+    public TextureColors getColorMM() {
+        return multiModel.getColorMM();
     }
 
     @Override
-    public void setContract(boolean isContract) {
-        multiModel.setContract(isContract);
-        itemContractable.setContract(isContract);
+    public void setContractMM(boolean isContract) {
+        multiModel.setContractMM(isContract);
     }
 
     /**
@@ -1467,8 +1477,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
      * {@link #getTameOwnerUuid()}の返り値が存在するかでチェックすること
      */
     @Override
-    public boolean isContract() {
-        return multiModel.isContract();
+    public boolean isContractMM() {
+        return multiModel.isContractMM();
     }
 
     @Override
