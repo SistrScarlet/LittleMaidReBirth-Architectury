@@ -10,7 +10,6 @@ import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.registry.Registry;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
-import net.sistr.littlemaidrebirth.item.IFFCopyBookItem;
 import net.sistr.littlemaidrebirth.item.LittleMaidSpawnEggItem;
 
 import static net.sistr.littlemaidrebirth.LMRBMod.MODID;
@@ -35,8 +34,8 @@ public class Registration {
     //アイテム
     public static final RegistrySupplier<Item> LITTLE_MAID_SPAWN_EGG_ITEM =
             ITEMS.register("little_maid_spawn_egg", LittleMaidSpawnEggItem::new);
-    public static final RegistrySupplier<Item> IFF_COPY_BOOK_ITEM =
-            ITEMS.register("iff_copy_book", IFFCopyBookItem::new);
+    /*public static final RegistrySupplier<Item> IFF_COPY_BOOK_ITEM =
+            ITEMS.register("iff_copy_book", IFFCopyBookItem::new);*/
 
     //スクリーンハンドラ
     public static final RegistrySupplier<ScreenHandlerType<LittleMaidScreenHandler>> LITTLE_MAID_SCREEN_HANDLER =
