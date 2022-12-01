@@ -13,15 +13,15 @@ public class LittleMaidModelCaps extends EntityCaps {
         this.maid = maid;
     }
 
-    //todo インベントリ系、トレーサー
+    //todo インベントリ系
     @Override
     public Object getCapsValue(int pIndex, Object... pArg) {
         return switch (pIndex) {
             case caps_aimedBow -> maid.isAimingBow();
             case caps_isLookSuger -> maid.isBegging();
             case caps_interestedAngle -> maid.getInterestedAngle((Float) pArg[0]);
-            case caps_isFreedom -> maid.getMovingMode() == MovingMode.FREEDOM
-                    || maid.getMovingMode() == MovingMode.TRACER;
+            case caps_isFreedom -> maid.getMovingMode() == MovingMode.FREEDOM;
+            case caps_isTracer -> maid.getMovingMode() == MovingMode.TRACER;
             case caps_isContract -> maid.isContractMM();
             case caps_isClock -> maid.getMainHandStack().getItem() == Items.CLOCK
                     || maid.getOffHandStack().getItem() == Items.CLOCK;
