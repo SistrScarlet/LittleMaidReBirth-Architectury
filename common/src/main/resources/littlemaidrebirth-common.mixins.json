@@ -9,6 +9,7 @@
     "MixinEntityDamageSource",
     "MixinLivingEntity",
     "MixinMeleeAttackGoal",
+    "MixinPlayerAdvancementTracker",
     "MixinPlayerEntity",
     "MixinPlayerManager",
     "MixinProjectileDamageSource",

@@ -1,10 +1,6 @@
 package net.sistr.littlemaidrebirth.entity;
 
-import net.minecraft.advancement.PlayerAdvancementTracker;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.sistr.littlemaidrebirth.entity.util.FakePlayerSupplier;
-
-import java.util.Optional;
 
 public class LMFakePlayerSupplier implements FakePlayerSupplier {
     private final LittleMaidEntity origin;
@@ -24,12 +20,6 @@ public class LMFakePlayerSupplier implements FakePlayerSupplier {
                     return origin;
                 }
 
-                @Override
-                public Optional<PlayerAdvancementTracker> getOriginAdvancementTracker() {
-                    return origin.getTameOwner()
-                            .map(owner -> ((ServerPlayerEntity) owner))
-                            .map(ServerPlayerEntity::getAdvancementTracker);
-                }
             };
         }
         return this.fakePlayer;

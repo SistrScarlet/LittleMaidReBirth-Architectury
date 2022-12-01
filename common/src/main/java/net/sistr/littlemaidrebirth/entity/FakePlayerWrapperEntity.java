@@ -3,8 +3,6 @@ package net.sistr.littlemaidrebirth.entity;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.DataFixer;
-import io.netty.util.concurrent.Future;
-import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
@@ -29,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 //エンティティをプレイヤーにラップするクラス
@@ -38,8 +35,6 @@ import java.util.UUID;
 public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends FakePlayer {
     private static final UUID FPWE_UUID = UUID.fromString("8eabd891-5b4a-44f5-8ea4-89b04100baf6");
     private static final GameProfile FPWE_PROFILE = new GameProfile(FPWE_UUID, "fake_player_name");
-    @Nullable
-    private static PlayerAdvancementTracker advancementTracker;
 
     public FakePlayerWrapperEntity(T origin) {
         super((ServerWorld) origin.world, FPWE_PROFILE);
@@ -50,22 +45,13 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
         return FPWE_UUID;
     }
 
-    public static Optional<PlayerAdvancementTracker> getFPWEAdvancementTracker() {
-        return Optional.ofNullable(advancementTracker);
-    }
-
-    public static PlayerAdvancementTracker initFPWEAdvancementTracker(DataFixer dataFixer, PlayerManager playerManager,
-                                                                      ServerAdvancementLoader serverAdvancementLoader,
-                                                                      File file, ServerPlayerEntity serverPlayerEntity) {
-        if (advancementTracker == null)
-            advancementTracker = new PlayerAdvancementTracker(dataFixer, playerManager,
-                    serverAdvancementLoader, file, serverPlayerEntity);
-        return advancementTracker;
+    public PlayerAdvancementTracker initFPWEAdvancementTracker(DataFixer dataFixer, PlayerManager playerManager,
+                                                               ServerAdvancementLoader serverAdvancementLoader,
+                                                               File file, ServerPlayerEntity serverPlayerEntity) {
+        return new PlayerAdvancementTracker(dataFixer, playerManager, serverAdvancementLoader, file, serverPlayerEntity);
     }
 
     public abstract T getOrigin();
-
-    public abstract Optional<PlayerAdvancementTracker> getOriginAdvancementTracker();
 
     @Override
     public void tick() {
@@ -114,11 +100,6 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
     @Override
     public void sendPickup(Entity item, int count) {
         getOrigin().sendPickup(item, count);
-    }
-
-    @Override
-    public PlayerAdvancementTracker getAdvancementTracker() {
-        return getOriginAdvancementTracker().orElse(super.getAdvancementTracker());
     }
 
     @Override

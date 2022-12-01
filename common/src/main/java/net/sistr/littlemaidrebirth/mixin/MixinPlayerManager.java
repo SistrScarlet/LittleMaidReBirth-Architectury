@@ -24,14 +24,13 @@ public class MixinPlayerManager {
 
     @Inject(method = "getAdvancementTracker", at = @At("HEAD"), cancellable = true)
     public void onGetAdvancementTracker(ServerPlayerEntity player, CallbackInfoReturnable<PlayerAdvancementTracker> cir) {
-        if (!(player instanceof FakePlayerWrapperEntity)) return;
-        cir.setReturnValue(FakePlayerWrapperEntity.getFPWEAdvancementTracker()
-                .orElseGet(() -> {
-                    File file = this.server.getSavePath(WorldSavePath.ADVANCEMENTS).toFile();
-                    File file2 = new File(file, FakePlayerWrapperEntity.getFPWEUuid() + ".json");
-                    return FakePlayerWrapperEntity.initFPWEAdvancementTracker(this.server.getDataFixer(),
-                            (PlayerManager) (Object) this, this.server.getAdvancementLoader(), file2, player);
-                }));
+        if (player instanceof FakePlayerWrapperEntity<?> fakePlayerWrapper) {
+            File file = this.server.getSavePath(WorldSavePath.ADVANCEMENTS).toFile();
+            File file2 = new File(file, FakePlayerWrapperEntity.getFPWEUuid() + ".json");
+            var pat = fakePlayerWrapper.initFPWEAdvancementTracker(this.server.getDataFixer(),
+                    (PlayerManager) (Object) this, this.server.getAdvancementLoader(), file2, player);
+            cir.setReturnValue(pat);
+        }
     }
 
 }
