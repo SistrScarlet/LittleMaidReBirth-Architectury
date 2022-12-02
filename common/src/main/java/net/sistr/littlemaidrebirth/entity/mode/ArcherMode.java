@@ -7,7 +7,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.EntityHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -18,6 +17,7 @@ import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.FakePlayer;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.util.SightUtil;
 
 import java.util.function.Predicate;
 
@@ -159,17 +159,15 @@ public class ArcherMode extends Mode {
                 ? ((IRangedWeapon) item).getInterval_LMRB(itemStack, this.mob)
                 : 25) * LMRBMod.getConfig().getArcherPullLengthFactor());
         if (interval <= useCount) {
-            //簡易誤射チェック、射線にターゲット以外が居る場合は撃たない
-            float distance = MathHelper.sqrt((float) distanceSq);
-            EntityHitResult result = ProjectileUtil.getEntityCollision(mob.world, mob,
-                    this.mob.getCameraPosVec(1F), target.getCameraPosVec(1F),
-                    this.mob.getBoundingBox().expand(distance), entity ->
-                            !entity.isSpectator() && entity.isAlive() && entity.isCollidable());
-            if (result != null && result.getType() == HitResult.Type.ENTITY) {
-                Entity entity = result.getEntity();
-                if (entity != target) {
-                    return;
-                }
+            //射線チェック、射線に味方が居る場合は撃たない
+            //todo 要検証
+            var inSightEntities = SightUtil.getInSightEntities(this.mob.world, this.mob,
+                    this.mob.getCameraPosVec(1f),
+                    this.mob.getRotationVec(1f),
+                    maxRange * 2, 2.5f, 2.5f, 2.0f,
+                    e -> e instanceof LivingEntity && this.mob.isFriend((LivingEntity) e));
+            if (!inSightEntities.isEmpty()) {
+                return;
             }
 
             fakePlayer.stopUsingItem();
