@@ -82,7 +82,6 @@ import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -130,6 +129,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Environment(EnvType.CLIENT)
     private float prevInterestedAngle;
     private int playSoundCool;
+    private int idFactor;
 
     //コンストラクタ
     public LittleMaidEntity(EntityType<LittleMaidEntity> type, World worldIn) {
@@ -141,22 +141,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         .orElseThrow(() -> new IllegalStateException("デフォルトテクスチャが存在しません。")),
                 LMTextureManager.INSTANCE.getTexture("Default")
                         .orElseThrow(() -> new IllegalStateException("デフォルトテクスチャが存在しません。")));
-        setRandomTexture();
         soundPlayer = new SoundPlayableCompound(this, () ->
                 multiModel.getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
-        if (LMRBMod.getConfig().isSilentDefaultVoice()) {
-            soundPlayer.setConfigHolder(LMConfigManager.EMPTY_CONFIG);
-        } else {
-            List<ConfigHolder> configs = LMConfigManager.INSTANCE.getAllConfig();
-            soundPlayer.setConfigHolder(configs.get(Math.abs(getUuid().hashCode()) % configs.size()));
-        }
-        String defaultSoundPackName = LMRBMod.getConfig().getDefaultSoundPackName();
-        if (!defaultSoundPackName.isEmpty()) {
-            LMConfigManager.INSTANCE.getAllConfig().stream()
-                    .filter(c -> c.getPackName().equalsIgnoreCase(defaultSoundPackName))
-                    .findAny()
-                    .ifPresent(soundPlayer::setConfigHolder);
-        }
         addDefaultModes(this);
     }
 
@@ -306,6 +292,69 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         ModeManager.INSTANCE.getModes(maid).forEach(maid::addMode);
     }
 
+    //読み書き系
+
+    @Override
+    public void writeCustomDataToNbt(NbtCompound nbt) {
+        super.writeCustomDataToNbt(nbt);
+
+        writeInventory(nbt);
+
+        if (getTameOwnerUuid().isPresent()) {
+            nbt.putBoolean("Wait", this.isWait());
+            nbt.putByte("MovingMode", (byte) this.getMovingMode().getId());
+            writeContractable(nbt);
+            writeIFF(nbt);
+            writeModeData(nbt);
+            nbt.putBoolean("isBloodSuck", isBloodSuck());
+            if (freedomPos != null) {
+                nbt.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
+            }
+            this.multiModel.writeToNbt(nbt);
+            nbt.putString("SoundConfigName", getConfigHolder().getName());
+        }
+    }
+
+    @Override
+    public void readCustomDataFromNbt(NbtCompound nbt) {
+        super.readCustomDataFromNbt(nbt);
+
+        readInventory(nbt);
+
+        if (getTameOwnerUuid().isPresent()) {
+            setWait(nbt.getBoolean("Wait"));
+            setMovingMode(MovingMode.fromId(nbt.getInt("MovingMode")));
+            readContractable(nbt);
+            readIFF(nbt);
+            readModeData(nbt);
+            setBloodSuck(nbt.getBoolean("isBloodSuck"));
+            if (nbt.contains("FreedomPos")) {
+                freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
+            }
+            this.multiModel.readFromNbt(nbt);
+            if (nbt.contains("SoundConfigName")) {
+                LMConfigManager.INSTANCE.getConfig(nbt.getString("SoundConfigName"))
+                        .ifPresent(this::setConfigHolder);
+            }
+        } else {
+            //野良の子らの初期設定
+            setRandomTexture();
+            if (LMRBMod.getConfig().isSilentDefaultVoice()) {
+                soundPlayer.setConfigHolder(LMConfigManager.EMPTY_CONFIG);
+            } else {
+                List<ConfigHolder> configs = LMConfigManager.INSTANCE.getAllConfig();
+                soundPlayer.setConfigHolder(configs.get(idFactor % configs.size()));
+            }
+            String defaultSoundPackName = LMRBMod.getConfig().getDefaultSoundPackName();
+            if (!defaultSoundPackName.isEmpty()) {
+                LMConfigManager.INSTANCE.getAllConfig().stream()
+                        .filter(c -> c.getPackName().equalsIgnoreCase(defaultSoundPackName))
+                        .findAny()
+                        .ifPresent(soundPlayer::setConfigHolder);
+            }
+        }
+    }
+
     public void setRandomTexture() {
         var textureHolderList = LMTextureManager.INSTANCE.getAllTextures().stream()
                 .filter(h -> h.hasSkinTexture(false))//野生テクスチャがある
@@ -314,15 +363,14 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (textureHolderList.isEmpty()) {
             return;
         }
-        var random = ThreadLocalRandom.current();
-        var textureHolder = textureHolderList.get(random.nextInt(textureHolderList.size()));
+        var textureHolder = textureHolderList.get(idFactor % textureHolderList.size());
         var colorList = Arrays.stream(TextureColors.values())
                 .filter(c -> textureHolder.getTexture(c, false, false).isPresent())
                 .toList();
         if (colorList.isEmpty()) {
             return;
         }
-        var color = colorList.get(random.nextInt(colorList.size()));
+        var color = colorList.get(idFactor % colorList.size());
         this.setColorMM(color);
         this.setTextureHolder(textureHolder, Layer.SKIN, Part.HEAD);
         if (textureHolder.hasArmorTexture()) {
@@ -335,58 +383,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             setTextureHolder(textureHolder, Layer.OUTER, Part.LEGS);
             setTextureHolder(textureHolder, Layer.OUTER, Part.FEET);
         }
-    }
-
-    //読み書き系
-
-    @Override
-    public void writeCustomDataToNbt(NbtCompound nbt) {
-        super.writeCustomDataToNbt(nbt);
-
-        nbt.putBoolean("Wait", this.isWait());
-        nbt.putByte("MovingMode", (byte) this.getMovingMode().getId());
-
-        writeInventory(nbt);
-        writeContractable(nbt);
-
-        this.multiModel.writeToNbt(nbt);
-
-        if (getTameOwnerUuid().isPresent()) {
-            nbt.putString("SoundConfigName", getConfigHolder().getName());
-            writeIFF(nbt);
-            writeModeData(nbt);
-            nbt.putBoolean("isBloodSuck", isBloodSuck());
-            if (freedomPos != null) {
-                nbt.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
-            }
-        }
-    }
-
-    @Override
-    public void readCustomDataFromNbt(NbtCompound nbt) {
-        super.readCustomDataFromNbt(nbt);
-        readInventory(nbt);
-
-        setWait(nbt.getBoolean("Wait"));
-        setMovingMode(MovingMode.fromId(nbt.getInt("MovingMode")));
-        if (this.getMovingMode() == MovingMode.FREEDOM) {
-            if (nbt.contains("FreedomPos")) freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
-            else freedomPos = this.getBlockPos();
-        }
-
-        readContractable(nbt);
-
-        readModeData(nbt);
-
-        this.multiModel.readFromNbt(nbt);
-
-        if (nbt.contains("SoundConfigName"))
-            LMConfigManager.INSTANCE.getConfig(nbt.getString("SoundConfigName"))
-                    .ifPresent(this::setConfigHolder);
-
-        readIFF(nbt);
-
-        setBloodSuck(nbt.getBoolean("isBloodSuck"));
     }
 
     //鯖
@@ -1181,6 +1177,16 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         Inventory inv = this.getInventory();
         if (inv instanceof PlayerInventory)
             ((LMInventorySupplier.LMInventory) inv).dropAll();
+    }
+
+    @Override
+    public void setUuid(UUID uuid) {
+        super.setUuid(uuid);
+        this.idFactor = Math.abs(this.getUuid().hashCode());
+    }
+
+    public int getIdFactor() {
+        return idFactor;
     }
 
     //テイム関連

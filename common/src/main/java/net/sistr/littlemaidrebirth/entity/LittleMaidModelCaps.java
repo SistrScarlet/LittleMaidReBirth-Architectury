@@ -17,6 +17,7 @@ public class LittleMaidModelCaps extends EntityCaps {
     @Override
     public Object getCapsValue(int pIndex, Object... pArg) {
         return switch (pIndex) {
+            case caps_entityIdFactor -> maid.getIdFactor();
             case caps_aimedBow -> maid.isAimingBow();
             case caps_isLookSuger -> maid.isBegging();
             case caps_interestedAngle -> maid.getInterestedAngle((Float) pArg[0]);
