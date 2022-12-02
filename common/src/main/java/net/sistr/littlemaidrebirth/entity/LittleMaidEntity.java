@@ -349,15 +349,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         writeInventory(nbt);
         writeContractable(nbt);
 
-        nbt.putByte("SkinColor", (byte) getColorMM().getIndex());
-        nbt.putBoolean("IsContract", isContractMM());
-        nbt.putString("SkinTexture", getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
-        for (Part part : Part.values()) {
-            nbt.putString("ArmorTextureInner" + part.getPartName(),
-                    getTextureHolder(Layer.INNER, part).getTextureName());
-            nbt.putString("ArmorTextureOuter" + part.getPartName(),
-                    getTextureHolder(Layer.OUTER, part).getTextureName());
-        }
+        this.multiModel.writeToNbt(nbt);
 
         if (getTameOwnerUuid().isPresent()) {
             nbt.putString("SoundConfigName", getConfigHolder().getName());
@@ -386,26 +378,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         readModeData(nbt);
 
-        if (nbt.contains("SkinColor"))
-            setColorMM(TextureColors.getColor(nbt.getByte("SkinColor")));
-        setContractMM(nbt.getBoolean("IsContract"));
-        LMTextureManager textureManager = LMTextureManager.INSTANCE;
-        if (nbt.contains("SkinTexture")) {
-            textureManager.getTexture(nbt.getString("SkinTexture"))
-                    .ifPresent(textureHolder -> setTextureHolder(textureHolder, Layer.SKIN, Part.HEAD));
-        }
-        for (Part part : Part.values()) {
-            String inner = "ArmorTextureInner" + part.getPartName();
-            String outer = "ArmorTextureOuter" + part.getPartName();
-            if (nbt.contains(inner)) {
-                textureManager.getTexture(nbt.getString(inner))
-                        .ifPresent(textureHolder -> setTextureHolder(textureHolder, Layer.INNER, part));
-            }
-            if (nbt.contains(outer)) {
-                textureManager.getTexture(nbt.getString(outer))
-                        .ifPresent(textureHolder -> setTextureHolder(textureHolder, Layer.OUTER, part));
-            }
-        }
+        this.multiModel.readFromNbt(nbt);
 
         if (nbt.contains("SoundConfigName"))
             LMConfigManager.INSTANCE.getConfig(nbt.getString("SoundConfigName"))
