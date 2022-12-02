@@ -12,6 +12,7 @@ import net.sistr.littlemaidrebirth.tags.LMTags;
 
 import static net.sistr.littlemaidrebirth.LMRBMod.MODID;
 
+//todo ItemMatcherに優先度追加
 public class Modes {
     public static final ModeType<FencerMode> FENCER_MODE_TYPE;
     public static final ModeType<ArcherMode> ARCHER_MODE_TYPE;

@@ -13,6 +13,7 @@ import net.sistr.littlemaidrebirth.util.BlockFinder;
 import java.util.Arrays;
 import java.util.Optional;
 
+//todo 実装はよ
 public class PharmcistMode extends Mode {
     private final LittleMaidEntity mob;
     private final int inventoryStart;

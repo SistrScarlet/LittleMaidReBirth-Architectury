@@ -18,6 +18,7 @@ import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 
 //基本的にはMeleeAttackGoalのラッパー
 //ただしFakePlayerに殴らせるようにしている
+//todo 戦闘ロジック高度化
 public class FencerMode extends Mode {
     protected final LittleMaidEntity mob;
     protected final MeleeAttackGoal melee;
