@@ -81,8 +81,16 @@ public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> exten
     public int getHealItemSlot() {
         Inventory inventory = this.mob.getInventory();
         if (cache != -1) {
-            ItemStack slotStack = inventory.getStack(cache);
-            if (healItem.test(slotStack)) {
+            if (healItem.test(inventory.getStack(cache))) {
+                //インベントリの先頭からキャッシュまでに回復アイテムがある場合
+                //そちらを優先して返す
+                for (int i = 0; i < cache; i++) {
+                    ItemStack slotStack = inventory.getStack(i);
+                    if (healItem.test(slotStack)) {
+                        cache = i;
+                        return i;
+                    }
+                }
                 return cache;
             } else {
                 cache = -1;
