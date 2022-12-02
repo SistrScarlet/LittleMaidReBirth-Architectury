@@ -221,9 +221,21 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority,
                 new HasMMFollowTameOwnerGoal<>(
                         this,
-                        1.5f,
+                        1.0f,
                         config.getSprintStartRange(),
-                        config.getSprintEndRange()));
+                        config.getSprintEndRange()) {
+                    @Override
+                    public void start() {
+                        super.start();
+                        this.tameable.setSprinting(true);
+                    }
+
+                    @Override
+                    public void stop() {
+                        super.stop();
+                        this.tameable.setSprinting(false);
+                    }
+                });
 
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this,
                 true,
