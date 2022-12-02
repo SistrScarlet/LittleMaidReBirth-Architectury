@@ -249,7 +249,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 64));
 
         this.goalSelector.add(++priority, new RedstoneTraceGoal(this, 0.65f));
-        this.goalSelector.add(++priority, new FreedomGoal<>(this, 0.65D, config.getFreedomRange()));
+        this.goalSelector.add(++priority, new FreedomGoal<>(this,
+                0.65D, config.getFreedomRange()));
 
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));

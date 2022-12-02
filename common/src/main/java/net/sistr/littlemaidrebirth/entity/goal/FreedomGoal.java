@@ -9,8 +9,7 @@ import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
 import java.util.EnumSet;
 
-//雇い主が居ない場合も発動する
-//todo テレポした場合
+//雇い主が居ない場合も実行される
 public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal {
     private final T maid;
     private final double distance;
@@ -30,8 +29,7 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
     public boolean canStart() {
         return !maid.isWait()
                 && maid.getNavigation().isIdle()
-                && (maid.getMovingMode() == MovingMode.FREEDOM
-                || maid.getMovingMode() == MovingMode.TRACER)
+                && maid.getMovingMode() == MovingMode.FREEDOM
                 && super.canStart();
     }
 
@@ -39,11 +37,20 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
     public void start() {
         super.start();
         freedomPos = this.maid.getFreedomPos().orElse(null);
+        //自由行動範囲の2倍以上遠くに離れた場合、自由行動の起点を削除
+        if (freedomPos != null
+                && distanceSq * (2 * 2) < freedomPos.getSquaredDistance(this.maid.getPos())) {
+            this.maid.setFreedomPos(null);
+            freedomPos = null;
+        }
     }
 
     @Override
     public void tick() {
         super.tick();
+
+        //自由行動の起点が存在する場合、起点から自由行動範囲の外に行かないようにする
+
         if (freedomPos == null) {
             return;
         }
@@ -63,7 +70,12 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
         }
         mob.getNavigation().stop();
         //移動しても着きそうにない場合はTP
-        if (mob.world.isSpaceEmpty(mob.getBoundingBox().offset(mob.getPos().multiply(-1)).offset(freedomPos))) {
+        if (mob.isOnGround()
+                && mob.world.isSpaceEmpty(
+                mob.getBoundingBox()
+                        .offset(mob.getPos().multiply(-1))
+                        .offset(freedomPos))
+        ) {
             mob.teleport(freedomPos.getX() + 0.5D, freedomPos.getY(), freedomPos.getZ() + 0.5D);
         }
 
