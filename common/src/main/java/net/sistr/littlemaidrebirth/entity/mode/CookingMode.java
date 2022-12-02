@@ -3,6 +3,7 @@ package net.sistr.littlemaidrebirth.entity.mode;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
+import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
@@ -27,7 +28,6 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
 
-//todo　モード終了時に燃料類を取り出す
 public class CookingMode extends Mode {
     private final LittleMaidEntity mob;
     private final int inventoryStart;
@@ -311,6 +311,19 @@ public class CookingMode extends Mode {
     @Override
     public void resetTask() {
         this.mob.setSneaking(false);
+        AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElse(null);
+        //todo 要検証
+        //かまどからアイテムをすべて取り出す
+        if (furnace != null) {
+            for (int i = 0; i < furnace.size(); i++) {
+                var stack = furnace.getStack(i);
+                if (!stack.isEmpty()) {
+                    if (((PlayerInventory) this.mob.getInventory()).insertStack(stack)) {
+                        furnace.removeStack(i);
+                    }
+                }
+            }
+        }
     }
 
     @Override
