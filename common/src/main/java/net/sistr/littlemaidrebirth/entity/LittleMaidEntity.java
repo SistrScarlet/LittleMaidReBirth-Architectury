@@ -245,8 +245,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         || this.modeController.getMode()
                         .filter(mode -> mode.getModeType().isModeItem(stack))
                         .isPresent(),
-                100,
-                64));
+                256,
+                8,
+                100));
 
         this.goalSelector.add(++priority, new RedstoneTraceGoal(this, 0.65f));
         this.goalSelector.add(++priority, new FreedomGoal<>(this,

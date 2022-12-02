@@ -17,8 +17,9 @@ import java.util.function.Predicate;
 
 public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends StoreItemToContainerGoal<T> {
 
-    public LMStoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems, int maxStartInterval, int maxSearchCount) {
-        super(mob, exceptItems, maxStartInterval, maxSearchCount);
+    public LMStoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems,
+                                      int maxSearchCount, int searchDistance, int interval) {
+        super(mob, exceptItems, maxSearchCount, searchDistance, interval);
     }
 
     @Override
