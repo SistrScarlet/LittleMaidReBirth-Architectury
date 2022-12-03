@@ -54,6 +54,7 @@ import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayableCompound;
 import net.sistr.littlemaidmodelloader.maidmodel.IModelCaps;
 import net.sistr.littlemaidmodelloader.multimodel.IMultiModel;
 import net.sistr.littlemaidmodelloader.multimodel.layer.MMPose;
+import net.sistr.littlemaidmodelloader.network.SyncMultiModelPacket;
 import net.sistr.littlemaidmodelloader.resource.holder.ConfigHolder;
 import net.sistr.littlemaidmodelloader.resource.holder.TextureHolder;
 import net.sistr.littlemaidmodelloader.resource.manager.LMConfigManager;
@@ -986,7 +987,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             this.world.sendEntityStatus(this, (byte) 71);
         }
         this.setOwnerUuid(player.getUuid());
-        setContract(true);
+        setContractMM(true);
+        //契約状態の更新
+        SyncMultiModelPacket.sendS2CPacket(this, this);
         setStrike(false);
         itemContractable.setUnpaidTimes(0);
         getNavigation().stop();
@@ -1295,8 +1298,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void setContract(boolean isContract) {
-        //正直あまり意味のないメソッド
-        setContractMM(isContract);
+        throw new UnsupportedOperationException();
     }
 
     @Override
