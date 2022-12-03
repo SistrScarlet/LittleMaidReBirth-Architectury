@@ -17,7 +17,10 @@ public class WaitGoal<T extends PathAwareEntity & Tameable> extends Goal {
 
     @Override
     public boolean canStart() {
-        return mob.isWait();
+        return mob.isWait()
+                //主人が居るが、同じ世界に居ない場合
+                || (mob.getTameOwnerUuid().isPresent()
+                && mob.getTameOwner().isEmpty());
     }
 
     @Override
