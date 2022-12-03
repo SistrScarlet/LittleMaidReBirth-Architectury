@@ -35,7 +35,7 @@ public class SyncSoundConfigPacket {
 
     public static void sendS2CPacket(Entity entity, String configName) {
         PacketByteBuf buf = createS2CPacket(entity, configName);
-        PlayerList.tracking(entity).forEach(player -> NetworkManager.sendToPlayer(player, ID, buf));
+        NetworkManager.sendToPlayers(PlayerList.tracking(entity), ID, buf);
     }
 
     public static PacketByteBuf createS2CPacket(Entity entity, String configName) {
