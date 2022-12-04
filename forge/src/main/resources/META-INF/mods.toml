@@ -10,7 +10,7 @@ displayName = "LittleMaid ReBirth"
 authors = "Sistr"
 credits = "erer00gg, dlsts, utsudashinou"
 description = "いろいろ手伝ってくれたりくれなかったりする、ちいさなメイドさんを追加するMOD"
-logoFile = "assets/littlemaidrebirth/icon.png"
+logoFile = "icon.png"
 
 [[dependencies.littlemaidrebirth]]
 modId = "forge"
