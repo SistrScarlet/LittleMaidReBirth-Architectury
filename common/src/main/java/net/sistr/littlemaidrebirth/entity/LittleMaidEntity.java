@@ -989,7 +989,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.setOwnerUuid(player.getUuid());
         setContractMM(true);
         //契約状態の更新
-        SyncMultiModelPacket.sendS2CPacket(this, this);
+        if (!this.world.isClient) {
+            SyncMultiModelPacket.sendS2CPacket(this, this);
+        }
         setStrike(false);
         itemContractable.setUnpaidTimes(0);
         getNavigation().stop();
