@@ -113,8 +113,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     mob -> {
                         mob.setStrike(true);
                         mob.setWait(false);
-                        mob.setMovingMode(MovingMode.FREEDOM);
-                        mob.freedomPos = mob.getBlockPos();
+                        if (mob.getMovingMode() != MovingMode.FREEDOM) {
+                            mob.setMovingMode(MovingMode.FREEDOM);
+                            mob.freedomPos = mob.getBlockPos();
+                        }
                     });
     private final ModeController modeController = new ModeController(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
@@ -308,7 +310,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             writeIFF(nbt);
             writeModeData(nbt);
             nbt.putBoolean("isBloodSuck", isBloodSuck());
-            if (freedomPos != null) {
+            if (this.getMovingMode() == MovingMode.FREEDOM
+                    && freedomPos != null) {
                 nbt.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
             }
             this.multiModel.writeToNbt(nbt);
@@ -329,7 +332,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             readIFF(nbt);
             readModeData(nbt);
             setBloodSuck(nbt.getBoolean("isBloodSuck"));
-            if (nbt.contains("FreedomPos")) {
+            if (this.getMovingMode() == MovingMode.FREEDOM
+                    && nbt.contains("FreedomPos")) {
                 freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
             }
             this.multiModel.readFromNbt(nbt);
@@ -566,12 +570,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Nullable
     @Override
     public Entity moveToWorld(ServerWorld destination) {
-        //ディメンション移動の時に、テレポ先を新たな自由行動地点とする
+        //ディメンション移動の時に、自由行動地点を削除する
         Entity entity = super.moveToWorld(destination);
         if (entity == null) return null;
-        if (entity instanceof LittleMaidEntity) {
-            this.getFreedomPos().ifPresent(freedomPos ->
-                    ((LittleMaidEntity) entity).setFreedomPos(freedomPos));
+        if (entity instanceof LittleMaidEntity
+                && this.getMovingMode() == MovingMode.FREEDOM) {
+            ((LittleMaidEntity) entity).setFreedomPos(null);
         }
         return entity;
     }
@@ -949,6 +953,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             } else {
                 this.world.sendEntityStatus(this, (byte) 73);
                 this.setMovingMode(MovingMode.FREEDOM);
+                this.setFreedomPos(this.getBlockPos());
             }
             return ActionResult.success(this.world.isClient);
         }
@@ -1231,7 +1236,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     public Optional<BlockPos> getFreedomPos() {
-        return Optional.ofNullable(freedomPos);
+        if (this.getMovingMode() != MovingMode.FREEDOM) {
+            return Optional.empty();
+        }
+        if (freedomPos == null) {
+            freedomPos = this.getBlockPos();
+        }
+        return Optional.of(freedomPos);
     }
 
     @Override

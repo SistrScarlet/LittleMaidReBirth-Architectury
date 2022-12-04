@@ -37,12 +37,6 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
     public void start() {
         super.start();
         freedomPos = this.maid.getFreedomPos().orElse(null);
-        //自由行動範囲の2倍以上遠くに離れた場合、自由行動の起点を削除
-        if (freedomPos != null
-                && distanceSq * (2 * 2) < freedomPos.getSquaredDistance(this.maid.getPos())) {
-            this.maid.setFreedomPos(null);
-            freedomPos = null;
-        }
     }
 
     @Override

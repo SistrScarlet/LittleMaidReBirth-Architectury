@@ -49,6 +49,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private WindowGUIComponent salaryWindow;
     private boolean showSalaryWindow;
     private Text stateText;
+    private final MovingMode prevMovingMode;
     private MovingMode movingMode;
 
     public LittleMaidScreen(LittleMaidScreenHandler screenContainer, PlayerInventory inv, Text titleIn) {
@@ -56,7 +57,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         this.backgroundHeight = 208;
         owner = screenContainer.getGuiEntity();
         unpaidDays = screenContainer.getUnpaidDays();
-        movingMode = owner.getMovingMode();
+        prevMovingMode = movingMode = owner.getMovingMode();
     }
 
     @Override
@@ -279,7 +280,9 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     @Override
     public void close() {
         super.close();
-        SyncMovingStatePacket.sendC2SPacket(owner, movingMode);
+        if (prevMovingMode != movingMode) {
+            SyncMovingStatePacket.sendC2SPacket(owner, movingMode);
+        }
     }
 
     public static class SalaryGUI extends GUIElement {
