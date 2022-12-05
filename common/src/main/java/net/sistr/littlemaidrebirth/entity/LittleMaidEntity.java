@@ -88,6 +88,25 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 //メイドさん本体
+//todo 声タイミング調整
+//todo ドロップアイテム
+//todo 契約期間の残りは砂糖をあげた時の音符の色で判断してください。
+//todo 雪合戦 日が暮れると遊びは終わり
+//todo モードトリガーアイテム指定
+//todo 署名済みではない書き込み可能な本にパラメータを記述して、メイドさんに右クリックで使用すると値が反映されます。
+//todo メイドさんも金リンゴや牛乳を飲めるようになりました。
+//todo つまみ食い
+//todo ダメージ/水没待機解除 実装済みだっけ？
+//todo トランザム
+//todo 経験値
+//todo 座ったメイドでも追従時に立つように
+//todo スト時砂糖ドカ食い
+//todo GUIを開いている時に動きを止める
+//todo リスポ
+//todo 死亡メッセ追加
+//todo はしご
+//todo おさわり厳禁：他人のメイドに触ると殴られる
+//todo 他人のメイドに視線を合わせた時、ご主人の名札を浮かべる
 public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, InventorySupplier, net.sistr.littlemaidrebirth.entity.util.Tameable,
         Contractable, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable, HasMovingMode {
     //LMM_FLAGSのindex
@@ -258,6 +277,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
 
         //野良
+        //todo 逃げる
         this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
                 new EscapeDangerGoal(this, 1.25),
                 goal -> this.getTameOwner().isEmpty()));

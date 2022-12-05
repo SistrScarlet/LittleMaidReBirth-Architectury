@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 //todo 180度ターン時に首がグリッとなるのがこわい
+//todo この状態では自由行動の起点が最後に検知した赤石動力付近に再設定されます。
 public class RedstoneTraceGoal extends Goal {
     protected final LittleMaidEntity mob;
     protected final float speed;
