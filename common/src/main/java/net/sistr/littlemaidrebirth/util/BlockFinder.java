@@ -11,6 +11,9 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+/**
+ * ブロック探索ロジック
+ * */
 public class BlockFinder {
 
     public static void seedFill(BlockPos seed, final int maxCount,

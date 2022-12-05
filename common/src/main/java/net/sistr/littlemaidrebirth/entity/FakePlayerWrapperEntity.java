@@ -29,9 +29,11 @@ import java.io.File;
 import java.util.List;
 import java.util.UUID;
 
-//エンティティをプレイヤーにラップするクラス
-//基本的にサーバーオンリー
 //アイテムの使用/アイテム回収/その他
+/**
+ * エンティティをプレイヤーにラップするクラス
+ * サーバーオンリー
+ * */
 public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends FakePlayer {
     private static final UUID FPWE_UUID = UUID.fromString("8eabd891-5b4a-44f5-8ea4-89b04100baf6");
     private static final GameProfile FPWE_PROFILE = new GameProfile(FPWE_UUID, "fake_player_name");

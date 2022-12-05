@@ -14,6 +14,9 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Predicate;
 
+/**
+ * 視界に関するユーティリティ
+ * */
 public class SightUtil {
 
     public static List<Entity> getInSightEntities(World world, Entity entity, Vec3d viewPos, Vec3d lookFor,

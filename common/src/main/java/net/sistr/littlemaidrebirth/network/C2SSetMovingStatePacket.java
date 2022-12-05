@@ -12,9 +12,12 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
-public class SyncMovingStatePacket {
+/**
+ * C2Sで移動状態をセットするパケット
+ * */
+public class C2SSetMovingStatePacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "sync_moving_state");
+            new Identifier(LMRBMod.MODID, "set_moving_state");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, MovingMode state) {

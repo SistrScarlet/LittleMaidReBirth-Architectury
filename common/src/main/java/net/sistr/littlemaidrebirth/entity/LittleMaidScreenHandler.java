@@ -13,10 +13,10 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.Identifier;
-import net.sistr.littlemaidrebirth.entity.util.HasGuiEntitySupplier;
+import net.sistr.littlemaidrebirth.entity.util.GuiEntitySupplier;
 import net.sistr.littlemaidrebirth.setup.Registration;
 
-public class LittleMaidScreenHandler extends ScreenHandler implements HasGuiEntitySupplier<LittleMaidEntity> {
+public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntitySupplier<LittleMaidEntity> {
     private final PlayerInventory playerInventory;
     private final Inventory maidInventory;
     private final LittleMaidEntity maid;

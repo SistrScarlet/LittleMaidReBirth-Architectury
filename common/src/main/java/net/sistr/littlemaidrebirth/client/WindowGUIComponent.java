@@ -101,7 +101,7 @@ public class WindowGUIComponent extends GUIElement {
             ListIterator<Pos2d> iterator = prevElementsPos.listIterator();
             for (GUIElement element : elements) {
                 Pos2d prev = iterator.next();
-                element.setPos(prev.x + dX, prev.y + dY);
+                element.setPos(prev.x() + dX, prev.y() + dY);
             }
             for (GUIElement element : elements) {
                 element.setPos(element.getX() + (int) deltaX, element.getY() + (int) deltaY);

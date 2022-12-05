@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * IFFをコピーする本。不使用
+ * */
 public class IFFCopyBookItem extends Item {
 
     public IFFCopyBookItem() {

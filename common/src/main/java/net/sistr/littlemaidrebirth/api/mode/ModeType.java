@@ -8,6 +8,10 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import java.util.List;
 import java.util.function.BiFunction;
 
+/**
+ * モードの生成と、モードアイテムの判別をするクラス
+ * メイド専用
+ */
 public class ModeType<T extends Mode> {
     private final BiFunction<ModeType<T>, LittleMaidEntity, T> function;
     private final ImmutableList<ItemMatcher> matchers;

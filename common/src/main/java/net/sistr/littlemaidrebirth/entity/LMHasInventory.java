@@ -9,15 +9,15 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.sistr.littlemaidrebirth.entity.util.FakePlayerSupplier;
-import net.sistr.littlemaidrebirth.entity.util.InventorySupplier;
+import net.sistr.littlemaidrebirth.entity.util.HasFakePlayer;
+import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 import net.sistr.littlemaidrebirth.util.DefaultedListLimiter;
 import net.sistr.littlemaidrebirth.util.PlayerInventoryAccessor;
 
-public class LMInventorySupplier implements InventorySupplier {
+public class LMHasInventory implements HasInventory {
     private final Inventory inventory;
 
-    public LMInventorySupplier(LivingEntity owner, FakePlayerSupplier player) {
+    public LMHasInventory(LivingEntity owner, HasFakePlayer player) {
         if (!owner.world.isClient) {
             FakePlayer fakePlayer = player.getFakePlayer();
             inventory = new LMInventory(fakePlayer, 19);

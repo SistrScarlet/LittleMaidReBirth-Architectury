@@ -26,8 +26,8 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
-import net.sistr.littlemaidrebirth.network.SyncBloodSuckPacket;
-import net.sistr.littlemaidrebirth.network.SyncMovingStatePacket;
+import net.sistr.littlemaidrebirth.network.C2SSetBloodSuckPacket;
+import net.sistr.littlemaidrebirth.network.C2SSetMovingStatePacket;
 
 //todo モード名表示/移動状態をアイコンで表記
 @Environment(EnvType.CLIENT)
@@ -111,7 +111,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> SyncBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck())) {
+                button -> C2SSetBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck())) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
@@ -281,7 +281,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     public void close() {
         super.close();
         if (prevMovingMode != movingMode) {
-            SyncMovingStatePacket.sendC2SPacket(owner, movingMode);
+            C2SSetMovingStatePacket.sendC2SPacket(owner, movingMode);
         }
     }
 

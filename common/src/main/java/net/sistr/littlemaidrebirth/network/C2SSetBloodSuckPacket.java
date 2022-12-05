@@ -11,9 +11,12 @@ import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
-public class SyncBloodSuckPacket {
+/**
+ * クライアントからサーバーへBloodSuckを設定するパケット
+ */
+public class C2SSetBloodSuckPacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "sync_blood_suck");
+            new Identifier(LMRBMod.MODID, "set_blood_suck");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, boolean isBloodSuck) {
@@ -39,6 +42,11 @@ public class SyncBloodSuckPacket {
         if (!(entity instanceof LittleMaidEntity)) {
             return;
         }
-        ((LittleMaidEntity) entity).setBloodSuck(isBloodSuck);
+        //ご主人がいて、送信元のプレイヤーがご主人なら
+        if (((LittleMaidEntity) entity).getTameOwnerUuid()
+                .filter(uuid -> player.getUuid().equals(uuid))
+                .isPresent()) {
+            ((LittleMaidEntity) entity).setBloodSuck(isBloodSuck);
+        }
     }
 }

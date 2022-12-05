@@ -8,12 +8,12 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
-import net.sistr.littlemaidrebirth.entity.util.InventorySupplier;
+import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 import java.util.EnumSet;
 import java.util.function.Predicate;
 
-public class HealMyselfGoal<T extends PathAwareEntity & InventorySupplier> extends Goal {
+public class HealMyselfGoal<T extends PathAwareEntity & HasInventory> extends Goal {
     private final T mob;
     private final int healInterval;
     private final int healAmount;

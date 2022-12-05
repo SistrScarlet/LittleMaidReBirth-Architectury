@@ -6,6 +6,9 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
 import net.sistr.littlemaidrebirth.LMRBMod;
 
+/**
+ * メイドさんに関するタグを置いとくとこ
+ * */
 public class LMTags {
 
     public static class Items {

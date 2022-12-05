@@ -11,7 +11,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.FakePlayer;
-import net.sistr.littlemaidrebirth.entity.util.FakePlayerSupplier;
+import net.sistr.littlemaidrebirth.entity.util.HasFakePlayer;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.util.MeleeAttackAccessor;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
@@ -54,7 +54,7 @@ public class FencerMode extends Mode {
 
             @Override
             protected double getSquaredMaxAttackDistance(LivingEntity entity) {
-                return ReachAttributeUtil.getAttackRangeSq(((FakePlayerSupplier) mob).getFakePlayer())
+                return ReachAttributeUtil.getAttackRangeSq(((HasFakePlayer) mob).getFakePlayer())
                         * LMRBMod.getConfig().getFencerRangeFactor();
             }
         };

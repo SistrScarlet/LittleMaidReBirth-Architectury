@@ -20,9 +20,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class SyncIFFPacket {
+/**
+ * C2SでIFFをセットするパケット
+ * */
+public class C2SSetIFFPacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "sync_iff");
+            new Identifier(LMRBMod.MODID, "set_iff");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, List<IFF> iffs) {

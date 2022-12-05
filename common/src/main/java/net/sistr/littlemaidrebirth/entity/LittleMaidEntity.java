@@ -71,8 +71,8 @@ import net.sistr.littlemaidrebirth.entity.goal.*;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
-import net.sistr.littlemaidrebirth.entity.mode.ModeController;
-import net.sistr.littlemaidrebirth.entity.mode.ModeSupplier;
+import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
+import net.sistr.littlemaidrebirth.entity.mode.HasMode;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
@@ -107,8 +107,8 @@ import java.util.stream.Collectors;
 //todo はしご
 //todo おさわり厳禁：他人のメイドに触ると殴られる
 //todo 他人のメイドに視線を合わせた時、ご主人の名札を浮かべる
-public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, InventorySupplier, net.sistr.littlemaidrebirth.entity.util.Tameable,
-        Contractable, ModeSupplier, HasIFF, AimingPoseable, FakePlayerSupplier, IHasMultiModel, SoundPlayable, HasMovingMode {
+public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, HasInventory, net.sistr.littlemaidrebirth.entity.util.Tameable,
+        Contractable, HasMode, HasIFF, AimingPoseable, HasFakePlayer, IHasMultiModel, SoundPlayable, HasMovingMode {
     //LMM_FLAGSのindex
     private static final int WAIT_INDEX = 0;
     private static final int AIMING_INDEX = 1;
@@ -122,8 +122,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     private static final TrackedData<String> MODE_NAME =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.STRING);
     //移譲s
-    private final LMFakePlayerSupplier fakePlayer = new LMFakePlayerSupplier(this);
-    private final LMInventorySupplier littleMaidInventory = new LMInventorySupplier(this, this);
+    private final LMHasFakePlayer fakePlayer = new LMHasFakePlayer(this);
+    private final LMHasInventory littleMaidInventory = new LMHasInventory(this, this);
     private final ItemContractable<LittleMaidEntity> itemContractable =
             new ItemContractable<>(this,
                     LMRBMod.getConfig().getConsumeSalaryInterval(),
@@ -137,7 +137,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                             mob.freedomPos = mob.getBlockPos();
                         }
                     });
-    private final ModeController modeController = new ModeController(this, this, new HashSet<>());
+    private final HasModeImpl hasModeImpl = new HasModeImpl(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
     private final SoundPlayableCompound soundPlayer;
     private final LMScreenHandlerFactory screenFactory = new LMScreenHandlerFactory(this);
@@ -262,7 +262,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //todo 頭の装飾品を仕舞わないようにする
         this.goalSelector.add(++priority, new LMStoreItemToContainerGoal<>(this,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)
-                        || this.modeController.getMode()
+                        || this.hasModeImpl.getMode()
                         .filter(mode -> mode.getModeType().isModeItem(stack))
                         .isPresent(),
                 256,
@@ -312,7 +312,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     public void addDefaultModes(LittleMaidEntity maid) {
-        ModeManager.INSTANCE.getModes(maid).forEach(maid::addMode);
+        ModeManager.INSTANCE.createModes(maid).forEach(maid::addMode);
     }
 
     //読み書き系
@@ -524,7 +524,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     protected void mobTick() {
         super.mobTick();
-        modeController.tick();
+        hasModeImpl.tick();
     }
 
     @Override
@@ -1206,7 +1206,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //鯖側でしか動かないが一応チェック
         Inventory inv = this.getInventory();
         if (inv instanceof PlayerInventory)
-            ((LMInventorySupplier.LMInventory) inv).dropAll();
+            ((LMHasInventory.LMInventory) inv).dropAll();
     }
 
     @Override
@@ -1366,21 +1366,21 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (this.isStrike()) {
             return Optional.empty();
         }
-        return modeController.getMode();
+        return hasModeImpl.getMode();
     }
 
     @Override
     public void writeModeData(NbtCompound tag) {
-        modeController.writeModeData(tag);
+        hasModeImpl.writeModeData(tag);
     }
 
     @Override
     public void readModeData(NbtCompound tag) {
-        modeController.readModeData(tag);
+        hasModeImpl.readModeData(tag);
     }
 
     public void addMode(Mode mode) {
-        modeController.addMode(mode);
+        hasModeImpl.addMode(mode);
     }
 
     public void setModeName(String modeName) {

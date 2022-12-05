@@ -6,6 +6,9 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import net.sistr.littlemaidrebirth.LMRBMod;
 
+/**
+ * LMRBのコンフィグ
+ * */
 @Config(name = LMRBMod.MODID)
 public class LMRBConfig implements ConfigData {
 

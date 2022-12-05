@@ -25,7 +25,7 @@ import net.sistr.littlemaidmodelloader.client.screen.*;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
-import net.sistr.littlemaidrebirth.network.SyncIFFPacket;
+import net.sistr.littlemaidrebirth.network.C2SSetIFFPacket;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.List;
@@ -141,7 +141,7 @@ public class IFFScreen extends Screen {
     @Override
     public void close() {
         super.close();
-        SyncIFFPacket.sendC2SPacket(entity, iffs);
+        C2SSetIFFPacket.sendC2SPacket(entity, iffs);
     }
 
     public static class IFFGUIElement extends GUIElement implements ListGUIElement {
@@ -156,7 +156,7 @@ public class IFFScreen extends Screen {
 
         @Override
         public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-            this.iff.getIFFType().getEntity().ifPresent(entity -> {
+            this.iff.getIFFType().getTargetEntityExample().ifPresent(entity -> {
                 EntityType<?> entityType = entity.getType();
                 if (renderClashed) return;
                 try {

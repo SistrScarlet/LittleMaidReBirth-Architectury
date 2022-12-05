@@ -5,6 +5,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tag.TagKey;
 import net.minecraft.util.registry.Registry;
 
+/**
+ * よく使うItemMatcherをまとめたクラス
+ */
 public class ItemMatchers {
 
     public static ItemMatcher item(Item item) {

@@ -23,6 +23,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * 対象エンティティのIFFを設定する画面を開くパケット
+ * C2Sは開く要求
+ * S2Cは開く命令
+ * */
 public class OpenIFFScreenPacket {
     public static final Identifier ID =
             new Identifier(LMRBMod.MODID, "open_iff_screen");

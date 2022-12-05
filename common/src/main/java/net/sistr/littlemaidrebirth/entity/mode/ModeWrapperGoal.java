@@ -5,8 +5,10 @@ import net.minecraft.entity.ai.goal.Goal;
 
 import java.util.EnumSet;
 
-//排他Goal
-public class ModeWrapperGoal<T extends LivingEntity & ModeSupplier> extends Goal {
+/**
+ * モードを実行するGoalクラス
+ * */
+public class ModeWrapperGoal<T extends LivingEntity & HasMode> extends Goal {
     protected final T owner;
 
     public ModeWrapperGoal(T owner) {

@@ -2,7 +2,10 @@ package net.sistr.littlemaidrebirth.entity.util;
 
 import net.sistr.littlemaidrebirth.entity.FakePlayer;
 
-public interface FakePlayerSupplier {
+/**
+ * MobがFakePlayerを持っていることを示すインターフェイス
+ * */
+public interface HasFakePlayer {
 
     FakePlayer getFakePlayer();
 

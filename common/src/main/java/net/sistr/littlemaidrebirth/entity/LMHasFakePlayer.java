@@ -1,12 +1,12 @@
 package net.sistr.littlemaidrebirth.entity;
 
-import net.sistr.littlemaidrebirth.entity.util.FakePlayerSupplier;
+import net.sistr.littlemaidrebirth.entity.util.HasFakePlayer;
 
-public class LMFakePlayerSupplier implements FakePlayerSupplier {
+public class LMHasFakePlayer implements HasFakePlayer {
     private final LittleMaidEntity origin;
     private FakePlayer fakePlayer;
 
-    public LMFakePlayerSupplier(LittleMaidEntity origin) {
+    public LMHasFakePlayer(LittleMaidEntity origin) {
         this.origin = origin;
     }
 

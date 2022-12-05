@@ -5,13 +5,13 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.sistr.littlemaidrebirth.entity.util.Contractable;
-import net.sistr.littlemaidrebirth.entity.util.InventorySupplier;
+import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 //クライアント側では概ね役に立たない
-public class ItemContractable<T extends LivingEntity & InventorySupplier> implements Contractable {
+public class ItemContractable<T extends LivingEntity & HasInventory> implements Contractable {
     private final T mob;
     private final int maxConsumeInterval;
     private final int maxUnpaidTimes;

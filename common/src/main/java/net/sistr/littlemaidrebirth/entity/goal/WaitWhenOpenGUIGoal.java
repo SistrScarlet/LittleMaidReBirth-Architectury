@@ -4,12 +4,12 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.screen.ScreenHandler;
-import net.sistr.littlemaidrebirth.entity.util.HasGuiEntitySupplier;
+import net.sistr.littlemaidrebirth.entity.util.GuiEntitySupplier;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
 
 import java.util.EnumSet;
 
-public class WaitWhenOpenGUIGoal<T extends PathAwareEntity, M extends ScreenHandler & HasGuiEntitySupplier<T>> extends Goal {
+public class WaitWhenOpenGUIGoal<T extends PathAwareEntity, M extends ScreenHandler & GuiEntitySupplier<T>> extends Goal {
     private final T mob;
     private final Tameable tameable;
     private final Class<? extends M> screenHandler;

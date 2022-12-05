@@ -2,6 +2,9 @@ package net.sistr.littlemaidrebirth.api.mode;
 
 import net.minecraft.nbt.NbtCompound;
 
+/**
+ * MobのAIモードのクラス
+ */
 public abstract class Mode {
     private final ModeType<? extends Mode> modeType;
     private final String name;

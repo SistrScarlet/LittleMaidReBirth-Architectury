@@ -21,11 +21,11 @@ public class Networking {
     }
 
     private void serverInit() {
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SyncMovingStatePacket.ID, SyncMovingStatePacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetMovingStatePacket.ID, C2SSetMovingStatePacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, SyncSoundConfigPacket.ID, SyncSoundConfigPacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, OpenIFFScreenPacket.ID, OpenIFFScreenPacket::receiveC2SPacket);
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SyncIFFPacket.ID, SyncIFFPacket::receiveC2SPacket);
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, SyncBloodSuckPacket.ID, SyncBloodSuckPacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetIFFPacket.ID, C2SSetIFFPacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetBloodSuckPacket.ID, C2SSetBloodSuckPacket::receiveC2SPacket);
     }
 
 }

@@ -9,6 +9,10 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * モードタイプを管理するクラス
+ * メイド専用
+ */
 public class ModeManager {
     public static ModeManager INSTANCE = new ModeManager();
     private final BiMap<Identifier, ModeType<? extends Mode>> MODE_TYPES = HashBiMap.create();
@@ -21,7 +25,10 @@ public class ModeManager {
         return Optional.ofNullable(MODE_TYPES.inverse().get(mode.getModeType()));
     }
 
-    public Collection<Mode> getModes(LittleMaidEntity maid) {
+    /**
+     * メイドのモードを新規作成
+     */
+    public Collection<Mode> createModes(LittleMaidEntity maid) {
         return MODE_TYPES.values().stream().map(type -> type.create(maid)).collect(Collectors.toList());
     }
 

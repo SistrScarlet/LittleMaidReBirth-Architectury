@@ -1,5 +1,8 @@
 package net.sistr.littlemaidrebirth.entity.util;
 
+/**
+ * 移動状態のenum
+ * */
 public enum MovingMode {
     FREEDOM("Freedom", 0),
     ESCORT("Escort", 1),

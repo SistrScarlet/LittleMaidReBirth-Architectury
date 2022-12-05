@@ -9,20 +9,23 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
-import net.sistr.littlemaidrebirth.entity.util.InventorySupplier;
+import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 import java.util.Optional;
 import java.util.Set;
 
-public class ModeController implements ModeSupplier {
+/**
+ * HasModeの移譲用クラス
+ * */
+public class HasModeImpl implements HasMode {
     private final LivingEntity owner;
-    private final InventorySupplier hasInventory;
+    private final HasInventory hasInventory;
     private final Set<Mode> modes = Sets.newHashSet();
     private Mode nowMode;
     private Item prevItem = Items.AIR;
     private NbtCompound tempModeData;
 
-    public ModeController(LivingEntity owner, InventorySupplier hasInventory, Set<Mode> modes) {
+    public HasModeImpl(LivingEntity owner, HasInventory hasInventory, Set<Mode> modes) {
         this.owner = owner;
         this.hasInventory = hasInventory;
         this.modes.addAll(modes);

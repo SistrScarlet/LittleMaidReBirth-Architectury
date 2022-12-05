@@ -24,6 +24,9 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 import static net.sistr.littlemaidmodelloader.maidmodel.IModelCaps.*;
 
+/**
+ * メイド用レンダラ
+ * */
 @Environment(EnvType.CLIENT)
 public class MaidModelRenderer extends MobEntityRenderer<LittleMaidEntity, LMMultiModel<LittleMaidEntity>> {
     private static final Identifier NULL_TEXTURE = new Identifier(LMRBMod.MODID, "null");

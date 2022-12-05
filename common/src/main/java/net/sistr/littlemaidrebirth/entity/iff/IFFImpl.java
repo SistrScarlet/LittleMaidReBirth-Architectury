@@ -8,6 +8,9 @@ import net.minecraft.nbt.NbtList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * HasIFFの移譲用クラス
+ * */
 public class IFFImpl implements HasIFF {
     private final List<IFF> iffs = Lists.newArrayList();
 
