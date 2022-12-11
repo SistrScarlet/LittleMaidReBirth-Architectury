@@ -60,7 +60,7 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
     //18 + 2 + 4 = 24、24 + 4 * 9 = 60
     //0~17メイドインベントリ、18~19メインサブ、20~23防具、24~59プレイヤーインベントリ
     @Override
-    public ItemStack transferSlot(PlayerEntity player, int invSlot) {
+    public ItemStack quickMove(PlayerEntity player, int invSlot) {
         ItemStack newStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(invSlot);
         if (slot == null || !slot.hasStack()) {

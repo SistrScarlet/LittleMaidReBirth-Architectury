@@ -30,7 +30,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 import java.util.Map;
@@ -114,7 +114,7 @@ public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityM
 
     public static void translate(MatrixStack matrices, boolean villager) {
         matrices.translate(0.0, -0.25, 0.0);
-        matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0f));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0f));
         matrices.scale(0.625f, -0.625f, -0.625f);
         if (villager) {
             matrices.translate(0.0, 0.1875, 0.0);

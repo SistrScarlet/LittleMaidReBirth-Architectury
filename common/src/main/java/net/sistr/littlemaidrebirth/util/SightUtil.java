@@ -2,13 +2,16 @@ package net.sistr.littlemaidrebirth.util;
 
 import net.minecraft.block.Material;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RotationAxis;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -16,7 +19,7 @@ import java.util.function.Predicate;
 
 /**
  * 視界に関するユーティリティ
- * */
+ */
 public class SightUtil {
 
     public static List<Entity> getInSightEntities(World world, Entity entity, Vec3d viewPos, Vec3d lookFor,
@@ -139,13 +142,13 @@ public class SightUtil {
     }
 
     public static Vec3d rotate(Vec3d vec, Vec3d axis, float angle) {
-        var point = new Quaternion((float) vec.x, (float) vec.y, (float) vec.z, 0);
-        var rotate = new Quaternion(new Vec3f(axis), angle, true);
-        var rotateBar = rotate.copy();
+        var point = new Quaternionf((float) vec.x, (float) vec.y, (float) vec.z, 0);
+        var rotate = RotationAxis.of(new Vector3f((float) axis.x, (float) axis.y, (float) axis.z)).rotationDegrees(angle);
+        var rotateBar = new Quaternionf(rotate);
         rotateBar.conjugate();
-        rotate.hamiltonProduct(point);
-        rotate.hamiltonProduct(rotateBar);
-        return new Vec3d(rotate.getX(), rotate.getY(), rotate.getZ());
+        rotate.mul(point);
+        rotate.mul(rotateBar);
+        return new Vec3d(rotate.x(), rotate.y(), rotate.z());
     }
 
     //getYawPitch->getVecの場合、こちらのyawとpitchの値をマイナスにすること

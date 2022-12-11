@@ -1,6 +1,5 @@
 package net.sistr.littlemaidrebirth.util.fabric;
 
-import com.jamieswhiteshirt.reachentityattributes.ReachEntityAttributes;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.player.PlayerEntity;
@@ -8,8 +7,8 @@ import net.minecraft.entity.player.PlayerEntity;
 public class ReachAttributeUtilImpl {
 
     public static void addAttribute(DefaultAttributeContainer.Builder attributeBuilder) {
-        attributeBuilder.add(ReachEntityAttributes.REACH)
-                .add(ReachEntityAttributes.ATTACK_RANGE);
+        /*attributeBuilder.add(ReachEntityAttributes.REACH)
+                .add(ReachEntityAttributes.ATTACK_RANGE);*/
     }
 
     public static double getAttackRangeSq(LivingEntity entity) {
@@ -24,7 +23,7 @@ public class ReachAttributeUtilImpl {
         } else {
             base = 4.5;
         }
-        return base + entity.getAttributeValue(ReachEntityAttributes.ATTACK_RANGE);
+        return base;// + entity.getAttributeValue(ReachEntityAttributes.ATTACK_RANGE);
     }
 
     public static double getRangeSq(LivingEntity entity) {
@@ -39,7 +38,7 @@ public class ReachAttributeUtilImpl {
         } else {
             base = 4.5;
         }
-        return base + entity.getAttributeValue(ReachEntityAttributes.REACH);
+        return base;// + entity.getAttributeValue(ReachEntityAttributes.REACH);
     }
 
 }

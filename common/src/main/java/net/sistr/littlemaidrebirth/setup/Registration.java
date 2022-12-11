@@ -6,8 +6,8 @@ import dev.architectury.registry.registries.RegistrySupplier;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.item.Item;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.util.registry.Registry;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.item.LittleMaidSpawnEggItem;
@@ -15,9 +15,9 @@ import net.sistr.littlemaidrebirth.item.LittleMaidSpawnEggItem;
 import static net.sistr.littlemaidrebirth.LMRBMod.MODID;
 
 public class Registration {
-    private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(MODID, Registry.ENTITY_TYPE_KEY);
-    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(MODID, Registry.ITEM_KEY);
-    private static final DeferredRegister<ScreenHandlerType<?>> SCREEN_HANDLERS = DeferredRegister.create(MODID, Registry.MENU_KEY);
+    private static final DeferredRegister<EntityType<?>> ENTITIES = DeferredRegister.create(MODID, RegistryKeys.ENTITY_TYPE);
+    private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(MODID, RegistryKeys.ITEM);
+    private static final DeferredRegister<ScreenHandlerType<?>> SCREEN_HANDLERS = DeferredRegister.create(MODID, RegistryKeys.SCREEN_HANDLER);
 
     public static void init() {
         ENTITIES.register();

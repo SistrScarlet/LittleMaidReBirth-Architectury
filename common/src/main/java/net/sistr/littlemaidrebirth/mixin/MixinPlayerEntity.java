@@ -7,7 +7,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -60,7 +59,7 @@ public abstract class MixinPlayerEntity extends LivingEntity implements PlayerAc
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    public void onInit(World world, BlockPos pos, float yaw, GameProfile gameProfile, PlayerPublicKey publicKey, CallbackInfo ci) {
+    public void onInit(World world, BlockPos pos, float yaw, GameProfile gameProfile, CallbackInfo ci) {
         this.setIFFs(IFFTypeManager.getINSTANCE().getIFFTypes(world).stream()
                 .map(IFFType::createIFF).collect(Collectors.toList()));
     }

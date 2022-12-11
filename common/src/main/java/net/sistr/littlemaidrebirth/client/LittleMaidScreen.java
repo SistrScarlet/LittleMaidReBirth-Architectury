@@ -25,9 +25,11 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
-import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetMovingStatePacket;
+import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
+
+import java.util.function.Supplier;
 
 //todo モード名表示/移動状態をアイコンで表記
 @Environment(EnvType.CLIENT)
@@ -72,27 +74,27 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int size = 20;
         int layer = -1;
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> owner.getTameOwner().ifPresent(OpenIFFScreenPacket::sendC2SPacket)) {
+                button -> owner.getTameOwner().ifPresent(OpenIFFScreenPacket::sendC2SPacket), Supplier::get) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                itemRenderer.renderGuiItemIcon(BOOK, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
+                itemRenderer.renderGuiItemIcon(BOOK, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> client.setScreen(new SoundPackSelectScreen<>(title, owner))) {
+                button -> client.setScreen(new SoundPackSelectScreen<>(title, owner)), Supplier::get) {
             @Override
             public void renderButton(MatrixStack matrices, int x, int y, float delta) {
                 super.renderButton(matrices, x, y, delta);
-                itemRenderer.renderGuiItemIcon(NOTE, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
+                itemRenderer.renderGuiItemIcon(NOTE, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> client.setScreen(new ModelSelectScreen<>(title, owner.world, owner))) {
+                button -> client.setScreen(new ModelSelectScreen<>(title, owner.world, owner)), Supplier::get) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                itemRenderer.renderGuiItemIcon(ARMOR, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
+                itemRenderer.renderGuiItemIcon(ARMOR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
@@ -103,20 +105,20 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                         case TRACER -> movingMode = MovingMode.ESCORT;
                     }
                     stateText = getStateText();
-                }) {
+                }, Supplier::get) {
             @Override
             public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
                 super.renderButton(matrices, mouseX, mouseY, delta);
-                itemRenderer.renderGuiItemIcon(FEATHER, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
+                itemRenderer.renderGuiItemIcon(FEATHER, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> C2SSetBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck())) {
+                button -> C2SSetBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck()), Supplier::get) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
                 itemRenderer.renderGuiItemIcon(LittleMaidScreen.this.owner.isBloodSuck() ? IRON_AXE : IRON_SWORD,
-                        this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
+                        this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.salaryWindow = new WindowGUIComponent(
@@ -127,7 +129,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                         .build()) {
             @Override
             public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-                RenderSystem.setShader(GameRenderer::getPositionTexShader);
+                RenderSystem.setShader(GameRenderer::getPositionTexProgram);
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                 RenderSystem.setShaderTexture(0, SALARY_WINDOW_TEXTURE);
                 drawTexture(matrices, this.x, this.y, 0, 0, 80, 80, 128, 128);
@@ -137,11 +139,11 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         this.addDrawableChild(new ButtonWidget(left - size, top + size * (layer += 2), size, size, Text.of(""),
                 button -> {//ウィンドウを出す
                     showSalaryWindow = true;
-                }) {
+                }, Supplier::get) {
             @Override
             public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                itemRenderer.renderGuiItemIcon(SUGAR, this.x - 8 + this.width / 2, this.y - 8 + this.height / 2);
+                itemRenderer.renderGuiItemIcon(SUGAR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         stateText = getStateText();
@@ -253,7 +255,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
 
     protected void drawIcon(MatrixStack matrices, int x, int y, float num, int row,
                             int baseU, int baseV, int overU, int overV, int halfU, int halfV) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, ICONS);
         for (int i = 0; i < row; i++) {
@@ -269,7 +271,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
 
     @Override
     protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, GUI);
         int relX = (this.width - this.backgroundWidth) / 2;
