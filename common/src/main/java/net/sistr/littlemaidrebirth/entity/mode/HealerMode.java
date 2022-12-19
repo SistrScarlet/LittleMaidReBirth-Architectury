@@ -12,7 +12,7 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 import java.util.OptionalInt;
 
-//todo ポーション回復
+//todo ポーション回復 - 重要
 public class HealerMode extends Mode {
     protected final LittleMaidEntity mob;
     protected final int inventoryStart;
