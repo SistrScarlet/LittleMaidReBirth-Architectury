@@ -197,8 +197,8 @@ public class BlockFinder {
                     continue;
                 }
                 //ターゲットならリターン
-                if (target.test(seed)) {
-                    return Optional.of(seed);
+                if (target.test(linkPos)) {
+                    return Optional.of(linkPos);
                 }
                 //探索可能ならシードに追加
                 if (linkable.test(linkPos)) {
