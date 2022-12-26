@@ -267,7 +267,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         || this.hasModeImpl.getMode()
                         .filter(mode -> mode.getModeType().isModeItem(stack))
                         .isPresent(),
-                256,
+                128,
                 8,
                 100));
 
