@@ -1,5 +1,6 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
+import net.minecraft.block.TorchBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.item.BlockItem;
@@ -8,6 +9,7 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -30,6 +32,7 @@ public class TorcherMode extends Mode {
     protected final LittleMaidEntity mob;
     protected final float distance;
     protected BlockPos placePos;
+    protected BlockPos basePos;
     protected int timeToRecalcPath;
     protected int timeToIgnore;
     protected int cool;
@@ -45,96 +48,100 @@ public class TorcherMode extends Mode {
         if (0 < --cool) {
             return false;
         }
-        cool = 20;
-        BlockPos base;
+        cool = 10;
+        //手に持っているものがブロックでないといけない
+        Item item = mob.getMainHandStack().getItem();
+        if (!(item instanceof BlockItem)) {
+            return false;
+        }
         if (this.mob.getMovingMode() == MovingMode.ESCORT) {
             Entity owner = mob.getTameOwner().orElse(null);
             if (owner == null) {
                 return false;
             }
-            base = owner.getBlockPos();
+            basePos = owner.getBlockPos();
         } else {
-            base = mob.getBlockPos();
+            basePos = mob.getBlockPos();
         }
-        placePos = findSpawnablePoint(base)
+        placePos = findSpawnablePoint(basePos.up())
                 .orElse(null);
         return placePos != null;
     }
 
     //湧けるブロックを探索
     public Optional<BlockPos> findSpawnablePoint(BlockPos base) {
-        return BlockFinder.searchTargetBlock(base, pos -> this.isSpawnable(pos) && this.isReachable(pos),
-                pos -> true,
-                Arrays.asList(Direction.values()), 4000);
-
-        /*BlockPos start = base.add(-distance, -1, -distance);
-        BlockPos end = base.add(distance, 1, distance);
-        List<BlockPos> points = new ArrayList<>();
-        BlockPos.stream(start, end).forEach(pos -> points.add(pos.toImmutable()));
-        return points.stream()
-                .sorted(Comparator.comparingDouble(base::getManhattanDistance))
-                .filter(this::isSpawnable)
-                .filter(this::isReachable)
-                .findFirst();*/
+        return BlockFinder.searchTargetBlock(base,
+                pos -> isDark(pos)
+                        && isPlaceable(pos),
+                pos -> Math.abs(base.getY() - pos.getY()) < 3
+                        && mob.world.isAir(pos)
+                        && pos.isWithinDistance(base, distance),
+                Arrays.asList(Direction.values()), 128);
     }
 
-    public boolean isSpawnable(BlockPos pos) {
-        BlockPos posUp = pos.up();
-        return mob.world.getBlockState(pos).isFullCube(mob.world, pos) && mob.world.isAir(posUp)
-                && mob.world.getLightLevel(posUp) <= 8;
+    public boolean isDark(BlockPos pos) {
+        return mob.world.getLightLevel(pos) <= 8;
     }
 
-    public boolean isReachable(BlockPos pos) {
-        Path path = mob.getNavigation().findPathTo(pos, 4);
-        return path != null && path.reachesTarget();
+    public boolean isPlaceable(BlockPos pos) {
+        return mob.world.isAir(pos)
+                && TorchBlock.sideCoversSmallSquare(this.mob.world, pos.down(), Direction.UP);
     }
 
     @Override
     public boolean shouldContinueExecuting() {
-        return placePos != null;
+        return placePos != null
+                && mob.getMainHandStack().getItem() instanceof BlockItem;
     }
 
     @Override
     public void startExecuting() {
         this.mob.getNavigation().stop();
-        Path path = this.mob.getNavigation().findPathTo(placePos.getX(), placePos.getY(), placePos.getZ(), 3);
-        this.mob.getNavigation().startMovingAlong(path, 1);
         ((SoundPlayable) mob).play(LMSounds.FIND_TARGET_D);
     }
 
     @Override
     public void tick() {
-        //5秒経過しても置けない、または明るい地点を無視
-        if (100 < ++this.timeToIgnore || 8 < mob.world.getLightLevel(placePos.up())) {
+        //3秒経過しても置けない、または明るい地点を無視
+        if (60 < ++this.timeToIgnore || 8 < mob.world.getLightLevel(placePos)) {
             this.placePos = null;
             this.timeToIgnore = 0;
             return;
         }
+        double distanceSq = this.mob.squaredDistanceTo(placePos.getX() + 0.5, placePos.getY(), placePos.getZ() + 0.5);
         //距離が遠すぎる場合は無視
-        if (distance * 2F < placePos.getManhattanDistance(mob.getBlockPos())) {
+        if (this.distance * this.distance * 4f < distanceSq) {
             this.placePos = null;
             return;
         }
-        Item item = mob.getMainHandStack().getItem();
-        if (!(item instanceof BlockItem)) {
-            return;
-        }
-        if (3 * 3 < this.mob.squaredDistanceTo(placePos.getX(), placePos.getY(), placePos.getZ())) {
+        //手の届く範囲でない場合、近づく
+        if (3 * 3 < distanceSq) {
             if (--timeToRecalcPath < 0) {
                 timeToRecalcPath = 20;
                 Path path = this.mob.getNavigation().findPathTo(placePos.getX(), placePos.getY(), placePos.getZ(), 3);
-                this.mob.getNavigation().startMovingAlong(path, 1);
+                if (path == null) {
+                    placePos = null;
+                    return;
+                }
+                this.mob.getNavigation().startMovingAlong(path, 1.2);
             }
             return;
         }
+
+        //プレイヤーと同じ処理で設置する
+
         Vec3d start = mob.getCameraPosVec(1F);
-        //終端はブロックの上面
+        //終端はブロックの下面
         Vec3d end = new Vec3d(
-                placePos.getX() + 0.5D, placePos.getY() + 1D, placePos.getZ() + 0.5D);
+                placePos.getX() + 0.5D, placePos.getY() - 0.1, placePos.getZ() + 0.5D);
         BlockHitResult result = mob.world.raycast(new RaycastContext(
                 start, end, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, this.mob));
         FakePlayer fakePlayer = mob.getFakePlayer();
-        if (((BlockItem) item).place(new ItemPlacementContext(
+        //shouldContinueExecutingでチェック済みなので、必ずitemはブロック
+        Item item = mob.getMainHandStack().getItem();
+        assert item instanceof BlockItem;
+        if (result.getType() != HitResult.Type.MISS
+                && ((BlockItem) item).place(new ItemPlacementContext(
                 new ItemUsageContext(fakePlayer, Hand.MAIN_HAND, result))).shouldSwingHand()) {
             mob.swingHand(Hand.MAIN_HAND);
             ((SoundPlayable) mob).play(LMSounds.INSTALLATION);
@@ -144,7 +151,7 @@ public class TorcherMode extends Mode {
 
     @Override
     public void resetTask() {
-        this.cool = 20;
+        this.cool = 2;
         this.timeToIgnore = 0;
         this.timeToRecalcPath = 0;
     }
