@@ -50,9 +50,10 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
 
     protected Optional<BlockPos> searchContainer() {
         return BlockFinder.searchTargetBlock(
-                this.mob.getBlockPos(),
+                this.mob.getBlockPos().up(),
                 this::isContainer,
-                pos -> !mob.world.isAir(pos)
+                pos -> mob.world.isAir(pos)
+                        && Math.abs(pos.getY() - mob.getY()) < 2
                         && pos.getSquaredDistance(this.mob.getPos()) < searchDistanceSq,
                 Arrays.asList(Direction.values()),
                 this.searchCount);
