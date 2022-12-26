@@ -5,6 +5,8 @@ import net.minecraft.item.AxeItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ShearsItem;
 import net.minecraft.item.SwordItem;
+import net.minecraft.potion.PotionUtil;
+import net.minecraft.potion.Potions;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.mode.*;
@@ -76,6 +78,7 @@ public class Modes {
         return ModeType.<HealerMode>builder((type, maid) ->
                         new HealerMode(type, "Healer", maid, 0, 1 + 18))
                 .addItemMatcher(stack -> stack.getItem().isFood())
+                .addItemMatcher(stack -> PotionUtil.getPotion(stack) != Potions.EMPTY)
                 .addItemMatcher(ItemMatchers.tag(LMTags.Items.HEALER_MODE));
     }
 
