@@ -8,6 +8,8 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
@@ -134,6 +136,8 @@ public class HealerMode extends Mode {
             } else {
                 inventory.setStack(potionIndex, stack);
             }
+            owner.world.playSound(null, owner.getX(), owner.getY(), owner.getZ(),
+                    SoundEvents.ENTITY_GENERIC_DRINK, SoundCategory.PLAYERS, 1.0f, 1.0f);
         }
         ((SoundPlayable) this.mob).play(LMSounds.HEALING);
     }
