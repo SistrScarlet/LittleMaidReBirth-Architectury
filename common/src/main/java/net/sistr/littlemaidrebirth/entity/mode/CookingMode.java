@@ -151,7 +151,7 @@ public class CookingMode extends Mode {
     }
 
     public boolean isSearchable(BlockPos pos) {
-        return Math.abs(pos.getY() - this.mob.getEyeY()) < MathHelper.ceil(this.mob.getEyeHeight(EntityPose.STANDING))
+        return Math.abs(pos.getY() - this.mob.getY()) < 2
                 && pos.isWithinDistance(this.mob.getPos(), 6)
                 && !this.mob.world.getBlockState(pos).isFullCube(this.mob.world, pos);
     }
