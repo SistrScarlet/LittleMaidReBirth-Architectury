@@ -23,6 +23,7 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.util.AbstractFurnaceAccessor;
 import net.sistr.littlemaidrebirth.util.BlockFinder;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -32,6 +33,7 @@ public class CookingMode extends Mode {
     private final LittleMaidEntity mob;
     private final int inventoryStart;
     private final int inventoryEnd;
+    @Nullable
     private BlockPos furnacePos;
     private int timeToRecalcPath;
     private int findCool;
@@ -51,7 +53,6 @@ public class CookingMode extends Mode {
 
     @Override
     public boolean shouldExecute() {
-        playSoundCool--;
         if (0 < --findCool) {
             return false;
         }
@@ -60,17 +61,22 @@ public class CookingMode extends Mode {
         if (getFuel().isEmpty()) {
             return false;
         }
-        if (furnacePos != null && getFurnaceBlockEntity(furnacePos).isPresent()) {
-            return true;
+        //かまどが無いか、使用不可な場合は再探索
+        if (furnacePos == null
+                || (furnacePos.isWithinDistance(this.mob.getPos(), 6)
+                && getFurnaceBlockEntity(furnacePos).isPresent())) {
+            furnacePos = findFurnacePos().orElse(null);
+            if (furnacePos == null) {
+                return false;
+            }
         }
-        furnacePos = null;
-        Optional<BlockPos> optional = findFurnacePos();
-        //かまどがあるか
-        if (optional.isEmpty()) {
+        AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElse(null);
+        if (furnace == null) {
+            furnacePos = null;
             return false;
         }
-        furnacePos = optional.get();
-        return true;
+        //焼くものがある場合はtrue
+        return getAllCoockable(((AbstractFurnaceAccessor) furnace).getRecipeType_LM()).findAny().isPresent();
     }
 
     public OptionalInt getFuel() {
@@ -160,14 +166,14 @@ public class CookingMode extends Mode {
         }
         AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElse(null);
         if (furnace == null) {
+            furnacePos = null;
             return false;
         }
         //結果スロットが埋まってる場合はtrue
-        for (int availableSlot : furnace.getAvailableSlots(Direction.DOWN)) {
-            ItemStack result = furnace.getStack(availableSlot);
-            if (!result.isEmpty() && furnace.canExtract(availableSlot, result, Direction.DOWN)) {
-                return true;
-            }
+        //getAvailableSlots(DOWN)では燃料スロットも取ってしまうため、マジックナンバーに頼らざる負えなかった
+        ItemStack result = furnace.getStack(2);
+        if (!result.isEmpty()) {
+            return true;
         }
         //何か焼いている場合はtrue
         if (((AbstractFurnaceAccessor) furnace).isBurningFire_LM()) {
@@ -185,12 +191,9 @@ public class CookingMode extends Mode {
 
     @Override
     public void tick() {
-        //かまどが無いならリセット
-        AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElse(null);
-        if (furnace == null) {
-            furnacePos = null;
-            return;
-        }
+        assert furnacePos != null;
+        //shouldContinueExecutingでチェック済みなのでかまどが無い場合はありえない
+        AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElseThrow();
 
         //視線を向ける
         this.mob.getLookControl().lookAt(
@@ -219,6 +222,8 @@ public class CookingMode extends Mode {
         Inventory inventory = this.mob.getInventory();
 
         RecipeType<? extends AbstractCookingRecipe> recipeType = ((AbstractFurnaceAccessor) furnace).getRecipeType_LM();
+
+        playSoundCool--;
 
         //焼けるものがあれば突っ込む
         getCookable(recipeType).ifPresent(cookableIndex -> tryInsertCookable(furnace, inventory, cookableIndex));
@@ -310,11 +315,15 @@ public class CookingMode extends Mode {
 
     @Override
     public void resetTask() {
+        playSoundCool = 0;
         this.mob.setSneaking(false);
-        AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElse(null);
-        //todo 要検証
-        //かまどからアイテムをすべて取り出す
-        if (furnace != null) {
+        if (furnacePos != null) {
+            AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElse(null);
+            if (furnace == null) {
+                furnacePos = null;
+                return;
+            }
+            //かまどからアイテムをすべて取り出す
             for (int i = 0; i < furnace.size(); i++) {
                 var stack = furnace.getStack(i);
                 if (!stack.isEmpty()) {
