@@ -3,6 +3,7 @@ package net.sistr.littlemaidrebirth.entity.mode;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
@@ -15,6 +16,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
@@ -56,7 +58,7 @@ public class CookingMode extends Mode {
         if (0 < --findCool) {
             return false;
         }
-        findCool = 60;
+        findCool = 20;
         //燃料がないならリターン
         if (getFuel().isEmpty()) {
             return false;
@@ -99,9 +101,8 @@ public class CookingMode extends Mode {
      * ここで言う使用可能なかまどとは、手持ちのアイテムを焼けるかどうかで判定する
      */
     public Optional<BlockPos> findFurnacePos() {
-        return BlockFinder.searchTargetBlock(mob.getBlockPos(), this::canUseFurnace, this::canSeeThrough,
-                        Arrays.asList(Direction.values()), 1000)
-                .filter(pos -> pos.getManhattanDistance(mob.getBlockPos()) < 8);
+        return BlockFinder.searchTargetBlock(new BlockPos(mob.getEyePos()), this::canUseFurnace, this::isSearchable,
+                Arrays.asList(Direction.values()), 128);
     }
 
     public boolean canUseFurnace(BlockPos pos) {
@@ -149,8 +150,10 @@ public class CookingMode extends Mode {
         return mob.world.getRecipeManager().getFirstMatch(recipeType, new SimpleInventory(stack), mob.world);
     }
 
-    public boolean canSeeThrough(BlockPos pos) {
-        return true;//!mob.world.getBlockState(pos).isSolidBlock(mob.world, pos);
+    public boolean isSearchable(BlockPos pos) {
+        return Math.abs(pos.getY() - this.mob.getEyeY()) < MathHelper.ceil(this.mob.getEyeHeight(EntityPose.STANDING))
+                && pos.isWithinDistance(this.mob.getPos(), 6)
+                && !this.mob.world.getBlockState(pos).isFullCube(this.mob.world, pos);
     }
 
     @Override
