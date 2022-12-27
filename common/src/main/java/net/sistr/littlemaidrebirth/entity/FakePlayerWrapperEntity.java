@@ -3,13 +3,14 @@ package net.sistr.littlemaidrebirth.entity;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.DataFixer;
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
 import net.minecraft.advancement.PlayerAdvancementTracker;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.NetworkSide;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketCallbacks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.ServerAdvancementLoader;
@@ -39,7 +40,7 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
     private static final GameProfile FPWE_PROFILE = new GameProfile(FPWE_UUID, "fake_player_name");
 
     public FakePlayerWrapperEntity(T origin) {
-        super((ServerWorld) origin.world, FPWE_PROFILE);
+        super(origin.world.getServer(), (ServerWorld) origin.world, FPWE_PROFILE);
         networkHandler = new FakePlayNetworkHandler(getServer(), this);
     }
 
@@ -187,7 +188,8 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
         }
 
         @Override
-        public void sendPacket(Packet<?> packet, @Nullable PacketCallbacks callbacks) {
+        public void sendPacket(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> listener) {
+            super.sendPacket(packet, listener);
         }
     }
 
@@ -202,7 +204,8 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
         }
 
         @Override
-        public void send(Packet<?> packet, @Nullable PacketCallbacks callbacks) {
+        public void send(Packet<?> packet, @Nullable GenericFutureListener<? extends Future<? super Void>> callback) {
+            super.send(packet, callback);
         }
     }
 }

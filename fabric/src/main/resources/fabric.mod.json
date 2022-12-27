@@ -37,10 +37,10 @@
   ],
   "depends": {
     "fabric": "*",
-    "minecraft": ">=1.19",
-    "architectury": ">=6.3.0",
-    "modmenu": ">=4.0.0",
-    "cloth-config": ">=8.2.0",
-    "littlemaidmodelloader": ">=5.1.0"
+    "minecraft": "1.18.2",
+    "architectury": ">=4.10.0",
+    "modmenu": ">=3.2.0",
+    "cloth-config": ">=6.4.0",
+    "littlemaidmodelloader": ">=4.5.0"
   }
 }

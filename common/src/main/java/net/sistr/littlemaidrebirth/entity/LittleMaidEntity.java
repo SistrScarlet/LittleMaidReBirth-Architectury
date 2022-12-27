@@ -71,8 +71,8 @@ import net.sistr.littlemaidrebirth.entity.goal.*;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
-import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.HasMode;
+import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
@@ -535,7 +535,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //canSpawnとかでも使われる
     @Override
     public float getPathfindingFavor(BlockPos pos, WorldView world) {
-        return world.getBlockState(pos.down()).isFullCube(world, pos) ? 10.0F : world.getPhototaxisFavor(pos);
+        return world.getBlockState(pos.down()).isFullCube(world, pos) ? 10.0F : world.getBrightness(pos) - 0.5F;
     }
 
     @Override
@@ -728,10 +728,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     @Override
-    public boolean onKilledOther(ServerWorld world, LivingEntity other) {
+    public void onKilledOther(ServerWorld world, LivingEntity other) {
         if (isBloodSuck()) play(LMSounds.LAUGHTER);
 
-        return super.onKilledOther(world, other);
+        super.onKilledOther(world, other);
     }
 
     @Override
@@ -1092,7 +1092,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     @Override
-    public Iterable<ItemStack> getHandItems() {
+    public Iterable<ItemStack> getItemsHand() {
         return Lists.newArrayList(getMainHandStack(), getOffHandStack());
     }
 
@@ -1559,7 +1559,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             this.getConfigHolder().getSoundFileName(soundName.toLowerCase())
                     .ifPresent((soundFileName) ->
                             LMSoundManager.INSTANCE.play(soundFileName, this.getSoundCategory(),
-                                    LMRBMod.getConfig().getVoiceVolume(), 1.0F, this.getRandom(),
+                                    LMRBMod.getConfig().getVoiceVolume(), 1.0F,
                                     this.getX(), this.getEyeY(), this.getZ()));
             return;
         }

@@ -16,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.client.screen.GUIElement;
@@ -25,9 +26,9 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
-import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetMovingStatePacket;
+import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
 
 //todo モード名表示/移動状態をアイコンで表記
 @Environment(EnvType.CLIENT)
@@ -148,10 +149,10 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     public Text getStateText() {
-        MutableText stateText = Text.translatable("state." + LMRBMod.MODID + "." + movingMode.getName());
+        MutableText stateText = new TranslatableText("state." + LMRBMod.MODID + "." + movingMode.getName());
         owner.getModeName().ifPresent(
                 modeName -> stateText.append(" : ")
-                        .append(Text.translatable("mode." + LMRBMod.MODID + "." + modeName)));
+                        .append(new TranslatableText("mode." + LMRBMod.MODID + "." + modeName)));
         return stateText;
     }
 
@@ -210,7 +211,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
         RenderSystem.disableBlend();
         this.textRenderer.draw(matrices, this.stateText.getString(), 8F, 65F, 0x404040);
-        String insideSkirt = Text.translatable("entity.littlemaidrebirth.little_maid_mob.InsideSkirt").getString();
+        String insideSkirt = new TranslatableText("entity.littlemaidrebirth.little_maid_mob.InsideSkirt").getString();
         this.textRenderer.draw(matrices, insideSkirt, 168F - textRenderer.getWidth(insideSkirt), 65F, 0x404040);
         float left = (width - backgroundWidth) / 2F;
         float top = (height - backgroundHeight) / 2F;

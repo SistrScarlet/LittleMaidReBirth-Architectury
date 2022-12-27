@@ -11,6 +11,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.util.hit.BlockHitResult;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
 
 /**
  * IFFをコピーする本。不使用
- * */
+ */
 public class IFFCopyBookItem extends Item {
 
     public IFFCopyBookItem() {
@@ -44,7 +45,7 @@ public class IFFCopyBookItem extends Item {
         super.appendTooltip(stack, world, tooltip, context);
         NbtCompound tag = stack.getNbt();
         if (tag != null && tag.contains("IFFs")) {
-            tooltip.add(Text.translatable("item.littlemaidrebirth.iff_copy_book.tooltip"));
+            tooltip.add(new TranslatableText("item.littlemaidrebirth.iff_copy_book.tooltip"));
         }
     }
 
@@ -73,7 +74,7 @@ public class IFFCopyBookItem extends Item {
             ((HasIFF) target).getIFFs().forEach(iff -> list.add(iff.writeTag()));
             NbtCompound tag = stack.getOrCreateNbt();
             tag.put("IFFs", list);
-            user.sendMessage(Text.translatable("item.littlemaidrebirth.iff_copy_book.message_written"), true);
+            user.sendMessage(new TranslatableText("item.littlemaidrebirth.iff_copy_book.message_written"), true);
         } else {
             NbtCompound tag = stack.getOrCreateNbt();
             if (!tag.contains("IFFs")) {
@@ -86,7 +87,7 @@ public class IFFCopyBookItem extends Item {
                     .filter(Optional::isPresent)
                     .map(Optional::get)
                     .collect(Collectors.toList()));
-            user.sendMessage(Text.translatable("item.littlemaidrebirth.iff_copy_book.message_apply"), true);
+            user.sendMessage(new TranslatableText("item.littlemaidrebirth.iff_copy_book.message_apply"), true);
         }
         user.world.playSound(null, user.getX(), user.getY(), user.getZ(),
                 SoundEvents.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 1F, 1F);

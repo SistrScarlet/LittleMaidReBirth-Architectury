@@ -19,6 +19,7 @@ import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidmodelloader.LMMLMod;
 import net.sistr.littlemaidmodelloader.client.screen.*;
@@ -46,7 +47,7 @@ public class IFFScreen extends Screen {
     private ListGUI<IFFGUIElement> iffGui;
 
     public IFFScreen(Entity entity, List<IFF> iffs) {
-        super(Text.empty());
+        super(Text.of(""));
         this.entity = entity;
         this.iffs = ImmutableList.copyOf(iffs);
     }
@@ -178,7 +179,7 @@ public class IFFScreen extends Screen {
                 }
             });
             TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-            textRenderer.drawWithShadow(matrices, Text.translatable(this.iff.getEntityType().getTranslationKey()),
+            textRenderer.drawWithShadow(matrices, new TranslatableText(this.iff.getEntityType().getTranslationKey()),
                     this.x, this.y, 0xFFFFFFFF);
             int color = switch (iff.getIFFTag()) {
                 case FRIEND -> 0xFF40FF40;
