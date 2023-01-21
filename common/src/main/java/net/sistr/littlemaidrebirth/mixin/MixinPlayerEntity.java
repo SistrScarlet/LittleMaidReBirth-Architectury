@@ -14,7 +14,7 @@ import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.*;
 import net.sistr.littlemaidrebirth.util.PlayerAccessor;
-import net.sistr.littlemaidrebirth.util.PlayerInventoryAccessor;
+import net.sistr.littlemaidrebirth.util.PlayerEntityInventoryAccessor;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Mutable;
@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Mixin(PlayerEntity.class)
-public abstract class MixinPlayerEntity extends LivingEntity implements PlayerAccessor, PlayerInventoryAccessor, HasIFF {
+public abstract class MixinPlayerEntity extends LivingEntity implements PlayerAccessor, PlayerEntityInventoryAccessor, HasIFF {
     private final HasIFF iff = new IFFImpl();
 
     protected MixinPlayerEntity(EntityType<? extends LivingEntity> entityType, World world) {

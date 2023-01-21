@@ -11,6 +11,7 @@
     "MixinMeleeAttackGoal",
     "MixinPlayerAdvancementTracker",
     "MixinPlayerEntity",
+    "MixinPlayerInventory",
     "MixinPlayerManager",
     "MixinProjectileDamageSource",
     "MixinRangedWeaponItem",

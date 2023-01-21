@@ -1,12 +1,10 @@
 package net.sistr.littlemaidrebirth.util;
 
-import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.collection.DefaultedList;
 
-/**
- * Mixin Accessor
- * */
+import java.util.List;
+
 public interface PlayerInventoryAccessor {
-    PlayerInventory getPlayerInventory_LMRB();
-
-    void setPlayerInventory_LMRB(PlayerInventory inventory);
+    List<DefaultedList<ItemStack>> getCombinedInventory();
 }
