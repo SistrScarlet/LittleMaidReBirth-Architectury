@@ -1,18 +1,24 @@
 package net.sistr.littlemaidrebirth.entity;
 
+import com.google.common.collect.Sets;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.util.collection.DefaultedList;
 import net.sistr.littlemaidrebirth.entity.util.HasFakePlayer;
 import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 import net.sistr.littlemaidrebirth.util.DefaultedListLimiter;
+import net.sistr.littlemaidrebirth.util.PlayerEntityInventoryAccessor;
 import net.sistr.littlemaidrebirth.util.PlayerInventoryAccessor;
+
+import java.util.Set;
 
 public class LMHasInventory implements HasInventory {
     private final Inventory inventory;
@@ -21,7 +27,7 @@ public class LMHasInventory implements HasInventory {
         if (!owner.world.isClient) {
             FakePlayer fakePlayer = player.getFakePlayer();
             inventory = new LMInventory(fakePlayer, 19);
-            ((PlayerInventoryAccessor) fakePlayer).setPlayerInventory_LMRB((PlayerInventory) inventory);
+            ((PlayerEntityInventoryAccessor) fakePlayer).setPlayerInventory_LMRB((PlayerInventory) inventory);
         } else {
             inventory = new SimpleInventory(18 + 4 + 2);
         }
@@ -45,10 +51,28 @@ public class LMHasInventory implements HasInventory {
     }
 
     public static class LMInventory extends PlayerInventory {
+        private static final Set<Item> EXCLUDE_ITEM = Sets.newHashSet();
 
         public LMInventory(PlayerEntity player, int size) {
             super(player);
             ((DefaultedListLimiter) this.main).setSizeLimit_LM(size);
+        }
+
+        @Override
+        public void updateItems() {
+            //LMInventoryへFabricのInventoryStorageなどでアクセスするとクラッシュすることへの対処療法的な修正
+            for (DefaultedList<ItemStack> defaultedList : ((PlayerInventoryAccessor) this).getCombinedInventory()) {
+                for (int i = 0; i < defaultedList.size(); ++i) {
+                    var itemStack = defaultedList.get(i);
+                    var item = itemStack.getItem();
+                    if (itemStack.isEmpty() || EXCLUDE_ITEM.contains(item)) continue;
+                    try {
+                        itemStack.inventoryTick(this.player.world, this.player, i, this.selectedSlot == i);
+                    } catch (Exception e) {
+                        EXCLUDE_ITEM.add(item);
+                    }
+                }
+            }
         }
 
         @Override
