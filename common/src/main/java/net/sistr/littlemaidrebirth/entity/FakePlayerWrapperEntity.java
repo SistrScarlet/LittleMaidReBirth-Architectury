@@ -23,7 +23,7 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.sistr.littlemaidrebirth.util.LivingAccessor;
 import net.sistr.littlemaidrebirth.util.PlayerAccessor;
-import net.sistr.littlemaidrebirth.util.PlayerInventoryAccessor;
+import net.sistr.littlemaidrebirth.util.PlayerEntityInventoryAccessor;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -68,7 +68,7 @@ public abstract class FakePlayerWrapperEntity<T extends LivingEntity> extends Fa
         pickupItems();
 
         //InventoryTick
-        ((PlayerInventoryAccessor) this).getPlayerInventory_LMRB().updateItems();
+        ((PlayerEntityInventoryAccessor) this).getPlayerInventory_LMRB().updateItems();
 
         this.refreshPositionAndAngles(getOrigin().getX(), getOrigin().getY(), getOrigin().getZ(),
                 this.getOrigin().getYaw(), this.getOrigin().getPitch());
