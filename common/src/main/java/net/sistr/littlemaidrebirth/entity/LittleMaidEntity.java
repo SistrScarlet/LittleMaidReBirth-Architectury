@@ -41,7 +41,10 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
@@ -72,8 +75,8 @@ import net.sistr.littlemaidrebirth.entity.goal.*;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
-import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.HasMode;
+import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
@@ -168,6 +171,23 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         soundPlayer = new SoundPlayableCompound(this, () ->
                 multiModel.getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
         addDefaultModes(this);
+        initIdFactor();
+
+        //野良の子らの初期設定
+        setRandomTexture();
+        if (LMRBMod.getConfig().isSilentDefaultVoice()) {
+            soundPlayer.setConfigHolder(LMConfigManager.EMPTY_CONFIG);
+        } else {
+            List<ConfigHolder> configs = LMConfigManager.INSTANCE.getAllConfig();
+            soundPlayer.setConfigHolder(configs.get(idFactor % configs.size()));
+        }
+        String defaultSoundPackName = LMRBMod.getConfig().getDefaultSoundPackName();
+        if (!defaultSoundPackName.isEmpty()) {
+            LMConfigManager.INSTANCE.getAllConfig().stream()
+                    .filter(c -> c.getPackName().equalsIgnoreCase(defaultSoundPackName))
+                    .findAny()
+                    .ifPresent(soundPlayer::setConfigHolder);
+        }
     }
 
     //基本使わない
@@ -363,22 +383,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             if (nbt.contains("SoundConfigName")) {
                 LMConfigManager.INSTANCE.getConfig(nbt.getString("SoundConfigName"))
                         .ifPresent(this::setConfigHolder);
-            }
-        } else {
-            //野良の子らの初期設定
-            setRandomTexture();
-            if (LMRBMod.getConfig().isSilentDefaultVoice()) {
-                soundPlayer.setConfigHolder(LMConfigManager.EMPTY_CONFIG);
-            } else {
-                List<ConfigHolder> configs = LMConfigManager.INSTANCE.getAllConfig();
-                soundPlayer.setConfigHolder(configs.get(idFactor % configs.size()));
-            }
-            String defaultSoundPackName = LMRBMod.getConfig().getDefaultSoundPackName();
-            if (!defaultSoundPackName.isEmpty()) {
-                LMConfigManager.INSTANCE.getAllConfig().stream()
-                        .filter(c -> c.getPackName().equalsIgnoreCase(defaultSoundPackName))
-                        .findAny()
-                        .ifPresent(soundPlayer::setConfigHolder);
             }
         }
     }
@@ -1215,6 +1219,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void setUuid(UUID uuid) {
         super.setUuid(uuid);
+        initIdFactor();
+    }
+
+    public void initIdFactor() {
         this.idFactor = Math.abs(this.getUuid().hashCode());
     }
 
