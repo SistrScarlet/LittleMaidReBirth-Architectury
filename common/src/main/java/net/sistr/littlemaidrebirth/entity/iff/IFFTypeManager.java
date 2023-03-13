@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import net.sistr.littlemaidrebirth.LMRBMod;
 
 import java.util.Optional;
 import java.util.Set;
@@ -39,8 +40,14 @@ public class IFFTypeManager {
         setup = true;
         Set<IFFType> set = Sets.newHashSet(iffTypes.values());
         for (IFFType type : set) {
-            if (!type.init(world))
+            try {
+                if (!type.init(world))
+                    iffTypes.remove(iffTypes.inverse().get(type));
+            } catch (Exception e) {
+                LMRBMod.LOGGER.warn("IFFの初期化中に例外が発生しました。:" + type.entityType);
+                e.printStackTrace();
                 iffTypes.remove(iffTypes.inverse().get(type));
+            }
         }
     }
 
