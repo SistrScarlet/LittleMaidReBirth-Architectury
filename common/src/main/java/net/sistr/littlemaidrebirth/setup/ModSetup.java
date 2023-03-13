@@ -3,6 +3,7 @@ package net.sistr.littlemaidrebirth.setup;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.level.biome.BiomeModifications;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
@@ -32,9 +33,12 @@ public class ModSetup {
         }
 
         IFFTypeManager iffTypeManager = IFFTypeManager.getINSTANCE();
-        Registry.ENTITY_TYPE.stream().filter(EntityType::isSummonable).forEach(entityType ->
-                iffTypeManager.register(EntityType.getId(entityType),
-                        new IFFType(IFFTag.UNKNOWN, entityType)));
+        Registry.ENTITY_TYPE.stream()
+                .filter(EntityType::isSummonable)
+                .filter(type -> type.getSpawnGroup() != SpawnGroup.MISC)
+                .forEach(entityType ->
+                        iffTypeManager.register(EntityType.getId(entityType),
+                                new IFFType(IFFTag.UNKNOWN, entityType)));
         iffTypeManager.register(EntityType.getId(EntityType.PLAYER), new IFFType(IFFTag.UNKNOWN, EntityType.PLAYER));
 
         Modes.init();
