@@ -1,33 +1,26 @@
 {
   "entity.littlemaidrebirth.little_maid_mob": "LittleMaid",
   "entity.littlemaidrebirth.little_maid_mob.InsideSkirt": "InsideSkirt",
-
   "state.littlemaidrebirth.None": "None",
   "state.littlemaidrebirth.Wait": "Wait",
   "state.littlemaidrebirth.Escort": "Escort",
   "state.littlemaidrebirth.Freedom": "Freedom",
   "state.littlemaidrebirth.Tracer": "Tracer",
-
   "mode.littlemaidrebirth.Fencer": "Fencer",
   "mode.littlemaidrebirth.Archer": "Archer",
   "mode.littlemaidrebirth.Cooking": "Cooking",
   "mode.littlemaidrebirth.Ripper": "Ripper",
   "mode.littlemaidrebirth.Torcher": "Torcher",
   "mode.littlemaidrebirth.Healer": "Healer",
-
   "item.littlemaidrebirth.little_maid_spawn_egg": "LittleMaid Spawn Egg",
   "item.littlemaidrebirth.iff_copy_book": "IFF Copy Book",
   "item.littlemaidrebirth.iff_copy_book.tooltip": "IFF written",
   "item.littlemaidrebirth.iff_copy_book.message_written": "IFF has been written.",
   "item.littlemaidrebirth.iff_copy_book.message_apply": "IFF has been applied.",
-
   "itemGroup.littlemaidrebirth.common": "LittleMaid ReBirth",
-
   "advancements.husbandry.contract_maid.title": "Realization",
   "advancements.husbandry.contract_maid.description": "Employ a LittleMaid",
-
   "text.autoconfig.littlemaidrebirth.title": "LittleMaid ReBirth Config",
-
   "text.autoconfig.littlemaidrebirth.category.spawn": "Spawn",
   "text.autoconfig.littlemaidrebirth.option.canSpawn": "Can Spawn",
   "text.autoconfig.littlemaidrebirth.option.canDespawn": "Can Despawn",
@@ -36,7 +29,6 @@
   "text.autoconfig.littlemaidrebirth.option.maxSpawnGroupSize": "Max Spawn Group Size",
   "text.autoconfig.littlemaidrebirth.option.silentDefaultVoice": "Silent Default Voice",
   "text.autoconfig.littlemaidrebirth.option.defaultSoundPackName": "Default Sound Pack",
-
   "text.autoconfig.littlemaidrebirth.category.maid": "Maid",
   "text.autoconfig.littlemaidrebirth.option.voiceVolume": "Voice Volume",
   "text.autoconfig.littlemaidrebirth.option.healInterval": "Heal Interval",
@@ -55,17 +47,14 @@
   "text.autoconfig.littlemaidrebirth.option.fallImmunity": "Fall Immunity",
   "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "Non Mob Damage Immunity",
   "text.autoconfig.littlemaidrebirth.option.canResurrection": "Can Resurrection(WIP)",
-
   "text.autoconfig.littlemaidrebirth.category.mode": "Mode",
   "text.autoconfig.littlemaidrebirth.option.fencerRangeFactor": "Fencer Range Factor",
   "text.autoconfig.littlemaidrebirth.option.archerInaccuracy": "Archer Inaccuracy",
   "text.autoconfig.littlemaidrebirth.option.archerRangeFactor": "Archer Range Factor",
   "text.autoconfig.littlemaidrebirth.option.archerPullLengthFactor": "Archer Pull Length",
-
   "text.autoconfig.littlemaidrebirth.category.contract": "Contract",
   "text.autoconfig.littlemaidrebirth.option.consumeSalaryInterval": "Consume Salary Interval",
   "text.autoconfig.littlemaidrebirth.option.unpaidCountLimit": "Unpaid Count Limit",
-
   "text.autoconfig.littlemaidrebirth.category.misc": "Misc",
   "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "Can Pickup Item By No Owner Maid",
   "text.autoconfig.littlemaidrebirth.option.canMilking": "Can Get Milk From Your Maid"

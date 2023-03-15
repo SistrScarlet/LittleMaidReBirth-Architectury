@@ -5,7 +5,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.math.BlockPos;
@@ -14,12 +13,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.*;
-import net.sistr.littlemaidrebirth.util.PlayerAccessor;
-import net.sistr.littlemaidrebirth.util.PlayerEntityInventoryAccessor;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Mutable;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -29,34 +23,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Mixin(PlayerEntity.class)
-public abstract class MixinPlayerEntity extends LivingEntity implements PlayerAccessor, PlayerEntityInventoryAccessor, HasIFF {
+public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
     private final HasIFF iff = new IFFImpl();
 
     protected MixinPlayerEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
-    }
-
-    @Shadow
-    protected abstract void collideWithEntity(Entity entity);
-
-    @Mutable
-    @Shadow
-    @Final
-    private PlayerInventory inventory;
-
-    @Override
-    public void onCollideWithEntity_LM(Entity entity) {
-        collideWithEntity(entity);
-    }
-
-    @Override
-    public PlayerInventory getPlayerInventory_LMRB() {
-        return this.inventory;
-    }
-
-    @Override
-    public void setPlayerInventory_LMRB(PlayerInventory inventory) {
-        this.inventory = inventory;
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))

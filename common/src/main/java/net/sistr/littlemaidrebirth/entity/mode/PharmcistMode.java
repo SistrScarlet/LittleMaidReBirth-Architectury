@@ -16,14 +16,10 @@ import java.util.Optional;
 //todo 実装はよ
 public class PharmcistMode extends Mode {
     private final LittleMaidEntity mob;
-    private final int inventoryStart;
-    private final int inventoryEnd;
 
-    public PharmcistMode(ModeType<? extends PharmcistMode> modeType, String name, LittleMaidEntity mob, int inventoryStart, int inventoryEnd) {
+    public PharmcistMode(ModeType<? extends PharmcistMode> modeType, String name, LittleMaidEntity mob) {
         super(modeType, name);
         this.mob = mob;
-        this.inventoryStart = inventoryStart;
-        this.inventoryEnd = inventoryEnd;
     }
 
     @Override

@@ -6,7 +6,11 @@ import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.block.entity.HopperBlockEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
+import net.minecraft.entity.ai.RangedAttackMob;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
@@ -21,7 +25,10 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.StackReference;
@@ -46,7 +53,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
 import net.minecraft.world.WorldView;
 import net.minecraft.world.biome.Biome;
-import net.sistr.littlemaidmodelloader.client.resource.manager.LMSoundManager;
 import net.sistr.littlemaidmodelloader.entity.compound.IHasMultiModel;
 import net.sistr.littlemaidmodelloader.entity.compound.MultiModelCompound;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
@@ -76,9 +82,10 @@ import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
+import net.sistr.littlemaidrebirth.mixin.PersistentProjectileEntityAccessor;
+import net.sistr.littlemaidrebirth.mixin.ProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
-import net.sistr.littlemaidrebirth.util.LivingAccessor;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -108,7 +115,8 @@ import java.util.stream.Collectors;
 //todo おさわり厳禁：他人のメイドに触ると殴られる
 //todo 他人のメイドに視線を合わせた時、ご主人の名札を浮かべる
 public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, HasInventory, net.sistr.littlemaidrebirth.entity.util.Tameable,
-        Contractable, HasMode, HasIFF, AimingPoseable, HasFakePlayer, IHasMultiModel, SoundPlayable, HasMovingMode {
+        Contractable, HasMode, HasIFF, AimingPoseable, IHasMultiModel, SoundPlayable, HasMovingMode,
+        RangedAttackMob, CrossbowUser {
     //LMM_FLAGSのindex
     private static final int WAIT_INDEX = 0;
     private static final int AIMING_INDEX = 1;
@@ -121,9 +129,11 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
     private static final TrackedData<String> MODE_NAME =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<Boolean> CHARGING =
+            DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+
     //移譲s
-    private final LMHasFakePlayer fakePlayer = new LMHasFakePlayer(this);
-    private final LMHasInventory littleMaidInventory = new LMHasInventory(this, this);
+    private final LMHasInventory littleMaidInventory = new LMHasInventory();
     private final ItemContractable<LittleMaidEntity> itemContractable =
             new ItemContractable<>(this,
                     LMRBMod.getConfig().getConsumeSalaryInterval(),
@@ -282,9 +292,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         || this.hasModeImpl.getMode()
                         .filter(mode -> mode.getModeType().isModeItem(stack))
                         .isPresent(),
-                128,
-                8,
-                100));
+                8
+        ));
 
         this.goalSelector.add(++priority, new RedstoneTraceGoal(this, 0.65f));
         this.goalSelector.add(++priority, new FreedomGoal<>(this,
@@ -326,6 +335,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.dataTracker.startTracking(LMM_FLAGS, (byte) 0);
         this.dataTracker.startTracking(MOVING_MODE, (byte) 0);
         this.dataTracker.startTracking(MODE_NAME, "");
+        this.dataTracker.startTracking(CHARGING, false);
     }
 
     public void addDefaultModes(LittleMaidEntity maid) {
@@ -337,6 +347,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
+        nbt.putByte("maidVersion", (byte) 1);
 
         writeInventory(nbt);
 
@@ -359,8 +370,26 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         super.readCustomDataFromNbt(nbt);
+        int maidVersion = nbt.getByte("maidVersion") & 255;
 
         readInventory(nbt);
+        if (maidVersion == 0) {
+            var list = nbt.getList("Inventory", 10);
+            for (int i = 0; i < list.size(); i++) {
+                NbtCompound nbtCompound = list.getCompound(i);
+                int j = nbtCompound.getByte("Slot") & 255;
+                ItemStack stack = ItemStack.fromNbt(nbtCompound);
+                if (!stack.isEmpty()) {
+                    if (j == 0) {
+                        this.equipStack(EquipmentSlot.MAINHAND, stack);
+                    } else if (100 <= j && j < 104) {
+                        this.equipStack(EquipmentSlot.fromTypeIndex(EquipmentSlot.Type.ARMOR, j - 100), stack);
+                    } else if (j == 150) {
+                        this.equipStack(EquipmentSlot.OFFHAND, stack);
+                    }
+                }
+            }
+        }
 
         if (getTameOwnerUuid().isPresent()) {
             setWait(nbt.getBoolean("Wait"));
@@ -428,6 +457,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //頭の装飾品が表示されない対策
         //原因はインベントリを開くまで同期されないため
         buf.writeItemStack(getInventory().getStack(18));
+        //architectury側のミスでPitchYawが逆に与えられているのを修正
+        buf.writeFloat(this.getPitch());
+        buf.writeFloat(this.getYaw());
     }
 
     //蔵
@@ -450,7 +482,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         LMConfigManager.INSTANCE.getConfig(buf.readString())
                 .ifPresent(this::setConfigHolder);
 
-        getInventory().setStack(18, buf.readItemStack());
+        getInventory().setStack(17, buf.readItemStack());
+        this.setPitch(buf.readFloat());
+        this.setYaw(buf.readFloat());
     }
 
     @Override
@@ -513,20 +547,89 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void tick() {
-        super.tick();
-        fakePlayer.tick();
-        tickHandSwing();
-        itemContractable.tick();
         if (world.isClient) {
             tickInterestedAngle();
         }
         playSoundCool = Math.max(0, playSoundCool - 1);
+        super.tick();
+    }
+
+    @Override
+    public void tickMovement() {
+        tickHandSwing();
+        super.tickMovement();
     }
 
     @Override
     protected void mobTick() {
         super.mobTick();
+        pickupItem();
+        itemContractable.tick();
         hasModeImpl.tick();
+    }
+
+    protected void pickupItem() {
+        if (this.getHealth() > 0.0f && !this.isSpectator()) {
+            Box aabb = this.hasVehicle() && !this.getVehicle().isRemoved()
+                    ? this.getBoundingBox().union(this.getVehicle().getBoundingBox()).expand(1.0, 0.0, 1.0)
+                    : this.getBoundingBox().expand(1.0, 0.5, 1.0);
+            List<Entity> list = this.world.getOtherEntities(this, aabb);
+            ArrayList<Entity> list1 = Lists.newArrayList();
+            for (Entity entity : list) {
+                if (entity.getType() == EntityType.EXPERIENCE_ORB) {
+                    list1.add(entity);
+                    continue;
+                }
+                if (entity.isRemoved()) continue;
+                if (entity instanceof ItemEntity itemEntity) {
+                    this.pickupItemEntity(itemEntity);
+                } else if (entity instanceof PersistentProjectileEntity projectile) {
+                    this.pickupArrowEntity(projectile);
+                }
+            }
+            if (!list1.isEmpty()) {
+                //todo 経験値回収
+            }
+        }
+    }
+
+    protected void pickupItemEntity(ItemEntity itemEntity) {
+        if (this.world.isClient) {
+            return;
+        }
+        ItemStack itemStack = itemEntity.getStack();
+        int i = itemStack.getCount();
+        if (!itemEntity.cannotPickup()
+                && (itemEntity.getOwner() == null
+                || itemEntity.getOwner().equals(this.getUuid()))) {
+            itemStack = HopperBlockEntity.transfer(null, this.getInventory(), itemStack, null);
+            if (itemStack.getCount() != i) {
+                this.sendPickup(itemEntity, i);
+                if (itemStack.isEmpty()) {
+                    itemEntity.discard();
+                    itemStack.setCount(i);
+                }
+                this.triggerItemPickedUpByEntityCriteria(itemEntity);
+            }
+        }
+    }
+
+    protected void pickupArrowEntity(PersistentProjectileEntity projectile) {
+        if (this.world.isClient || !((PersistentProjectileEntityAccessor) projectile).getInGround()
+                && !projectile.isNoClip() || projectile.shake > 0) {
+            return;
+        }
+        if (projectile instanceof TridentEntity
+                && (!((ProjectileEntityAccessor) projectile).invokeIsOwner(this)
+                && projectile.getOwner() != null)) {
+            return;
+        }
+        var arrow = ((PersistentProjectileEntityAccessor) projectile).invokeAsItemStack();
+        arrow = HopperBlockEntity.transfer(null, this.getInventory(), arrow, null);
+        if (arrow.isEmpty()) {
+            this.sendPickup(projectile, 1);
+            projectile.discard();
+        }
     }
 
     @Override
@@ -537,7 +640,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //canSpawnとかでも使われる
     @Override
     public float getPathfindingFavor(BlockPos pos, WorldView world) {
-        return world.getBlockState(pos.down()).isFullCube(world, pos) ? 10.0F : world.getPhototaxisFavor(pos);
+        return world.getBlockState(pos.down()).isFullCube(world, pos) ? 10.0F : world.getBrightness(pos) - 0.5F;
     }
 
     @Override
@@ -716,7 +819,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             }
             if (!result || amount <= 0F) {
                 play(LMSounds.HURT_NO_DAMAGE);
-            } else if (amount > 0F && ((LivingAccessor) this).blockedByShield_LM(source)) {
+            } else if (amount > 0F && this.blockedByShield(source)) {
                 play(LMSounds.HURT_GUARD);
             } else if (source == DamageSource.FALL) {
                 play(LMSounds.HURT_FALL);
@@ -734,6 +837,56 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (isBloodSuck()) play(LMSounds.LAUGHTER);
 
         return super.onKilledOther(world, other);
+    }
+
+    //射撃
+
+    @Override
+    public void attack(LivingEntity target, float pullProgress) {
+        var stack = this.getMainHandStack();
+        //弾が無い場合は実行されないはずだが、念のためチェック
+        var arrowStack = this.getArrowType(stack);
+        if (arrowStack.isEmpty() && EnchantmentHelper.getLevel(Enchantments.INFINITY, stack) == 0) {
+            return;
+        }
+        if (stack.getItem() instanceof BowItem bowItem) {
+            var arrow = ProjectileUtil.createArrowProjectile(this, arrowStack, pullProgress);
+            arrow = EPEntityUtil.arrowCustomHook(bowItem, arrow);
+            double xDiff = target.getX() - this.getX();
+            double yDiff = target.getEyeY() - arrow.getY();
+            double zDiff = target.getZ() - this.getZ();
+            double horizonLen = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
+            arrow.setVelocity(xDiff, yDiff + horizonLen * 0.025, zDiff,
+                    pullProgress * 3.0f * LMRBMod.getConfig().getArcherShootVelocityFactor(),
+                    14 - 2 * 4);
+            this.playSound(SoundEvents.ENTITY_ARROW_SHOOT,
+                    1.0f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 1.2f) + pullProgress * 0.5f);
+            this.world.spawnEntity(arrow);
+            arrowStack.decrement(1);
+        } else if (stack.getItem() instanceof CrossbowItem) {
+            this.shoot(this, 1.6f);
+        }
+    }
+
+    //クロスボウ
+
+    public boolean isCharging() {
+        return this.dataTracker.get(CHARGING);
+    }
+
+    @Override
+    public void setCharging(boolean charging) {
+        this.dataTracker.set(CHARGING, charging);
+    }
+
+    @Override
+    public void shoot(LivingEntity target, ItemStack crossbow, ProjectileEntity projectile, float multiShotSpray) {
+        this.shoot(this, target, projectile, multiShotSpray, 1.6f);
+    }
+
+    @Override
+    public void postShoot() {
+
     }
 
     @Override
@@ -1093,122 +1246,69 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.littleMaidInventory.readInventory(tag);
     }
 
-    @Override
-    public Iterable<ItemStack> getHandItems() {
-        return Lists.newArrayList(getMainHandStack(), getOffHandStack());
-    }
-
-    @Override
-    public Iterable<ItemStack> getArmorItems() {
-        return Lists.newArrayList(
-                getEquippedStack(EquipmentSlot.FEET),
-                getEquippedStack(EquipmentSlot.LEGS),
-                getEquippedStack(EquipmentSlot.CHEST),
-                getEquippedStack(EquipmentSlot.HEAD));
-    }
-
+    //todo Inventory
     @Override
     protected void damageArmor(DamageSource source, float amount) {
-        ((PlayerInventory) getInventory()).damageArmor(source, amount, PlayerInventory.ARMOR_SLOTS);
     }
 
     @Override
     protected void damageHelmet(DamageSource source, float amount) {
-        ((PlayerInventory) getInventory()).damageArmor(source, amount, PlayerInventory.HELMET_SLOTS);
     }
 
-    //メイドさんはガードしないので要らないかも
     @Override
     protected void damageShield(float amount) {
-        if (this.activeItemStack.isOf(Items.SHIELD)) {
-
-            if (amount >= 3.0F) {
-                int i = 1 + MathHelper.floor(amount);
-                Hand hand = this.getActiveHand();
-                this.activeItemStack.damage(i, (LivingEntity) this, (playerEntity) -> playerEntity.sendToolBreakStatus(hand));
-                if (this.activeItemStack.isEmpty()) {
-                    if (hand == Hand.MAIN_HAND) {
-                        this.equipStack(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-                    } else {
-                        this.equipStack(EquipmentSlot.OFFHAND, ItemStack.EMPTY);
-                    }
-
-                    this.activeItemStack = ItemStack.EMPTY;
-                    this.playSound(SoundEvents.ITEM_SHIELD_BREAK, 0.8F, 0.8F + this.world.random.nextFloat() * 0.4F);
-                }
-            }
-
-        }
     }
 
     @Override
     public StackReference getStackReference(int mappedIndex) {
-        if (mappedIndex >= 0 && mappedIndex < 36) {
-            return StackReference.of(this.getInventory(), mappedIndex);
+        var inv = getInventory();
+        int i = mappedIndex - 200;
+        if (0 <= i && i < inv.size()) {
+            return StackReference.of(inv, i);
         }
         return super.getStackReference(mappedIndex);
     }
 
-    //要る？
     @Override
     public ItemStack getArrowType(ItemStack stack) {
-        if (!(stack.getItem() instanceof RangedWeaponItem)) {
+        if (!(stack.getItem() instanceof RangedWeaponItem ranged)) {
             return ItemStack.EMPTY;
-        } else {
-            Predicate<ItemStack> predicate = ((RangedWeaponItem) stack.getItem()).getHeldProjectiles();
-            ItemStack itemStack = RangedWeaponItem.getHeldProjectile(this, predicate);
-            if (!itemStack.isEmpty()) {
-                return itemStack;
-            } else {
-                predicate = ((RangedWeaponItem) stack.getItem()).getProjectiles();
-
-                for (int i = 0; i < this.getInventory().size(); ++i) {
-                    ItemStack itemStack2 = this.getInventory().getStack(i);
-                    if (predicate.test(itemStack2)) {
-                        return itemStack2;
-                    }
-                }
-
-                return ItemStack.EMPTY;
+        }
+        Predicate<ItemStack> predicate = ranged.getHeldProjectiles();
+        ItemStack itemStack = RangedWeaponItem.getHeldProjectile(this, predicate);
+        if (!itemStack.isEmpty()) {
+            return EPEntityUtil.arrowCustomHook(this, stack, itemStack);
+        }
+        predicate = ranged.getProjectiles();
+        var inv = getInventory();
+        for (int i = 0; i < inv.size(); ++i) {
+            ItemStack itemStack2 = inv.getStack(i);
+            if (predicate.test(itemStack2)) {
+                return EPEntityUtil.arrowCustomHook(this, stack, itemStack2);
             }
         }
+        return EPEntityUtil.arrowCustomHook(this, stack, ItemStack.EMPTY);
     }
 
-    //防具の更新およびオフハンドの位置ズラし
+    //防具の更新
     @Override
     public void equipStack(EquipmentSlot slot, ItemStack stack) {
-        //lithium導入下でのバグ修正のためsuperを呼ぶ
         super.equipStack(slot, stack);
 
         if (slot.getType() == EquipmentSlot.Type.ARMOR) {
-            Inventory inv = getInventory();
-            inv.setStack(1 + 18 + slot.getEntitySlotId(), stack);
             multiModel.updateArmor();
-        } else if (slot == EquipmentSlot.MAINHAND) {
-            getInventory().setStack(0, stack);
-        } else if (slot == EquipmentSlot.OFFHAND) {
-            getInventory().setStack(18 + 4 + 1, stack);
         }
-    }
-
-    @Override
-    public ItemStack getEquippedStack(EquipmentSlot slot) {
-        if (slot.getType() == EquipmentSlot.Type.ARMOR) {
-            return getInventory().getStack(1 + 18 + slot.getEntitySlotId());
-        } else if (slot == EquipmentSlot.MAINHAND) {
-            return getInventory().getStack(0);
-        } else if (slot == EquipmentSlot.OFFHAND) {
-            return getInventory().getStack(18 + 4 + 1);
-        }
-        return ItemStack.EMPTY;
     }
 
     @Override
     protected void dropInventory() {
         //鯖側でしか動かないが一応チェック
         Inventory inv = this.getInventory();
-        if (inv instanceof PlayerInventory)
-            ((LMHasInventory.LMInventory) inv).dropAll();
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack stack = inv.getStack(i);
+            if (stack.isEmpty() || EnchantmentHelper.hasVanishingCurse(stack)) continue;
+            this.dropStack(stack);
+        }
     }
 
     @Override
@@ -1468,13 +1568,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.setLMMFlag(AIMING_INDEX, aiming);
     }
 
-    //Fake関連、クライアントで実行するとクラッシュする
-
-    @Override
-    public FakePlayer getFakePlayer() {
-        return fakePlayer.getFakePlayer();
-    }
-
     //マルチモデル関連
 
     @Override
@@ -1561,14 +1654,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 soundName = LMSounds.ATTACK_BLOOD_SUCK;
             }
         }
-        if (this.world.isClient) {
-            this.getConfigHolder().getSoundFileName(soundName.toLowerCase())
-                    .ifPresent((soundFileName) ->
-                            LMSoundManager.INSTANCE.play(soundFileName, this.getSoundCategory(),
-                                    LMRBMod.getConfig().getVoiceVolume(), 1.0F, this.getRandom(),
-                                    this.getX(), this.getEyeY(), this.getZ()));
-            return;
-        }
         soundPlayer.play(soundName);
     }
 
@@ -1597,11 +1682,21 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         @Override
         public boolean canStart() {
-            return (maid.getTameOwner().isPresent()
-                    || LMRBMod.getConfig().isCanPickupItemByNoOwner())
+            return (LMRBMod.getConfig().isCanPickupItemByNoOwner()
+                    || maid.getTameOwner().isPresent())
                     && !maid.isWait()
-                    && ((PlayerInventory) maid.getInventory()).getEmptySlot() != -1
+                    && hasEmptySlot()
                     && super.canStart();
+        }
+
+        protected boolean hasEmptySlot() {
+            var inv = this.maid.getInventory();
+            for (int i = 0; i < inv.size(); i++) {
+                if (inv.getStack(i).isEmpty()) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override

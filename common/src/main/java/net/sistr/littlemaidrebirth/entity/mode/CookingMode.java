@@ -1,10 +1,9 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
-import net.minecraft.entity.EntityPose;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
@@ -16,7 +15,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
@@ -32,20 +30,18 @@ import java.util.OptionalInt;
 import java.util.stream.Stream;
 
 public class CookingMode extends Mode {
+    //todo 別ディメンションで同一の位置にかまどがある場合は無視する
+    private static final Object2ObjectOpenHashMap<BlockPos, LittleMaidEntity> USED_FURNACE_MAP = new Object2ObjectOpenHashMap<>();
     private final LittleMaidEntity mob;
-    private final int inventoryStart;
-    private final int inventoryEnd;
     @Nullable
     private BlockPos furnacePos;
     private int timeToRecalcPath;
     private int findCool;
     private int playSoundCool;
 
-    public CookingMode(ModeType<? extends CookingMode> modeType, String name, LittleMaidEntity mob, int inventoryStart, int inventoryEnd) {
+    public CookingMode(ModeType<? extends CookingMode> modeType, String name, LittleMaidEntity mob) {
         super(modeType, name);
         this.mob = mob;
-        this.inventoryStart = inventoryStart;
-        this.inventoryEnd = inventoryEnd;
     }
 
     @Override
@@ -55,6 +51,13 @@ public class CookingMode extends Mode {
 
     @Override
     public boolean shouldExecute() {
+        //注視しているかまどがあるならtrue
+        //todo 稼働中であるかチェックが必要か？
+        if (furnacePos != null && furnacePos.isWithinDistance(this.mob.getPos(), 6)
+                && getFurnaceBlockEntity(furnacePos).isPresent()
+                && !isUsingFurnaceByOtherMaid(furnacePos)) {
+            return true;
+        }
         if (0 < --findCool) {
             return false;
         }
@@ -65,8 +68,9 @@ public class CookingMode extends Mode {
         }
         //かまどが無いか、使用不可な場合は再探索
         if (furnacePos == null
-                || (furnacePos.isWithinDistance(this.mob.getPos(), 6)
-                && getFurnaceBlockEntity(furnacePos).isPresent())) {
+                || !furnacePos.isWithinDistance(this.mob.getPos(), 6)
+                || getFurnaceBlockEntity(furnacePos).isEmpty()
+                || !isUsingFurnaceByOtherMaid(furnacePos)) {
             furnacePos = findFurnacePos().orElse(null);
             if (furnacePos == null) {
                 return false;
@@ -83,7 +87,7 @@ public class CookingMode extends Mode {
 
     public OptionalInt getFuel() {
         Inventory inventory = this.mob.getInventory();
-        for (int i = inventoryStart; i < inventoryEnd; ++i) {
+        for (int i = 0; i < inventory.size(); ++i) {
             ItemStack itemstack = inventory.getStack(i);
             if (isFuel(itemstack)) {
                 return OptionalInt.of(i);
@@ -98,7 +102,6 @@ public class CookingMode extends Mode {
 
     /**
      * 使用可能なかまどを探索する。
-     * ここで言う使用可能なかまどとは、手持ちのアイテムを焼けるかどうかで判定する
      */
     public Optional<BlockPos> findFurnacePos() {
         return BlockFinder.searchTargetBlock(new BlockPos(mob.getEyePos()), this::canUseFurnace, this::isSearchable,
@@ -106,6 +109,10 @@ public class CookingMode extends Mode {
     }
 
     public boolean canUseFurnace(BlockPos pos) {
+        //他のメイドさんが使ってるかまどはダメ
+        if (isUsingFurnaceByOtherMaid(pos)) {
+            return false;
+        }
         return getFurnaceBlockEntity(pos).filter(this::canUseFurnace).isPresent();
     }
 
@@ -134,10 +141,22 @@ public class CookingMode extends Mode {
         return false;
     }
 
+    public boolean isUsingFurnaceByOtherMaid(BlockPos furnacePos) {
+        var user = USED_FURNACE_MAP.get(furnacePos);
+        if (user != null && user != this.mob) {
+            if (!user.isAlive() || user != user.world.getEntityById(user.getId())) {
+                USED_FURNACE_MAP.remove(furnacePos);
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
     public Stream<ItemStack> getAllCoockable(RecipeType<? extends AbstractCookingRecipe> recipeType) {
         Inventory inventory = this.mob.getInventory();
         Stream.Builder<ItemStack> builder = Stream.builder();
-        for (int i = inventoryStart; i < inventoryEnd; ++i) {
+        for (int i = 0; i < inventory.size(); ++i) {
             ItemStack slotStack = inventory.getStack(i);
             if (getRecipe(slotStack, recipeType).isPresent()) {
                 builder.accept(slotStack);
@@ -159,6 +178,7 @@ public class CookingMode extends Mode {
     @Override
     public void startExecuting() {
         findCool = 0;
+        USED_FURNACE_MAP.put(furnacePos, mob);
     }
 
     @Override
@@ -238,7 +258,7 @@ public class CookingMode extends Mode {
 
     public OptionalInt getCookable(RecipeType<? extends AbstractCookingRecipe> recipeType) {
         Inventory inventory = this.mob.getInventory();
-        for (int i = inventoryStart; i < inventoryEnd; ++i) {
+        for (int i = 0; i < inventory.size(); ++i) {
             ItemStack slotStack = inventory.getStack(i);
             if (getRecipe(slotStack, recipeType).isPresent()) {
                 return OptionalInt.of(i);
@@ -321,6 +341,7 @@ public class CookingMode extends Mode {
         playSoundCool = 0;
         this.mob.setSneaking(false);
         if (furnacePos != null) {
+            USED_FURNACE_MAP.remove(furnacePos, mob);
             AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElse(null);
             if (furnace == null) {
                 furnacePos = null;
@@ -330,8 +351,11 @@ public class CookingMode extends Mode {
             for (int i = 0; i < furnace.size(); i++) {
                 var stack = furnace.getStack(i);
                 if (!stack.isEmpty()) {
-                    if (((PlayerInventory) this.mob.getInventory()).insertStack(stack)) {
+                    stack = HopperBlockEntity.transfer(null, this.mob.getInventory(), stack, null);
+                    if (stack.isEmpty()) {
                         furnace.removeStack(i);
+                    } else {
+                        furnace.setStack(i, stack);
                     }
                 }
             }

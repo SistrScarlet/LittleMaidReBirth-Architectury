@@ -18,7 +18,7 @@ import net.sistr.littlemaidrebirth.entity.util.Tameable;
 
 /**
  * サウンドコンフィグを同期するパケット
- * */
+ */
 public class SyncSoundConfigPacket {
     public static final Identifier ID =
             new Identifier(LMRBMod.MODID, "sync_sound_config");

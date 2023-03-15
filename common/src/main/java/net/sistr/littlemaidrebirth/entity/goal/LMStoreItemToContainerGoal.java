@@ -18,8 +18,8 @@ import java.util.function.Predicate;
 public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends StoreItemToContainerGoal<T> {
 
     public LMStoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems,
-                                      int maxSearchCount, int searchDistance, int interval) {
-        super(mob, exceptItems, maxSearchCount, searchDistance, interval);
+                                      int searchDistance) {
+        super(mob, exceptItems, searchDistance);
     }
 
     @Override
@@ -42,7 +42,7 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
     @Override
     protected boolean isInventoryFull() {
         Inventory inventory = this.mob.getInventory();
-        for (int i = 1; i < 19; i++) {
+        for (int i = 0; i < inventory.size(); i++) {
             var stack = inventory.getStack(i);
             if (stack.isEmpty()) {
                 return false;
@@ -62,7 +62,7 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
                     SoundEvents.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS,
                     1.0f, 1.0f);
             this.mob.swingHand(Hand.MAIN_HAND);
-            for (int i = 1; i < 19; i++) {
+            for (int i = 0; i < inventory.size(); i++) {
                 var stack = inventory.getStack(i);
                 if (this.exceptItems.test(stack)) {
                     continue;

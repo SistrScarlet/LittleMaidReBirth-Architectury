@@ -15,7 +15,6 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class RipperMode extends Mode {
     protected final LittleMaidEntity mob;
@@ -87,7 +86,7 @@ public class RipperMode extends Mode {
             ItemStack stack = this.mob.getMainHandStack();
             if (((Shearable) target).isShearable()) {
                 ((Shearable) target).sheared(SoundCategory.PLAYERS);
-                stack.damage(1, (LivingEntity) target, e -> e.sendToolBreakStatus(Hand.MAIN_HAND));
+                stack.damage(1, this.mob, e -> e.sendToolBreakStatus(Hand.MAIN_HAND));
             }
             this.shearable.remove(0);
             this.timeToIgnore = 0;

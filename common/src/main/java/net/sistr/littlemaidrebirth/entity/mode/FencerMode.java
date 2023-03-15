@@ -2,7 +2,7 @@ package net.sistr.littlemaidrebirth.entity.mode;
 
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.entity.mob.MobEntity;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
@@ -10,15 +10,11 @@ import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
-import net.sistr.littlemaidrebirth.entity.FakePlayer;
-import net.sistr.littlemaidrebirth.entity.util.HasFakePlayer;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.util.MeleeAttackAccessor;
+import net.sistr.littlemaidrebirth.mixin.MeleeAttackGoalAccessor;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 
 //基本的にはMeleeAttackGoalのラッパー
-//ただしFakePlayerに殴らせるようにしている
-//todo 戦闘ロジック高度化
 public class FencerMode extends Mode {
     protected final LittleMaidEntity mob;
     protected final MeleeAttackGoal melee;
@@ -40,21 +36,16 @@ public class FencerMode extends Mode {
                     ((SoundPlayable) mob).play(LMSounds.ATTACK);
                 }
 
-                FakePlayer fake = FencerMode.this.mob.getFakePlayer();
-                fake.attack(target);
-                if (target instanceof MobEntity && ((MobEntity) target).getTarget() == fake) {
-                    ((MobEntity) target).setTarget(mob);
-                }
-                if (target.getAttacker() == fake) {
-                    target.setAttacker(mob);
-                }
-                ((MeleeAttackAccessor) melee).setCool_LM(
-                        MathHelper.ceil(fake.getAttackCooldownProgressPerTick() + 0.5F) + 5);
+                this.mob.tryAttack(target);
+                double attackSpeed = this.mob.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED);
+                int cool = MathHelper.ceil(1 / attackSpeed * 20
+                        / LMRBMod.getConfig().getFencerAttackRateFactor());
+                ((MeleeAttackGoalAccessor) melee).setCooldown(cool);
             }
 
             @Override
             protected double getSquaredMaxAttackDistance(LivingEntity entity) {
-                return ReachAttributeUtil.getAttackRangeSq(((HasFakePlayer) mob).getFakePlayer())
+                return ReachAttributeUtil.getAttackRangeSq(mob)
                         * LMRBMod.getConfig().getFencerRangeFactor();
             }
         };
