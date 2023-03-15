@@ -24,17 +24,13 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 //todo コンフィグで害のあるものも食えるか調整可能にする
 public class HealerMode extends Mode {
     protected final LittleMaidEntity mob;
-    protected final int inventoryStart;
-    protected final int inventoryEnd;
     protected LivingEntity owner;
     protected int foodIndex;
     protected int potionIndex;
 
-    public HealerMode(ModeType<? extends Mode> modeType, String name, LittleMaidEntity mob, int inventoryStart, int inventoryEnd) {
+    public HealerMode(ModeType<? extends Mode> modeType, String name, LittleMaidEntity mob) {
         super(modeType, name);
         this.mob = mob;
-        this.inventoryStart = inventoryStart;
-        this.inventoryEnd = inventoryEnd;
     }
 
     @Override
@@ -66,7 +62,7 @@ public class HealerMode extends Mode {
         foodIndex = -1;
         potionIndex = -1;
         Inventory inventory = this.mob.getInventory();
-        for (int i = inventoryStart; i < inventoryEnd; ++i) {
+        for (int i = 0; i < inventory.size(); ++i) {
             ItemStack stack = inventory.getStack(i);
             if (isHunger && foodIndex == -1 && isFood(stack)) {
                 foodIndex = i;

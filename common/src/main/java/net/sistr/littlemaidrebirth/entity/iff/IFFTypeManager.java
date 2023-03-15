@@ -28,7 +28,7 @@ public class IFFTypeManager {
     /**
      * IFFTypeを登録する
      * idが重複している場合、IllegalArgumentExceptionを吐く
-     * */
+     */
     public void register(Identifier id, IFFType type) {
         if (iffTypes.containsKey(id)) {
             throw new IllegalArgumentException("idが重複しています。：" + id);

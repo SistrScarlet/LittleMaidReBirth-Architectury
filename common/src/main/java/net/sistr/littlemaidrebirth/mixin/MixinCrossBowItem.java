@@ -10,6 +10,6 @@ public abstract class MixinCrossBowItem extends MixinRangedWeaponItem {
 
     @Override
     public int getInterval_LMRB(ItemStack stack, LivingEntity user) {
-        return CrossbowItem.getPullTime(stack) + 5;
+        return CrossbowItem.getPullTime(stack);
     }
 }

@@ -2,7 +2,7 @@ package net.sistr.littlemaidrebirth.entity.iff;
 
 /**
  * どのように敵対するかを示すクラス
- * */
+ */
 public enum IFFTag {
     UNKNOWN(0, "Unknown", true, false),
     FRIEND(1, "Friendly", false, false),

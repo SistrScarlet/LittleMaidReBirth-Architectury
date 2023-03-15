@@ -19,6 +19,6 @@ public abstract class MixinRangedWeaponItem implements IRangedWeapon {
 
     @Override
     public int getInterval_LMRB(ItemStack stack, LivingEntity user) {
-        return 25;
+        return 20;
     }
 }

@@ -1,6 +1,5 @@
 package net.sistr.littlemaidrebirth.api.mode;
 
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ShearsItem;
@@ -8,7 +7,6 @@ import net.minecraft.item.SwordItem;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.util.Identifier;
-import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.mode.*;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 
@@ -46,15 +44,14 @@ public class Modes {
 
     public static ModeType.Builder<ArcherMode> buildArcherMode() {
         return ModeType.<ArcherMode>builder((type, maid) ->
-                        new ArcherMode(type, "Archer", maid, LMRBMod.getConfig().getArcherInaccuracy(),
-                                entity -> entity instanceof LivingEntity && maid.isFriend((LivingEntity) entity)))
+                        new ArcherMode(type, "Archer", maid))
                 .addItemMatcher(ItemMatchers.clazz(IRangedWeapon.class))
                 .addItemMatcher(ItemMatchers.tag(LMTags.Items.ARCHER_MODE));
     }
 
     public static ModeType.Builder<CookingMode> buildCookingMode() {
         return ModeType.<CookingMode>builder((type, maid) ->
-                        new CookingMode(type, "Cooking", maid, 1, 1 + 18))
+                        new CookingMode(type, "Cooking", maid))
                 .addItemMatcher(ItemMatchers.tag(LMTags.Items.COOKING_MODE));
     }
 
@@ -67,7 +64,7 @@ public class Modes {
 
     public static ModeType.Builder<TorcherMode> buildTorcherMode() {
         return ModeType.<TorcherMode>builder((type, maid) ->
-                        new TorcherMode(type, "Torcher", maid, 8F))
+                        new TorcherMode(type, "Torcher", maid, 12F))
                 .addItemMatcher(stack ->
                         stack.getItem() instanceof BlockItem
                                 && 9 < ((BlockItem) stack.getItem()).getBlock().getDefaultState().getLuminance())
@@ -76,7 +73,7 @@ public class Modes {
 
     public static ModeType.Builder<HealerMode> buildHealerMode() {
         return ModeType.<HealerMode>builder((type, maid) ->
-                        new HealerMode(type, "Healer", maid, 0, 1 + 18))
+                        new HealerMode(type, "Healer", maid))
                 .addItemMatcher(stack -> stack.getItem().isFood())
                 .addItemMatcher(stack -> PotionUtil.getPotion(stack) != Potions.EMPTY)
                 .addItemMatcher(ItemMatchers.tag(LMTags.Items.HEALER_MODE));

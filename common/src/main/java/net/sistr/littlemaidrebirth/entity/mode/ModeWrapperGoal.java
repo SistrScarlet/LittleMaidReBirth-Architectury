@@ -7,7 +7,7 @@ import java.util.EnumSet;
 
 /**
  * モードを実行するGoalクラス
- * */
+ */
 public class ModeWrapperGoal<T extends LivingEntity & HasMode> extends Goal {
     protected final T owner;
 

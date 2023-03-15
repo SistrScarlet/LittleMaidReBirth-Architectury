@@ -8,7 +8,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 
 /**
  * メイドさんに関するタグを置いとくとこ
- * */
+ */
 public class LMTags {
 
     public static class Items {

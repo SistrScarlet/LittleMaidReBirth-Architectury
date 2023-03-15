@@ -5,7 +5,7 @@ import net.minecraft.entity.mob.MobEntity;
 
 /**
  * ストレイフの後に横滑りするのを修正したクラス
- * */
+ */
 public class FixedMoveControl extends MoveControl {
 
     public FixedMoveControl(MobEntity entity) {

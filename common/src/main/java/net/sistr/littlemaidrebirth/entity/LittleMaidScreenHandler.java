@@ -7,7 +7,6 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.screen.ScreenHandler;
@@ -19,6 +18,8 @@ import net.sistr.littlemaidrebirth.setup.Registration;
 public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntitySupplier<LittleMaidEntity> {
     private final PlayerInventory playerInventory;
     private final Inventory maidInventory;
+    private final Inventory handInventory;
+    private final Inventory armorInventory;
     private final LittleMaidEntity maid;
     private final int unpaidDays;
 
@@ -33,10 +34,134 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
 
         LittleMaidEntity maid = (LittleMaidEntity) playerInventory.player.world.getEntityById(entityId);
         this.maid = maid;
-        if (maid == null)
-            this.maidInventory = new SimpleInventory(18 + 4 + 2);
-        else
+        if (maid == null) {
+            throw new RuntimeException("メイドさんが存在しません。");
+        } else {
             this.maidInventory = maid.getInventory();
+            this.handInventory = new Inventory() {
+                private EquipmentSlot index(int slot) {
+                    return slot == 0 ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
+                }
+
+                @Override
+                public ItemStack getStack(int slot) {
+                    EquipmentSlot equipmentSlot = index(slot);
+                    return maid.getEquippedStack(equipmentSlot);
+                }
+
+                @Override
+                public ItemStack removeStack(int slot, int amount) {
+                    EquipmentSlot equipmentSlot = index(slot);
+                    return maid.getEquippedStack(equipmentSlot).split(amount);
+                }
+
+                @Override
+                public ItemStack removeStack(int slot) {
+                    ItemStack result;
+                    EquipmentSlot equipmentSlot = index(slot);
+                    result = maid.getEquippedStack(equipmentSlot);
+                    maid.equipStack(equipmentSlot, ItemStack.EMPTY);
+                    return result;
+                }
+
+                @Override
+                public void setStack(int slot, ItemStack stack) {
+                    EquipmentSlot equipmentSlot = index(slot);
+                    maid.equipStack(equipmentSlot, stack);
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return maid.getEquippedStack(EquipmentSlot.MAINHAND).isEmpty()
+                            && maid.getEquippedStack(EquipmentSlot.OFFHAND).isEmpty();
+                }
+
+                @Override
+                public int size() {
+                    return 2;
+                }
+
+                @Override
+                public boolean canPlayerUse(PlayerEntity player) {
+                    return true;
+                }
+
+                @Override
+                public void markDirty() {
+
+                }
+
+                @Override
+                public void clear() {
+
+                }
+            };
+            this.armorInventory = new Inventory() {
+                private EquipmentSlot index(int slot) {
+                    return switch (slot) {
+                        case 0 -> EquipmentSlot.FEET;
+                        case 1 -> EquipmentSlot.LEGS;
+                        case 2 -> EquipmentSlot.CHEST;
+                        default -> EquipmentSlot.HEAD;
+                    };
+                }
+
+                @Override
+                public ItemStack getStack(int slot) {
+                    EquipmentSlot equipmentSlot = index(slot);
+                    return maid.getEquippedStack(equipmentSlot);
+                }
+
+                @Override
+                public ItemStack removeStack(int slot, int amount) {
+                    EquipmentSlot equipmentSlot = index(slot);
+                    return maid.getEquippedStack(equipmentSlot).split(amount);
+                }
+
+                @Override
+                public ItemStack removeStack(int slot) {
+                    ItemStack result;
+                    EquipmentSlot equipmentSlot = index(slot);
+                    result = maid.getEquippedStack(equipmentSlot);
+                    maid.equipStack(equipmentSlot, ItemStack.EMPTY);
+                    return result;
+                }
+
+                @Override
+                public void setStack(int slot, ItemStack stack) {
+                    EquipmentSlot equipmentSlot = index(slot);
+                    maid.equipStack(equipmentSlot, stack);
+                }
+
+                @Override
+                public boolean isEmpty() {
+                    return maid.getEquippedStack(EquipmentSlot.HEAD).isEmpty()
+                            && maid.getEquippedStack(EquipmentSlot.CHEST).isEmpty()
+                            && maid.getEquippedStack(EquipmentSlot.LEGS).isEmpty()
+                            && maid.getEquippedStack(EquipmentSlot.FEET).isEmpty();
+                }
+
+                @Override
+                public int size() {
+                    return 4;
+                }
+
+                @Override
+                public boolean canPlayerUse(PlayerEntity player) {
+                    return true;
+                }
+
+                @Override
+                public void markDirty() {
+
+                }
+
+                @Override
+                public void clear() {
+
+                }
+            };
+        }
 
         maidInventory.onOpen(playerInventory.player);
 
@@ -122,11 +247,11 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
     private void layoutMaidInventorySlots() {
         Identifier atlas = new Identifier("textures/atlas/blocks.png");
         //index 0~17
-        addSlotBox(maidInventory, 1, 8, 76, 9, 18, 2, 18);
+        addSlotBox(maidInventory, 0, 8, 76, 9, 18, 2, 18);
 
         //18~19
-        addSlot(new Slot(maidInventory, 0, 116, 44));
-        addSlot(new Slot(maidInventory, 1 + 18 + 4, 152, 44) {
+        addSlot(new Slot(handInventory, 0, 116, 44));
+        addSlot(new Slot(handInventory, 1, 152, 44) {
             @Override
             public Pair<Identifier, Identifier> getBackgroundSprite() {
                 return Pair.of(atlas, new Identifier("item/empty_armor_slot_shield"));
@@ -134,7 +259,7 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
         });
 
         //20~23
-        addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.HEAD.getEntitySlotId(), 8, 8) {
+        addSlot(new Slot(armorInventory, EquipmentSlot.HEAD.getEntitySlotId(), 8, 8) {
 
             @Override
             public int getMaxItemCount() {
@@ -151,7 +276,7 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
                 return Pair.of(atlas, new Identifier("item/empty_armor_slot_helmet"));
             }
         });
-        addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.CHEST.getEntitySlotId(), 8, 44) {
+        addSlot(new Slot(armorInventory, EquipmentSlot.CHEST.getEntitySlotId(), 8, 44) {
             @Override
             public int getMaxItemCount() {
                 return 1;
@@ -167,7 +292,7 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
                 return Pair.of(atlas, new Identifier("item/empty_armor_slot_chestplate"));
             }
         });
-        addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.LEGS.getEntitySlotId(), 80, 8) {
+        addSlot(new Slot(armorInventory, EquipmentSlot.LEGS.getEntitySlotId(), 80, 8) {
             @Override
             public int getMaxItemCount() {
                 return 1;
@@ -183,7 +308,7 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
                 return Pair.of(atlas, new Identifier("item/empty_armor_slot_leggings"));
             }
         });
-        addSlot(new Slot(maidInventory, 1 + 18 + EquipmentSlot.FEET.getEntitySlotId(), 80, 44) {
+        addSlot(new Slot(armorInventory, EquipmentSlot.FEET.getEntitySlotId(), 80, 44) {
             @Override
             public int getMaxItemCount() {
                 return 1;

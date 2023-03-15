@@ -16,7 +16,7 @@ import java.util.Set;
 
 /**
  * HasModeの移譲用クラス
- * */
+ */
 public class HasModeImpl implements HasMode {
     private final LivingEntity owner;
     private final HasInventory hasInventory;

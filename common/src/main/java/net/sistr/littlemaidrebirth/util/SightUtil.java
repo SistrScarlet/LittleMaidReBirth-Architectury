@@ -2,9 +2,7 @@ package net.sistr.littlemaidrebirth.util;
 
 import net.minecraft.block.Material;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
@@ -16,7 +14,7 @@ import java.util.function.Predicate;
 
 /**
  * 視界に関するユーティリティ
- * */
+ */
 public class SightUtil {
 
     public static List<Entity> getInSightEntities(World world, Entity entity, Vec3d viewPos, Vec3d lookFor,

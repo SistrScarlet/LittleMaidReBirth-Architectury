@@ -7,7 +7,7 @@ import net.minecraft.util.Identifier;
 
 /**
  * エンティティを識別するクラス
- * */
+ */
 public class IFF {
     protected IFFTag iffTag;
     protected IFFType iffType;
@@ -21,14 +21,14 @@ public class IFF {
 
     /**
      * エンティティが対象かチェックする
-     * */
+     */
     public boolean identify(LivingEntity entity) {
         return entity.getType() == entityType;
     }
 
     /**
      * IFFの内容を書き出す
-     * */
+     */
     public NbtCompound writeTag() {
         NbtCompound nbt = new NbtCompound();
         nbt.putInt("IFFTag", iffTag.getId());
@@ -40,7 +40,7 @@ public class IFF {
 
     /**
      * IFFの内容を上書きする
-     * */
+     */
     public IFF readTag(NbtCompound nbt) {
         iffTag = IFFTag.getTagFromId(nbt.getInt("IFFTag"));
         iffType = IFFTypeManager.getINSTANCE().getIFFType(new Identifier(nbt.getString("IFFType")))

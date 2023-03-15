@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 /**
  * C2SでIFFをセットするパケット
- * */
+ */
 public class C2SSetIFFPacket {
     public static final Identifier ID =
             new Identifier(LMRBMod.MODID, "set_iff");

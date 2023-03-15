@@ -8,7 +8,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 
 /**
  * LMRBのコンフィグ
- * */
+ */
 @Config(name = LMRBMod.MODID)
 public class LMRBConfig implements ConfigData {
 
@@ -37,9 +37,6 @@ public class LMRBConfig implements ConfigData {
     private String defaultSoundPackName = "";
 
     //maid
-
-    @ConfigEntry.Category("maid")
-    private float voiceVolume = 1.0f;
 
     @ConfigEntry.Category("maid")
     private int healInterval = 0;
@@ -95,13 +92,19 @@ public class LMRBConfig implements ConfigData {
     private float fencerRangeFactor = 1.0f;
 
     @ConfigEntry.Category("mode")
-    private float archerInaccuracy = 15.0f;
+    private float fencerAttackRateFactor = 1.0f;
 
     @ConfigEntry.Category("mode")
     private float archerRangeFactor = 1.0f;
 
     @ConfigEntry.Category("mode")
-    private float archerPullLengthFactor = 1.0f;
+    private float archerShootRateFactor = 1.0f;
+
+    @ConfigEntry.Category("mode")
+    private float archerShootVelocityFactor = 1.0f;
+
+    @ConfigEntry.Category("mode")
+    private int torcherLightLevelThreshold = 8;
 
     //contract
 
@@ -153,16 +156,24 @@ public class LMRBConfig implements ConfigData {
         return canMilking;
     }
 
+    public float getFencerRangeFactor() {
+        return fencerRangeFactor;
+    }
+
+    public float getFencerAttackRateFactor() {
+        return fencerAttackRateFactor;
+    }
+
     public float getArcherRangeFactor() {
         return archerRangeFactor;
     }
 
-    public float getArcherPullLengthFactor() {
-        return archerPullLengthFactor;
+    public float getArcherShootRateFactor() {
+        return archerShootRateFactor;
     }
 
-    public float getFencerRangeFactor() {
-        return fencerRangeFactor;
+    public float getArcherShootVelocityFactor() {
+        return archerShootVelocityFactor;
     }
 
     public int getConsumeSalaryInterval() {
@@ -233,19 +244,15 @@ public class LMRBConfig implements ConfigData {
         return nonMobDamageImmunity;
     }
 
-    public float getArcherInaccuracy() {
-        return archerInaccuracy;
-    }
-
-    public float getVoiceVolume() {
-        return voiceVolume;
-    }
-
     public boolean isSilentDefaultVoice() {
         return silentDefaultVoice;
     }
 
     public String getDefaultSoundPackName() {
         return defaultSoundPackName;
+    }
+
+    public int getTorcherLightLevelThreshold() {
+        return torcherLightLevelThreshold;
     }
 }

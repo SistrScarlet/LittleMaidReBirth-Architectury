@@ -14,7 +14,7 @@ import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
 /**
  * C2Sで移動状態をセットするパケット
- * */
+ */
 public class C2SSetMovingStatePacket {
     public static final Identifier ID =
             new Identifier(LMRBMod.MODID, "set_moving_state");

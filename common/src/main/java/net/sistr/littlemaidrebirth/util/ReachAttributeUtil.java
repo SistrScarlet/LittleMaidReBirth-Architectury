@@ -6,7 +6,7 @@ import net.minecraft.entity.attribute.DefaultAttributeContainer;
 
 /**
  * 手のリーチの属性に関するユーティリティ
- * */
+ */
 public class ReachAttributeUtil {
 
     @ExpectPlatform

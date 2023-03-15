@@ -10,7 +10,7 @@ import java.util.Optional;
 
 /**
  * HasIFFの移譲用クラス
- * */
+ */
 public class IFFImpl implements HasIFF {
     private final List<IFF> iffs = Lists.newArrayList();
 
