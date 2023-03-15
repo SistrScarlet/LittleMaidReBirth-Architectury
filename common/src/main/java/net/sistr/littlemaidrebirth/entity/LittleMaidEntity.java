@@ -16,7 +16,9 @@ import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.damage.DamageEffects;
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -35,8 +37,9 @@ import net.minecraft.inventory.StackReference;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -47,11 +50,11 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.*;
-import net.minecraft.world.RaycastContext;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.*;
 import net.minecraft.world.biome.Biome;
 import net.sistr.littlemaidmodelloader.entity.compound.IHasMultiModel;
 import net.sistr.littlemaidmodelloader.entity.compound.MultiModelCompound;
@@ -88,6 +91,7 @@ import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.BiPredicate;
@@ -518,7 +522,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             double e = this.random.nextGaussian() * 0.02;
             double f = this.random.nextGaussian() * 0.02;
             this.world.addParticle(new DustParticleEffect(
-                            new Vec3f(
+                            new Vector3f(
                                     this.random.nextFloat(),
                                     this.random.nextFloat(),
                                     this.random.nextFloat()),
@@ -738,14 +742,15 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 Biome biome = this.world.getBiome(getBlockPos()).value();
                 if (biome.isCold(getBlockPos())) {
                     play(LMSounds.LIVING_COLD);
-                } else if (biome.isHot(getBlockPos())) {
+                } else if (2 <= biome.getTemperature()) {
                     play(LMSounds.LIVING_HOT);
                 }
             } else if (age % 4 == 1 && world.isRaining()) {
-                Biome biome = this.world.getBiome(getBlockPos()).value();
-                if (biome.getPrecipitation() == Biome.Precipitation.RAIN)
+                var pos = getBlockPos();
+                Biome biome = this.world.getBiome(pos).value();
+                if (biome.getPrecipitation(pos) == Biome.Precipitation.RAIN)
                     play(LMSounds.LIVING_RAIN);
-                else if (biome.getPrecipitation() == Biome.Precipitation.SNOW)
+                else if (biome.getPrecipitation(pos) == Biome.Precipitation.SNOW)
                     play(LMSounds.LIVING_SNOW);
             } else {
                 if (this.getMainHandStack().getItem() == Items.CLOCK
@@ -800,10 +805,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (config.isNonMobDamageImmunity() && source.getAttacker() == null) {
             return false;
         }
-        if (config.isImmortal() && source != DamageSource.OUT_OF_WORLD && !source.isSourceCreativePlayer()) {
+        if (config.isImmortal() && !source.isOf(DamageTypes.OUT_OF_WORLD) && !source.isSourceCreativePlayer()) {
             return false;
         }
-        if (config.isFallImmunity() && source == DamageSource.FALL) {
+        if (config.isFallImmunity() && source.isOf(DamageTypes.FALL)) {
             return false;
         }
         Entity attacker = source.getAttacker();
@@ -821,9 +826,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 play(LMSounds.HURT_NO_DAMAGE);
             } else if (amount > 0F && this.blockedByShield(source)) {
                 play(LMSounds.HURT_GUARD);
-            } else if (source == DamageSource.FALL) {
+            } else if (source.isOf(DamageTypes.FALL)) {
                 play(LMSounds.HURT_FALL);
-            } else if (source.isFire()) {
+            } else if (source.getType().effects() == DamageEffects.BURNING) {
                 play(LMSounds.HURT_FIRE);
             } else {
                 play(LMSounds.HURT);
@@ -845,7 +850,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public void attack(LivingEntity target, float pullProgress) {
         var stack = this.getMainHandStack();
         //弾が無い場合は実行されないはずだが、念のためチェック
-        var arrowStack = this.getArrowType(stack);
+        var arrowStack = this.getProjectileType(stack);
         if (arrowStack.isEmpty() && EnchantmentHelper.getLevel(Enchantments.INFINITY, stack) == 0) {
             return;
         }
@@ -923,7 +928,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                             //または、すぐ下に足場がなく、危険物がbox内にある
                             || (this.world.isSpaceEmpty(this, this.getBoundingBox()
                             .offset(x, 0, z)
-                            .stretch(0, -stepHeight, 0))
+                            .stretch(0, -getStepHeight(), 0))
                             && !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z)
                             .stretch(0, -getDangerHeightThreshold(), 0)));
                 }
@@ -990,7 +995,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     PathNodeType pathNodeType = this.getNavigation().getNodeMaker()
                             .getDefaultNodeType(this.world, minX + x, minY + y, minZ + z);
                     if (pathNodeType == PathNodeType.DAMAGE_FIRE
-                            || pathNodeType == PathNodeType.DAMAGE_CACTUS
+                            || pathNodeType == PathNodeType.DAMAGE_OTHER //todo ?
                             || pathNodeType == PathNodeType.DAMAGE_OTHER
                             || pathNodeType == PathNodeType.LAVA) {
                         return false;
@@ -1013,7 +1018,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (getDangerHeightThreshold() - fallDistance < pos.y - hitPos.y) {
             return false;
         }
-        BlockPos checkPos = new BlockPos(pos.x, pos.y - 1, pos.z);
+        BlockPos checkPos = new BlockPos(MathHelper.floor(pos.x), MathHelper.floor(pos.y - 1), MathHelper.floor(pos.z));
         for (int i = 0; i < pos.y - hitPos.y + 1; i++) {
             PathNodeType pathNodeType = this.getNavigation().getNodeMaker()
                     .getDefaultNodeType(this.world, checkPos.getX(), checkPos.getY(), checkPos.getZ());
@@ -1021,7 +1026,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 return true;
             }
             if (pathNodeType == PathNodeType.DAMAGE_FIRE
-                    || pathNodeType == PathNodeType.DAMAGE_CACTUS
+                    || pathNodeType == PathNodeType.DAMAGE_OTHER//todo ?
                     || pathNodeType == PathNodeType.DAMAGE_OTHER
                     || pathNodeType == PathNodeType.LAVA) {
                 return false;
@@ -1270,7 +1275,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     @Override
-    public ItemStack getArrowType(ItemStack stack) {
+    public ItemStack getProjectileType(ItemStack stack) {
         if (!(stack.getItem() instanceof RangedWeaponItem ranged)) {
             return ItemStack.EMPTY;
         }
@@ -1394,6 +1399,11 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public boolean isTamed() {
         return hasTameOwner();
+    }
+
+    @Override
+    public EntityView method_48926() {
+        return this.world;
     }
 
     public boolean isBegging() {
@@ -1668,7 +1678,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     @Override
-    public Packet<?> createSpawnPacket() {
+    public Packet<ClientPlayPacketListener> createSpawnPacket() {
         return NetworkManager.createAddEntityPacket(this);
     }
 

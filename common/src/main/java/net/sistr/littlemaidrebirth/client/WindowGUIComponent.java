@@ -152,16 +152,6 @@ public class WindowGUIComponent extends GUIElement {
     }
 
     @Override
-    public boolean changeFocus(boolean lookForwards) {
-        for (GUIElement element : elements) {
-            if (element.changeFocus(lookForwards)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    @Override
     public boolean isMouseOver(double mouseX, double mouseY) {
         for (GUIElement element : elements) {
             if (element.isMouseOver(mouseX, mouseY)) {

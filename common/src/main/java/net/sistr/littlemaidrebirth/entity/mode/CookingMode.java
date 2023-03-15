@@ -104,7 +104,7 @@ public class CookingMode extends Mode {
      * 使用可能なかまどを探索する。
      */
     public Optional<BlockPos> findFurnacePos() {
-        return BlockFinder.searchTargetBlock(new BlockPos(mob.getEyePos()), this::canUseFurnace, this::isSearchable,
+        return BlockFinder.searchTargetBlock(this.mob.getBlockPos(), this::canUseFurnace, this::isSearchable,
                 Arrays.asList(Direction.values()), 128);
     }
 

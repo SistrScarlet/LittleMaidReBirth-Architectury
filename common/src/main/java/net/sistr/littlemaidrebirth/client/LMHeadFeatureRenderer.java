@@ -20,7 +20,7 @@ import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.client.render.entity.model.EntityModelLoader;
 import net.minecraft.client.render.entity.model.ModelWithHead;
-import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
@@ -30,14 +30,14 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 import java.util.Map;
 
 /**
  * メイドさんの頭飾りレンダラ
- * */
+ */
 @Environment(value = EnvType.CLIENT)
 public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityModel<T>>
         extends FeatureRenderer<T, M> {
@@ -105,7 +105,7 @@ public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityM
             } else if (!(item instanceof ArmorItem) || ((ArmorItem) item).getSlotType() != EquipmentSlot.HEAD) {
                 translate(matrixStack, false);
                 MinecraftClient.getInstance().getEntityRenderDispatcher().getHeldItemRenderer()
-                        .renderItem(livingEntity, itemStack, ModelTransformation.Mode.HEAD,
+                        .renderItem(livingEntity, itemStack, ModelTransformationMode.HEAD,
                                 false, matrixStack, vertexConsumerProvider, light);
             }
         }
@@ -114,7 +114,7 @@ public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityM
 
     public static void translate(MatrixStack matrices, boolean villager) {
         matrices.translate(0.0, -0.25, 0.0);
-        matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180.0f));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180.0f));
         matrices.scale(0.625f, -0.625f, -0.625f);
         if (villager) {
             matrices.translate(0.0, 0.1875, 0.0);

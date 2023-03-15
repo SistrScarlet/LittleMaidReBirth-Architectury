@@ -137,13 +137,14 @@ public class SightUtil {
     }
 
     public static Vec3d rotate(Vec3d vec, Vec3d axis, float angle) {
-        var point = new Quaternion((float) vec.x, (float) vec.y, (float) vec.z, 0);
+        throw new AssertionError();
+        /*var point = new Quaternion((float) vec.x, (float) vec.y, (float) vec.z, 0);
         var rotate = new Quaternion(new Vec3f(axis), angle, true);
         var rotateBar = rotate.copy();
         rotateBar.conjugate();
         rotate.hamiltonProduct(point);
         rotate.hamiltonProduct(rotateBar);
-        return new Vec3d(rotate.getX(), rotate.getY(), rotate.getZ());
+        return new Vec3d(rotate.getX(), rotate.getY(), rotate.getZ());*/
     }
 
     //getYawPitch->getVecの場合、こちらのyawとpitchの値をマイナスにすること

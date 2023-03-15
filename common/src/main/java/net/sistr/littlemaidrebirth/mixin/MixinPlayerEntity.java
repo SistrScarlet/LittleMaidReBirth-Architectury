@@ -31,7 +31,7 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
     }
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    public void onInit(World world, BlockPos pos, float yaw, GameProfile gameProfile, PlayerPublicKey publicKey, CallbackInfo ci) {
+    public void onInit(World world, BlockPos pos, float yaw, GameProfile gameProfile, CallbackInfo ci) {
         this.setIFFs(IFFTypeManager.getINSTANCE().getIFFTypes(world).stream()
                 .map(IFFType::createIFF).collect(Collectors.toList()));
     }

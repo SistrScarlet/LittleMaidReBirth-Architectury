@@ -76,7 +76,7 @@ public class IFFScreen extends Screen {
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         assert this.client != null;
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, MODEL_SELECT_GUI_TEXTURE);
         int relX = (this.width - GUI_WIDTH) / 2;
@@ -160,7 +160,7 @@ public class IFFScreen extends Screen {
                 EntityType<?> entityType = entity.getType();
                 if (renderClashed) return;
                 try {
-                    InventoryScreen.drawEntity(x + 15 * 12 + 15 / 2, y + 15 * 3, 15,
+                    InventoryScreen.drawEntity(matrices, x + 15 * 12 + 15 / 2, y + 15 * 3, 15,
                             x + 15 * 12 + 15 / 2f - mouseX,
                             y + 15 * 3 - mouseY - entity.getEyeHeight(EntityPose.STANDING) * 15, entity);
                 } catch (Exception e) {

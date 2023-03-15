@@ -2,8 +2,8 @@ package net.sistr.littlemaidrebirth.api.mode;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tag.TagKey;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.tag.TagKey;
 
 /**
  * よく使うItemMatcherをまとめたクラス
@@ -38,7 +38,7 @@ public class ItemMatchers {
 
         @Override
         public boolean isMatch(ItemStack stack) {
-            String itemName = Registry.ITEM.getId(stack.getItem()).toString();
+            String itemName = Registries.ITEM.getId(stack.getItem()).toString();
             return name.contains(itemName);
         }
     }

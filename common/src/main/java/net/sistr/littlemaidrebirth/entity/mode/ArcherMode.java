@@ -24,7 +24,7 @@ public class ArcherMode extends RangedAttackBaseMode {
 
     @Override
     public boolean shouldExecute() {
-        return (!this.mob.getArrowType(this.mob.getMainHandStack()).isEmpty()
+        return (!this.mob.getProjectileType(this.mob.getMainHandStack()).isEmpty()
                 || EnchantmentHelper.getLevel(Enchantments.INFINITY, this.mob.getMainHandStack()) > 0)
                 && super.shouldExecute();
     }
