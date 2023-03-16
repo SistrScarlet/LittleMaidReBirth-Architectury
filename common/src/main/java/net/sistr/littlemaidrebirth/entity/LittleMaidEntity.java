@@ -1251,17 +1251,43 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.littleMaidInventory.readInventory(tag);
     }
 
-    //todo Inventory
     @Override
     protected void damageArmor(DamageSource source, float amount) {
+        if (!(amount <= 0.0f)) {
+            if ((amount /= 4.0f) < 1.0f) {
+                amount = 1.0f;
+            }
+            int i = -1;
+            for (ItemStack stack : this.getArmorItems()) {
+                i++;
+                if (source.isFire() && stack.getItem().isFireproof()
+                        || !(stack.getItem() instanceof ArmorItem)) {
+                    continue;
+                }
+                var slot = EquipmentSlot.fromTypeIndex(EquipmentSlot.Type.ARMOR, i);
+                stack.damage((int) amount, this, arg -> arg.sendEquipmentBreakStatus(slot));
+            }
+        }
     }
 
     @Override
     protected void damageHelmet(DamageSource source, float amount) {
+        if (!(amount <= 0.0f)) {
+            if ((amount /= 4.0f) < 1.0f) {
+                amount = 1.0f;
+            }
+            var stack = getEquippedStack(EquipmentSlot.HEAD);
+            if (source.isFire() && stack.getItem().isFireproof()
+                    || !(stack.getItem() instanceof ArmorItem)) {
+                return;
+            }
+            stack.damage((int) amount, this, arg -> arg.sendEquipmentBreakStatus(EquipmentSlot.HEAD));
+        }
     }
 
     @Override
     protected void damageShield(float amount) {
+        //todo ガード実装
     }
 
     @Override
