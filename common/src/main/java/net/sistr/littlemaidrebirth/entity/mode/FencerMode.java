@@ -36,7 +36,9 @@ public class FencerMode extends Mode {
                     ((SoundPlayable) mob).play(LMSounds.ATTACK);
                 }
 
-                this.mob.tryAttack(target);
+                if (this.mob.tryAttack(target)) {
+                    this.mob.getMainHandStack().damage(1, this.mob, e -> e.sendToolBreakStatus(Hand.MAIN_HAND));
+                }
                 double attackSpeed = this.mob.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED);
                 int cool = MathHelper.ceil(1 / attackSpeed * 20
                         / LMRBMod.getConfig().getFencerAttackRateFactor());
