@@ -1,6 +1,7 @@
 {
   "entity.littlemaidrebirth.little_maid_mob": "小女仆",
   "entity.littlemaidrebirth.little_maid_mob.InsideSkirt": "InsideSkirt",
+
   "state.littlemaidrebirth.None": "None",
   "state.littlemaidrebirth.Wait": "待命",
   "state.littlemaidrebirth.Escort": "跟随",
@@ -12,14 +13,18 @@
   "mode.littlemaidrebirth.Ripper": "剪刀模式",
   "mode.littlemaidrebirth.Torcher": "照明模式",
   "mode.littlemaidrebirth.Healer": "奶妈模式",
+
   "item.littlemaidrebirth.little_maid_spawn_egg": "小女仆刷怪蛋",
   "item.littlemaidrebirth.iff_copy_book": "敌我识别复制书",
   "item.littlemaidrebirth.iff_copy_book.tooltip": "已复制敌我识别信息",
   "item.littlemaidrebirth.iff_copy_book.message_written": "已复制敌我识别信息",
   "item.littlemaidrebirth.iff_copy_book.message_apply": "已应用到当前女仆",
+
   "itemGroup.littlemaidrebirth.common": "LittleMaid ReBirth",
+
   "advancements.husbandry.contract_maid.title": "签订契约了 我的主人",
   "advancements.husbandry.contract_maid.description": "捕获一只野生女仆",
+
   "text.autoconfig.littlemaidrebirth.title": "LittleMaid ReBirth 配置文件",
   "text.autoconfig.littlemaidrebirth.category.spawn": "生成相关配置",
   "text.autoconfig.littlemaidrebirth.option.canSpawn": "允许生成女仆",
@@ -29,6 +34,7 @@
   "text.autoconfig.littlemaidrebirth.option.maxSpawnGroupSize": "生成上限",
   "text.autoconfig.littlemaidrebirth.option.silentDefaultVoice": "默认静音",
   "text.autoconfig.littlemaidrebirth.option.defaultSoundPackName": "默认音效包",
+
   "text.autoconfig.littlemaidrebirth.category.maid": "女仆配置",
   "text.autoconfig.littlemaidrebirth.option.voiceVolume": "语音音量",
   "text.autoconfig.littlemaidrebirth.option.healInterval": "回血间隔时间",
@@ -47,14 +53,19 @@
   "text.autoconfig.littlemaidrebirth.option.fallImmunity": "免疫摔落",
   "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "免疫地形伤害",
   "text.autoconfig.littlemaidrebirth.option.canResurrection": "允许女仆重生(WIP)",
+
   "text.autoconfig.littlemaidrebirth.category.mode": "女仆模式",
   "text.autoconfig.littlemaidrebirth.option.fencerRangeFactor": "剑客模式攻击范围",
-  "text.autoconfig.littlemaidrebirth.option.archerInaccuracy": "射手模式误差",
+
   "text.autoconfig.littlemaidrebirth.option.archerRangeFactor": "射手模式攻击范围",
-  "text.autoconfig.littlemaidrebirth.option.archerPullLengthFactor": "射手模式拉弓时间",
+
+
+
+
   "text.autoconfig.littlemaidrebirth.category.contract": "契约",
   "text.autoconfig.littlemaidrebirth.option.consumeSalaryInterval": "工资消耗间隔",
   "text.autoconfig.littlemaidrebirth.option.unpaidCountLimit": "未付计数上限",
+
   "text.autoconfig.littlemaidrebirth.category.misc": "其他",
   "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "允许野生女仆拾起掉落物",
   "text.autoconfig.littlemaidrebirth.option.canMilking": "允许从契约女仆那里获得牛奶"

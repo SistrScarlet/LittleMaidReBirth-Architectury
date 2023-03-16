@@ -1,6 +1,7 @@
 {
   "entity.littlemaidrebirth.little_maid_mob": "リトルメイド",
   "entity.littlemaidrebirth.little_maid_mob.InsideSkirt": "InsideSkirt",
+
   "state.littlemaidrebirth.None": "からっぽ",
   "state.littlemaidrebirth.Wait": "待機",
   "state.littlemaidrebirth.Escort": "従者",
@@ -12,14 +13,18 @@
   "mode.littlemaidrebirth.Ripper": "毛狩り隊",
   "mode.littlemaidrebirth.Torcher": "照明係",
   "mode.littlemaidrebirth.Healer": "回復係",
+
   "item.littlemaidrebirth.little_maid_spawn_egg": "リトルメイドのスポーンエッグ",
   "item.littlemaidrebirth.iff_copy_book": "IFFをコピーする本",
   "item.littlemaidrebirth.iff_copy_book.tooltip": "IFF書き込み済み",
   "item.littlemaidrebirth.iff_copy_book.message_written": "IFFが書き込まれました。",
   "item.littlemaidrebirth.iff_copy_book.message_apply": "IFFが適用されました。",
+
   "itemGroup.littlemaidrebirth.common": "LittleMaid ReBirth",
+
   "advancements.husbandry.contract_maid.title": "悟り。",
   "advancements.husbandry.contract_maid.description": "リトルメイドを雇用する",
+
   "text.autoconfig.littlemaidrebirth.title": "LittleMaid ReBirth コンフィグ",
   "text.autoconfig.littlemaidrebirth.category.spawn": "スポーン",
   "text.autoconfig.littlemaidrebirth.option.canSpawn": "スポーンできるか",
@@ -29,6 +34,7 @@
   "text.autoconfig.littlemaidrebirth.option.maxSpawnGroupSize": "最大スポーングループ",
   "text.autoconfig.littlemaidrebirth.option.silentDefaultVoice": "デフォルトボイスが無音か",
   "text.autoconfig.littlemaidrebirth.option.defaultSoundPackName": "デフォルトサウンドパック",
+
   "text.autoconfig.littlemaidrebirth.category.maid": "メイド",
   "text.autoconfig.littlemaidrebirth.option.voiceVolume": "ボイス音量",
   "text.autoconfig.littlemaidrebirth.option.healInterval": "回復間隔",
@@ -47,14 +53,19 @@
   "text.autoconfig.littlemaidrebirth.option.fallImmunity": "落下免疫",
   "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "非モブダメージ免疫",
   "text.autoconfig.littlemaidrebirth.option.canResurrection": "リザレクション可か(WIP)",
+
   "text.autoconfig.littlemaidrebirth.category.mode": "モード",
-  "text.autoconfig.littlemaidrebirth.option.fencerRangeFactor": "剣士攻撃範囲係数",
-  "text.autoconfig.littlemaidrebirth.option.archerInaccuracy": "弓兵の精度の悪さ",
-  "text.autoconfig.littlemaidrebirth.option.archerRangeFactor": "弓兵攻撃範囲係数",
-  "text.autoconfig.littlemaidrebirth.option.archerPullLengthFactor": "弓兵の弓引きの長さの係数",
+  "text.autoconfig.littlemaidrebirth.option.fencerRangeFactor": "剣士攻撃範囲倍率",
+  "text.autoconfig.littlemaidrebirth.option.fencerAttackRateFactor": "剣士攻撃頻度倍率",
+  "text.autoconfig.littlemaidrebirth.option.archerRangeFactor": "弓兵攻撃範囲倍率",
+  "text.autoconfig.littlemaidrebirth.option.archerShootRateFactor": "弓兵攻撃頻度倍率",
+  "text.autoconfig.littlemaidrebirth.option.archerShootVelocityFactor": "弓兵発射速度倍率",
+  "text.autoconfig.littlemaidrebirth.option.torcherLightLevelThreshold": "照明光量閾値",
+
   "text.autoconfig.littlemaidrebirth.category.contract": "契約",
   "text.autoconfig.littlemaidrebirth.option.consumeSalaryInterval": "給料消費間隔",
   "text.autoconfig.littlemaidrebirth.option.unpaidCountLimit": "給料未払限度",
+
   "text.autoconfig.littlemaidrebirth.category.misc": "その他",
   "text.autoconfig.littlemaidrebirth.option.canPickupItemByNoOwner": "野良メイドがアイテムを拾えるか",
   "text.autoconfig.littlemaidrebirth.option.canMilking": "メイドからミルクを得られるか"
