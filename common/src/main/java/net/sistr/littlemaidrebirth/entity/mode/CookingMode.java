@@ -80,7 +80,6 @@ public class CookingMode extends Mode {
         if (getFuel().isEmpty()) {
             return false;
         }
-        var recipeType = ((AbstractFurnaceAccessor) furnace).getRecipeType_LM();
         //かまどが無いか、焼けない場合は再探索
         //なお上でチェックしているため、furnacePosがあるならかまどは必ず使用可能
         if (furnacePos == null
@@ -142,11 +141,11 @@ public class CookingMode extends Mode {
 
     //手持ちのアイテムを焼けるかまどかどうか
     public boolean canCookingFurnace(AbstractFurnaceBlockEntity tile) {
+        RecipeType<? extends AbstractCookingRecipe> recipeType = ((AbstractFurnaceAccessor) tile).getRecipeType_LM();
         for (int slot : tile.getAvailableSlots(Direction.UP)) {
             ItemStack stack = tile.getStack(slot);
             if (!stack.isEmpty()) continue;
             //手持ちに焼けるアイテムがあればtrue
-            RecipeType<? extends AbstractCookingRecipe> recipeType = ((AbstractFurnaceAccessor) tile).getRecipeType_LM();
             if (getAnyCookableItem(recipeType,
                     cookable -> tile.canInsert(slot, cookable, Direction.UP))
                     .isPresent()) {
