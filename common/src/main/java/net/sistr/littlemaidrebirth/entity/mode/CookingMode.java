@@ -1,9 +1,13 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.DoorBlock;
+import net.minecraft.block.Material;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
+import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
@@ -23,21 +27,20 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.util.AbstractFurnaceAccessor;
 import net.sistr.littlemaidrebirth.util.BlockFinder;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.stream.Stream;
+import java.util.function.Predicate;
 
 public class CookingMode extends Mode {
-    //todo 別ディメンションで同一の位置にかまどがある場合は無視する
+    //別ディメンションで同一の位置にかまどがある場合はレアケースなので考慮しない
     private static final Object2ObjectOpenHashMap<BlockPos, LittleMaidEntity> USED_FURNACE_MAP = new Object2ObjectOpenHashMap<>();
     private final LittleMaidEntity mob;
-    @Nullable
     private BlockPos furnacePos;
     private int timeToRecalcPath;
     private int findCool;
     private int playSoundCool;
+    private AbstractFurnaceBlockEntity furnace;
 
     public CookingMode(ModeType<? extends CookingMode> modeType, String name, LittleMaidEntity mob) {
         super(modeType, name);
@@ -51,38 +54,45 @@ public class CookingMode extends Mode {
 
     @Override
     public boolean shouldExecute() {
-        //注視しているかまどがあるならtrue
-        //todo 稼働中であるかチェックが必要か？
-        if (furnacePos != null && furnacePos.isWithinDistance(this.mob.getPos(), 6)
-                && getFurnaceBlockEntity(furnacePos).isPresent()
-                && !isUsingFurnaceByOtherMaid(furnacePos)) {
-            return true;
-        }
         if (0 < --findCool) {
             return false;
         }
         findCool = 20;
+        AbstractFurnaceBlockEntity prev;
+        //モードが中断されたあと、再開するときの判定
+        //注視しているかまどがあり、使用可能
+        if (furnacePos != null && furnacePos.isWithinDistance(this.mob.getPos(), 6)
+                && (prev = getFurnaceBlockEntity(furnacePos).orElse(null)) != null
+                && !isUsingFurnaceByOtherMaid(furnacePos)) {
+            //アイテムが残っている場合はtrue
+            if (!prev.isEmpty()) {
+                furnace = prev;
+                return true;
+            }
+        } else {
+            //かまどは使用不可のためリセット
+            furnacePos = null;
+        }
+
+        //物を焼き始めるときの判定
+
         //燃料がないならリターン
         if (getFuel().isEmpty()) {
             return false;
         }
-        //かまどが無いか、使用不可な場合は再探索
+        var recipeType = ((AbstractFurnaceAccessor) furnace).getRecipeType_LM();
+        //かまどが無いか、焼けない場合は再探索
+        //なお上でチェックしているため、furnacePosがあるならかまどは必ず使用可能
         if (furnacePos == null
-                || !furnacePos.isWithinDistance(this.mob.getPos(), 6)
-                || getFurnaceBlockEntity(furnacePos).isEmpty()
-                || !isUsingFurnaceByOtherMaid(furnacePos)) {
+                || !canCookingFurnace(furnace = getFurnaceBlockEntity(furnacePos).orElseThrow())) {
             furnacePos = findFurnacePos().orElse(null);
             if (furnacePos == null) {
                 return false;
             }
+            furnace = getFurnaceBlockEntity(furnacePos).orElseThrow();
+            return true;
         }
-        AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElse(null);
-        if (furnace == null) {
-            furnacePos = null;
-            return false;
-        }
-        //焼くものがある場合はtrue
-        return getAllCoockable(((AbstractFurnaceAccessor) furnace).getRecipeType_LM()).findAny().isPresent();
+        return true;
     }
 
     public OptionalInt getFuel() {
@@ -104,16 +114,19 @@ public class CookingMode extends Mode {
      * 使用可能なかまどを探索する。
      */
     public Optional<BlockPos> findFurnacePos() {
-        return BlockFinder.searchTargetBlock(this.mob.getBlockPos(), this::canUseFurnace, this::isSearchable,
+        return BlockFinder.searchTargetBlock(this.mob.getBlockPos(), this::isTargetFurnace, this::isSearchable,
                 Arrays.asList(Direction.values()), 128);
     }
 
-    public boolean canUseFurnace(BlockPos pos) {
+    public boolean isTargetFurnace(BlockPos pos) {
         //他のメイドさんが使ってるかまどはダメ
         if (isUsingFurnaceByOtherMaid(pos)) {
             return false;
         }
-        return getFurnaceBlockEntity(pos).filter(this::canUseFurnace).isPresent();
+        return getFurnaceBlockEntity(pos)
+                .filter(AbstractFurnaceBlockEntity::isEmpty)//空のかまど
+                .filter(this::canCookingFurnace)//手持ちのアイテムを焼けるかまど
+                .isPresent();
     }
 
     public Optional<AbstractFurnaceBlockEntity> getFurnaceBlockEntity(BlockPos pos) {
@@ -127,14 +140,16 @@ public class CookingMode extends Mode {
         return Optional.empty();
     }
 
-    public boolean canUseFurnace(AbstractFurnaceBlockEntity tile) {
+    //手持ちのアイテムを焼けるかまどかどうか
+    public boolean canCookingFurnace(AbstractFurnaceBlockEntity tile) {
         for (int slot : tile.getAvailableSlots(Direction.UP)) {
             ItemStack stack = tile.getStack(slot);
             if (!stack.isEmpty()) continue;
             //手持ちに焼けるアイテムがあればtrue
             RecipeType<? extends AbstractCookingRecipe> recipeType = ((AbstractFurnaceAccessor) tile).getRecipeType_LM();
-            if (getAllCoockable(recipeType)
-                    .anyMatch(cookable -> tile.canInsert(slot, cookable, Direction.UP))) {
+            if (getAnyCookableItem(recipeType,
+                    cookable -> tile.canInsert(slot, cookable, Direction.UP))
+                    .isPresent()) {
                 return true;
             }
         }
@@ -153,16 +168,19 @@ public class CookingMode extends Mode {
         return false;
     }
 
-    public Stream<ItemStack> getAllCoockable(RecipeType<? extends AbstractCookingRecipe> recipeType) {
+    //インベントリからこのレシピタイプで焼けるアイテムを取得
+    public Optional<ItemStack> getAnyCookableItem(RecipeType<? extends AbstractCookingRecipe> recipeType,
+                                                  Predicate<ItemStack> predicate) {
         Inventory inventory = this.mob.getInventory();
-        Stream.Builder<ItemStack> builder = Stream.builder();
         for (int i = 0; i < inventory.size(); ++i) {
             ItemStack slotStack = inventory.getStack(i);
-            if (getRecipe(slotStack, recipeType).isPresent()) {
-                builder.accept(slotStack);
+            if (!slotStack.isEmpty()
+                    && getRecipe(slotStack, recipeType).isPresent()
+                    && predicate.test(slotStack)) {
+                return Optional.of(slotStack);
             }
         }
-        return builder.build();
+        return Optional.empty();
     }
 
     public Optional<? extends AbstractCookingRecipe> getRecipe(ItemStack stack, RecipeType<? extends AbstractCookingRecipe> recipeType) {
@@ -170,15 +188,21 @@ public class CookingMode extends Mode {
     }
 
     public boolean isSearchable(BlockPos pos) {
+        BlockState state;
         return Math.abs(pos.getY() - this.mob.getY()) < 2
                 && pos.isWithinDistance(this.mob.getPos(), 6)
-                && !this.mob.world.getBlockState(pos).isFullCube(this.mob.world, pos);
+                && ((state = this.mob.world.getBlockState(pos))
+                .canPathfindThrough(this.mob.world, pos, NavigationType.LAND)
+                //ドアも通過
+                || (state.getBlock() instanceof DoorBlock
+                && state.getMaterial() != Material.METAL));
     }
 
     @Override
     public void startExecuting() {
         findCool = 0;
         USED_FURNACE_MAP.put(furnacePos, mob);
+        ((SoundPlayable) mob).play(LMSounds.COOKING_START);
     }
 
     @Override
@@ -187,9 +211,11 @@ public class CookingMode extends Mode {
         if (furnacePos == null) {
             return false;
         }
-        AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElse(null);
-        if (furnace == null) {
+        //かまどが変わっていたら終了
+        var tmp = getFurnaceBlockEntity(furnacePos).orElse(null);
+        if (tmp != furnace) {
             furnacePos = null;
+            furnace = null;
             return false;
         }
         //結果スロットが埋まってる場合はtrue
@@ -199,25 +225,23 @@ public class CookingMode extends Mode {
             return true;
         }
         //何か焼いている場合はtrue
-        if (((AbstractFurnaceAccessor) furnace).isBurningFire_LM()) {
+        boolean burning = ((AbstractFurnaceAccessor) furnace).isBurningFire_LM();
+        if (burning) {
             for (int availableSlot : furnace.getAvailableSlots(Direction.UP)) {
                 if (!furnace.getStack(availableSlot).isEmpty()) {
                     return true;
                 }
             }
         }
+        var recipeType = ((AbstractFurnaceAccessor) furnace).getRecipeType_LM();
         //燃料と焼くものがある場合はtrue
         //どちらか無ければfalse
-        return getFuel().isPresent()
-                && getAllCoockable(((AbstractFurnaceAccessor) furnace).getRecipeType_LM()).findAny().isPresent();
+        return (burning || getFuel().isPresent())
+                && getAnyCookableItem(recipeType, i -> true).isPresent();
     }
 
     @Override
     public void tick() {
-        assert furnacePos != null;
-        //shouldContinueExecutingでチェック済みなのでかまどが無い場合はありえない
-        AbstractFurnaceBlockEntity furnace = getFurnaceBlockEntity(furnacePos).orElseThrow();
-
         //視線を向ける
         this.mob.getLookControl().lookAt(
                 furnacePos.getX() + 0.5,
@@ -225,13 +249,17 @@ public class CookingMode extends Mode {
                 furnacePos.getZ() + 0.5);
 
         //かまどの近くに移動
-        if (!this.mob.getBlockPos().isWithinDistance(furnacePos, 2)) {
+        if (!this.mob.getBlockPos().isWithinDistance(furnacePos, 2.25)) {
             if (this.mob.isSneaking()) {
                 this.mob.setSneaking(false);
             }
             if (--this.timeToRecalcPath <= 0) {
                 this.timeToRecalcPath = 10;
-                this.mob.getNavigation().startMovingTo(furnacePos.getX() + 0.5D, furnacePos.getY() + 0.5D, furnacePos.getZ() + 0.5D, 1);
+                double x = furnacePos.getX() + 0.5D;
+                double y = furnacePos.getY() + 0.5D;
+                double z = furnacePos.getZ() + 0.5D;
+                var path = this.mob.getNavigation().findPathTo(x, y, z, 2);
+                this.mob.getNavigation().startMovingAlong(path, 1);
             }
             return;
         }
@@ -281,7 +309,7 @@ public class CookingMode extends Mode {
             furnace.setStack(materialSlot, material);
             inventory.removeStack(cookableIndex);
             furnace.markDirty();
-            playSound();
+            pickupAction();
             break;
         }
     }
@@ -300,7 +328,7 @@ public class CookingMode extends Mode {
             furnace.setStack(fuelSlot, fuel);
             inventory.removeStack(fuelIndex);
             furnace.markDirty();
-            playSound();
+            pickupAction();
             break;
         }
     }
@@ -315,7 +343,11 @@ public class CookingMode extends Mode {
             if (!furnace.canExtract(resultSlot, resultStack, Direction.DOWN)) {
                 continue;
             }
-            playSound();
+            pickupAction();
+            if (playSoundCool < 0) {
+                playSoundCool = 20;
+                ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
+            }
             ItemStack copy = resultStack.copy();
             ItemStack leftover = HopperBlockEntity.transfer(furnace, inventory, furnace.removeStack(resultSlot, 1), null);
             if (leftover.isEmpty()) {
@@ -327,12 +359,11 @@ public class CookingMode extends Mode {
         }
     }
 
-    public void playSound() {
+    public void pickupAction() {
         if (playSoundCool < 0) {
             playSoundCool = 20;
             this.mob.swingHand(Hand.MAIN_HAND);
             this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-            ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
         }
     }
 
