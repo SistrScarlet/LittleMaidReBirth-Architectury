@@ -14,6 +14,7 @@ import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
+import net.sistr.littlemaidrebirth.entity.LMHasInventory;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 //空腹なら食料を食わせる。ただし害のあるものは食べさせない
@@ -61,7 +62,7 @@ public class HealerMode extends Mode {
         boolean result = false;
         foodIndex = -1;
         potionIndex = -1;
-        Inventory inventory = this.mob.getInventory();
+        Inventory inventory = LMHasInventory.getInvAndHands(mob);
         for (int i = 0; i < inventory.size(); ++i) {
             ItemStack stack = inventory.getStack(i);
             if (isHunger && foodIndex == -1 && isFood(stack)) {
@@ -112,7 +113,7 @@ public class HealerMode extends Mode {
 
     @Override
     public void tick() {
-        Inventory inventory = mob.getInventory();
+        Inventory inventory = LMHasInventory.getInvAndHands(mob);
         //飯
         if (foodIndex != -1) {
             ItemStack stack = inventory.getStack(foodIndex);
