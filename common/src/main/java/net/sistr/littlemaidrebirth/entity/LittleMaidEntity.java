@@ -42,6 +42,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
@@ -1260,7 +1261,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             int i = -1;
             for (ItemStack stack : this.getArmorItems()) {
                 i++;
-                if (source.isFire() && stack.getItem().isFireproof()
+                if (source.isIn(DamageTypeTags.IS_FIRE) && stack.getItem().isFireproof()
                         || !(stack.getItem() instanceof ArmorItem)) {
                     continue;
                 }
@@ -1277,7 +1278,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 amount = 1.0f;
             }
             var stack = getEquippedStack(EquipmentSlot.HEAD);
-            if (source.isFire() && stack.getItem().isFireproof()
+            if (source.isIn(DamageTypeTags.IS_FIRE) && stack.getItem().isFireproof()
                     || !(stack.getItem() instanceof ArmorItem)) {
                 return;
             }
