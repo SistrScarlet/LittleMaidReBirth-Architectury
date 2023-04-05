@@ -119,7 +119,7 @@ import java.util.stream.Collectors;
 //todo はしご
 //todo おさわり厳禁：他人のメイドに触ると殴られる
 //todo 他人のメイドに視線を合わせた時、ご主人の名札を浮かべる
-public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, HasInventory, net.sistr.littlemaidrebirth.entity.util.Tameable,
+public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, HasInventory, Tameable,
         Contractable, HasMode, HasIFF, AimingPoseable, IHasMultiModel, SoundPlayable, HasMovingMode,
         RangedAttackMob, CrossbowUser {
     //LMM_FLAGSのindex
@@ -1371,6 +1371,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     @Override
+    public void setOwnerUuid(@Nullable UUID uuid) {
+        super.setOwnerUuid(uuid);
+        this.setContract(true);
+    }
+
+    @Override
     public Optional<UUID> getTameOwnerUuid() {
         return Optional.ofNullable(getOwnerUuid());
     }
@@ -1468,6 +1474,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //お給料
 
+    //todo モデルの方とTameableと被りがあってややこい
     @Override
     public boolean isContract() {
         return this.hasTameOwner();
@@ -1475,7 +1482,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void setContract(boolean isContract) {
-        throw new UnsupportedOperationException();
+        itemContractable.setContract(isContract);
     }
 
     @Override
