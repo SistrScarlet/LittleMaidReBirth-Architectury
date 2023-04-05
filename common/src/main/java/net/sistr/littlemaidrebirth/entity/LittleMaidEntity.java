@@ -1146,6 +1146,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public ActionResult changeState(PlayerEntity player, ItemStack stack) {
         this.world.sendEntityStatus(this, (byte) 72);
         this.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.random.nextFloat() * 0.1F + 1.0F);
+        this.setFreedomPos(this.getBlockPos());
         this.getNavigation().stop();
         this.setWait(!this.isWait());
         if (!player.getAbilities().creativeMode) {
