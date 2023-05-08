@@ -42,7 +42,7 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-    modImplementationMapped fileTree(dir: './mods', include: '*.jar')
+    modApi fileTree(dir: './mods', include: '*.jar')
 
     //include modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${rootProject.reach_entity_attributes_version}")
 

@@ -20,8 +20,7 @@ import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.util.BlockFinderPD;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 //暗所発見->移動->設置
 //置いてすぐはライトレベルに変化が無い点に注意
