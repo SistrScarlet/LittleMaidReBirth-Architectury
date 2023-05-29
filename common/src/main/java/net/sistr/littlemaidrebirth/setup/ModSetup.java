@@ -1,5 +1,6 @@
 package net.sistr.littlemaidrebirth.setup;
 
+import dev.architectury.platform.Platform;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.level.biome.BiomeModifications;
 import net.minecraft.entity.EntityType;
@@ -59,6 +60,19 @@ public class ModSetup {
     }
 
     private static boolean canSpawnBiome(BiomeModifications.BiomeContext context) {
+        //1.18ForgeではHasTagによるチェックがうまく機能しない
+        if (Platform.isForge()) {
+            var key = context.getKey();
+            var namespace = key.getNamespace();
+            var path = key.getPath();
+            return namespace.equals("minecraft")
+                    && (path.equals("desert")
+                    || path.equals("plains")
+                    || path.equals("meadow")
+                    || path.equals("savanna")
+                    || path.equals("snowy_plains")
+                    || path.equals("taiga"));
+        }
         return context.hasTag(BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE)
                 || context.hasTag(BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE)
                 || context.hasTag(BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE)
