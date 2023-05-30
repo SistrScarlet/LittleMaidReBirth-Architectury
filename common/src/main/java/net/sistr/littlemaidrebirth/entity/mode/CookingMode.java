@@ -3,7 +3,6 @@ package net.sistr.littlemaidrebirth.entity.mode;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.DoorBlock;
-import net.minecraft.block.Material;
 import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
@@ -132,7 +131,7 @@ public class CookingMode extends Mode {
         if (pos == null) {
             return Optional.empty();
         }
-        BlockEntity tile = mob.world.getBlockEntity(pos);
+        BlockEntity tile = mob.getWorld().getBlockEntity(pos);
         if (tile instanceof AbstractFurnaceBlockEntity) {
             return Optional.of((AbstractFurnaceBlockEntity) tile);
         }
@@ -158,7 +157,7 @@ public class CookingMode extends Mode {
     public boolean isUsingFurnaceByOtherMaid(BlockPos furnacePos) {
         var user = USED_FURNACE_MAP.get(furnacePos);
         if (user != null && user != this.mob) {
-            if (!user.isAlive() || user != user.world.getEntityById(user.getId())) {
+            if (!user.isAlive() || user != user.getWorld().getEntityById(user.getId())) {
                 USED_FURNACE_MAP.remove(furnacePos);
                 return false;
             }
@@ -183,18 +182,18 @@ public class CookingMode extends Mode {
     }
 
     public Optional<? extends AbstractCookingRecipe> getRecipe(ItemStack stack, RecipeType<? extends AbstractCookingRecipe> recipeType) {
-        return mob.world.getRecipeManager().getFirstMatch(recipeType, new SimpleInventory(stack), mob.world);
+        return mob.getWorld().getRecipeManager().getFirstMatch(recipeType, new SimpleInventory(stack), mob.getWorld());
     }
 
     public boolean isSearchable(BlockPos pos) {
         BlockState state;
         return Math.abs(pos.getY() - this.mob.getY()) < 2
                 && pos.isWithinDistance(this.mob.getPos(), 6)
-                && ((state = this.mob.world.getBlockState(pos))
-                .canPathfindThrough(this.mob.world, pos, NavigationType.LAND)
+                && ((state = this.mob.getWorld().getBlockState(pos))
+                .canPathfindThrough(this.mob.getWorld(), pos, NavigationType.LAND)
                 //ドアも通過
                 || (state.getBlock() instanceof DoorBlock
-                && state.getMaterial() != Material.METAL));
+                && ((DoorBlock) state.getBlock()).getBlockSetType().canOpenByHand()));
     }
 
     @Override

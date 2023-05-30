@@ -90,9 +90,9 @@ public class RedstoneTraceGoal extends Goal {
     }
 
     protected boolean isEmitSignal(BlockPos pos) {
-        var state = mob.world.getBlockState(pos);
+        var state = mob.getWorld().getBlockState(pos);
         return Arrays.stream(Direction.values())
-                .anyMatch(direction -> 0 < state.getStrongRedstonePower(this.mob.world, pos, direction));
+                .anyMatch(direction -> 0 < state.getStrongRedstonePower(this.mob.getWorld(), pos, direction));
     }
 
     protected float getRelYaw(BlockPos pos) {

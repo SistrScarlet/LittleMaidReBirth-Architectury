@@ -32,7 +32,7 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
         this.playerInventory = playerInventory;
         this.unpaidDays = unpaidDays;
 
-        LittleMaidEntity maid = (LittleMaidEntity) playerInventory.player.world.getEntityById(entityId);
+        LittleMaidEntity maid = (LittleMaidEntity) playerInventory.player.getWorld().getEntityById(entityId);
         this.maid = maid;
         if (maid == null) {
             throw new RuntimeException("メイドさんが存在しません。");

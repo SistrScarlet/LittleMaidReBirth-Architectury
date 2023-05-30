@@ -66,7 +66,7 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
         mob.getNavigation().stop();
         //移動しても着きそうにない場合はTP
         if (mob.isOnGround()
-                && mob.world.isSpaceEmpty(
+                && mob.getWorld().isSpaceEmpty(
                 mob.getBoundingBox()
                         .offset(mob.getPos().multiply(-1))
                         .offset(freedomPos))

@@ -38,7 +38,7 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
             this.count = 0;
             blockFinder = new BlockFinderPD(ImmutableList.of(this.mob.getBlockPos().up()),
                     this::isContainer,
-                    pos -> mob.world.isAir(pos)
+                    pos -> mob.getWorld().isAir(pos)
                             && Math.abs(pos.getY() - mob.getY()) < 2
                             && pos.getSquaredDistance(this.mob.getPos()) < searchDistanceSq,
                     searchDistanceSq * 8);
@@ -57,7 +57,7 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
     }
 
     protected boolean isContainer(BlockPos pos) {
-        BlockState state = mob.world.getBlockState(pos);
+        BlockState state = mob.getWorld().getBlockState(pos);
         return state.getBlock() instanceof ChestBlock;
     }
 

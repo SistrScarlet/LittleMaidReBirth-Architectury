@@ -6,7 +6,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -72,9 +71,9 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
     }
 
     @Override
-    public void updatePassengerPosition(Entity passenger) {
+    public void updatePassengerPosition(Entity passenger, PositionUpdater positionUpdater) {
         if (!(passenger instanceof LittleMaidEntity)) {
-            super.updatePassengerPosition(passenger);
+            super.updatePassengerPosition(passenger, positionUpdater);
         }
         if (!this.hasPassenger(passenger)) {
             return;
@@ -82,7 +81,7 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
         float z = -6 / 16f * 0.9375F;
         float y = (float) (this.getMountedHeightOffset() - 4 / 16f * 0.9375F + passenger.getHeightOffset());
         Vec3d pos = new Vec3d(z, 0.0, 0.0).rotateY((float) (-this.bodyYaw * (Math.PI / 180.0) - Math.PI / 2.0));
-        passenger.setPosition(this.getX() + pos.x, this.getY() + (double) y, this.getZ() + pos.z);
+        positionUpdater.accept(passenger, this.getX() + pos.x, this.getY() + (double) y, this.getZ() + pos.z);
         this.copyEntityData(passenger);
     }
 

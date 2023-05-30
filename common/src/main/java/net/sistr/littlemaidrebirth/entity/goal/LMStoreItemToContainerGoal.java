@@ -58,7 +58,7 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
         }
         getInventory().ifPresent(chestInventory -> {
             Inventory inventory = this.mob.getInventory();
-            this.mob.world.playSound(null, containerPos,
+            this.mob.getWorld().playSound(null, containerPos,
                     SoundEvents.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS,
                     1.0f, 1.0f);
             this.mob.swingHand(Hand.MAIN_HAND);
@@ -74,9 +74,9 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
     }
 
     protected Optional<Inventory> getInventory() {
-        BlockState state = mob.world.getBlockState(containerPos);
+        BlockState state = mob.getWorld().getBlockState(containerPos);
         if (state.getBlock() instanceof ChestBlock chestBlock) {
-            return Optional.ofNullable(ChestBlock.getInventory(chestBlock, state, mob.world, containerPos, false));
+            return Optional.ofNullable(ChestBlock.getInventory(chestBlock, state, mob.getWorld(), containerPos, false));
         }
         return Optional.empty();
     }

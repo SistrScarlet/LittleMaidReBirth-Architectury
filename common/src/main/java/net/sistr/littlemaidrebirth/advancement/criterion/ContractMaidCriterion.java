@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import net.minecraft.advancement.criterion.TameAnimalCriterion;
 import net.minecraft.predicate.entity.AdvancementEntityPredicateDeserializer;
 import net.minecraft.predicate.entity.EntityPredicate;
+import net.minecraft.predicate.entity.LootContextPredicate;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
@@ -22,14 +23,14 @@ public class ContractMaidCriterion extends TameAnimalCriterion {
     }
 
     @Override
-    public Conditions conditionsFromJson(JsonObject jsonObject, EntityPredicate.Extended extended, AdvancementEntityPredicateDeserializer advancementEntityPredicateDeserializer) {
-        EntityPredicate.Extended extended2 = EntityPredicate.Extended.getInJson(jsonObject, "entity", advancementEntityPredicateDeserializer);
-        return new CMConditions(extended, extended2);
+    public Conditions conditionsFromJson(JsonObject jsonObject, LootContextPredicate lootContextPredicate, AdvancementEntityPredicateDeserializer advancementEntityPredicateDeserializer) {
+        var lootContextPredicate2 = EntityPredicate.contextPredicateFromJson(jsonObject, "entity", advancementEntityPredicateDeserializer);
+        return new CMConditions(lootContextPredicate, lootContextPredicate2);
     }
 
     public static class CMConditions extends Conditions {
 
-        public CMConditions(EntityPredicate.Extended player, EntityPredicate.Extended entity) {
+        public CMConditions(LootContextPredicate player, LootContextPredicate entity) {
             super(player, entity);
         }
 

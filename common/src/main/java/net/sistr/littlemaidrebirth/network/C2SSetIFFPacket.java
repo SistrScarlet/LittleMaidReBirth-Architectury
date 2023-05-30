@@ -46,7 +46,7 @@ public class C2SSetIFFPacket {
     }
 
     private static void applyIFFServer(PlayerEntity player, int id, NbtCompound tag) {
-        Entity entity = player.world.getEntityById(id);
+        Entity entity = player.getWorld().getEntityById(id);
         if (!(entity instanceof HasIFF)) {
             return;
         }

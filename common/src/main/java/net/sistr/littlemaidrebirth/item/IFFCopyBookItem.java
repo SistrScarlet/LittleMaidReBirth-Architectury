@@ -22,7 +22,7 @@ import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
-import net.sistr.littlemaidrebirth.setup.ModSetup;
+import net.sistr.littlemaidrebirth.setup.Registration;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +35,7 @@ public class IFFCopyBookItem extends Item {
 
     public IFFCopyBookItem() {
         super(new Settings()
-                .arch$tab(ModSetup.ITEM_GROUP)
+                .arch$tab(Registration.ITEM_GROUP)
                 .maxCount(1));
     }
 
@@ -88,7 +88,7 @@ public class IFFCopyBookItem extends Item {
                     .collect(Collectors.toList()));
             user.sendMessage(Text.translatable("item.littlemaidrebirth.iff_copy_book.message_apply"), true);
         }
-        user.world.playSound(null, user.getX(), user.getY(), user.getZ(),
+        user.getWorld().playSound(null, user.getX(), user.getY(), user.getZ(),
                 SoundEvents.BLOCK_NOTE_BLOCK_PLING.value(), SoundCategory.PLAYERS, 1F, 1F);
 
         return TypedActionResult.success(stack);

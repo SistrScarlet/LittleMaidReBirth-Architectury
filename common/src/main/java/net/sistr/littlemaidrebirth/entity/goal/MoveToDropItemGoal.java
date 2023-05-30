@@ -65,7 +65,7 @@ public class MoveToDropItemGoal extends Goal {
     }
 
     public List<ItemEntity> findAroundDropItem() {
-        return mob.world.getEntitiesByClass(ItemEntity.class,
+        return mob.getWorld().getEntitiesByClass(ItemEntity.class,
                 mob.getBoundingBox().expand(range, range / 4F, range),
                 item -> !item.cannotPickup() && item.squaredDistanceTo(mob) < range * range);
     }

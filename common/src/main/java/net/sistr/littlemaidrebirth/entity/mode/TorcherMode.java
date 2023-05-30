@@ -75,12 +75,12 @@ public class TorcherMode extends Mode {
     }
 
     public boolean isDark(BlockPos pos) {
-        return mob.world.getLightLevel(pos) <= LMRBMod.getConfig().getTorcherLightLevelThreshold();
+        return mob.getWorld().getLightLevel(pos) <= LMRBMod.getConfig().getTorcherLightLevelThreshold();
     }
 
     public boolean isPlaceable(BlockPos pos) {
-        return mob.world.isAir(pos)
-                && TorchBlock.sideCoversSmallSquare(this.mob.world, pos.down(), Direction.UP);
+        return mob.getWorld().isAir(pos)
+                && TorchBlock.sideCoversSmallSquare(this.mob.getWorld(), pos.down(), Direction.UP);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class TorcherMode extends Mode {
     public void tick() {
         //一定時間経過しても置けない、または明るい地点を無視
         if (40 < ++this.failPlaceTimer
-                || LMRBMod.getConfig().getTorcherLightLevelThreshold() < mob.world.getLightLevel(placePos)) {
+                || LMRBMod.getConfig().getTorcherLightLevelThreshold() < mob.getWorld().getLightLevel(placePos)) {
             this.placePos = null;
             this.failPlaceTimer = 0;
             return;
@@ -129,9 +129,9 @@ public class TorcherMode extends Mode {
         ItemStack itemStack = mob.getMainHandStack();
         Item item = itemStack.getItem();
         assert item instanceof BlockItem;
-        if (mob.world.isAir(placePos)) {
+        if (mob.getWorld().isAir(placePos)) {
             try {
-                ((BlockItem) item).place(new AutomaticItemPlacementContext(mob.world, placePos, Direction.UP, itemStack, Direction.UP));
+                ((BlockItem) item).place(new AutomaticItemPlacementContext(mob.getWorld(), placePos, Direction.UP, itemStack, Direction.UP));
             } catch (Exception e) {
                 LMRBMod.LOGGER.warn("Torcherでのブロック設置時に例外が発生しました。");
                 e.printStackTrace();

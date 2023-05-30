@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.client;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.gui.DrawContext;
 import net.sistr.littlemaidmodelloader.client.screen.GUIElement;
 import net.sistr.littlemaidrebirth.util.Pos2d;
 import org.lwjgl.glfw.GLFW;
@@ -29,9 +29,9 @@ public class WindowGUIComponent extends GUIElement {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         for (GUIElement element : elements) {
-            element.render(matrices, mouseX, mouseY, delta);
+            element.render(context, mouseX, mouseY, delta);
         }
     }
 

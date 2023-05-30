@@ -1,14 +1,11 @@
 package net.sistr.littlemaidrebirth.setup;
 
-import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.level.biome.BiomeModifications;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.SpawnRestriction;
-import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BiomeTags;
-import net.minecraft.util.Identifier;
 import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.SpawnSettings;
 import net.sistr.littlemaidrebirth.LMRBMod;
@@ -21,8 +18,6 @@ import net.sistr.littlemaidrebirth.network.Networking;
 import net.sistr.littlemaidrebirth.util.SpawnRestrictionRegister;
 
 public class ModSetup {
-    public static final CreativeTabRegistry.TabSupplier ITEM_GROUP = CreativeTabRegistry
-            .create(new Identifier(LMRBMod.MODID, "common"), Items.CAKE::getDefaultStack);
 
     public static void init() {
         Networking.INSTANCE.init();

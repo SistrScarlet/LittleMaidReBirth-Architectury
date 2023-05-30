@@ -38,7 +38,7 @@ public class C2SSetBloodSuckPacket {
     }
 
     private static void applyBloodSuckServer(PlayerEntity player, int id, boolean isBloodSuck) {
-        Entity entity = player.world.getEntityById(id);
+        Entity entity = player.getWorld().getEntityById(id);
         if (!(entity instanceof LittleMaidEntity)) {
             return;
         }

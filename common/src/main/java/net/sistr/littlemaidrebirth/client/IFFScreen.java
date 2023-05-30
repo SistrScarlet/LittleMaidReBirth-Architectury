@@ -6,14 +6,13 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.render.DiffuseLighting;
 import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
@@ -74,17 +73,17 @@ public class IFFScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         assert this.client != null;
         RenderSystem.setShader(GameRenderer::getPositionTexProgram);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.setShaderTexture(0, MODEL_SELECT_GUI_TEXTURE);
         int relX = (this.width - GUI_WIDTH) / 2;
         int relY = (this.height - GUI_HEIGHT) / 2;
-        this.drawTexture(matrices, relX, relY, 0, 0, GUI_WIDTH, GUI_HEIGHT);
+        context.drawTexture(MODEL_SELECT_GUI_TEXTURE, relX, relY, 0, 0, GUI_WIDTH, GUI_HEIGHT);
 
-        iffGui.render(matrices, mouseX, mouseY, delta);
-        scrollBar.render(matrices, mouseX, mouseY, delta);
+        iffGui.render(context, mouseX, mouseY, delta);
+        scrollBar.render(context, mouseX, mouseY, delta);
 
     }
 
@@ -94,8 +93,8 @@ public class IFFScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(MatrixStack matrices) {
-        super.renderBackground(matrices);
+    public void renderBackground(DrawContext context) {
+        super.renderBackground(context);
     }
 
     @Override
@@ -155,12 +154,12 @@ public class IFFScreen extends Screen {
         }
 
         @Override
-        public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        public void render(DrawContext context, int mouseX, int mouseY, float delta) {
             this.iff.getIFFType().getTargetEntityExample().ifPresent(entity -> {
                 EntityType<?> entityType = entity.getType();
                 if (renderClashed) return;
                 try {
-                    InventoryScreen.drawEntity(matrices, x + 15 * 12 + 15 / 2, y + 15 * 3, 15,
+                    InventoryScreen.drawEntity(context, x + 15 * 12 + 15 / 2, y + 15 * 3, 15,
                             x + 15 * 12 + 15 / 2f - mouseX,
                             y + 15 * 3 - mouseY - entity.getEyeHeight(EntityPose.STANDING) * 15, entity);
                 } catch (Exception e) {
@@ -169,24 +168,23 @@ public class IFFScreen extends Screen {
                     renderClashed = true;
                     //行われない終了処理を行う
                     //ちょっと強引
-                    VertexConsumerProvider.Immediate immediate = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
-                    immediate.draw();
+                    context.draw();
                     EntityRenderDispatcher entityRenderDispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
                     entityRenderDispatcher.setRenderShadows(true);
-                    RenderSystem.getModelViewStack().pop();
+                    context.getMatrices().pop();
                     DiffuseLighting.enableGuiDepthLighting();
                 }
             });
             TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
-            textRenderer.drawWithShadow(matrices, Text.translatable(this.iff.getEntityType().getTranslationKey()),
-                    this.x, this.y, 0xFFFFFFFF);
+            context.drawText(textRenderer, Text.translatable(this.iff.getEntityType().getTranslationKey()),
+                    this.x, this.y, 0xFFFFFFFF, true);
             int color = switch (iff.getIFFTag()) {
                 case FRIEND -> 0xFF40FF40;
                 case ENEMY -> 0xFFFF4040;
                 default -> 0xFFFFFF40;
             };
-            textRenderer.drawWithShadow(matrices, iff.getIFFTag().getName(),
-                    this.x, this.y + textRenderer.fontHeight * 2, color);
+            context.drawText(textRenderer, iff.getIFFTag().getName(),
+                    this.x, this.y + textRenderer.fontHeight * 2, color, true);
         }
 
         @Override

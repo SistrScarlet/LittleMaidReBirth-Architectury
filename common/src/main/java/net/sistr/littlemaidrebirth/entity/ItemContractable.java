@@ -31,7 +31,7 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
     }
 
     public void tick() {
-        if (mob.world.isClient() || !this.contract) {
+        if (mob.getWorld().isClient() || !this.contract) {
             return;
         }
         this.consumeInterval++;

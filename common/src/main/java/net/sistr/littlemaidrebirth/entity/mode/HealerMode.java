@@ -117,7 +117,7 @@ public class HealerMode extends Mode {
         //飯
         if (foodIndex != -1) {
             ItemStack stack = inventory.getStack(foodIndex);
-            stack = owner.eatFood(owner.world, stack);
+            stack = owner.eatFood(owner.getWorld(), stack);
             if (stack.isEmpty()) {
                 inventory.removeStack(foodIndex);
             } else {
@@ -127,13 +127,13 @@ public class HealerMode extends Mode {
         //薬
         if (potionIndex != -1) {
             ItemStack stack = inventory.getStack(potionIndex);
-            stack = stack.finishUsing(owner.world, owner);
+            stack = stack.finishUsing(owner.getWorld(), owner);
             if (stack.isEmpty()) {
                 inventory.removeStack(potionIndex);
             } else {
                 inventory.setStack(potionIndex, stack);
             }
-            owner.world.playSound(null, owner.getX(), owner.getY(), owner.getZ(),
+            owner.getWorld().playSound(null, owner.getX(), owner.getY(), owner.getZ(),
                     SoundEvents.ENTITY_GENERIC_DRINK, SoundCategory.PLAYERS, 1.0f, 1.0f);
         }
         ((SoundPlayable) this.mob).play(LMSounds.HEALING);

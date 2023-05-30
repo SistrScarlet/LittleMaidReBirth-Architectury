@@ -5,12 +5,10 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -76,25 +74,25 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> owner.getTameOwner().ifPresent(OpenIFFScreenPacket::sendC2SPacket), Supplier::get) {
             @Override
-            public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                itemRenderer.renderGuiItemIcon(matrices, BOOK, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
+            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+                context.drawItem(BOOK, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> client.setScreen(new SoundPackSelectScreen<>(title, owner)), Supplier::get) {
             @Override
-            public void renderButton(MatrixStack matrices, int x, int y, float delta) {
-                super.renderButton(matrices, x, y, delta);
-                itemRenderer.renderGuiItemIcon(matrices, NOTE, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
+            public void renderButton(DrawContext context, int x, int y, float delta) {
+                super.renderButton(context, x, y, delta);
+                context.drawItem(NOTE, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> client.setScreen(new ModelSelectScreen<>(title, owner.world, owner)), Supplier::get) {
+                button -> client.setScreen(new ModelSelectScreen<>(title, owner.getWorld(), owner)), Supplier::get) {
             @Override
-            public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                itemRenderer.renderGuiItemIcon(matrices, ARMOR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
+            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+                context.drawItem(ARMOR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
@@ -107,17 +105,17 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                     stateText = getStateText();
                 }, Supplier::get) {
             @Override
-            public void renderButton(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-                super.renderButton(matrices, mouseX, mouseY, delta);
-                itemRenderer.renderGuiItemIcon(matrices, FEATHER, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
+            public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+                super.renderButton(context, mouseX, mouseY, delta);
+                context.drawItem(FEATHER, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> C2SSetBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck()), Supplier::get) {
             @Override
-            public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                itemRenderer.renderGuiItemIcon(matrices, LittleMaidScreen.this.owner.isBloodSuck() ? IRON_AXE : IRON_SWORD,
+            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+                context.drawItem(LittleMaidScreen.this.owner.isBloodSuck() ? IRON_AXE : IRON_SWORD,
                         this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
@@ -125,15 +123,11 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 this.width / 2 - 40, this.height / 2 - 40, 80, 80,
                 ImmutableList.<GUIElement>builder()
                         .add(new SalaryGUI(80, 80, this.width / 2 - 40, this.height / 2 - 40,
-                                this.itemRenderer, this.textRenderer, 7, unpaidDays))
+                                this.textRenderer, 7, unpaidDays))
                         .build()) {
             @Override
-            public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-                RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                RenderSystem.setShaderTexture(0, SALARY_WINDOW_TEXTURE);
-                drawTexture(matrices, this.x, this.y, 0, 0, 80, 80, 128, 128);
-                super.render(matrices, mouseX, mouseY, delta);
+            public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+                context.drawTexture(SALARY_WINDOW_TEXTURE, this.x, this.y, 0, 0, 80, 80, 128, 128);
             }
         };
         this.addDrawableChild(new ButtonWidget(left - size, top + size * (layer += 2), size, size, Text.of(""),
@@ -141,9 +135,9 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                     showSalaryWindow = true;
                 }, Supplier::get) {
             @Override
-            public void renderButton(MatrixStack matrices, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(matrices, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                itemRenderer.renderGuiItemIcon(matrices, SUGAR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
+            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+                context.drawItem(SUGAR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         stateText = getStateText();
@@ -165,10 +159,10 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float partialTicks) {
-        super.render(matrices, mouseX, mouseY, partialTicks);
-        this.drawMouseoverTooltip(matrices, mouseX, mouseY);
-        InventoryScreen.drawEntity(matrices,
+    public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
+        super.render(context, mouseX, mouseY, partialTicks);
+        this.drawMouseoverTooltip(context, mouseX, mouseY);
+        InventoryScreen.drawEntity(context,
                 (this.width - this.backgroundWidth) / 2 + 52,
                 (this.height - this.backgroundHeight) / 2 + 59,
                 20,
@@ -176,7 +170,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 (this.height - this.backgroundHeight) / 2F + 30 - mouseY, owner);
 
         if (showSalaryWindow) {
-            salaryWindow.render(matrices, mouseX, mouseY, partialTicks);
+            salaryWindow.render(context, mouseX, mouseY, partialTicks);
         }
     }
 
@@ -209,74 +203,68 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     @Override
-    protected void drawForeground(MatrixStack matrices, int mouseX, int mouseY) {
+    protected void drawForeground(DrawContext context, int mouseX, int mouseY) {
         RenderSystem.disableBlend();
-        this.textRenderer.draw(matrices, this.stateText.getString(), 8F, 65F, 0x404040);
+        context.drawText(textRenderer, this.stateText.getString(), 8, 65, 0x404040, false);
         String insideSkirt = Text.translatable("entity.littlemaidrebirth.little_maid_mob.InsideSkirt").getString();
-        this.textRenderer.draw(matrices, insideSkirt, 168F - textRenderer.getWidth(insideSkirt), 65F, 0x404040);
+        context.drawText(textRenderer, insideSkirt, 168 - textRenderer.getWidth(insideSkirt), 65, 0x404040, false);
         float left = (width - backgroundWidth) / 2F;
         float top = (height - backgroundHeight) / 2F;
         if (left + 7 <= mouseX && mouseX < left + 96 && top + 7 <= mouseY && mouseY < top + 60) {
-            drawArmor(matrices);
+            drawArmor(context);
         } else {
-            drawHealth(matrices, mouseX, mouseY);
+            drawHealth(context, mouseX, mouseY);
         }
     }
 
-    protected void drawHealth(MatrixStack matrices, int mouseX, int mouseY) {
+    protected void drawHealth(DrawContext context, int mouseX, int mouseY) {
         float left = (width - backgroundWidth) / 2F;
         float top = (height - backgroundHeight) / 2F;
         if (left + 98 <= mouseX && mouseX < left + 98 + 5 * 9 && top + 7 <= mouseY && mouseY < top + 7 + 2 * 9) {
             String healthStr = MathHelper.ceil(owner.getHealth()) + " / " + MathHelper.ceil(owner.getMaxHealth());
-            this.textRenderer.draw(matrices, healthStr,
-                    98F + (5F * 9F - textRenderer.getWidth(healthStr)) / 2F,
-                    16F - textRenderer.fontHeight / 2F, 0x404040);
+            context.drawText(textRenderer, healthStr,
+                    98 + (int) ((5 * 9 - textRenderer.getWidth(healthStr)) / 2F),
+                    16 - (int) (textRenderer.fontHeight / 2F), 0x404040, false);
         } else {
             float health = (owner.getHealth() / owner.getMaxHealth()) * 20F;
-            drawHealth(matrices, 98, 7, MathHelper.clamp(health - 10, 0, 10), 5);
-            drawHealth(matrices, 98, 16, MathHelper.clamp(health, 0, 10), 5);
+            drawHealth(context, 98, 7, MathHelper.clamp(health - 10, 0, 10), 5);
+            drawHealth(context, 98, 16, MathHelper.clamp(health, 0, 10), 5);
         }
         RenderSystem.setShaderTexture(0, GUI);
     }
 
-    protected void drawArmor(MatrixStack matrices) {
+    protected void drawArmor(DrawContext context) {
         float armor = owner.getArmor();
-        drawArmor(matrices, 98, 7, MathHelper.clamp(armor - 10, 0, 10), 5);
-        drawArmor(matrices, 98, 16, MathHelper.clamp(armor, 0, 10), 5);
+        drawArmor(context, 98, 7, MathHelper.clamp(armor - 10, 0, 10), 5);
+        drawArmor(context, 98, 16, MathHelper.clamp(armor, 0, 10), 5);
     }
 
-    protected void drawHealth(MatrixStack matrices, int x, int y, float health, int rowHeart) {
-        drawIcon(matrices, x, y, health, rowHeart, 16, 0, 52, 0, 61, 0);
+    protected void drawHealth(DrawContext context, int x, int y, float health, int rowHeart) {
+        drawIcon(context, x, y, health, rowHeart, 16, 0, 52, 0, 61, 0);
     }
 
-    protected void drawArmor(MatrixStack matrices, int x, int y, float health, int rowHeart) {
-        drawIcon(matrices, x, y, health, rowHeart, 16, 9, 34, 9, 25, 9);
+    protected void drawArmor(DrawContext context, int x, int y, float health, int rowHeart) {
+        drawIcon(context, x, y, health, rowHeart, 16, 9, 34, 9, 25, 9);
     }
 
-    protected void drawIcon(MatrixStack matrices, int x, int y, float num, int row,
+    protected void drawIcon(DrawContext context, int x, int y, float num, int row,
                             int baseU, int baseV, int overU, int overV, int halfU, int halfV) {
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, ICONS);
         for (int i = 0; i < row; i++) {
-            this.drawTexture(matrices, x + i * 9, y, baseU, baseV, 9, 9);
+            context.drawTexture(ICONS, x + i * 9, y, baseU, baseV, 9, 9);
             if (1 < num) {
-                this.drawTexture(matrices, x + i * 9, y, overU, overV, 9, 9);
+                context.drawTexture(ICONS, x + i * 9, y, overU, overV, 9, 9);
             } else if (0 < num) {
-                this.drawTexture(matrices, x + i * 9, y, halfU, halfV, 9, 9);
+                context.drawTexture(ICONS, x + i * 9, y, halfU, halfV, 9, 9);
             }
             num -= 2;
         }
     }
 
     @Override
-    protected void drawBackground(MatrixStack matrices, float delta, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexProgram);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, GUI);
+    protected void drawBackground(DrawContext context, float delta, int mouseX, int mouseY) {
         int relX = (this.width - this.backgroundWidth) / 2;
         int relY = (this.height - this.backgroundHeight) / 2;
-        this.drawTexture(matrices, relX, relY, 0, 0, this.backgroundWidth, this.backgroundHeight);
+        context.drawTexture(GUI, relX, relY, 0, 0, this.backgroundWidth, this.backgroundHeight);
     }
 
     @Override
@@ -288,31 +276,30 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     public static class SalaryGUI extends GUIElement {
-        private final ItemRenderer itemRenderer;
         private final TextRenderer textRenderer;
         private final int maxUnpaidDays;
         private final int unpaidDays;
 
-        protected SalaryGUI(int width, int height, int x, int y, ItemRenderer itemRenderer, TextRenderer textRenderer, int maxUnpaidDays, int unpaidDays) {
+        protected SalaryGUI(int width, int height, int x, int y, TextRenderer textRenderer, int maxUnpaidDays, int unpaidDays) {
             super(width, height);
             this.x = x;
             this.y = y;
-            this.itemRenderer = itemRenderer;
             this.textRenderer = textRenderer;
             this.maxUnpaidDays = maxUnpaidDays;
             this.unpaidDays = unpaidDays;
         }
 
         @Override
-        public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+        public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+            var matrices = context.getMatrices();
             matrices.push();
             RenderSystem.enableDepthTest();
             String unpaid = (maxUnpaidDays - unpaidDays) + " / " + maxUnpaidDays;
             int textWidth = textRenderer.getWidth(unpaid);
             matrices.translate(0, 0, 300);
-            textRenderer.draw(matrices, unpaid,
-                    this.x + this.width / 2f - textWidth / 2f,
-                    this.y + this.height / 2f - textRenderer.fontHeight / 2f, 0x0);
+            context.drawText(textRenderer, unpaid,
+                    (int) (this.x + this.width / 2f - textWidth / 2f),
+                    (int) (this.y + this.height / 2f - textRenderer.fontHeight / 2f), 0x0, false);
             matrices.pop();
         }
 

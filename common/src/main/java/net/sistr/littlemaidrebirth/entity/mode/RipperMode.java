@@ -48,7 +48,7 @@ public class RipperMode extends Mode {
                 this.mob.getX() - radius,
                 this.mob.getY() - radius / 4F,
                 this.mob.getZ() - radius);
-        return this.mob.world.getOtherEntities(this.mob, bb, (entity) ->
+        return this.mob.getWorld().getOtherEntities(this.mob, bb, (entity) ->
                 entity instanceof LivingEntity && entity instanceof Shearable
                         && ((Shearable) entity).isShearable()
                         && this.mob.getVisibilityCache().canSee(entity));

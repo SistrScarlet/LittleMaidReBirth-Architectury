@@ -22,7 +22,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
 
     public TeleportTameOwnerGoal(T tameable, float teleportStart) {
         this.tameable = tameable;
-        this.world = tameable.world;
+        this.world = tameable.getWorld();
         this.teleportStartSq = teleportStart * teleportStart;
         this.navigation = tameable.getNavigation();
     }
