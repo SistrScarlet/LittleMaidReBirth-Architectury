@@ -96,6 +96,7 @@ import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.BiPredicate;
+import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -231,19 +232,27 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
-        Predicate<Goal> healthPredicate =
-                g -> config.getEmergencyTeleportHealthThreshold()
-                        < MathHelper.clamp(
-                        LittleMaidEntity.this.getHealth() / LittleMaidEntity.this.getMaxHealth(),
-                        0, 1);
+        //危機閾値以下の体力の場合、危機状態とする
+        BooleanSupplier isEmergency =
+                () -> this.getHealth() / this.getMaxHealth()
+                        <= config.getEmergencyTeleportHealthThreshold();
 
         this.goalSelector.add(++priority, new HasMMTeleportTameOwnerGoal<>(this,
                 config.getTeleportStartRange()));
         //緊急テレポート
-        this.goalSelector.add(priority, new StartPredicateGoalWrapper<>(
+        this.goalSelector.add(priority,
                 new HasMMTeleportTameOwnerGoal<>(this,
-                        config.getEmergencyTeleportStartRange()),
-                healthPredicate.negate()));
+                        config.getEmergencyTeleportStartRange()) {
+                    @Override
+                    public boolean canStart() {
+                        return isEmergency.getAsBoolean() && super.canStart();
+                    }
+
+                    @Override
+                    public boolean shouldContinue() {
+                        return isEmergency.getAsBoolean() && super.shouldContinue();
+                    }
+                });
 
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
@@ -255,8 +264,17 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         this.goalSelector.add(++priority, new WaitGoal<>(this));
 
-        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
-                new ModeWrapperGoal<>(this), healthPredicate));
+        this.goalSelector.add(++priority, new ModeWrapperGoal<>(this) {
+            @Override
+            public boolean canStart() {
+                return !isEmergency.getAsBoolean() && super.canStart();
+            }
+
+            @Override
+            public boolean shouldContinue() {
+                return !isEmergency.getAsBoolean() && super.shouldContinue();
+            }
+        });
 
         this.goalSelector.add(++priority,
                 new HasMMFollowTameOwnerGoal<>(
@@ -304,21 +322,35 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new FreedomGoal<>(this,
                 0.65D, config.getFreedomRange()));
 
-        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
-                new LMMoveToDropItemGoal(this, 8, 1D), healthPredicate));
+        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 1D) {
+            @Override
+            public boolean canStart() {
+                return !isEmergency.getAsBoolean() && super.canStart();
+            }
+
+            @Override
+            public boolean shouldContinue() {
+                return !isEmergency.getAsBoolean() && super.shouldContinue();
+            }
+        });
 
         //野良
-        //todo 逃げる
-        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
-                new EscapeDangerGoal(this, 1.25),
-                goal -> this.getTameOwner().isEmpty()));
+        this.goalSelector.add(++priority, new EscapeDangerGoal(this, 1.25) {
+            @Override
+            public boolean canStart() {
+                return LittleMaidEntity.this.getTameOwner().isEmpty() && super.canStart();
+            }
+        });
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this, false,
                 stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
         this.goalSelector.add(++priority, new LMStareAtHeldItemGoal<>(this, false,
                 stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
-        this.goalSelector.add(++priority, new StartPredicateGoalWrapper<>(
-                new WanderAroundFarGoal(this, 0.65f),
-                goal -> this.getTameOwner().isEmpty()));
+        this.goalSelector.add(++priority, new WanderAroundFarGoal(this, 0.65f) {
+            @Override
+            public boolean canStart() {
+                return LittleMaidEntity.this.getTameOwner().isEmpty() && super.canStart();
+            }
+        });
 
         //視線
         this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
