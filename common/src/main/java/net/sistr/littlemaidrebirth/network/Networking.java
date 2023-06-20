@@ -18,6 +18,7 @@ public class Networking {
     private void clientInit() {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncSoundConfigPacket.ID, SyncSoundConfigPacket::receiveS2CPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, OpenIFFScreenPacket.ID, OpenIFFScreenPacket::receiveS2CPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, SpawnLittleMaidPacket.ID, SpawnLittleMaidPacket::receiveS2CPacket);
     }
 
     private void serverInit() {

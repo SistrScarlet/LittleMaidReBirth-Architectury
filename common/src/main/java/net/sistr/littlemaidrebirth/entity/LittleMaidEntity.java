@@ -2,7 +2,6 @@ package net.sistr.littlemaidrebirth.entity;
 
 import com.google.common.collect.Lists;
 import dev.architectury.extensions.network.EntitySpawnExtension;
-import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -88,6 +87,7 @@ import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
 import net.sistr.littlemaidrebirth.mixin.PersistentProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.mixin.ProjectileEntityAccessor;
+import net.sistr.littlemaidrebirth.network.SpawnLittleMaidPacket;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
@@ -1714,7 +1714,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public Packet<ClientPlayPacketListener> createSpawnPacket() {
-        return NetworkManager.createAddEntityPacket(this);
+        return SpawnLittleMaidPacket.create(this);
     }
 
     public static class LMMoveToDropItemGoal extends MoveToDropItemGoal {
