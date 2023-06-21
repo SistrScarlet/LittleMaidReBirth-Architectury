@@ -85,6 +85,8 @@ import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
+import net.sistr.littlemaidrebirth.mixin.CrossbowItemInvoker;
+import net.sistr.littlemaidrebirth.mixin.ItemEntityAccessor;
 import net.sistr.littlemaidrebirth.mixin.PersistentProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.mixin.ProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.network.SpawnLittleMaidPacket;
@@ -152,7 +154,17 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                             mob.setMovingMode(MovingMode.FREEDOM);
                             mob.freedomPos = mob.getBlockPos();
                         }
-                    });
+                    }) {
+                @Override
+                protected void postReceive() {
+                    super.postReceive();
+                    var maid = LittleMaidEntity.this;
+                    maid.swingHand(Hand.MAIN_HAND);
+                    maid.playSound(SoundEvents.ENTITY_ITEM_PICKUP,
+                            1.0F, maid.getRandom().nextFloat() * 0.1F + 1.0F);
+                    maid.play(LMSounds.EAT_SUGAR);
+                }
+            };
     private final HasModeImpl hasModeImpl = new HasModeImpl(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
     private final SoundPlayableCompound soundPlayer;
@@ -322,7 +334,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new FreedomGoal<>(this,
                 0.65D, config.getFreedomRange()));
 
-        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 1D) {
+        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 40, 1D) {
             @Override
             public boolean canStart() {
                 return !isEmergency.getAsBoolean() && super.canStart();
@@ -637,8 +649,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         ItemStack itemStack = itemEntity.getStack();
         int i = itemStack.getCount();
         if (!itemEntity.cannotPickup()
-                && (itemEntity.getOwner() == null
-                || itemEntity.getOwner().equals(this.getUuid()))) {
+                && (((ItemEntityAccessor) itemEntity).getOwner() == null
+                || (((ItemEntityAccessor) itemEntity).getOwner().equals(this.getUuid())))
+        ) {
             itemStack = HopperBlockEntity.transfer(null, this.getInventory(), itemStack, null);
             if (itemStack.getCount() != i) {
                 this.sendPickup(itemEntity, i);
@@ -902,7 +915,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             this.getWorld().spawnEntity(arrow);
             arrowStack.decrement(1);
         } else if (stack.getItem() instanceof CrossbowItem) {
-            this.shoot(this, 1.6f);
+            this.shoot(this, CrossbowItemInvoker.getSpeed(stack));
         }
     }
 
@@ -919,7 +932,23 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void shoot(LivingEntity target, ItemStack crossbow, ProjectileEntity projectile, float multiShotSpray) {
-        this.shoot(this, target, projectile, multiShotSpray, 1.6f);
+        this.shoot(this, target, projectile, multiShotSpray, CrossbowItemInvoker.getSpeed(crossbow));
+    }
+
+    @Override
+    public void shoot(LivingEntity entity, LivingEntity target,
+                      ProjectileEntity projectile, float multishotSpray, float speed) {
+        double xDiff = target.getX() - entity.getX();
+        double yDiff = target.getEyeY() - projectile.getY();
+        double zDiff = target.getZ() - entity.getZ();
+        double horizonLen = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
+        Vector3f targetAt = this.getProjectileLaunchVelocity(entity,
+                new Vec3d(xDiff, yDiff + horizonLen * 0.025, zDiff), multishotSpray);
+        projectile.setVelocity(targetAt.x(), targetAt.y(), targetAt.z(),
+                speed * LMRBMod.getConfig().getArcherShootVelocityFactor(),
+                14 - entity.getWorld().getDifficulty().getId() * 4);
+        entity.playSound(SoundEvents.ITEM_CROSSBOW_SHOOT,
+                1.0f, 1.0f / (entity.getRandom().nextFloat() * 0.4f + 0.8f));
     }
 
     @Override
@@ -1752,8 +1781,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public static class LMMoveToDropItemGoal extends MoveToDropItemGoal {
         protected final LittleMaidEntity maid;
 
-        public LMMoveToDropItemGoal(LittleMaidEntity maid, int range, double speed) {
-            super(maid, range, speed);
+        public LMMoveToDropItemGoal(LittleMaidEntity maid, int range, int frequency, double speed) {
+            super(maid, range, frequency, speed);
             this.maid = maid;
         }
 
@@ -1809,15 +1838,16 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
 
         @Override
-        public void start() {
-            super.start();
-            maid.setBegging(true);
+        public void tick() {
+            super.tick();
+            //動いてたら傾げない
+            this.maid.setBegging(this.maid.getNavigation().isIdle());
         }
 
         @Override
         public void stop() {
             super.stop();
-            maid.setBegging(false);
+            this.maid.setBegging(false);
         }
     }
 

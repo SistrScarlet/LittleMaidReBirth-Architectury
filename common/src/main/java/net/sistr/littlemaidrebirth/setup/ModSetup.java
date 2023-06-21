@@ -2,7 +2,6 @@ package net.sistr.littlemaidrebirth.setup;
 
 import dev.architectury.registry.level.biome.BiomeModifications;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnGroup;
 import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BiomeTags;
@@ -29,7 +28,9 @@ public class ModSetup {
         IFFTypeManager iffTypeManager = IFFTypeManager.getINSTANCE();
         Registries.ENTITY_TYPE.stream()
                 .filter(EntityType::isSummonable)
-                .filter(type -> type.getSpawnGroup() != SpawnGroup.MISC)
+                //ファッキン仕様変更によりゴーレム/村人のSpawnGroupがMISCになったため無効
+                //IFFのsetup時に非生物系を除外するよう変更
+                //.filter(type -> type.getSpawnGroup() != SpawnGroup.MISC)
                 .forEach(entityType ->
                         iffTypeManager.register(EntityType.getId(entityType),
                                 new IFFType(IFFTag.UNKNOWN, entityType)));

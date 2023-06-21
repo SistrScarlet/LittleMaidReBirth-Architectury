@@ -3,6 +3,8 @@
   "package": "net.sistr.littlemaidrebirth.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "CrossbowItemInvoker",
+    "ItemEntityAccessor",
     "MeleeAttackGoalAccessor",
     "MixinAbstractFurnaceBlockEntity",
     "MixinCrossBowItem",

@@ -47,7 +47,7 @@ public class HealMyselfGoal<T extends PathAwareEntity & HasInventory> extends Go
     public void start() {
         super.start();
         this.mob.getNavigation().stop();
-        cool = healInterval;
+        cool = 0;
     }
 
     @Override
@@ -118,4 +118,8 @@ public class HealMyselfGoal<T extends PathAwareEntity & HasInventory> extends Go
         }
     }
 
+    @Override
+    public boolean shouldRunEveryTick() {
+        return true;
+    }
 }

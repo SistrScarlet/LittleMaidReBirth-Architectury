@@ -55,7 +55,7 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
         if (0 < --reCalcCool) {
             return;
         }
-        reCalcCool = 100;
+        reCalcCool = getTickCount(20);
         //freedomPosを目指して移動
         Path path = mob.getNavigation().findPathTo(
                 freedomPos.getX(), freedomPos.getY(), freedomPos.getZ(), MathHelper.floor(distance * 0.5));

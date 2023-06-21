@@ -26,7 +26,7 @@ public class FollowAtHeldItemGoal<T extends PathAwareEntity & Tameable> extends 
         if (0 < reCalcCool--) {
             return;
         }
-        reCalcCool = 10;
+        reCalcCool = getTickCount(10);
         mob.getNavigation().startMovingTo(stareAt, 1);
     }
 }
