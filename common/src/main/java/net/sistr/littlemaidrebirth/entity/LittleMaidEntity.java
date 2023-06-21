@@ -85,6 +85,7 @@ import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
+import net.sistr.littlemaidrebirth.mixin.CrossbowItemInvoker;
 import net.sistr.littlemaidrebirth.mixin.ItemEntityAccessor;
 import net.sistr.littlemaidrebirth.mixin.PersistentProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.mixin.ProjectileEntityAccessor;
@@ -904,7 +905,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             this.getWorld().spawnEntity(arrow);
             arrowStack.decrement(1);
         } else if (stack.getItem() instanceof CrossbowItem) {
-            this.shoot(this, 1.6f);
+            this.shoot(this, CrossbowItemInvoker.getSpeed(stack));
         }
     }
 
@@ -921,7 +922,23 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void shoot(LivingEntity target, ItemStack crossbow, ProjectileEntity projectile, float multiShotSpray) {
-        this.shoot(this, target, projectile, multiShotSpray, 1.6f);
+        this.shoot(this, target, projectile, multiShotSpray, CrossbowItemInvoker.getSpeed(crossbow));
+    }
+
+    @Override
+    public void shoot(LivingEntity entity, LivingEntity target,
+                      ProjectileEntity projectile, float multishotSpray, float speed) {
+        double xDiff = target.getX() - entity.getX();
+        double yDiff = target.getEyeY() - projectile.getY();
+        double zDiff = target.getZ() - entity.getZ();
+        double horizonLen = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
+        Vector3f targetAt = this.getProjectileLaunchVelocity(entity,
+                new Vec3d(xDiff, yDiff + horizonLen * 0.025, zDiff), multishotSpray);
+        projectile.setVelocity(targetAt.x(), targetAt.y(), targetAt.z(),
+                speed * LMRBMod.getConfig().getArcherShootVelocityFactor(),
+                14 - entity.getWorld().getDifficulty().getId() * 4);
+        entity.playSound(SoundEvents.ITEM_CROSSBOW_SHOOT,
+                1.0f, 1.0f / (entity.getRandom().nextFloat() * 0.4f + 0.8f));
     }
 
     @Override
