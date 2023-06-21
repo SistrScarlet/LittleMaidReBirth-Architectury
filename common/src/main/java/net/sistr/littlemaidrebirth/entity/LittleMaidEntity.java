@@ -85,6 +85,7 @@ import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
+import net.sistr.littlemaidrebirth.mixin.ItemEntityAccessor;
 import net.sistr.littlemaidrebirth.mixin.PersistentProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.mixin.ProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.network.SpawnLittleMaidPacket;
@@ -637,8 +638,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         ItemStack itemStack = itemEntity.getStack();
         int i = itemStack.getCount();
         if (!itemEntity.cannotPickup()
-                && (itemEntity.getOwner() == null
-                || itemEntity.getOwner().equals(this.getUuid()))) {
+                && (((ItemEntityAccessor) itemEntity).getOwner() == null
+                || (((ItemEntityAccessor) itemEntity).getOwner().equals(this.getUuid())))
+        ) {
             itemStack = HopperBlockEntity.transfer(null, this.getInventory(), itemStack, null);
             if (itemStack.getCount() != i) {
                 this.sendPickup(itemEntity, i);
