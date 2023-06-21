@@ -322,7 +322,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new FreedomGoal<>(this,
                 0.65D, config.getFreedomRange()));
 
-        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 1D) {
+        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 40, 1D) {
             @Override
             public boolean canStart() {
                 return !isEmergency.getAsBoolean() && super.canStart();
@@ -1752,8 +1752,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public static class LMMoveToDropItemGoal extends MoveToDropItemGoal {
         protected final LittleMaidEntity maid;
 
-        public LMMoveToDropItemGoal(LittleMaidEntity maid, int range, double speed) {
-            super(maid, range, speed);
+        public LMMoveToDropItemGoal(LittleMaidEntity maid, int range, int frequency, double speed) {
+            super(maid, range, frequency, speed);
             this.maid = maid;
         }
 
@@ -1809,15 +1809,16 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
 
         @Override
-        public void start() {
-            super.start();
-            maid.setBegging(true);
+        public void tick() {
+            super.tick();
+            //動いてたら傾げない
+            this.maid.setBegging(this.maid.getNavigation().isIdle());
         }
 
         @Override
         public void stop() {
             super.stop();
-            maid.setBegging(false);
+            this.maid.setBegging(false);
         }
     }
 

@@ -69,7 +69,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
         if (--this.updateCountdownTicks > 0) {
             return;
         }
-        this.updateCountdownTicks = 10;
+        this.updateCountdownTicks = getTickCount(10);
         tryTeleport();
     }
 
