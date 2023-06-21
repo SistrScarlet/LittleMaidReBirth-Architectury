@@ -47,11 +47,6 @@ public class CookingMode extends Mode {
     }
 
     @Override
-    public void startModeTask() {
-
-    }
-
-    @Override
     public boolean shouldExecute() {
         if (0 < --findCool) {
             return false;
@@ -247,7 +242,7 @@ public class CookingMode extends Mode {
                 furnacePos.getZ() + 0.5);
 
         //かまどの近くに移動
-        if (!this.mob.getBlockPos().isWithinDistance(furnacePos, 2.25)) {
+        if (!this.mob.getBlockPos().isWithinDistance(furnacePos, 1.75)) {
             if (this.mob.isSneaking()) {
                 this.mob.setSneaking(false);
             }
@@ -389,11 +384,6 @@ public class CookingMode extends Mode {
                 }
             }
         }
-    }
-
-    @Override
-    public void endModeTask() {
-
     }
 
     @Override
