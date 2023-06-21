@@ -39,7 +39,7 @@ public class LMRBConfig implements ConfigData {
     //maid
 
     @ConfigEntry.Category("maid")
-    private int healInterval = 0;
+    private int healInterval = 1;
 
     @ConfigEntry.Category("maid")
     private int healAmount = 1;
