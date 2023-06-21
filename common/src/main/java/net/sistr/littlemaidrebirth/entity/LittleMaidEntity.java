@@ -694,11 +694,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     @Override
-    protected float getDropChance(EquipmentSlot slot) {
-        return 0;
-    }
-
-    @Override
     public boolean canTarget(LivingEntity target) {
         return super.canTarget(target) && !isFriend(target);
     }
@@ -1395,11 +1390,21 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     @Override
+    protected void dropEquipment(DamageSource source, int lootingMultiplier, boolean allowDrops) {
+        //dropInventoryで捨てるので不要
+        //実装的に、こちらはランダムドロップに使うもの
+    }
+
+    @Override
     protected void dropInventory() {
-        //鯖側でしか動かないが一応チェック
         Inventory inv = this.getInventory();
         for (int i = 0; i < inv.size(); i++) {
             ItemStack stack = inv.getStack(i);
+            if (stack.isEmpty() || EnchantmentHelper.hasVanishingCurse(stack)) continue;
+            this.dropStack(stack);
+        }
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            ItemStack stack = this.getEquippedStack(slot);
             if (stack.isEmpty() || EnchantmentHelper.hasVanishingCurse(stack)) continue;
             this.dropStack(stack);
         }
