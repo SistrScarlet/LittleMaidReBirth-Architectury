@@ -154,7 +154,17 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                             mob.setMovingMode(MovingMode.FREEDOM);
                             mob.freedomPos = mob.getBlockPos();
                         }
-                    });
+                    }) {
+                @Override
+                protected void postReceive() {
+                    super.postReceive();
+                    var maid = LittleMaidEntity.this;
+                    maid.swingHand(Hand.MAIN_HAND);
+                    maid.playSound(SoundEvents.ENTITY_ITEM_PICKUP,
+                            1.0F, maid.getRandom().nextFloat() * 0.1F + 1.0F);
+                    maid.play(LMSounds.EAT_SUGAR);
+                }
+            };
     private final HasModeImpl hasModeImpl = new HasModeImpl(this, this, new HashSet<>());
     private final MultiModelCompound multiModel;
     private final SoundPlayableCompound soundPlayer;
