@@ -1,6 +1,7 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.entity.ai.goal.Goal;
@@ -58,7 +59,8 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
 
     protected boolean isContainer(BlockPos pos) {
         BlockState state = mob.getWorld().getBlockState(pos);
-        return state.getBlock() instanceof ChestBlock;
+        return state.getBlock() instanceof ChestBlock
+                || state.getBlock() instanceof BarrelBlock;
     }
 
     protected abstract boolean isInventoryFull();
