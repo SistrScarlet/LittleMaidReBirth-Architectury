@@ -39,7 +39,25 @@ public class LMRBConfig implements ConfigData {
     //maid
 
     @ConfigEntry.Category("maid")
-    private int healInterval = 1;
+    private float generalMaidDamageFactor = 1.0f;
+
+    @ConfigEntry.Category("maid")
+    private float battleModeMaidDamageFactor = 1.0f;
+
+    @ConfigEntry.Category("maid")
+    private float nonBattleModeMaidDamageFactor = 0.0f;
+
+    @ConfigEntry.Category("maid")
+    private boolean disableMaidDeath = true;
+
+    @ConfigEntry.Category("maid")
+    private float emergencyMaidHealthThreshold = 0.5f;
+
+    @ConfigEntry.Category("maid")
+    private boolean enableWorkInEmergency = false;
+
+    @ConfigEntry.Category("maid")
+    private int healInterval = 2;
 
     @ConfigEntry.Category("maid")
     private int healAmount = 1;
@@ -184,10 +202,6 @@ public class LMRBConfig implements ConfigData {
         return unpaidCountLimit;
     }
 
-    public float getEmergencyTeleportHealthThreshold() {
-        return emergencyTeleportHealthThreshold;
-    }
-
     public float getFollowStartRange() {
         return followStartRange;
     }
@@ -214,6 +228,30 @@ public class LMRBConfig implements ConfigData {
 
     public float getFreedomRange() {
         return freedomRange;
+    }
+
+    public float getGeneralMaidDamageFactor() {
+        return generalMaidDamageFactor;
+    }
+
+    public float getBattleModeMaidDamageFactor() {
+        return battleModeMaidDamageFactor;
+    }
+
+    public float getNonBattleModeMaidDamageFactor() {
+        return nonBattleModeMaidDamageFactor;
+    }
+
+    public boolean isDisableMaidDeath() {
+        return disableMaidDeath;
+    }
+
+    public float getEmergencyMaidHealthThreshold() {
+        return emergencyMaidHealthThreshold;
+    }
+
+    public boolean isEnableWorkInEmergency() {
+        return enableWorkInEmergency;
     }
 
     public int getHealInterval() {

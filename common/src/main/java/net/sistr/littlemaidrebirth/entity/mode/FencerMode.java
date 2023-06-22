@@ -80,4 +80,8 @@ public class FencerMode extends Mode {
         melee.stop();
     }
 
+    @Override
+    public boolean isBattleMode() {
+        return true;
+    }
 }

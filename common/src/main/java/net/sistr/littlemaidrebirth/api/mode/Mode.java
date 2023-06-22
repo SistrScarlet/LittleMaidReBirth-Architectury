@@ -87,4 +87,8 @@ public abstract class Mode {
         return modeType;
     }
 
+    public boolean isBattleMode() {
+        return false;
+    }
+
 }

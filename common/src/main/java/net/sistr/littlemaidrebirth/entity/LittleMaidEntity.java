@@ -98,7 +98,6 @@ import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.function.BiPredicate;
-import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -244,11 +243,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
-        //危機閾値以下の体力の場合、危機状態とする
-        BooleanSupplier isEmergency =
-                () -> this.getHealth() / this.getMaxHealth()
-                        <= config.getEmergencyTeleportHealthThreshold();
-
         this.goalSelector.add(++priority, new HasMMTeleportTameOwnerGoal<>(this,
                 config.getTeleportStartRange()));
         //緊急テレポート
@@ -257,12 +251,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         config.getEmergencyTeleportStartRange()) {
                     @Override
                     public boolean canStart() {
-                        return isEmergency.getAsBoolean() && super.canStart();
+                        return isEmergency() && super.canStart();
                     }
 
                     @Override
                     public boolean shouldContinue() {
-                        return isEmergency.getAsBoolean() && super.shouldContinue();
+                        return isEmergency() && super.shouldContinue();
                     }
                 });
 
@@ -279,12 +273,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new ModeWrapperGoal<>(this) {
             @Override
             public boolean canStart() {
-                return !isEmergency.getAsBoolean() && super.canStart();
+                return (config.isEnableWorkInEmergency() || !isEmergency()) && super.canStart();
             }
 
             @Override
             public boolean shouldContinue() {
-                return !isEmergency.getAsBoolean() && super.shouldContinue();
+                return (config.isEnableWorkInEmergency() || !isEmergency()) && super.shouldContinue();
             }
         });
 
@@ -337,12 +331,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 40, 1D) {
             @Override
             public boolean canStart() {
-                return !isEmergency.getAsBoolean() && super.canStart();
+                return (config.isEnableWorkInEmergency() || !isEmergency()) && super.canStart();
             }
 
             @Override
             public boolean shouldContinue() {
-                return !isEmergency.getAsBoolean() && super.shouldContinue();
+                return (config.isEnableWorkInEmergency() || !isEmergency()) && super.shouldContinue();
             }
         });
 
@@ -857,6 +851,19 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (!config.isFriendlyFire() && attacker instanceof LivingEntity && isFriend((LivingEntity) attacker)) {
             return false;
         }
+
+        float factor = config.getGeneralMaidDamageFactor();
+        if ((config.isEnableWorkInEmergency() || !isEmergency())
+                && !isWait() && this.getMode().map(Mode::isBattleMode).orElse(false)) {
+            factor *= config.getBattleModeMaidDamageFactor();
+        } else {
+            factor *= config.getNonBattleModeMaidDamageFactor();
+        }
+        if (factor == 0) {
+            return false;
+        }
+        amount *= factor;
+
         boolean isHurtTime = 0 < this.hurtTime;
         boolean result = super.damage(source, amount);
         if (!this.getWorld().isClient && !isHurtTime) {
@@ -876,6 +883,23 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             }
         }
         return result;
+    }
+
+    public boolean isEmergency() {
+        LMRBConfig config = LMRBMod.getConfig();
+        //危機閾値以下の体力の場合、危機状態とする
+        return this.getHealth() / this.getMaxHealth()
+                <= config.getEmergencyMaidHealthThreshold();
+    }
+
+    @Override
+    public void setHealth(float health) {
+        LMRBConfig config = LMRBMod.getConfig();
+        if (config.isDisableMaidDeath() && health <= 0) {
+            super.setHealth(1);
+            return;
+        }
+        super.setHealth(health);
     }
 
     @Override
