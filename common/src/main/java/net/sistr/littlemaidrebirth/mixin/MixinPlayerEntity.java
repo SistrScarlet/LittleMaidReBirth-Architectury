@@ -108,19 +108,6 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
 
     @Inject(method = "wakeUp(ZZ)V", at = @At("RETURN"))
     private void onWakeUp(boolean skipSleepTimer, boolean updateSleepingPlayers, CallbackInfo ci) {
-        if (this.getWorld() instanceof ServerWorld serverWorld) {
-            var worldMaidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
-            var maidSouls = worldMaidSoulState.get(this.getUuid());
-            for (WorldMaidSoulState.MaidSoul maidSoul : maidSouls) {
-                var maid = Registration.LITTLE_MAID_MOB.get().create(serverWorld);
-                if (maid != null) {
-                    maid.installMaidSoul(maidSoul);
-                    maid.refreshPositionAfterTeleport(this.getX(), this.getY(), this.getZ());
-                    serverWorld.spawnEntity(maid);
-                }
-            }
-            worldMaidSoulState.remove(this.getUuid());
-            worldMaidSoulState.markDirty();
-        }
+
     }
 }
