@@ -116,6 +116,7 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
                 if (maid != null) {
                     maid.installMaidSoul(maidSoul);
                     maid.refreshPositionAfterTeleport(this.getX(), this.getY(), this.getZ());
+                    serverWorld.spawnEntity(maid);
                 }
             }
             worldMaidSoulState.remove(this.getUuid());
