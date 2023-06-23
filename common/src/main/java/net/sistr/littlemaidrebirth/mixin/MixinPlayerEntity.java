@@ -6,12 +6,15 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.*;
+import net.sistr.littlemaidrebirth.setup.Registration;
+import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -101,5 +104,22 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
         entity.prevYaw += f1 - f;
         entity.setYaw(yaw + f1 - f);
         entity.setHeadYaw(yaw);
+    }
+
+    @Inject(method = "wakeUp(ZZ)V", at = @At("RETURN"))
+    private void onWakeUp(boolean skipSleepTimer, boolean updateSleepingPlayers, CallbackInfo ci) {
+        if (this.getWorld() instanceof ServerWorld serverWorld) {
+            var worldMaidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
+            var maidSouls = worldMaidSoulState.get(this.getUuid());
+            for (WorldMaidSoulState.MaidSoul maidSoul : maidSouls) {
+                var maid = Registration.LITTLE_MAID_MOB.get().create(serverWorld);
+                if (maid != null) {
+                    maid.installMaidSoul(maidSoul);
+                    maid.refreshPositionAfterTeleport(this.getX(), this.getY(), this.getZ());
+                }
+            }
+            worldMaidSoulState.remove(this.getUuid());
+            worldMaidSoulState.markDirty();
+        }
     }
 }
