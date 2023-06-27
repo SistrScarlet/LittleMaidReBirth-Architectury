@@ -54,6 +54,7 @@ public abstract class MixinCandleCakeBlock {
                     maid.refreshPositionAfterTeleport(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
                     maid.setMovingMode(MovingMode.ESCORT);
                     maid.setWait(true);
+                    maid.lookAtEntity(player, 360f, 180f);
                     serverWorld.spawnEntity(maid);
                 }
             }
