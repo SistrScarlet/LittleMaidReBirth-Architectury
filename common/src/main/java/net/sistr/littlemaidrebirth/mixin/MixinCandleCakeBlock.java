@@ -2,6 +2,7 @@ package net.sistr.littlemaidrebirth.mixin;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CandleCakeBlock;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -54,7 +55,8 @@ public abstract class MixinCandleCakeBlock {
                     maid.refreshPositionAfterTeleport(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
                     maid.setMovingMode(MovingMode.ESCORT);
                     maid.setWait(true);
-                    maid.lookAtEntity(player, 360f, 180f);
+                    maid.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, player.getEyePos());
+                    maid.getLookControl().lookAt(player);
                     serverWorld.spawnEntity(maid);
                 }
             }
