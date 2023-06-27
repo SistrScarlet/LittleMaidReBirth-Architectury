@@ -7,7 +7,7 @@
     "ItemEntityAccessor",
     "MeleeAttackGoalAccessor",
     "MixinAbstractFurnaceBlockEntity",
-    "MixinCakeBlock",
+    "MixinCandleCakeBlock",
     "MixinCrossBowItem",
     "MixinPlayerEntity",
     "MixinRangedWeaponItem",

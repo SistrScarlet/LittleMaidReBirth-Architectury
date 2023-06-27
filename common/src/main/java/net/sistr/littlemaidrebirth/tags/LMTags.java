@@ -1,5 +1,6 @@
 package net.sistr.littlemaidrebirth.tags;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
@@ -24,6 +25,14 @@ public class LMTags {
 
         private static TagKey<Item> register(String id) {
             return TagKey.of(RegistryKeys.ITEM, new Identifier(LMRBMod.MODID, id));
+        }
+    }
+
+    public static class Blocks {
+        public static final TagKey<Block> MAID_ALTER_COMPONENT_BLOCKS = register("maid_alter_component_blocks");
+
+        private static TagKey<Block> register(String id) {
+            return TagKey.of(RegistryKeys.BLOCK, new Identifier(LMRBMod.MODID, id));
         }
     }
 }
