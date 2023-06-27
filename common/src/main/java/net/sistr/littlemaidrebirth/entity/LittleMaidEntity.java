@@ -1443,11 +1443,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             ItemStack stack = inv.getStack(i);
             if (stack.isEmpty() || EnchantmentHelper.hasVanishingCurse(stack)) continue;
             this.dropStack(stack);
+            inv.setStack(i, ItemStack.EMPTY);
         }
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             ItemStack stack = this.getEquippedStack(slot);
             if (stack.isEmpty() || EnchantmentHelper.hasVanishingCurse(stack)) continue;
             this.dropStack(stack);
+            this.equipStack(slot, ItemStack.EMPTY);
         }
     }
 
