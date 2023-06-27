@@ -821,14 +821,16 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             this.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 60, 5));
             return;
         }
+        super.onDeath(source);
+        //死亡ボイスは必ず聞かせる
+        this.playSoundCool = 0;
+        play(LMSounds.DEATH);
         if (this.getWorld() instanceof ServerWorld serverWorld)
             this.getTameOwnerUuid().ifPresent(id -> {
                 var maidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
                 maidSoulState.add(id, this.writeNbt(new NbtCompound()));
                 maidSoulState.markDirty();
             });
-        super.onDeath(source);
-        play(LMSounds.DEATH);
     }
 
     public void installMaidSoul(WorldMaidSoulState.MaidSoul maidSoul) {
