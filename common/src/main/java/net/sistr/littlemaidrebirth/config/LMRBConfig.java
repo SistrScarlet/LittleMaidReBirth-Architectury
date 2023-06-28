@@ -122,7 +122,7 @@ public class LMRBConfig implements ConfigData {
     private float archerShootVelocityFactor = 1.0f;
 
     @ConfigEntry.Category("mode")
-    private int torcherLightLevelThreshold = 8;
+    private int torcherLightLevelThreshold = 4;
 
     //contract
 
