@@ -17,6 +17,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
@@ -48,7 +49,7 @@ public abstract class MixinCandleCakeBlock {
                 //todo なんか報酬
                 return;
             }
-            for (WorldMaidSoulState.MaidSoul maidSoul : maidSouls) {
+            for (LittleMaidEntity.MaidSoul maidSoul : maidSouls) {
                 var maid = Registration.LITTLE_MAID_MOB.get().create(serverWorld);
                 if (maid != null) {
                     maid.installMaidSoul(maidSoul);

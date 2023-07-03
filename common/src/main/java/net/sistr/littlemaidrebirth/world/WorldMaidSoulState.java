@@ -7,6 +7,7 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
 import net.sistr.littlemaidrebirth.LMRBMod;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import org.apache.commons.compress.utils.Lists;
 
 import java.util.List;
@@ -14,14 +15,14 @@ import java.util.Map;
 import java.util.UUID;
 
 public class WorldMaidSoulState extends PersistentState {
-    private final Map<UUID, List<MaidSoul>> maidSoulsMap = Maps.newHashMap();
+    private final Map<UUID, List<LittleMaidEntity.MaidSoul>> maidSoulsMap = Maps.newHashMap();
 
-    public void add(UUID ownerId, NbtCompound maidNbt) {
+    public void add(UUID ownerId, LittleMaidEntity.MaidSoul maidSoul) {
         maidSoulsMap.computeIfAbsent(ownerId, (id) -> Lists.newArrayList())
-                .add(new MaidSoul(maidNbt));
+                .add(maidSoul);
     }
 
-    public List<MaidSoul> get(UUID ownerId) {
+    public List<LittleMaidEntity.MaidSoul> get(UUID ownerId) {
         return maidSoulsMap.computeIfAbsent(ownerId, id -> Lists.newArrayList());
     }
 
@@ -32,14 +33,14 @@ public class WorldMaidSoulState extends PersistentState {
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
         var nbtEntries = new NbtList();
-        for (Map.Entry<UUID, List<MaidSoul>> entry : maidSoulsMap.entrySet()) {
+        for (Map.Entry<UUID, List<LittleMaidEntity.MaidSoul>> entry : maidSoulsMap.entrySet()) {
             var uuid = entry.getKey();
             var list = entry.getValue();
             var nbtEntry = new NbtCompound();
             nbtEntry.putUuid("id", uuid);
             var nbtMaidSouls = new NbtList();
-            for (MaidSoul maidSoul : list) {
-                nbtMaidSouls.add(maidSoul.nbt());
+            for (LittleMaidEntity.MaidSoul maidSoul : list) {
+                nbtMaidSouls.add(maidSoul.getNbt());
             }
             nbtEntry.put("maidSouls", nbtMaidSouls);
             nbtEntries.add(nbtEntry);
@@ -54,9 +55,9 @@ public class WorldMaidSoulState extends PersistentState {
         for (NbtElement nbtEntry : nbtEntries) {
             var id = ((NbtCompound) nbtEntry).getUuid("id");
             var nbtMaidSouls = ((NbtCompound) nbtEntry).getList("maidSouls", NbtElement.COMPOUND_TYPE);
-            List<MaidSoul> maidSouls = Lists.newArrayList();
+            List<LittleMaidEntity.MaidSoul> maidSouls = Lists.newArrayList();
             for (NbtElement nbtMaidSoul : nbtMaidSouls) {
-                maidSouls.add(new MaidSoul((NbtCompound) nbtMaidSoul));
+                maidSouls.add(new LittleMaidEntity.MaidSoul((NbtCompound) nbtMaidSoul));
             }
             worldMaidSoulState.maidSoulsMap.put(id, maidSouls);
         }
@@ -72,6 +73,4 @@ public class WorldMaidSoulState extends PersistentState {
                 LMRBMod.MODID + "_maidsouls");
     }
 
-    public record MaidSoul(NbtCompound nbt) {
-    }
 }

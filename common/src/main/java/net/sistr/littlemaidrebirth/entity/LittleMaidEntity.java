@@ -827,14 +827,14 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         play(LMSounds.DEATH);
         if (this.getWorld() instanceof ServerWorld serverWorld)
             this.getTameOwnerUuid().ifPresent(id -> {
-                var maidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
-                maidSoulState.add(id, this.writeNbt(new NbtCompound()));
-                maidSoulState.markDirty();
+                var maidSoulEntity = new MaidSoulEntity(serverWorld, new MaidSoul(this.writeNbt(new NbtCompound())));
+                maidSoulEntity.setPosition(this.getX(), this.getY() + 1, this.getZ());
+                serverWorld.spawnEntity(maidSoulEntity);
             });
     }
 
-    public void installMaidSoul(WorldMaidSoulState.MaidSoul maidSoul) {
-        readNbt(maidSoul.nbt());
+    public void installMaidSoul(MaidSoul maidSoul) {
+        readNbt(maidSoul.getNbt());
         this.setHealth(getMaxHealth());
         this.unsetRemoved();
         this.dead = false;
@@ -1899,4 +1899,19 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
     }
 
+    public static class MaidSoul {
+        private final NbtCompound nbt;
+
+        public MaidSoul(NbtCompound nbt) {
+            this.nbt = nbt;
+        }
+
+        public NbtCompound getNbt() {
+            return nbt;
+        }
+
+        public Optional<UUID> getOwnerUUID() {
+            return Optional.ofNullable(nbt.getUuid("Owner"));
+        }
+    }
 }

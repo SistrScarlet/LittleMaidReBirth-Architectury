@@ -3,19 +3,25 @@ package net.sistr.littlemaidrebirth.entity;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
+
+import java.util.Optional;
+import java.util.UUID;
 
 //メイドソウル
 //体重21g！
 public class MaidSoulEntity extends Entity {
     @Nullable
-    private WorldMaidSoulState.MaidSoul maidSoul;
+    private LittleMaidEntity.MaidSoul maidSoul;
     private int waveProgress;
 
     public MaidSoulEntity(EntityType<?> type, World world) {
@@ -23,8 +29,8 @@ public class MaidSoulEntity extends Entity {
         this.noClip = true;
     }
 
-    public MaidSoulEntity(EntityType<?> type, World world, WorldMaidSoulState.@Nullable MaidSoul maidSoul) {
-        this(type, world);
+    public MaidSoulEntity(World world, @Nullable LittleMaidEntity.MaidSoul maidSoul) {
+        this(Registration.MAID_SOUL_ENTITY.get(), world);
         this.maidSoul = maidSoul;
     }
 
@@ -95,6 +101,23 @@ public class MaidSoulEntity extends Entity {
     }
 
     @Override
+    public void onPlayerCollision(PlayerEntity player) {
+        super.onPlayerCollision(player);
+        Optional<UUID> optional;
+        if (maidSoul != null
+                && (optional = this.maidSoul.getOwnerUUID()).isPresent()
+                && optional.get().equals(player.getUuid())) {
+            player.sendPickup(this, 1);
+            if (this.getWorld() instanceof ServerWorld serverWorld) {
+                var maidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
+                maidSoulState.add(player.getUuid(), this.maidSoul);
+                maidSoulState.markDirty();
+            }
+            this.discard();
+        }
+    }
+
+    @Override
     protected void initDataTracker() {
 
     }
@@ -102,14 +125,14 @@ public class MaidSoulEntity extends Entity {
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
         if (nbt.contains("maidSoul")) {
-            this.maidSoul = new WorldMaidSoulState.MaidSoul(nbt.getCompound("maidSoul"));
+            this.maidSoul = new LittleMaidEntity.MaidSoul(nbt.getCompound("maidSoul"));
         }
     }
 
     @Override
     protected void writeCustomDataToNbt(NbtCompound nbt) {
         if (this.maidSoul != null) {
-            nbt.put("maidSoul", this.maidSoul.nbt().copy());
+            nbt.put("maidSoul", this.maidSoul.getNbt().copy());
         }
     }
 
