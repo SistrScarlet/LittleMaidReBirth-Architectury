@@ -11,6 +11,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.client.MaidModelRenderer;
+import net.sistr.littlemaidrebirth.client.MaidSoulRenderer;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.setup.ClientSetup;
 import net.sistr.littlemaidrebirth.setup.ModSetup;
@@ -44,6 +45,7 @@ public class LMRBForge {
     //ClientSetupよりこちらの方が実行が早いため、ClientSetupからArchitecturyのメソッド登録しようとすると無視される
     public void renderInit(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(Registration.LITTLE_MAID_MOB.get(), MaidModelRenderer::new);
+        event.registerEntityRenderer(Registration.MAID_SOUL_ENTITY.get(), MaidSoulRenderer::new);
     }
 
 }
