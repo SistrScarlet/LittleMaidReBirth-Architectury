@@ -59,38 +59,41 @@ public class MaidSoulEntity extends Entity {
                         * ((float) (this.waveProgress % loop) / loop))
                 * (waveHeight / 2);
 
-        getWorld().addParticle(
-                new DustParticleEffect(new Vector3f(1.0f, 1.0f, 1.0f), 0.5f),
+        var particle = ParticleTypes.ELECTRIC_SPARK;//new DustParticleEffect(new Vector3f(1.0f, 1.0f, 1.0f), 0.5f);
+
+        var world = getWorld();
+        world.addParticle(
+                particle,
                 this.getX() + x,
                 this.getY() + y,
                 this.getZ() + z,
                 0, 0, 0);
-        getWorld().addParticle(
-                new DustParticleEffect(new Vector3f(1.0f, 1.0f, 1.0f), 0.5f),
+        world.addParticle(
+                particle,
                 this.getX() - x,
                 this.getY() + y,
                 this.getZ() - z,
                 0, 0, 0);
-        /*getWorld().addParticle(
-                new DustParticleEffect(new Vector3f(1.0f, 1.0f, 1.0f), 0.5f),
+        /*world.addParticle(
+                particle,
                 this.getX() + altX,
                 this.getY() - y,
                 this.getZ() + altZ,
                 0, 0, 0);*/
-        /*getWorld().addParticle(
-                new DustParticleEffect(new Vector3f(1.0f, 1.0f, 1.0f), 0.5f),
+        /*world.addParticle(
+                particle,
                 this.getX() - altX,
                 this.getY() - y,
                 this.getZ() - altZ,
                 0, 0, 0);*/
-        getWorld().addParticle(
-                new DustParticleEffect(new Vector3f(1.0f, 1.0f, 1.0f), 0.5f),
+        world.addParticle(
+                particle,
                 this.getX() - x,
                 this.getY() - y,
                 this.getZ() - z,
                 0, 0, 0);
-        getWorld().addParticle(
-                new DustParticleEffect(new Vector3f(1.0f, 1.0f, 1.0f), 0.5f),
+        world.addParticle(
+                particle,
                 this.getX() + x,
                 this.getY() - y,
                 this.getZ() + z,
@@ -98,7 +101,7 @@ public class MaidSoulEntity extends Entity {
 
         this.waveProgress++;
 
-        if (!this.getWorld().isSpaceEmpty(this)) {
+        if (!world.isSpaceEmpty(this)) {
             this.setPosition(this.getX(), this.getY() + 0.1, this.getZ());
         }
     }
@@ -122,8 +125,9 @@ public class MaidSoulEntity extends Entity {
                         SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS,
                         1.0f, 1.0f);
                 float size = 0.5f;
-                int count = 10;
-                double delta = 1.5;
+                int count = 20;
+                double delta = 1.0;
+                //todo エフェクト調整
                 serverWorld.spawnParticles(
                         new DustParticleEffect(new Vector3f(1.0f, 0.0f, 0.0f), size),
                         this.getX(), this.getY(), this.getZ(),
