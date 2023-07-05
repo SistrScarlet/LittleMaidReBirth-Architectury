@@ -6,7 +6,10 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.DustParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.setup.Registration;
@@ -103,15 +106,37 @@ public class MaidSoulEntity extends Entity {
     @Override
     public void onPlayerCollision(PlayerEntity player) {
         super.onPlayerCollision(player);
+        if (this.maidSoul == null) {
+            this.discard();
+            return;
+        }
         Optional<UUID> optional;
-        if (maidSoul != null
-                && (optional = this.maidSoul.getOwnerUUID()).isPresent()
+        if ((optional = this.maidSoul.getOwnerUUID()).isPresent()
                 && optional.get().equals(player.getUuid())) {
             player.sendPickup(this, 1);
             if (this.getWorld() instanceof ServerWorld serverWorld) {
                 var maidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
                 maidSoulState.add(player.getUuid(), this.maidSoul);
                 maidSoulState.markDirty();
+                serverWorld.playSound(null, this.getX(), this.getY(), this.getZ(),
+                        SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS,
+                        1.0f, 1.0f);
+                float size = 0.5f;
+                int count = 10;
+                double delta = 1.5;
+                serverWorld.spawnParticles(
+                        new DustParticleEffect(new Vector3f(1.0f, 0.0f, 0.0f), size),
+                        this.getX(), this.getY(), this.getZ(),
+                        count, delta, delta, delta, 0);
+                serverWorld.spawnParticles(
+                        new DustParticleEffect(new Vector3f(0.0f, 1.0f, 0.0f), size),
+                        this.getX(), this.getY(), this.getZ(),
+                        count, delta, delta, delta, 0);
+                serverWorld.spawnParticles(
+                        new DustParticleEffect(new Vector3f(0.0f, 0.0f, 1.0f), size),
+                        this.getX(), this.getY(), this.getZ(),
+                        count, delta, delta, delta, 0);
+                //todo 憑依ステータス効果
             }
             this.discard();
         }
