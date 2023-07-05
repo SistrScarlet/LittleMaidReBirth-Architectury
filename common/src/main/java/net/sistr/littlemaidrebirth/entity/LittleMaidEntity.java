@@ -93,7 +93,6 @@ import net.sistr.littlemaidrebirth.network.SpawnLittleMaidPacket;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
-import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -828,7 +827,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (this.getWorld() instanceof ServerWorld serverWorld)
             this.getTameOwnerUuid().ifPresent(id -> {
                 var maidSoulEntity = new MaidSoulEntity(serverWorld, new MaidSoul(this.writeNbt(new NbtCompound())));
-                maidSoulEntity.setPosition(this.getX(), this.getY() + 1, this.getZ());
+                maidSoulEntity.setPosition(this.getX(), this.getY(), this.getZ());
+                maidSoulEntity.setVelocity(new Vec3d(random.nextGaussian() * 0.02, 0.2, random.nextGaussian() * 0.02));
                 serverWorld.spawnEntity(maidSoulEntity);
             });
     }

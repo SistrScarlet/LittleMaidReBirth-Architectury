@@ -101,6 +101,19 @@ public class MaidSoulEntity extends Entity {
 
         this.waveProgress++;
 
+        var velocity = getVelocity();
+        double vx = Math.min(velocity.getX(), 0.2);
+        double vy = Math.min(velocity.getY(), 0.2);
+        double vz = Math.min(velocity.getZ(), 0.2);
+        if (world.isSpaceEmpty(this, getBoundingBox().offset(vx, vy, vz))) {
+            double nx = this.getX() + vx;
+            double ny = this.getY() + vy;
+            double nz = this.getZ() + vz;
+            this.setPosition(nx, ny, nz);
+        }
+        setVelocity(velocity.multiply(0.95f));
+
+        //埋まった場合はちょっとづつ浮く
         if (!world.isSpaceEmpty(this)) {
             this.setPosition(this.getX(), this.getY() + 0.1, this.getZ());
         }
