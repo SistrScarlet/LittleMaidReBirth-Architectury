@@ -28,7 +28,7 @@ public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
         float sin = MathHelper.sin(progress * MathHelper.PI * 2) * radius;
         float x = 0;
         float z = 0;
-        float y = 0;
+        float y = 0.25f;
         float x1 = x + cos;
         float x2 = x - cos;
         float z1 = z + sin;

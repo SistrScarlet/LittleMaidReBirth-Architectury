@@ -11,6 +11,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
@@ -48,58 +49,57 @@ public class MaidSoulEntity extends Entity {
                 * 0.4f + 0.1f;
         int rotateTicks = 20 * 1;
         float rotate = MathHelper.PI * 2 * ((float) (this.age % rotateTicks) / rotateTicks);
-        float altRotate = -MathHelper.PI * 2 * ((float) ((this.age) % rotateTicks) / rotateTicks);
         float waveHeight = 1f;
         float x = (MathHelper.sin(rotate)) * range;
-        float altX = (MathHelper.sin(MathHelper.PI * 2 - altRotate)) * range;
         float z = (MathHelper.cos(rotate)) * range;
-        float altZ = (MathHelper.cos(MathHelper.PI * 2 - altRotate)) * range;
         float y = MathHelper.sin(
                 MathHelper.PI * 2
                         * ((float) (this.waveProgress % loop) / loop))
                 * (waveHeight / 2);
 
-        var particle = ParticleTypes.ELECTRIC_SPARK;//new DustParticleEffect(new Vector3f(1.0f, 1.0f, 1.0f), 0.5f);
+        var particle = ParticleTypes.ELECTRIC_SPARK;
 
+        float yOffset = 0.25f;
         var world = getWorld();
         world.addParticle(
                 particle,
                 this.getX() + x,
-                this.getY() + y,
+                this.getY() + y + yOffset,
                 this.getZ() + z,
                 0, 0, 0);
         world.addParticle(
                 particle,
                 this.getX() - x,
-                this.getY() + y,
+                this.getY() + y + yOffset,
                 this.getZ() - z,
                 0, 0, 0);
-        /*world.addParticle(
-                particle,
-                this.getX() + altX,
-                this.getY() - y,
-                this.getZ() + altZ,
-                0, 0, 0);*/
-        /*world.addParticle(
-                particle,
-                this.getX() - altX,
-                this.getY() - y,
-                this.getZ() - altZ,
-                0, 0, 0);*/
         world.addParticle(
                 particle,
                 this.getX() - x,
-                this.getY() - y,
+                this.getY() - y + yOffset,
                 this.getZ() - z,
                 0, 0, 0);
         world.addParticle(
                 particle,
                 this.getX() + x,
-                this.getY() - y,
+                this.getY() - y + yOffset,
                 this.getZ() + z,
                 0, 0, 0);
 
         this.waveProgress++;
+
+        if (world instanceof ServerWorld serverWorld
+                && maidSoul != null && maidSoul.getOwnerUUID().isPresent()) {
+            var owner = serverWorld.getEntity(maidSoul.getOwnerUUID().get());
+            if (owner != null) {
+                var toOwnerVec = owner.getPos().subtract(this.getPos()).normalize();
+                var distanceSq = Math.max(this.squaredDistanceTo(owner.getEyePos()), 0.5 * 0.5);
+                var addVec = toOwnerVec.multiply(0.0125 / distanceSq);
+                if (addVec.lengthSquared() > 0.001 * 0.001) {
+                    setVelocity(getVelocity().add(addVec));
+                }
+            }
+        }
 
         var velocity = getVelocity();
         double vx = Math.min(velocity.getX(), 0.2);
@@ -110,8 +110,20 @@ public class MaidSoulEntity extends Entity {
             double ny = this.getY() + vy;
             double nz = this.getZ() + vz;
             this.setPosition(nx, ny, nz);
+            setVelocity(velocity.multiply(0.95f));
+        } else {
+            //進行方向が埋まっていて、逆方向が開いてるなら弾かれる
+            if (world.isSpaceEmpty(this, getBoundingBox().offset(-vx, -vy, -vz))) {
+                double nx = this.getX() - vx;
+                double ny = this.getY() - vy;
+                double nz = this.getZ() - vz;
+                this.setPosition(nx, ny, nz);
+                setVelocity(velocity.multiply(-0.95f));
+            } else {
+                setVelocity(Vec3d.ZERO);
+            }
+
         }
-        setVelocity(velocity.multiply(0.95f));
 
         //埋まった場合はちょっとづつ浮く
         if (!world.isSpaceEmpty(this)) {
