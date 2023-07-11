@@ -193,23 +193,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         soundPlayer = new SoundPlayableCompound(this, () ->
                 multiModel.getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
         addDefaultModes(this);
-        initIdFactor();
-
-        //野良の子らの初期設定
-        setRandomTexture();
-        if (LMRBMod.getConfig().isSilentDefaultVoice()) {
-            soundPlayer.setConfigHolder(LMConfigManager.EMPTY_CONFIG);
-        } else {
-            List<ConfigHolder> configs = LMConfigManager.INSTANCE.getAllConfig();
-            soundPlayer.setConfigHolder(configs.get(idFactor % configs.size()));
-        }
-        String defaultSoundPackName = LMRBMod.getConfig().getDefaultSoundPackName();
-        if (!defaultSoundPackName.isEmpty()) {
-            LMConfigManager.INSTANCE.getAllConfig().stream()
-                    .filter(c -> c.getPackName().equalsIgnoreCase(defaultSoundPackName))
-                    .findAny()
-                    .ifPresent(soundPlayer::setConfigHolder);
-        }
     }
 
     //基本使わない
@@ -1461,6 +1444,21 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     public void initIdFactor() {
         this.idFactor = Math.abs(this.getUuid().hashCode());
+        //野良の子らの初期設定
+        setRandomTexture();
+        if (LMRBMod.getConfig().isSilentDefaultVoice()) {
+            soundPlayer.setConfigHolder(LMConfigManager.EMPTY_CONFIG);
+        } else {
+            List<ConfigHolder> configs = LMConfigManager.INSTANCE.getAllConfig();
+            soundPlayer.setConfigHolder(configs.get(idFactor % configs.size()));
+        }
+        String defaultSoundPackName = LMRBMod.getConfig().getDefaultSoundPackName();
+        if (!defaultSoundPackName.isEmpty()) {
+            LMConfigManager.INSTANCE.getAllConfig().stream()
+                    .filter(c -> c.getPackName().equalsIgnoreCase(defaultSoundPackName))
+                    .findAny()
+                    .ifPresent(soundPlayer::setConfigHolder);
+        }
     }
 
     public int getIdFactor() {
