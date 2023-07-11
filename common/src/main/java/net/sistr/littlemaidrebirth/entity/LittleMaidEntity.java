@@ -388,9 +388,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     && freedomPos != null) {
                 nbt.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
             }
-            this.multiModel.writeToNbt(nbt);
-            nbt.putString("SoundConfigName", getConfigHolder().getName());
         }
+        this.multiModel.writeToNbt(nbt);
+        nbt.putString("SoundConfigName", getConfigHolder().getName());
     }
 
     @Override
@@ -428,12 +428,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     && nbt.contains("FreedomPos")) {
                 freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
             }
-            this.multiModel.readFromNbt(nbt);
-            this.calculateDimensions();
-            if (nbt.contains("SoundConfigName")) {
-                LMConfigManager.INSTANCE.getConfig(nbt.getString("SoundConfigName"))
-                        .ifPresent(this::setConfigHolder);
-            }
+        }
+        this.multiModel.readFromNbt(nbt);
+        this.calculateDimensions();
+        if (nbt.contains("SoundConfigName")) {
+            LMConfigManager.INSTANCE.getConfig(nbt.getString("SoundConfigName"))
+                    .ifPresent(this::setConfigHolder);
         }
     }
 
