@@ -221,7 +221,9 @@ public class LMRBConfig implements ConfigData {
         return sprintEndRange;
     }
 
-    public boolean isAllowedToTeleport() { return allowTeleporting; }
+    public boolean isAllowedToTeleport() {
+        return allowTeleporting;
+    }
 
     public float getTeleportStartRange() {
         return teleportStartRange;
