@@ -50,6 +50,7 @@
   "text.autoconfig.littlemaidrebirth.option.followEndRange": "追従終了範囲",
   "text.autoconfig.littlemaidrebirth.option.sprintStartRange": "走行開始範囲",
   "text.autoconfig.littlemaidrebirth.option.sprintEndRange": "走行終了範囲",
+  "text.autoconfig.littlemaidrebirth.option.allowTeleporting": "テレポートを許可",
   "text.autoconfig.littlemaidrebirth.option.teleportStartRange": "テレポート開始範囲",
   "text.autoconfig.littlemaidrebirth.option.emergencyTeleportStartRange": "緊急テレポート開始範囲",
   "text.autoconfig.littlemaidrebirth.option.friendlyFire": "フレンドリーファイアできるか",

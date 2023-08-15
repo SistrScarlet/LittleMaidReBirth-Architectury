@@ -50,6 +50,7 @@
   "text.autoconfig.littlemaidrebirth.option.followEndRange": "Follow End Range",
   "text.autoconfig.littlemaidrebirth.option.sprintStartRange": "Sprint Start Range",
   "text.autoconfig.littlemaidrebirth.option.sprintEndRange": "Sprint Start Range",
+  "text.autoconfig.littlemaidrebirth.option.allowTeleporting": "Allow Teleporting",
   "text.autoconfig.littlemaidrebirth.option.teleportStartRange": "Teleport Start Range",
   "text.autoconfig.littlemaidrebirth.option.emergencyTeleportStartRange": "Emergency Teleport Start Range",
   "text.autoconfig.littlemaidrebirth.option.friendlyFire": "Friendly Fire",

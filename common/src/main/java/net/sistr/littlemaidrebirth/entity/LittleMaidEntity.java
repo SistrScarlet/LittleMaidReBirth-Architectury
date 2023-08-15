@@ -230,12 +230,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 config.getTeleportStartRange()) {
             @Override
             public boolean canStart() {
-                return (config.isEnableTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && super.canStart();
+                return (config.isAllowedToTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && super.canStart();
             }
 
             @Override
             public boolean shouldContinue() {
-                return (config.isEnableTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && super.shouldContinue();
+                return (config.isAllowedToTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && super.shouldContinue();
             }
         });
         //緊急テレポート
@@ -244,12 +244,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         config.getEmergencyTeleportStartRange()) {
                     @Override
                     public boolean canStart() {
-                        return (config.isEnableTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && isEmergency() && super.canStart();
+                        return (config.isAllowedToTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && isEmergency() && super.canStart();
                     }
 
                     @Override
                     public boolean shouldContinue() {
-                        return (config.isEnableTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && isEmergency() && super.shouldContinue();
+                        return (config.isAllowedToTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && isEmergency() && super.shouldContinue();
                     }
                 });
 
