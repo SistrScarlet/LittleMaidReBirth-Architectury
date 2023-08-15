@@ -78,6 +78,9 @@ public class LMRBConfig implements ConfigData {
     private float sprintEndRange = 6.0f;
 
     @ConfigEntry.Category("maid")
+    private boolean enableTeleport = true;
+
+    @ConfigEntry.Category("maid")
     private float teleportStartRange = 16.0f;
 
     @ConfigEntry.Category("maid")
@@ -216,6 +219,10 @@ public class LMRBConfig implements ConfigData {
 
     public float getSprintEndRange() {
         return sprintEndRange;
+    }
+
+    public boolean isEnableTeleport() {
+        return enableTeleport;
     }
 
     public float getTeleportStartRange() {

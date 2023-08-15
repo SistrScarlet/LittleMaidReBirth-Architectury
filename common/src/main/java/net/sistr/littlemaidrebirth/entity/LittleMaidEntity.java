@@ -227,19 +227,29 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         LMRBConfig config = LMRBMod.getConfig();
 
         this.goalSelector.add(++priority, new HasMMTeleportTameOwnerGoal<>(this,
-                config.getTeleportStartRange()));
+                config.getTeleportStartRange()) {
+            @Override
+            public boolean canStart() {
+                return (config.isEnableTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && super.canStart();
+            }
+
+            @Override
+            public boolean shouldContinue() {
+                return (config.isEnableTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && super.shouldContinue();
+            }
+        });
         //緊急テレポート
         this.goalSelector.add(priority,
                 new HasMMTeleportTameOwnerGoal<>(this,
                         config.getEmergencyTeleportStartRange()) {
                     @Override
                     public boolean canStart() {
-                        return isEmergency() && super.canStart();
+                        return (config.isEnableTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && isEmergency() && super.canStart();
                     }
 
                     @Override
                     public boolean shouldContinue() {
-                        return isEmergency() && super.shouldContinue();
+                        return (config.isEnableTeleport() || tameable.isTouchingWater() || tameable.isInLava()) && isEmergency() && super.shouldContinue();
                     }
                 });
 
