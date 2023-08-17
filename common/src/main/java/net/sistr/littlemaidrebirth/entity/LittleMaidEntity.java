@@ -284,6 +284,55 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     }
                 });
 
+        this.goalSelector.add(++priority,
+                new HasMMFollowTameOwnerGoal<>(
+                        this,
+                        0.6f,
+                        config.getSneakStartRange(),
+                        config.getSneakEndRange()) {
+                    @Override
+                    public void start() {
+                        super.start();
+                        this.tameable.setSneaking(true);
+                    }
+
+                    @Override
+                    public void stop() {
+                        super.stop();
+                        this.tameable.setSneaking(false);
+                    }
+
+                    @Override
+                    public boolean canStart() {
+                        if (!config.isEnableSneak()) {
+                            return false;
+                        }
+                        LivingEntity tameOwner = this.tameable.getTameOwner().orElse(null);
+                        if (tameOwner == null) {
+                            return false;
+                        } else if (!tameOwner.isSneaking()) {
+                            return false;
+                        } else {
+                            return super.canStart();
+                        }
+                    }
+
+                    @Override
+                    public boolean shouldContinue() {
+                        if (!config.isEnableSneak()) {
+                            return false;
+                        }
+                        LivingEntity tameOwner = this.tameable.getTameOwner().orElse(null);
+                        if (tameOwner == null) {
+                            return false;
+                        } else if (!tameOwner.isSneaking()) {
+                            return false;
+                        } else {
+                            return super.shouldContinue();
+                        }
+                    }
+                });
+
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this,
                 true,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));

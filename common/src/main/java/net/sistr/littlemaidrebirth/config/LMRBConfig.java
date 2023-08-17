@@ -78,6 +78,15 @@ public class LMRBConfig implements ConfigData {
     private float sprintEndRange = 6.0f;
 
     @ConfigEntry.Category("maid")
+    private boolean enableSneak = false;
+
+    @ConfigEntry.Category("maid")
+    private float sneakStartRange = 2.0f;
+
+    @ConfigEntry.Category("maid")
+    private float sneakEndRange = 1.0f;
+
+    @ConfigEntry.Category("maid")
     private float teleportStartRange = 16.0f;
 
     @ConfigEntry.Category("maid")
@@ -216,6 +225,18 @@ public class LMRBConfig implements ConfigData {
 
     public float getSprintEndRange() {
         return sprintEndRange;
+    }
+
+    public boolean isEnableSneak() {
+        return enableSneak;
+    }
+
+    public float getSneakStartRange() {
+        return sneakStartRange;
+    }
+
+    public float getSneakEndRange() {
+        return sneakEndRange;
     }
 
     public float getTeleportStartRange() {
