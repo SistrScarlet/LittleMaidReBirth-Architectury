@@ -1,6 +1,5 @@
 package net.sistr.littlemaidrebirth.world;
 
-import com.google.common.collect.Maps;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
@@ -8,22 +7,23 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import org.apache.commons.compress.utils.Lists;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 public class WorldMaidSoulState extends PersistentState {
-    private final Map<UUID, List<LittleMaidEntity.MaidSoul>> maidSoulsMap = Maps.newHashMap();
+    private final Map<UUID, List<LittleMaidEntity.MaidSoul>> maidSoulsMap = new HashMap<>();
 
     public void add(UUID ownerId, LittleMaidEntity.MaidSoul maidSoul) {
-        maidSoulsMap.computeIfAbsent(ownerId, (id) -> Lists.newArrayList())
+        maidSoulsMap.computeIfAbsent(ownerId, (id) -> new ArrayList<>())
                 .add(maidSoul);
     }
 
     public List<LittleMaidEntity.MaidSoul> get(UUID ownerId) {
-        return maidSoulsMap.computeIfAbsent(ownerId, id -> Lists.newArrayList());
+        return maidSoulsMap.computeIfAbsent(ownerId, id -> new ArrayList<>());
     }
 
     public void remove(UUID ownerId) {
@@ -55,7 +55,7 @@ public class WorldMaidSoulState extends PersistentState {
         for (NbtElement nbtEntry : nbtEntries) {
             var id = ((NbtCompound) nbtEntry).getUuid("id");
             var nbtMaidSouls = ((NbtCompound) nbtEntry).getList("maidSouls", NbtElement.COMPOUND_TYPE);
-            List<LittleMaidEntity.MaidSoul> maidSouls = Lists.newArrayList();
+            List<LittleMaidEntity.MaidSoul> maidSouls = new ArrayList<>();
             for (NbtElement nbtMaidSoul : nbtMaidSouls) {
                 maidSouls.add(new LittleMaidEntity.MaidSoul((NbtCompound) nbtMaidSoul));
             }
