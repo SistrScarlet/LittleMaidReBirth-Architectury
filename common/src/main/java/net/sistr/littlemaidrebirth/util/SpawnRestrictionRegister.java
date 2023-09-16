@@ -8,7 +8,7 @@ import net.minecraft.world.Heightmap;
 
 public class SpawnRestrictionRegister {
     @ExpectPlatform
-    public static <T extends MobEntity> void callRegister(EntityType<T> type, SpawnRestriction.Location location, Heightmap.Type heightmap, SpawnRestriction.SpawnPredicate<T> spawnPredicate) {
+    public static <T extends MobEntity> void callRegister(Object opt, EntityType<T> type, SpawnRestriction.Location location, Heightmap.Type heightmap, SpawnRestriction.SpawnPredicate<T> spawnPredicate) {
         throw new AssertionError("This should not occur!");
     }
 }

@@ -2,19 +2,16 @@ package net.sistr.littlemaidrebirth.setup;
 
 import dev.architectury.registry.level.biome.BiomeModifications;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnRestriction;
+import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.BiomeTags;
-import net.minecraft.world.Heightmap;
 import net.minecraft.world.biome.SpawnSettings;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Modes;
-import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.iff.IFFType;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
 import net.sistr.littlemaidrebirth.network.Networking;
-import net.sistr.littlemaidrebirth.util.SpawnRestrictionRegister;
 
 public class ModSetup {
 
@@ -47,10 +44,6 @@ public class ModSetup {
                                         LMRBMod.getConfig().getSpawnWeight(),
                                         LMRBMod.getConfig().getMinSpawnGroupSize(),
                                         LMRBMod.getConfig().getMaxSpawnGroupSize())));
-
-        SpawnRestrictionRegister.callRegister(Registration.LITTLE_MAID_MOB.get(),
-                SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-                (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }
 
     private static boolean canSpawnBiome(BiomeModifications.BiomeContext context) {
