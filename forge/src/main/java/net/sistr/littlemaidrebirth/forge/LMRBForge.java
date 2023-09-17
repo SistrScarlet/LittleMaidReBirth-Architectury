@@ -20,7 +20,6 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.setup.ClientSetup;
 import net.sistr.littlemaidrebirth.setup.ModSetup;
 import net.sistr.littlemaidrebirth.setup.Registration;
-import net.sistr.littlemaidrebirth.util.SpawnRestrictionRegister;
 
 @Mod(LMRBMod.MODID)
 public class LMRBForge {
@@ -45,9 +44,10 @@ public class LMRBForge {
     }
 
     public void spawnRestrictionInit(SpawnPlacementRegisterEvent event) {
-        SpawnRestrictionRegister.callRegister(event, Registration.LITTLE_MAID_MOB.get(),
+        event.register(Registration.LITTLE_MAID_MOB.get(),
                 SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-                (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
+                (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos),
+                SpawnPlacementRegisterEvent.Operation.OR);
     }
 
     public void clientInit(FMLClientSetupEvent event) {

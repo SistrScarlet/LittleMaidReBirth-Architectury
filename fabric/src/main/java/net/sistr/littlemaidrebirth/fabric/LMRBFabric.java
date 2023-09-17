@@ -12,7 +12,6 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.setup.ClientSetup;
 import net.sistr.littlemaidrebirth.setup.ModSetup;
 import net.sistr.littlemaidrebirth.setup.Registration;
-import net.sistr.littlemaidrebirth.util.SpawnRestrictionRegister;
 
 public class LMRBFabric implements ModInitializer, ClientModInitializer {
 
@@ -22,7 +21,7 @@ public class LMRBFabric implements ModInitializer, ClientModInitializer {
         ModSetup.init();
 
         if (LMRBMod.getConfig().isCanSpawn()) {
-            SpawnRestrictionRegister.callRegister(null, Registration.LITTLE_MAID_MOB.get(),
+            SpawnRestriction.register(Registration.LITTLE_MAID_MOB.get(),
                     SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
                     (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
         }
