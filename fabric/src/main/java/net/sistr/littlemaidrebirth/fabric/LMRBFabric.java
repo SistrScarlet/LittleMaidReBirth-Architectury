@@ -20,11 +20,9 @@ public class LMRBFabric implements ModInitializer, ClientModInitializer {
         LMRBMod.init();
         ModSetup.init();
 
-        if (LMRBMod.getConfig().isCanSpawn()) {
-            SpawnRestriction.register(Registration.LITTLE_MAID_MOB.get(),
-                    SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-                    (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
-        }
+        SpawnRestriction.register(Registration.LITTLE_MAID_MOB.get(),
+                SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }
 
     @Override
