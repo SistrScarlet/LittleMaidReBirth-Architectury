@@ -84,9 +84,6 @@ public class LMRBConfig implements ConfigData {
     private float emergencyTeleportStartRange = 6.0f;
 
     @ConfigEntry.Category("maid")
-    private float emergencyTeleportHealthThreshold = 0.5f;
-
-    @ConfigEntry.Category("maid")
     private boolean friendlyFire = false;
 
     @ConfigEntry.Category("maid")
