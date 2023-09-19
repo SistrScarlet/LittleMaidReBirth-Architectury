@@ -2,9 +2,11 @@ package net.sistr.littlemaidrebirth.setup;
 
 import dev.architectury.registry.level.biome.BiomeModifications;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnGroup;
 import net.minecraft.registry.Registries;
-import net.minecraft.registry.tag.BiomeTags;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
+import net.minecraft.util.Identifier;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.SpawnSettings;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Modes;
@@ -12,6 +14,8 @@ import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.iff.IFFType;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
 import net.sistr.littlemaidrebirth.network.Networking;
+
+import java.util.List;
 
 public class ModSetup {
 
@@ -37,7 +41,19 @@ public class ModSetup {
     }
 
     private static void registerSpawnSettingLM() {
-        BiomeModifications.addProperties(ModSetup::canSpawnBiome,
+        var spawnBiomeTags = LMRBMod.getConfig().getMaidSpawnBiomeTags()
+                .stream()
+                .filter(Identifier::isValid)
+                .map(Identifier::new)
+                .map(id -> TagKey.of(RegistryKeys.BIOME, id))
+                .toList();
+        var spawnExcludeBiomeTags = LMRBMod.getConfig().getMaidSpawnExcludeBiomeTags()
+                .stream()
+                .filter(Identifier::isValid)
+                .map(Identifier::new)
+                .map(id -> TagKey.of(RegistryKeys.BIOME, id))
+                .toList();
+        BiomeModifications.addProperties((context) -> canSpawnBiome(context, spawnBiomeTags, spawnExcludeBiomeTags),
                 (context, mutable) -> mutable.getSpawnProperties()
                         .addSpawn(Registration.LITTLE_MAID_MOB.get().getSpawnGroup(),
                                 new SpawnSettings.SpawnEntry(Registration.LITTLE_MAID_MOB.get(),
@@ -46,12 +62,20 @@ public class ModSetup {
                                         LMRBMod.getConfig().getMaxSpawnGroupSize())));
     }
 
-    private static boolean canSpawnBiome(BiomeModifications.BiomeContext context) {
-        return context.hasTag(BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE)
-                || context.hasTag(BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE)
-                || context.hasTag(BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE)
-                || context.hasTag(BiomeTags.VILLAGE_SNOWY_HAS_STRUCTURE)
-                || context.hasTag(BiomeTags.VILLAGE_TAIGA_HAS_STRUCTURE);
+    private static boolean canSpawnBiome(BiomeModifications.BiomeContext context,
+                                         List<TagKey<Biome>> spawnBiomeTags,
+                                         List<TagKey<Biome>> spawnExcludeBiomeTags) {
+        for (TagKey<Biome> biomeTag : spawnBiomeTags) {
+            if (context.hasTag(biomeTag)) {
+                for (TagKey<Biome> excludeBiomeTag : spawnExcludeBiomeTags) {
+                    if (context.hasTag(excludeBiomeTag)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -5,6 +5,7 @@ import net.minecraft.item.Item;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.biome.Biome;
 import net.sistr.littlemaidrebirth.LMRBMod;
 
 /**
@@ -33,6 +34,14 @@ public class LMTags {
 
         private static TagKey<Block> register(String id) {
             return TagKey.of(RegistryKeys.BLOCK, new Identifier(LMRBMod.MODID, id));
+        }
+    }
+
+    public static class Biomes {
+        public static final TagKey<Biome> CAN_SPAWN_BIOME = register("maid_spawn_biome");
+
+        private static TagKey<Biome> register(String id) {
+            return TagKey.of(RegistryKeys.BIOME, new Identifier(LMRBMod.MODID, id));
         }
     }
 }

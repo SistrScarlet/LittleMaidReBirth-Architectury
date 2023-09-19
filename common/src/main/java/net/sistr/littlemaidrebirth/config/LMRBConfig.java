@@ -1,10 +1,15 @@
 package net.sistr.littlemaidrebirth.config;
 
 
+import com.google.common.collect.Lists;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import net.minecraft.registry.tag.BiomeTags;
 import net.sistr.littlemaidrebirth.LMRBMod;
+import net.sistr.littlemaidrebirth.tags.LMTags;
+
+import java.util.List;
 
 /**
  * LMRBのコンフィグ
@@ -20,6 +25,21 @@ public class LMRBConfig implements ConfigData {
 
     @ConfigEntry.Category("spawn")
     private boolean canDespawn;
+
+    @ConfigEntry.Category("spawn")
+    @ConfigEntry.Gui.RequiresRestart
+    private List<String> maidSpawnBiomeTags = Lists.newArrayList(
+            LMTags.Biomes.CAN_SPAWN_BIOME.id().toString(),
+            BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE.id().toString(),
+            BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE.id().toString(),
+            BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE.id().toString(),
+            BiomeTags.VILLAGE_SNOWY_HAS_STRUCTURE.id().toString(),
+            BiomeTags.VILLAGE_TAIGA_HAS_STRUCTURE.id().toString()
+    );
+
+    @ConfigEntry.Category("spawn")
+    @ConfigEntry.Gui.RequiresRestart
+    private List<String> maidSpawnExcludeBiomeTags = Lists.newArrayList();
 
     @ConfigEntry.Category("spawn")
     private int spawnWeight = 5;
@@ -145,6 +165,14 @@ public class LMRBConfig implements ConfigData {
 
     public boolean isCanDespawn() {
         return canDespawn;
+    }
+
+    public List<String> getMaidSpawnBiomeTags() {
+        return Lists.newArrayList(maidSpawnBiomeTags);
+    }
+
+    public List<String> getMaidSpawnExcludeBiomeTags() {
+        return maidSpawnExcludeBiomeTags;
     }
 
     public int getSpawnWeight() {
