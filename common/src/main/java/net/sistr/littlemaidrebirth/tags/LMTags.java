@@ -38,7 +38,8 @@ public class LMTags {
     }
 
     public static class Biomes {
-        public static final TagKey<Biome> CAN_SPAWN_BIOME = register("maid_spawn_biome");
+        public static final TagKey<Biome> MAID_SPAWN_BIOME = register("maid_spawn_biome");
+        public static final TagKey<Biome> MAID_SPAWN_EXCLUDE_BIOME = register("maid_spawn_exclude_biome");
 
         private static TagKey<Biome> register(String id) {
             return TagKey.of(RegistryKeys.BIOME, new Identifier(LMRBMod.MODID, id));

@@ -29,7 +29,7 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Category("spawn")
     @ConfigEntry.Gui.RequiresRestart
     private List<String> maidSpawnBiomeTags = Lists.newArrayList(
-            LMTags.Biomes.CAN_SPAWN_BIOME.id().toString(),
+            LMTags.Biomes.MAID_SPAWN_BIOME.id().toString(),
             BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE.id().toString(),
             BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE.id().toString(),
             BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE.id().toString(),
@@ -39,7 +39,9 @@ public class LMRBConfig implements ConfigData {
 
     @ConfigEntry.Category("spawn")
     @ConfigEntry.Gui.RequiresRestart
-    private List<String> maidSpawnExcludeBiomeTags = Lists.newArrayList();
+    private List<String> maidSpawnExcludeBiomeTags = Lists.newArrayList(
+            LMTags.Biomes.MAID_SPAWN_EXCLUDE_BIOME.id().toString()
+    );
 
     @ConfigEntry.Category("spawn")
     private int spawnWeight = 5;
