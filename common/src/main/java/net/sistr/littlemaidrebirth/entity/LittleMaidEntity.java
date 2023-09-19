@@ -48,6 +48,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Util;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
@@ -92,6 +93,7 @@ import net.sistr.littlemaidrebirth.mixin.ProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.network.SpawnLittleMaidPacket;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
+import net.sistr.littlemaidrebirth.util.LMCollidable;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -138,6 +140,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Boolean> CHARGING =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    //エンチャントの瓶はランダムな経験値を排出するため、その平均値を作成コストとする
+    private static final int EXPERIENCE_BOTTLE_COST = 7;
 
     //移譲s
     private final LMHasInventory littleMaidInventory = new LMHasInventory();
@@ -179,6 +183,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     private float prevInterestedAngle;
     private int playSoundCool;
     private int idFactor;
+    public int experiencePickUpDelay;
+
 
     //コンストラクタ
     public LittleMaidEntity(EntityType<LittleMaidEntity> type, World worldIn) {
@@ -376,7 +382,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         nbt.putByte("maidVersion", (byte) 1);
 
         writeInventory(nbt);
-
+        nbt.putInt("XpTotal", this.experiencePoints);
         if (getTameOwnerUuid().isPresent()) {
             nbt.putBoolean("Wait", this.isWait());
             nbt.putByte("MovingMode", (byte) this.getMovingMode().getId());
@@ -399,6 +405,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         int maidVersion = nbt.getByte("maidVersion") & 255;
 
         readInventory(nbt);
+        this.experiencePoints = nbt.getInt("XpTotal");
         if (maidVersion == 0) {
             var list = nbt.getList("Inventory", 10);
             for (int i = 0; i < list.size(); i++) {
@@ -573,6 +580,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void tick() {
+        if (this.experiencePickUpDelay > 0) {
+            --this.experiencePickUpDelay;
+        }
         if (this.getWorld().isClient) {
             tickInterestedAngle();
         }
@@ -614,9 +624,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 }
             }
             if (!list1.isEmpty()) {
-                //todo 経験値回収
+                this.pickupExperienceOrb((ExperienceOrbEntity) Util.getRandom(list1, this.random));
             }
         }
+    }
+
+    private void pickupExperienceOrb(ExperienceOrbEntity xpOrb) {
+        ((LMCollidable) xpOrb).onCollision_LMRB(this);
     }
 
     protected void pickupItemEntity(ItemEntity itemEntity) {
@@ -1218,6 +1232,14 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             }
             return ActionResult.success(this.getWorld().isClient);
         }
+        //ガラス瓶->エンチャントの瓶
+        if (this.experiencePoints >= EXPERIENCE_BOTTLE_COST && stack.isOf(Items.GLASS_BOTTLE)) {
+            player.playSound(SoundEvents.ITEM_BUCKET_FILL, 1.0F, 1.0F);
+            ItemStack itemStack2 = ItemUsage.exchangeStack(stack, player, Items.EXPERIENCE_BOTTLE.getDefaultStack());
+            player.setStackInHand(hand, itemStack2);
+            this.addExperience(-EXPERIENCE_BOTTLE_COST);
+            return ActionResult.success(this.getWorld().isClient);
+        }
         //モブミルク
         if (LMRBMod.getConfig().isCanMilking() && stack.isOf(Items.BUCKET)) {
             player.playSound(SoundEvents.ENTITY_COW_MILK, 1.0F, 1.0F);
@@ -1270,6 +1292,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             }
         }
         return ActionResult.success(this.getWorld().isClient);
+    }
+
+    public void addExperience(int experience) {
+        this.experiencePoints = MathHelper.clamp(this.experiencePoints + experience, 0, Integer.MAX_VALUE);
     }
 
     //GUI開くやつ
@@ -1434,6 +1460,11 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             this.dropStack(stack);
             this.equipStack(slot, ItemStack.EMPTY);
         }
+    }
+
+    @Override
+    public int getXpToDrop() {
+        return this.experiencePoints;
     }
 
     @Override

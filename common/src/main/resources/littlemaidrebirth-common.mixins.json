@@ -10,6 +10,7 @@
     "MixinAbstractFurnaceBlockEntity",
     "MixinCandleCakeBlock",
     "MixinCrossBowItem",
+    "MixinExperienceOrbEntity",
     "MixinPlayerEntity",
     "MixinRangedWeaponItem",
     "MixinSaddleItem",
