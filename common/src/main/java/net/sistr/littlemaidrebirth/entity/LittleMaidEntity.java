@@ -44,6 +44,7 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -1234,7 +1235,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
         //ガラス瓶->エンチャントの瓶
         if (this.experiencePoints >= EXPERIENCE_BOTTLE_COST && stack.isOf(Items.GLASS_BOTTLE)) {
-            player.playSound(SoundEvents.ITEM_BUCKET_FILL, 1.0F, 1.0F);
+            this.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
+                    SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.PLAYERS, 1.0f, 1.0f);
             ItemStack itemStack2 = ItemUsage.exchangeStack(stack, player, Items.EXPERIENCE_BOTTLE.getDefaultStack());
             player.setStackInHand(hand, itemStack2);
             this.addExperience(-EXPERIENCE_BOTTLE_COST);
