@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.recipe.AbstractCookingRecipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
@@ -176,7 +177,8 @@ public class CookingMode extends Mode {
         return Optional.empty();
     }
 
-    public Optional<? extends AbstractCookingRecipe> getRecipe(ItemStack stack, RecipeType<? extends AbstractCookingRecipe> recipeType) {
+    //todo 問題ないかチェック
+    public Optional<? extends RecipeEntry<? extends AbstractCookingRecipe>> getRecipe(ItemStack stack, RecipeType<? extends AbstractCookingRecipe> recipeType) {
         return mob.getWorld().getRecipeManager().getFirstMatch(recipeType, new SimpleInventory(stack), mob.getWorld());
     }
 

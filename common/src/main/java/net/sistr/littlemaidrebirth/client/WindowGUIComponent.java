@@ -112,9 +112,9 @@ public class WindowGUIComponent extends GUIElement {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         for (GUIElement element : elements) {
-            if (element.mouseScrolled(mouseX, mouseY, amount)) {
+            if (element.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
                 return true;
             }
         }

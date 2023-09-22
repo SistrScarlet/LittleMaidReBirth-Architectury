@@ -93,11 +93,6 @@ public class IFFScreen extends Screen {
     }
 
     @Override
-    public void renderBackground(DrawContext context) {
-        super.renderBackground(context);
-    }
-
-    @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (scrollBar.mouseClicked(mouseX, mouseY, button)) {
             iffGui.setScroll(scrollBar.getPoint());
@@ -124,12 +119,12 @@ public class IFFScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        if (scrollBar.mouseScrolled(mouseX, mouseY, amount)) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        if (scrollBar.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
             iffGui.setScroll(scrollBar.getPoint());
             return true;
         } else {
-            if (iffGui.mouseScrolled(mouseX, mouseY, amount)) {
+            if (iffGui.mouseScrolled(mouseX, mouseY, horizontalAmount, verticalAmount)) {
                 scrollBar.setPoint(iffGui.getScroll());
                 return true;
             }
@@ -159,7 +154,12 @@ public class IFFScreen extends Screen {
                 EntityType<?> entityType = entity.getType();
                 if (renderClashed) return;
                 try {
-                    InventoryScreen.drawEntity(context, x + 15 * 12 + 15 / 2, y + 15 * 3, 15,
+                    //todo 位置調整
+                    InventoryScreen.drawEntity(context,
+                            x + 15 * 12 + 15 / 2, y + 15 * 3,
+                            x + 15 * 12 + 15 / 2, y + 15 * 3,
+                            15,
+                            0f,
                             x + 15 * 12 + 15 / 2f - mouseX,
                             y + 15 * 3 - mouseY - entity.getEyeHeight(EntityPose.STANDING) * 15, entity);
                 } catch (Exception e) {

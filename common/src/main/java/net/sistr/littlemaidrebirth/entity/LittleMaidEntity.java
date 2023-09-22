@@ -696,9 +696,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return null;
     }
 
+    //todo マウント云々の仕様変更
     /**
      * 上に乗ってるエンティティへのオフセット
-     */
+     *//*
     @Override
     public double getMountedHeightOffset() {
         IMultiModel model = getModel(Layer.SKIN, Part.HEAD)
@@ -706,15 +707,15 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return model.getMountedYOffset(getCaps());
     }
 
-    /**
+    *//**
      * 騎乗時のオフセット
-     */
+     *//*
     @Override
     public double getHeightOffset() {
         IMultiModel model = getModel(Layer.SKIN, Part.HEAD)
                 .orElse(LMModelManager.INSTANCE.getDefaultModel());
         return model.getyOffset(getCaps()) - getHeight();
-    }
+    }*/
 
     //このままだとEntityDimensionsが作っては捨てられてを繰り返すのでパフォーマンスはよろしくない
     //…が、そもそもそんなにたくさん呼ばれるメソッドでもない
@@ -926,8 +927,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //射撃
 
+
     @Override
-    public void attack(LivingEntity target, float pullProgress) {
+    public void shootAt(LivingEntity target, float pullProgress) {
         var stack = this.getMainHandStack();
         //弾が無い場合は実行されないはずだが、念のためチェック
         var arrowStack = this.getProjectileType(stack);

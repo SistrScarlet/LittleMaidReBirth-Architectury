@@ -13,7 +13,7 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 public class ContractMaidCriterion extends TameAnimalCriterion {
     private static final Identifier ID = new Identifier(LMRBMod.MODID, "contract_maid");
 
-    @Override
+    /*@Override
     public Identifier getId() {
         return ID;
     }
@@ -38,5 +38,5 @@ public class ContractMaidCriterion extends TameAnimalCriterion {
         public Identifier getId() {
             return ID;
         }
-    }
+    }*/
 }

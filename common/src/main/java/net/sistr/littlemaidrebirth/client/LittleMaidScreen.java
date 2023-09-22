@@ -162,10 +162,14 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
         super.render(context, mouseX, mouseY, partialTicks);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
+        //todo 位置調整
         InventoryScreen.drawEntity(context,
                 (this.width - this.backgroundWidth) / 2 + 52,
                 (this.height - this.backgroundHeight) / 2 + 59,
+                (this.width - this.backgroundWidth) / 2 + 52,
+                (this.height - this.backgroundHeight) / 2 + 59,
                 20,
+                0f,
                 (this.width - this.backgroundWidth) / 2F + 52 - mouseX,
                 (this.height - this.backgroundHeight) / 2F + 30 - mouseY, owner);
 

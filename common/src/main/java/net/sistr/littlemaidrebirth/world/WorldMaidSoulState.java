@@ -2,10 +2,12 @@ package net.sistr.littlemaidrebirth.world;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.ChunkUpdateState;
 import net.minecraft.world.PersistentState;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
@@ -16,6 +18,12 @@ import java.util.UUID;
 
 public class WorldMaidSoulState extends PersistentState {
     private final Map<UUID, List<LittleMaidEntity.MaidSoul>> maidSoulsMap = Maps.newHashMap();
+
+    //todo DataFixTypes、とは？
+    public static PersistentState.Type<WorldMaidSoulState> getPersistentStateType() {
+        return new PersistentState.Type<>(WorldMaidSoulState::new,
+                WorldMaidSoulState::createFromNbt, DataFixTypes.PLAYER);
+    }
 
     public void add(UUID ownerId, LittleMaidEntity.MaidSoul maidSoul) {
         maidSoulsMap.computeIfAbsent(ownerId, (id) -> Lists.newArrayList())
@@ -68,8 +76,7 @@ public class WorldMaidSoulState extends PersistentState {
         var persistentStateManager = world.getPersistentStateManager();
 
         return persistentStateManager.getOrCreate(
-                WorldMaidSoulState::createFromNbt,
-                WorldMaidSoulState::new,
+                getPersistentStateType(),
                 LMRBMod.MODID + "_maidsouls");
     }
 

@@ -90,7 +90,7 @@ public class SpawnLittleMaidPacket {
             maid.loadAdditionalSpawnData(buf);
             buf.release();
 
-            ((ClientWorld) world).addEntity(id, entity);
+            ((ClientWorld) world).addEntity(maid);
         }
     }
 

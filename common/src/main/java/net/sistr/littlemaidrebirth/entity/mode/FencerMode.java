@@ -23,10 +23,11 @@ public class FencerMode extends Mode {
         super(modeType, name);
         this.mob = mob;
         this.melee = new MeleeAttackGoal(mob, speed, memory) {
+            //todo 仕様変更あり、要調査
             @Override
-            protected void attack(LivingEntity target, double squaredDistance) {
+            protected void attack(LivingEntity target) {
                 double reachSq = this.getSquaredMaxAttackDistance(target);
-                if (reachSq < squaredDistance || 0 < getCooldown() || !this.mob.canSee(target)) {
+                if (reachSq < this.mob.squaredDistanceTo(target) || 0 < getCooldown() || !this.mob.canSee(target)) {
                     return;
                 }
                 this.mob.getNavigation().stop();
@@ -45,7 +46,6 @@ public class FencerMode extends Mode {
                 ((MeleeAttackGoalAccessor) melee).setCooldown(cool);
             }
 
-            @Override
             protected double getSquaredMaxAttackDistance(LivingEntity entity) {
                 return ReachAttributeUtil.getAttackRangeSq(mob)
                         * LMRBMod.getConfig().getFencerRangeFactor();

@@ -82,7 +82,8 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
             return;
         }
         float z = -6 / 16f * 0.9375F;
-        float y = (float) (this.getMountedHeightOffset() - 4 / 16f * 0.9375F + passenger.getHeightOffset());
+        //todo マウントの仕様変更
+        float y = 0f;//(float) (this.getMountedHeightOffset() - 4 / 16f * 0.9375F + passenger.getHeightOffset());
         Vec3d pos = new Vec3d(z, 0.0, 0.0).rotateY((float) (-this.bodyYaw * (Math.PI / 180.0) - Math.PI / 2.0));
         positionUpdater.accept(passenger, this.getX() + pos.x, this.getY() + (double) y, this.getZ() + pos.z);
         this.copyEntityData(passenger);

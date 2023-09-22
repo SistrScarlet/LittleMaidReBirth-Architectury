@@ -49,7 +49,7 @@ public class ArcherMode extends RangedAttackBaseMode {
                 } else {
                     this.cool = 5;
                     this.mob.clearActiveItem();
-                    this.mob.attack(target, 1.0f);
+                    this.mob.shootAt(target, 1.0f);
                     this.mob.play(LMSounds.SHOOT);
                     this.mob.swingHand(Hand.MAIN_HAND);
                     itemStack.damage(1, this.mob, e -> e.sendToolBreakStatus(Hand.MAIN_HAND));
@@ -81,7 +81,7 @@ public class ArcherMode extends RangedAttackBaseMode {
                 if (result.isPresent()) {
                     this.cool = 10;
                 } else {//射撃
-                    this.mob.attack(target, 1.0f);
+                    this.mob.shootAt(target, 1.0f);
                     CrossbowItem.setCharged(itemStack, false);
                     this.mob.play(LMSounds.SHOOT);
                     this.mob.swingHand(Hand.MAIN_HAND);
