@@ -36,7 +36,17 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             new Identifier("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
     private static final Identifier SALARY_WINDOW_TEXTURE =
             new Identifier("littlemaidrebirth", "textures/gui/salary_window.png");
-    private static final Identifier ICONS = new Identifier("textures/gui/icons.png");
+    private static final IconDrawer HEART_ICON_DRAWER = new IconDrawer(
+            9, 9,
+            new Identifier("textures/gui/sprites/hud/heart/container.png"),
+            new Identifier("textures/gui/sprites/hud/heart/half.png"),
+            new Identifier("textures/gui/sprites/hud/heart/full.png"),
+            new Identifier("textures/gui/sprites/hud/heart/container.png"));
+    private static final IconDrawer ARMOR_ICON_DRAWER = new IconDrawer(
+            9, 9,
+            new Identifier("textures/gui/sprites/hud/armor_empty.png"),
+            new Identifier("textures/gui/sprites/hud/armor_half.png"),
+            new Identifier("textures/gui/sprites/hud/armor_full.png"));
     private static final ItemStack ARMOR = Items.LEATHER_CHESTPLATE.getDefaultStack();
     private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
     private static final ItemStack NOTE = Items.NOTE_BLOCK.getDefaultStack();
@@ -233,38 +243,15 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                     98 + (int) ((5 * 9 - textRenderer.getWidth(healthStr)) / 2F),
                     16 - (int) (textRenderer.fontHeight / 2F), 0x404040, false);
         } else {
-            float health = (owner.getHealth() / owner.getMaxHealth()) * 20F;
-            drawHealth(context, 98, 7, MathHelper.clamp(health - 10, 0, 10), 5);
-            drawHealth(context, 98, 16, MathHelper.clamp(health, 0, 10), 5);
+            int health = (int) (owner.getHealth() / owner.getMaxHealth() * 20);
+            HEART_ICON_DRAWER.drawIconMatrix(context, 98, 7, 2, 5, health);
         }
         RenderSystem.setShaderTexture(0, GUI);
     }
 
     protected void drawArmor(DrawContext context) {
-        float armor = owner.getArmor();
-        drawArmor(context, 98, 7, MathHelper.clamp(armor - 10, 0, 10), 5);
-        drawArmor(context, 98, 16, MathHelper.clamp(armor, 0, 10), 5);
-    }
-
-    protected void drawHealth(DrawContext context, int x, int y, float health, int rowHeart) {
-        drawIcon(context, x, y, health, rowHeart, 16, 0, 52, 0, 61, 0);
-    }
-
-    protected void drawArmor(DrawContext context, int x, int y, float health, int rowHeart) {
-        drawIcon(context, x, y, health, rowHeart, 16, 9, 34, 9, 25, 9);
-    }
-
-    protected void drawIcon(DrawContext context, int x, int y, float num, int row,
-                            int baseU, int baseV, int overU, int overV, int halfU, int halfV) {
-        for (int i = 0; i < row; i++) {
-            context.drawTexture(ICONS, x + i * 9, y, baseU, baseV, 9, 9);
-            if (1 < num) {
-                context.drawTexture(ICONS, x + i * 9, y, overU, overV, 9, 9);
-            } else if (0 < num) {
-                context.drawTexture(ICONS, x + i * 9, y, halfU, halfV, 9, 9);
-            }
-            num -= 2;
-        }
+        int armor = owner.getArmor();
+        ARMOR_ICON_DRAWER.drawIconMatrix(context, 98, 7, 2, 5, armor);
     }
 
     @Override
