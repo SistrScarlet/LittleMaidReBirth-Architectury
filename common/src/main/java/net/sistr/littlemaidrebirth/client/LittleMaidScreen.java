@@ -162,16 +162,19 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
         super.render(context, mouseX, mouseY, partialTicks);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
-        //todo 位置調整
+        int scale = 20;
+        int left = 26;
+        int up = 8;
+        int right = 78;
+        int down = 60;
         InventoryScreen.drawEntity(context,
-                (this.width - this.backgroundWidth) / 2 + 52,
-                (this.height - this.backgroundHeight) / 2 + 59,
-                (this.width - this.backgroundWidth) / 2 + 52,
-                (this.height - this.backgroundHeight) / 2 + 59,
-                20,
-                0f,
-                (this.width - this.backgroundWidth) / 2F + 52 - mouseX,
-                (this.height - this.backgroundHeight) / 2F + 30 - mouseY, owner);
+                (this.width - this.backgroundWidth) / 2 + left,
+                (this.height - this.backgroundHeight) / 2 + up,
+                (this.width - this.backgroundWidth) / 2 + right,
+                (this.height - this.backgroundHeight) / 2 + down,
+                scale,
+                -owner.getHeight() / 2.0F + (down - up) / 2.0F / scale,
+                mouseX, mouseY, owner);
 
         if (showSalaryWindow) {
             salaryWindow.render(context, mouseX, mouseY, partialTicks);
