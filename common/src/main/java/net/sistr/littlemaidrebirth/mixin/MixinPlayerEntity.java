@@ -2,20 +2,19 @@ package net.sistr.littlemaidrebirth.mixin;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityDimensions;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.*;
-import net.sistr.littlemaidrebirth.setup.Registration;
-import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
+import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -74,37 +73,31 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
     }
 
     @Override
-    public void updatePassengerPosition(Entity passenger, PositionUpdater positionUpdater) {
-        if (!(passenger instanceof LittleMaidEntity)) {
-            super.updatePassengerPosition(passenger, positionUpdater);
+    protected void updatePassengerPosition(Entity passenger, PositionUpdater positionUpdater) {
+        super.updatePassengerPosition(passenger, positionUpdater);
+        if (passenger instanceof LittleMaidEntity maid) {
+            clampPassengerLMYaw(maid);
         }
-        if (!this.hasPassenger(passenger)) {
-            return;
-        }
-        float z = -6 / 16f * 0.9375F;
-        //todo マウントの仕様変更
-        float y = 0f;//(float) (this.getMountedHeightOffset() - 4 / 16f * 0.9375F + passenger.getHeightOffset());
-        Vec3d pos = new Vec3d(z, 0.0, 0.0).rotateY((float) (-this.bodyYaw * (Math.PI / 180.0) - Math.PI / 2.0));
-        positionUpdater.accept(passenger, this.getX() + pos.x, this.getY() + (double) y, this.getZ() + pos.z);
-        this.copyEntityData(passenger);
+    }
+
+    @Unique
+    protected void clampPassengerLMYaw(LittleMaidEntity maid) {
+        maid.setBodyYaw(this.getBodyYaw());
+        maid.setYaw(this.getBodyYaw());
+        float maidHead2PlayerBody = MathHelper.wrapDegrees(this.getBodyYaw() - maid.getHeadYaw());
+        float clamped = MathHelper.clamp(maidHead2PlayerBody, -maid.getMaxHeadRotation(), maid.getMaxHeadRotation());
+        maid.setHeadYaw(maid.getHeadYaw() + maidHead2PlayerBody - clamped);
     }
 
     @Override
-    public void onPassengerLookAround(Entity passenger) {
-        if (!(passenger instanceof LittleMaidEntity)) {
-            super.onPassengerLookAround(passenger);
+    protected Vector3f getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
+        if (passenger instanceof LittleMaidEntity) {
+            float playerHeight = 1.8f;
+            float percent = (playerHeight - 6f / 16f) / playerHeight;
+            float z = -6 / 16f * 0.9375F;
+            return new Vector3f(0.0f, dimensions.height * percent, z);
         }
-        copyEntityData(passenger);
-    }
-
-    protected void copyEntityData(Entity entity) {
-        float yaw = this.bodyYaw;
-        entity.setBodyYaw(yaw);
-        float f = MathHelper.wrapDegrees(yaw - this.getYaw());
-        float f1 = MathHelper.clamp(f, -105.0F, 105.0F);
-        entity.prevYaw += f1 - f;
-        entity.setYaw(yaw + f1 - f);
-        entity.setHeadYaw(yaw);
+        return super.getPassengerAttachmentPos(passenger, dimensions, scaleFactor);
     }
 
     @Inject(method = "wakeUp(ZZ)V", at = @At("RETURN"))

@@ -696,26 +696,19 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return null;
     }
 
-    //todo マウント云々の仕様変更
-    /**
-     * 上に乗ってるエンティティへのオフセット
-     *//*
-    @Override
-    public double getMountedHeightOffset() {
-        IMultiModel model = getModel(Layer.SKIN, Part.HEAD)
+    protected Vector3f getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
+        IMultiModel model = this.getModel(Layer.SKIN, Part.HEAD)
                 .orElse(LMModelManager.INSTANCE.getDefaultModel());
-        return model.getMountedYOffset(getCaps());
+        IModelCaps caps = this.getCaps();
+        float height = model.getHeight(caps, MMPose.STANDING);
+        return new Vector3f(0.0F, height + 0.0625F * scaleFactor, 0.0F);
     }
 
-    *//**
-     * 騎乗時のオフセット
-     *//*
-    @Override
-    public double getHeightOffset() {
-        IMultiModel model = getModel(Layer.SKIN, Part.HEAD)
+    protected float getUnscaledRidingOffset(Entity vehicle) {
+        IMultiModel model = this.getModel(Layer.SKIN, Part.HEAD)
                 .orElse(LMModelManager.INSTANCE.getDefaultModel());
-        return model.getyOffset(getCaps()) - getHeight();
-    }*/
+        return -model.getMountedYOffset(this.getCaps());
+    }
 
     //このままだとEntityDimensionsが作っては捨てられてを繰り返すのでパフォーマンスはよろしくない
     //…が、そもそもそんなにたくさん呼ばれるメソッドでもない
