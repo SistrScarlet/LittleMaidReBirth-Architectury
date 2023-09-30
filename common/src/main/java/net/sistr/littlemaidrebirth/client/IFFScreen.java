@@ -154,14 +154,13 @@ public class IFFScreen extends Screen {
                 EntityType<?> entityType = entity.getType();
                 if (renderClashed) return;
                 try {
-                    //todo 位置調整
+                    int scale = 15;
                     InventoryScreen.drawEntity(context,
-                            x + 15 * 12 + 15 / 2, y + 15 * 3,
-                            x + 15 * 12 + 15 / 2, y + 15 * 3,
-                            15,
-                            0f,
-                            x + 15 * 12 + 15 / 2f - mouseX,
-                            y + 15 * 3 - mouseY - entity.getEyeHeight(EntityPose.STANDING) * 15, entity);
+                            x, y,
+                            x + width, y + height,
+                            scale,
+                            -entity.getHeight() / 2.0F + height / 2.0F / scale,
+                            mouseX, mouseY, entity);
                 } catch (Exception e) {
                     LMRBMod.LOGGER.warn("描画処理がクラッシュしました。" + entityType + ":" + entity);
                     e.printStackTrace();
@@ -173,6 +172,7 @@ public class IFFScreen extends Screen {
                     entityRenderDispatcher.setRenderShadows(true);
                     context.getMatrices().pop();
                     DiffuseLighting.enableGuiDepthLighting();
+                    context.disableScissor();
                 }
             });
             TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
