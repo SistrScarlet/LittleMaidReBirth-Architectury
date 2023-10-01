@@ -59,7 +59,7 @@ public class SyncSoundConfigPacket {
     private static void applySoundConfigClient(int id, String configName) {
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return;
-        World world = player.world;
+        World world = player.getWorld();
         Entity entity = world.getEntityById(id);
         if (entity instanceof SoundPlayable) {
             LMConfigManager.INSTANCE.getConfig(configName)
@@ -74,7 +74,7 @@ public class SyncSoundConfigPacket {
     }
 
     private static void applySoundConfigServer(PlayerEntity player, int id, String configName) {
-        World world = player.world;
+        World world = player.getWorld();
         Entity entity = world.getEntityById(id);
         if (!(entity instanceof SoundPlayable)) {
             return;

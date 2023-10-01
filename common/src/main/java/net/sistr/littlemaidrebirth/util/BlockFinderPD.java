@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;

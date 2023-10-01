@@ -1,6 +1,7 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
 import com.google.common.collect.ImmutableList;
+import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
 import net.minecraft.entity.ai.goal.Goal;
@@ -9,7 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.sistr.littlemaidrebirth.util.BlockFinderPD;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.EnumSet;
 import java.util.function.Predicate;
 
@@ -38,7 +39,7 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
             this.count = 0;
             blockFinder = new BlockFinderPD(ImmutableList.of(this.mob.getBlockPos().up()),
                     this::isContainer,
-                    pos -> mob.world.isAir(pos)
+                    pos -> mob.getWorld().isAir(pos)
                             && Math.abs(pos.getY() - mob.getY()) < 2
                             && pos.getSquaredDistance(this.mob.getPos()) < searchDistanceSq,
                     searchDistanceSq * 8);
@@ -57,8 +58,9 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
     }
 
     protected boolean isContainer(BlockPos pos) {
-        BlockState state = mob.world.getBlockState(pos);
-        return state.getBlock() instanceof ChestBlock;
+        BlockState state = mob.getWorld().getBlockState(pos);
+        return state.getBlock() instanceof ChestBlock
+                || state.getBlock() instanceof BarrelBlock;
     }
 
     protected abstract boolean isInventoryFull();

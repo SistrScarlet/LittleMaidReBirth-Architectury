@@ -1,7 +1,5 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ChestBlock;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
@@ -12,7 +10,6 @@ import net.minecraft.util.math.Direction;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
-import java.util.Optional;
 import java.util.function.Predicate;
 
 public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends StoreItemToContainerGoal<T> {
@@ -56,28 +53,26 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
         if (containerPos == null) {
             return;
         }
-        getInventory().ifPresent(chestInventory -> {
-            Inventory inventory = this.mob.getInventory();
-            this.mob.world.playSound(null, containerPos,
-                    SoundEvents.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS,
-                    1.0f, 1.0f);
-            this.mob.swingHand(Hand.MAIN_HAND);
-            for (int i = 0; i < inventory.size(); i++) {
-                var stack = inventory.getStack(i);
-                if (this.exceptItems.test(stack)) {
-                    continue;
-                }
-                var newStack = HopperBlockEntity.transfer(inventory, chestInventory, stack, Direction.UP);
-                inventory.setStack(i, newStack);
+
+        Inventory container = HopperBlockEntity.getInventoryAt(this.mob.getWorld(), containerPos);
+        if (container == null) {
+            return;
+        }
+
+        this.mob.getWorld().playSound(null, containerPos,
+                SoundEvents.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS,
+                1.0f, 1.0f);
+        this.mob.swingHand(Hand.MAIN_HAND);
+
+        var inventory = this.mob.getInventory();
+        for (int i = 0; i < inventory.size(); i++) {
+            var stack = inventory.getStack(i);
+            if (this.exceptItems.test(stack)) {
+                continue;
             }
-        });
+            var newStack = HopperBlockEntity.transfer(inventory, container, stack, Direction.UP);
+            inventory.setStack(i, newStack);
+        }
     }
 
-    protected Optional<Inventory> getInventory() {
-        BlockState state = mob.world.getBlockState(containerPos);
-        if (state.getBlock() instanceof ChestBlock chestBlock) {
-            return Optional.ofNullable(ChestBlock.getInventory(chestBlock, state, mob.world, containerPos, false));
-        }
-        return Optional.empty();
-    }
 }

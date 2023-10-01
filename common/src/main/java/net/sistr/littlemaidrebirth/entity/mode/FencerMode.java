@@ -25,30 +25,23 @@ public class FencerMode extends Mode {
         this.melee = new MeleeAttackGoal(mob, speed, memory) {
             @Override
             protected void attack(LivingEntity target, double squaredDistance) {
-                double reachSq = this.getSquaredMaxAttackDistance(target);
-                if (reachSq < squaredDistance || 0 < getCooldown() || !this.mob.canSee(target)) {
-                    return;
+                if (this.mob.canSee(target)) {
+                    super.attack(target, squaredDistance);
                 }
-                this.mob.getNavigation().stop();
-
-                this.mob.swingHand(Hand.MAIN_HAND);
-                if (this.mob instanceof SoundPlayable) {
-                    ((SoundPlayable) mob).play(LMSounds.ATTACK);
-                }
-
-                if (this.mob.tryAttack(target)) {
-                    this.mob.getMainHandStack().damage(1, this.mob, e -> e.sendToolBreakStatus(Hand.MAIN_HAND));
-                }
-                double attackSpeed = this.mob.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED);
-                int cool = MathHelper.ceil(1 / attackSpeed * 20
-                        / LMRBMod.getConfig().getFencerAttackRateFactor());
-                ((MeleeAttackGoalAccessor) melee).setCooldown(cool);
             }
 
             @Override
             protected double getSquaredMaxAttackDistance(LivingEntity entity) {
                 return ReachAttributeUtil.getAttackRangeSq(mob)
                         * LMRBMod.getConfig().getFencerRangeFactor();
+            }
+
+            @Override
+            protected void resetCooldown() {
+                double attackSpeed = this.mob.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED);
+                int cool = MathHelper.ceil(1 / attackSpeed * 20
+                        / LMRBMod.getConfig().getFencerAttackRateFactor());
+                ((MeleeAttackGoalAccessor) melee).setCooldown(cool);
             }
         };
     }
@@ -80,4 +73,8 @@ public class FencerMode extends Mode {
         melee.stop();
     }
 
+    @Override
+    public boolean isBattleMode() {
+        return true;
+    }
 }

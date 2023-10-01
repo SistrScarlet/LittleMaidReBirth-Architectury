@@ -37,7 +37,7 @@ import java.util.Map;
 
 /**
  * メイドさんの頭飾りレンダラ
- * */
+ */
 @Environment(value = EnvType.CLIENT)
 public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityModel<T>>
         extends FeatureRenderer<T, M> {

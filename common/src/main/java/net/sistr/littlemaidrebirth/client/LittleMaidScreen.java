@@ -25,9 +25,11 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
-import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetMovingStatePacket;
+import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
+
+import java.util.function.Supplier;
 
 //todo モード名表示/移動状態をアイコンで表記
 @Environment(EnvType.CLIENT)

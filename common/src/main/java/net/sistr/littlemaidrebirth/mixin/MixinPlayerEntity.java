@@ -103,4 +103,9 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
         entity.setYaw(yaw + f1 - f);
         entity.setHeadYaw(yaw);
     }
+
+    @Inject(method = "wakeUp(ZZ)V", at = @At("RETURN"))
+    private void onWakeUp(boolean skipSleepTimer, boolean updateSleepingPlayers, CallbackInfo ci) {
+
+    }
 }

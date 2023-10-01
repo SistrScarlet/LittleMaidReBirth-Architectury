@@ -106,7 +106,7 @@ public abstract class RangedAttackBaseMode extends Mode {
         Vec3d start = this.mob.getCameraPosVec(1F);
         Vec3d end = start.add(toTargetVec.multiply(maxRange));
         Box box = new Box(start, end).expand(1D);
-        var result = ProjectileUtil.getEntityCollision(mob.world, this.mob, start, end, box, predicate);
+        var result = ProjectileUtil.getEntityCollision(mob.getWorld(), this.mob, start, end, box, predicate);
         return Optional.ofNullable(result);
     }
 

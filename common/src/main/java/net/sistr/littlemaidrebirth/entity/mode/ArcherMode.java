@@ -112,4 +112,9 @@ public class ArcherMode extends RangedAttackBaseMode {
             this.mob.setCharging(false);
         }
     }
+
+    @Override
+    public boolean isBattleMode() {
+        return true;
+    }
 }

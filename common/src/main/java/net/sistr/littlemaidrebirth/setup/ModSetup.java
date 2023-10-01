@@ -3,23 +3,21 @@ package net.sistr.littlemaidrebirth.setup;
 import dev.architectury.registry.CreativeTabRegistry;
 import dev.architectury.registry.level.biome.BiomeModifications;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnGroup;
-import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
-import net.minecraft.tag.BiomeTags;
+import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.Heightmap;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.SpawnSettings;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Modes;
-import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.iff.IFFType;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
 import net.sistr.littlemaidrebirth.network.Networking;
-import net.sistr.littlemaidrebirth.util.SpawnRestrictionRegister;
+
+import java.util.List;
 
 public class ModSetup {
     public static final ItemGroup ITEM_GROUP = CreativeTabRegistry
@@ -35,7 +33,9 @@ public class ModSetup {
         IFFTypeManager iffTypeManager = IFFTypeManager.getINSTANCE();
         Registry.ENTITY_TYPE.stream()
                 .filter(EntityType::isSummonable)
-                .filter(type -> type.getSpawnGroup() != SpawnGroup.MISC)
+                //ファッキン仕様変更によりゴーレム/村人のSpawnGroupがMISCになったため無効
+                //IFFのsetup時に非生物系を除外するよう変更
+                //.filter(type -> type.getSpawnGroup() != SpawnGroup.MISC)
                 .forEach(entityType ->
                         iffTypeManager.register(EntityType.getId(entityType),
                                 new IFFType(IFFTag.UNKNOWN, entityType)));
@@ -45,25 +45,41 @@ public class ModSetup {
     }
 
     private static void registerSpawnSettingLM() {
-        BiomeModifications.addProperties(ModSetup::canSpawnBiome,
+        var spawnBiomeTags = LMRBMod.getConfig().getMaidSpawnBiomeTags()
+                .stream()
+                .filter(Identifier::isValid)
+                .map(Identifier::new)
+                .map(id -> TagKey.of(Registry.BIOME_KEY, id))
+                .toList();
+        var spawnExcludeBiomeTags = LMRBMod.getConfig().getMaidSpawnExcludeBiomeTags()
+                .stream()
+                .filter(Identifier::isValid)
+                .map(Identifier::new)
+                .map(id -> TagKey.of(Registry.BIOME_KEY, id))
+                .toList();
+        BiomeModifications.addProperties((context) -> canSpawnBiome(context, spawnBiomeTags, spawnExcludeBiomeTags),
                 (context, mutable) -> mutable.getSpawnProperties()
                         .addSpawn(Registration.LITTLE_MAID_MOB.get().getSpawnGroup(),
                                 new SpawnSettings.SpawnEntry(Registration.LITTLE_MAID_MOB.get(),
                                         LMRBMod.getConfig().getSpawnWeight(),
                                         LMRBMod.getConfig().getMinSpawnGroupSize(),
                                         LMRBMod.getConfig().getMaxSpawnGroupSize())));
-
-        SpawnRestrictionRegister.callRegister(Registration.LITTLE_MAID_MOB.get(),
-                SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-                (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }
 
-    private static boolean canSpawnBiome(BiomeModifications.BiomeContext context) {
-        return context.hasTag(BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE)
-                || context.hasTag(BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE)
-                || context.hasTag(BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE)
-                || context.hasTag(BiomeTags.VILLAGE_SNOWY_HAS_STRUCTURE)
-                || context.hasTag(BiomeTags.VILLAGE_TAIGA_HAS_STRUCTURE);
+    private static boolean canSpawnBiome(BiomeModifications.BiomeContext context,
+                                         List<TagKey<Biome>> spawnBiomeTags,
+                                         List<TagKey<Biome>> spawnExcludeBiomeTags) {
+        for (TagKey<Biome> biomeTag : spawnBiomeTags) {
+            if (context.hasTag(biomeTag)) {
+                for (TagKey<Biome> excludeBiomeTag : spawnExcludeBiomeTags) {
+                    if (context.hasTag(excludeBiomeTag)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }
+        return false;
     }
 
 }
