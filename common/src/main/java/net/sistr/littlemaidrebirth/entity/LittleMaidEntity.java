@@ -15,6 +15,7 @@ import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttributes;
+import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.damage.DamageEffects;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
@@ -837,6 +838,38 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.unsetRemoved();
         this.dead = false;
         this.deathTime = 0;
+    }
+
+    @Override
+    public boolean tryAttack(Entity target) {
+        boolean result = super.tryAttack(target);
+        if (this.isBloodSuck()) {
+            this.play(LMSounds.ATTACK_BLOOD_SUCK);
+        } else {
+            this.play(LMSounds.ATTACK);
+        }
+        //PlayerEntityのattack処理を参考に、武器の耐久地を減らす処理を実装する
+        if (result) {
+            ItemStack mainHandStack = this.getMainHandStack();
+            Entity entity = target;
+            if (target instanceof EnderDragonPart) {
+                entity = ((EnderDragonPart) target).owner;
+            }
+            if (!this.getWorld().isClient && !mainHandStack.isEmpty() && entity instanceof LivingEntity) {
+                //バニラではこのメソッドの第三引数にはプレイヤーエンティティしか渡されない
+                //そのため、他Modにおいて必ずプレイヤーであると仮定して実装した場合にクラッシュする可能性がある
+                //その対策にtry/catchを置いておく
+                try {
+                    mainHandStack.getItem().postHit(mainHandStack, (LivingEntity) entity, this);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                if (mainHandStack.isEmpty()) {
+                    this.setStackInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
+                }
+            }
+        }
+        return result;
     }
 
     @Override
