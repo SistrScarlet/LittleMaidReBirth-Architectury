@@ -172,19 +172,6 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
         super.render(context, mouseX, mouseY, partialTicks);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
-        int scale = 20;
-        int left = 26;
-        int up = 8;
-        int right = 78;
-        int down = 60;
-        InventoryScreen.drawEntity(context,
-                (this.width - this.backgroundWidth) / 2 + left,
-                (this.height - this.backgroundHeight) / 2 + up,
-                (this.width - this.backgroundWidth) / 2 + right,
-                (this.height - this.backgroundHeight) / 2 + down,
-                scale,
-                -owner.getHeight() / 2.0F + (down - up) / 2.0F / scale,
-                mouseX, mouseY, owner);
 
         if (showSalaryWindow) {
             salaryWindow.render(context, mouseX, mouseY, partialTicks);
@@ -246,7 +233,6 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             int health = (int) (owner.getHealth() / owner.getMaxHealth() * 20);
             HEART_ICON_DRAWER.drawIconMatrix(context, 98, 7, 2, 5, health);
         }
-        RenderSystem.setShaderTexture(0, GUI);
     }
 
     protected void drawArmor(DrawContext context) {
@@ -259,6 +245,20 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int relX = (this.width - this.backgroundWidth) / 2;
         int relY = (this.height - this.backgroundHeight) / 2;
         context.drawTexture(GUI, relX, relY, 0, 0, this.backgroundWidth, this.backgroundHeight);
+
+        int scale = 20;
+        int left = 26;
+        int up = 8;
+        int right = 78;
+        int down = 60;
+        InventoryScreen.drawEntity(context,
+                (this.width - this.backgroundWidth) / 2 + left,
+                (this.height - this.backgroundHeight) / 2 + up,
+                (this.width - this.backgroundWidth) / 2 + right,
+                (this.height - this.backgroundHeight) / 2 + down,
+                scale,
+                -owner.getHeight() / 2.0F + (down - up) / 2.0F / scale,
+                mouseX, mouseY, owner);
     }
 
     @Override
