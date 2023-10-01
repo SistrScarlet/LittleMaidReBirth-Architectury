@@ -3,9 +3,7 @@ package net.sistr.littlemaidrebirth.entity.mode;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
-import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
@@ -23,32 +21,29 @@ public class FencerMode extends Mode {
         super(modeType, name);
         this.mob = mob;
         this.melee = new MeleeAttackGoal(mob, speed, memory) {
-            //todo 仕様変更あり、要調査
+
             @Override
-            protected void attack(LivingEntity target) {
-                double reachSq = this.getSquaredMaxAttackDistance(target);
-                if (reachSq < this.mob.squaredDistanceTo(target) || 0 < getCooldown() || !this.mob.canSee(target)) {
-                    return;
-                }
-                this.mob.getNavigation().stop();
+            protected boolean canAttack(LivingEntity target) {
+                return this.isCooledDown()
+                        && this.isInAttackRange(target)
+                        && this.mob.getVisibilityCache().canSee(target);
+            }
 
-                this.mob.swingHand(Hand.MAIN_HAND);
-                if (this.mob instanceof SoundPlayable) {
-                    ((SoundPlayable) mob).play(LMSounds.ATTACK);
-                }
+            private double getAttackRadiusSq() {
+                return ReachAttributeUtil.getAttackRangeSq(mob)
+                        * LMRBMod.getConfig().getFencerRangeFactor();
+            }
 
-                if (this.mob.tryAttack(target)) {
-                    this.mob.getMainHandStack().damage(1, this.mob, e -> e.sendToolBreakStatus(Hand.MAIN_HAND));
-                }
+            private boolean isInAttackRange(LivingEntity target) {
+                return this.mob.squaredDistanceTo(target) < this.getAttackRadiusSq();
+            }
+
+            @Override
+            protected void resetCooldown() {
                 double attackSpeed = this.mob.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED);
                 int cool = MathHelper.ceil(1 / attackSpeed * 20
                         / LMRBMod.getConfig().getFencerAttackRateFactor());
                 ((MeleeAttackGoalAccessor) melee).setCooldown(cool);
-            }
-
-            protected double getSquaredMaxAttackDistance(LivingEntity entity) {
-                return ReachAttributeUtil.getAttackRangeSq(mob)
-                        * LMRBMod.getConfig().getFencerRangeFactor();
             }
         };
     }
