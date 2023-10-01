@@ -6,7 +6,6 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.encryption.PlayerPublicKey;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
@@ -102,5 +101,10 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
         entity.prevYaw += f1 - f;
         entity.setYaw(yaw + f1 - f);
         entity.setHeadYaw(yaw);
+    }
+
+    @Inject(method = "wakeUp(ZZ)V", at = @At("RETURN"))
+    private void onWakeUp(boolean skipSleepTimer, boolean updateSleepingPlayers, CallbackInfo ci) {
+
     }
 }

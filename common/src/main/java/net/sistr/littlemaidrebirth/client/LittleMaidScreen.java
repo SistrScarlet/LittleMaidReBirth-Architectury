@@ -133,7 +133,6 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                 RenderSystem.setShaderTexture(0, SALARY_WINDOW_TEXTURE);
                 drawTexture(matrices, this.x, this.y, 0, 0, 80, 80, 128, 128);
-                super.render(matrices, mouseX, mouseY, delta);
             }
         };
         this.addDrawableChild(new ButtonWidget(left - size, top + size * (layer += 2), size, size, Text.of(""),

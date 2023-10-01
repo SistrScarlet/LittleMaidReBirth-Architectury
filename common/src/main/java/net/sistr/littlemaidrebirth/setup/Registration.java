@@ -10,6 +10,7 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.ScreenHandlerType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
+import net.sistr.littlemaidrebirth.entity.MaidSoulEntity;
 import net.sistr.littlemaidrebirth.item.LittleMaidSpawnEggItem;
 
 import static net.sistr.littlemaidrebirth.LMRBMod.MODID;
@@ -30,6 +31,10 @@ public class Registration {
             ENTITIES.register("little_maid_mob", () ->
                     EntityType.Builder.<LittleMaidEntity>create(LittleMaidEntity::new, SpawnGroup.CREATURE)
                             .setDimensions(0.5F, 1.35F).build("little_maid_mob"));
+    public static final RegistrySupplier<EntityType<MaidSoulEntity>> MAID_SOUL_ENTITY =
+            ENTITIES.register("maid_soul", () ->
+                    EntityType.Builder.<MaidSoulEntity>create(MaidSoulEntity::new, SpawnGroup.MISC)
+                            .setDimensions(0.5F, 0.5F).build("maid_soul"));
 
     //アイテム
     public static final RegistrySupplier<Item> LITTLE_MAID_SPAWN_EGG_ITEM =

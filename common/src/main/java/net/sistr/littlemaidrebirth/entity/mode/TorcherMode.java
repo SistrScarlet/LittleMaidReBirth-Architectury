@@ -47,6 +47,7 @@ public class TorcherMode extends Mode {
         if (!(item instanceof BlockItem)) {
             return false;
         }
+        //todo blockFinderを使いまわす
         if (blockFinder == null || blockFinder.isEnd() || count++ > 100) {
             this.count = 0;
             BlockPos basePos;
@@ -75,12 +76,12 @@ public class TorcherMode extends Mode {
     }
 
     public boolean isDark(BlockPos pos) {
-        return mob.world.getLightLevel(pos) <= LMRBMod.getConfig().getTorcherLightLevelThreshold();
+        return mob.getWorld().getLightLevel(pos) <= LMRBMod.getConfig().getTorcherLightLevelThreshold();
     }
 
     public boolean isPlaceable(BlockPos pos) {
-        return mob.world.isAir(pos)
-                && TorchBlock.sideCoversSmallSquare(this.mob.world, pos.down(), Direction.UP);
+        return mob.getWorld().isAir(pos)
+                && TorchBlock.sideCoversSmallSquare(this.mob.getWorld(), pos.down(), Direction.UP);
     }
 
     @Override
@@ -98,9 +99,14 @@ public class TorcherMode extends Mode {
 
     @Override
     public void tick() {
+        //なぜかnullの場合があるので必須
+        if (placePos == null) {
+            return;
+        }
         //一定時間経過しても置けない、または明るい地点を無視
-        if (40 < ++this.failPlaceTimer
-                || LMRBMod.getConfig().getTorcherLightLevelThreshold() < mob.world.getLightLevel(placePos)) {
+        if (60 < ++this.failPlaceTimer
+                || LMRBMod.getConfig().getTorcherLightLevelThreshold()
+                < mob.getWorld().getLightLevel(placePos)) {
             this.placePos = null;
             this.failPlaceTimer = 0;
             return;
@@ -116,7 +122,8 @@ public class TorcherMode extends Mode {
             if (--recalcPathTimer < 0) {
                 recalcPathTimer = 20;
                 Path path = this.mob.getNavigation().findPathTo(placePos.getX(), placePos.getY(), placePos.getZ(), 2);
-                if (path == null) {
+                if (path == null || path.getEnd() == null
+                        || !path.getEnd().getBlockPos().isWithinDistance(placePos, 3)) {
                     placePos = null;
                     return;
                 }
@@ -129,9 +136,9 @@ public class TorcherMode extends Mode {
         ItemStack itemStack = mob.getMainHandStack();
         Item item = itemStack.getItem();
         assert item instanceof BlockItem;
-        if (mob.world.isAir(placePos)) {
+        if (mob.getWorld().isAir(placePos)) {
             try {
-                ((BlockItem) item).place(new AutomaticItemPlacementContext(mob.world, placePos, Direction.UP, itemStack, Direction.UP));
+                ((BlockItem) item).place(new AutomaticItemPlacementContext(mob.getWorld(), placePos, Direction.UP, itemStack, Direction.UP));
             } catch (Exception e) {
                 LMRBMod.LOGGER.warn("Torcherでのブロック設置時に例外が発生しました。");
                 e.printStackTrace();
@@ -148,6 +155,7 @@ public class TorcherMode extends Mode {
         this.failPlaceTimer = 0;
         this.recalcPathTimer = 0;
         this.mob.setSprinting(false);
+        this.mob.getNavigation().stop();
     }
 
 }

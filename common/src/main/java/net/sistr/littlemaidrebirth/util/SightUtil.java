@@ -1,14 +1,15 @@
 package net.sistr.littlemaidrebirth.util;
 
-import net.minecraft.block.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -177,7 +178,8 @@ public class SightUtil {
             if (result.getType() == HitResult.Type.MISS) {
                 return true;
             }
-            if (world.getBlockState(result.getBlockPos()).getMaterial() == Material.GLASS) {
+            var blockState = world.getBlockState(result.getBlockPos());
+            if (blockState.getBlock().isTransparent(blockState, world, result.getBlockPos())) {
                 view = result.getPos().add(toEnd);
                 continue;
             }

@@ -74,7 +74,7 @@ public class OpenIFFScreenPacket {
 
     @Environment(EnvType.CLIENT)
     private static void openIFFScreen(int id, NbtCompound nbt, PlayerEntity player) {
-        Entity entity = player.world.getEntityById(id);
+        Entity entity = player.getWorld().getEntityById(id);
         if (!(entity instanceof HasIFF)) {
             return;
         }
@@ -95,7 +95,7 @@ public class OpenIFFScreenPacket {
     }
 
     private static void openIFFScreen(int id, PlayerEntity player) {
-        Entity entity = player.world.getEntityById(id);
+        Entity entity = player.getWorld().getEntityById(id);
         if (!(entity instanceof HasIFF)
                 || (entity instanceof TameableEntity
                 && !player.getUuid().equals(((TameableEntity) entity).getOwnerUuid()))) {

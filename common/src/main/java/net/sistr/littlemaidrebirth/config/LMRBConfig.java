@@ -1,10 +1,15 @@
 package net.sistr.littlemaidrebirth.config;
 
 
+import com.google.common.collect.Lists;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import net.minecraft.registry.tag.BiomeTags;
 import net.sistr.littlemaidrebirth.LMRBMod;
+import net.sistr.littlemaidrebirth.tags.LMTags;
+
+import java.util.List;
 
 /**
  * LMRBのコンフィグ
@@ -20,6 +25,23 @@ public class LMRBConfig implements ConfigData {
 
     @ConfigEntry.Category("spawn")
     private boolean canDespawn;
+
+    @ConfigEntry.Category("spawn")
+    @ConfigEntry.Gui.RequiresRestart
+    private List<String> maidSpawnBiomeTags = Lists.newArrayList(
+            LMTags.Biomes.MAID_SPAWN_BIOME.id().toString(),
+            BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE.id().toString(),
+            BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE.id().toString(),
+            BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE.id().toString(),
+            BiomeTags.VILLAGE_SNOWY_HAS_STRUCTURE.id().toString(),
+            BiomeTags.VILLAGE_TAIGA_HAS_STRUCTURE.id().toString()
+    );
+
+    @ConfigEntry.Category("spawn")
+    @ConfigEntry.Gui.RequiresRestart
+    private List<String> maidSpawnExcludeBiomeTags = Lists.newArrayList(
+            LMTags.Biomes.MAID_SPAWN_EXCLUDE_BIOME.id().toString()
+    );
 
     @ConfigEntry.Category("spawn")
     private int spawnWeight = 5;
@@ -39,7 +61,25 @@ public class LMRBConfig implements ConfigData {
     //maid
 
     @ConfigEntry.Category("maid")
-    private int healInterval = 0;
+    private float generalMaidDamageFactor = 1.0f;
+
+    @ConfigEntry.Category("maid")
+    private float battleModeMaidDamageFactor = 1.0f;
+
+    @ConfigEntry.Category("maid")
+    private float nonBattleModeMaidDamageFactor = 0.0f;
+
+    @ConfigEntry.Category("maid")
+    private boolean disableMaidDeath = true;
+
+    @ConfigEntry.Category("maid")
+    private float emergencyMaidHealthThreshold = 0.5f;
+
+    @ConfigEntry.Category("maid")
+    private boolean enableWorkInEmergency = false;
+
+    @ConfigEntry.Category("maid")
+    private int healInterval = 2;
 
     @ConfigEntry.Category("maid")
     private int healAmount = 1;
@@ -66,9 +106,6 @@ public class LMRBConfig implements ConfigData {
     private float emergencyTeleportStartRange = 6.0f;
 
     @ConfigEntry.Category("maid")
-    private float emergencyTeleportHealthThreshold = 0.5f;
-
-    @ConfigEntry.Category("maid")
     private boolean friendlyFire = false;
 
     @ConfigEntry.Category("maid")
@@ -92,7 +129,7 @@ public class LMRBConfig implements ConfigData {
     private float fencerRangeFactor = 1.0f;
 
     @ConfigEntry.Category("mode")
-    private float fencerAttackRateFactor = 1.0f;
+    private float fencerAttackRateFactor = 0.75f;
 
     @ConfigEntry.Category("mode")
     private float archerRangeFactor = 1.0f;
@@ -104,7 +141,7 @@ public class LMRBConfig implements ConfigData {
     private float archerShootVelocityFactor = 1.0f;
 
     @ConfigEntry.Category("mode")
-    private int torcherLightLevelThreshold = 8;
+    private int torcherLightLevelThreshold = 4;
 
     //contract
 
@@ -130,6 +167,14 @@ public class LMRBConfig implements ConfigData {
 
     public boolean isCanDespawn() {
         return canDespawn;
+    }
+
+    public List<String> getMaidSpawnBiomeTags() {
+        return Lists.newArrayList(maidSpawnBiomeTags);
+    }
+
+    public List<String> getMaidSpawnExcludeBiomeTags() {
+        return maidSpawnExcludeBiomeTags;
     }
 
     public int getSpawnWeight() {
@@ -184,10 +229,6 @@ public class LMRBConfig implements ConfigData {
         return unpaidCountLimit;
     }
 
-    public float getEmergencyTeleportHealthThreshold() {
-        return emergencyTeleportHealthThreshold;
-    }
-
     public float getFollowStartRange() {
         return followStartRange;
     }
@@ -214,6 +255,30 @@ public class LMRBConfig implements ConfigData {
 
     public float getFreedomRange() {
         return freedomRange;
+    }
+
+    public float getGeneralMaidDamageFactor() {
+        return generalMaidDamageFactor;
+    }
+
+    public float getBattleModeMaidDamageFactor() {
+        return battleModeMaidDamageFactor;
+    }
+
+    public float getNonBattleModeMaidDamageFactor() {
+        return nonBattleModeMaidDamageFactor;
+    }
+
+    public boolean isDisableMaidDeath() {
+        return disableMaidDeath;
+    }
+
+    public float getEmergencyMaidHealthThreshold() {
+        return emergencyMaidHealthThreshold;
+    }
+
+    public boolean isEnableWorkInEmergency() {
+        return enableWorkInEmergency;
     }
 
     public int getHealInterval() {
