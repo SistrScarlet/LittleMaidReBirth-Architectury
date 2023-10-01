@@ -129,7 +129,7 @@ public class LMRBConfig implements ConfigData {
     private float fencerRangeFactor = 1.0f;
 
     @ConfigEntry.Category("mode")
-    private float fencerAttackRateFactor = 1.0f;
+    private float fencerAttackRateFactor = 0.75f;
 
     @ConfigEntry.Category("mode")
     private float archerRangeFactor = 1.0f;
