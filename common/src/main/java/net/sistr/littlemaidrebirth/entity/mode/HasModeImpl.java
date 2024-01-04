@@ -1,6 +1,7 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
 import com.google.common.collect.Sets;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
@@ -8,11 +9,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.Hand;
+import net.sistr.littlemaidmodelloader.util.Tuple;
+import net.sistr.littlemaidrebirth.api.mode.ItemMatcher;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.entity.util.HasInventory;
+import org.apache.commons.compress.utils.Lists;
 
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * HasModeの移譲用クラス
@@ -21,6 +24,7 @@ public class HasModeImpl implements HasMode {
     private final LivingEntity owner;
     private final HasInventory hasInventory;
     private final Set<Mode> modes = Sets.newHashSet();
+    private final List<Tuple<ItemMatcher, Mode>> itemMatchers = new ObjectArrayList<>();
     private Mode nowMode;
     private Item prevItem = Items.AIR;
     private NbtCompound tempModeData;
@@ -29,10 +33,34 @@ public class HasModeImpl implements HasMode {
         this.owner = owner;
         this.hasInventory = hasInventory;
         this.modes.addAll(modes);
+        updateMatchList();
+    }
+
+    protected void updateMatchList() {
+        this.itemMatchers.clear();
+        List<Tuple<Mode, Tuple<ItemMatcher.Priority, ItemMatcher>>> list = Lists.newArrayList();
+        for (Mode mode : this.modes) {
+            for (Tuple<ItemMatcher.Priority, ItemMatcher> tuple : mode.getModeType().getItemMatcherList()) {
+                list.add(new Tuple<>(mode, tuple));
+            }
+        }
+        this.modes.stream()
+                .flatMap(mode -> mode.getModeType().getItemMatcherList().stream()
+                        .map(tuple -> new Tuple<>(mode, tuple)))
+                .sorted(Comparator.<Tuple<Mode, Tuple<ItemMatcher.Priority, ItemMatcher>>>
+                                comparingInt(tuple -> tuple.getB().getA().get())
+                        .reversed())
+                .forEach(tuple -> this.itemMatchers.add(new Tuple<>(tuple.getB().getB(), tuple.getA())));
     }
 
     public void addMode(Mode mode) {
         modes.add(mode);
+        updateMatchList();
+    }
+
+    public void addAllMode(Collection<Mode> mode) {
+        modes.addAll(mode);
+        updateMatchList();
     }
 
     @Override
@@ -106,9 +134,10 @@ public class HasModeImpl implements HasMode {
     }
 
     public Mode getNewMode() {
-        for (Mode mode : modes) {
-            if (mode.getModeType().isModeItem(owner.getMainHandStack())) {
-                return mode;
+        var mainHand = owner.getMainHandStack();
+        for (Tuple<ItemMatcher, Mode> tuple : this.itemMatchers) {
+            if (tuple.getA().isMatch(mainHand)) {
+                return tuple.getB();
             }
         }
         return null;
