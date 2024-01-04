@@ -35,14 +35,13 @@ public class LMRBForge {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::renderInit);
-
-        SpawnRestriction.register(Registration.LITTLE_MAID_MOB.get(),
-                SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-                (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }
 
     public void modInit(FMLCommonSetupEvent event) {
         ModSetup.init();
+        SpawnRestriction.register(Registration.LITTLE_MAID_MOB.get(),
+                SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }
 
     public void clientInit(FMLClientSetupEvent event) {
