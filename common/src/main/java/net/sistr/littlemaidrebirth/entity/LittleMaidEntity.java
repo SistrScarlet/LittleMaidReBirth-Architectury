@@ -373,7 +373,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     public void addDefaultModes(LittleMaidEntity maid) {
-        ModeManager.INSTANCE.createModes(maid).forEach(maid::addMode);
+        this.hasModeImpl.addAllMode(ModeManager.INSTANCE.createModes(maid));
     }
 
     //読み書き系
@@ -1700,6 +1700,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     public void addMode(Mode mode) {
         hasModeImpl.addMode(mode);
+    }
+
+    public void addAllMode(Collection<Mode> mode) {
+        hasModeImpl.addAllMode(mode);
     }
 
     public void setModeName(String modeName) {
