@@ -39,7 +39,7 @@ public class C2SSetMovingStatePacket {
     }
 
     private static void applyMovingStateServer(PlayerEntity player, int id, MovingMode movingMode) {
-        Entity entity = player.world.getEntityById(id);
+        Entity entity = player.getWorld().getEntityById(id);
         if (!(entity instanceof LittleMaidEntity)
                 || ((LittleMaidEntity) entity).getTameOwnerUuid()
                 .filter(ownerId -> ownerId.equals(player.getUuid()))

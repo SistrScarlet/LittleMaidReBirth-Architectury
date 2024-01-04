@@ -2,6 +2,8 @@ package net.sistr.littlemaidrebirth.forge;
 
 import dev.architectury.platform.forge.EventBuses;
 import me.shedaniel.autoconfig.AutoConfig;
+import net.minecraft.entity.SpawnRestriction;
+import net.minecraft.world.Heightmap;
 import net.minecraftforge.client.ConfigGuiHandler;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -11,7 +13,9 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.client.MaidModelRenderer;
+import net.sistr.littlemaidrebirth.client.MaidSoulRenderer;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.setup.ClientSetup;
 import net.sistr.littlemaidrebirth.setup.ModSetup;
 import net.sistr.littlemaidrebirth.setup.Registration;
@@ -31,6 +35,10 @@ public class LMRBForge {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::modInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::clientInit);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::renderInit);
+
+        SpawnRestriction.register(Registration.LITTLE_MAID_MOB.get(),
+                SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }
 
     public void modInit(FMLCommonSetupEvent event) {
@@ -44,6 +52,7 @@ public class LMRBForge {
     //ClientSetupよりこちらの方が実行が早いため、ClientSetupからArchitecturyのメソッド登録しようとすると無視される
     public void renderInit(EntityRenderersEvent.RegisterRenderers event) {
         event.registerEntityRenderer(Registration.LITTLE_MAID_MOB.get(), MaidModelRenderer::new);
+        event.registerEntityRenderer(Registration.MAID_SOUL_ENTITY.get(), MaidSoulRenderer::new);
     }
 
 }

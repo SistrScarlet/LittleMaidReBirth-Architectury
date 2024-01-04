@@ -1,9 +1,11 @@
 package net.sistr.littlemaidrebirth.tags;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.biome.Biome;
 import net.sistr.littlemaidrebirth.LMRBMod;
 
 /**
@@ -24,6 +26,23 @@ public class LMTags {
 
         private static TagKey<Item> register(String id) {
             return TagKey.of(Registry.ITEM_KEY, new Identifier(LMRBMod.MODID, id));
+        }
+    }
+
+    public static class Blocks {
+        public static final TagKey<Block> MAID_ALTER_COMPONENT_BLOCKS = register("maid_alter_component_blocks");
+
+        private static TagKey<Block> register(String id) {
+            return TagKey.of(Registry.BLOCK_KEY, new Identifier(LMRBMod.MODID, id));
+        }
+    }
+
+    public static class Biomes {
+        public static final TagKey<Biome> MAID_SPAWN_BIOME = register("maid_spawn_biome");
+        public static final TagKey<Biome> MAID_SPAWN_EXCLUDE_BIOME = register("maid_spawn_exclude_biome");
+
+        private static TagKey<Biome> register(String id) {
+            return TagKey.of(Registry.BIOME_KEY, new Identifier(LMRBMod.MODID, id));
         }
     }
 }

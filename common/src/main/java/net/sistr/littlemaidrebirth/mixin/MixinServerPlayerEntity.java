@@ -50,7 +50,7 @@ public abstract class MixinServerPlayerEntity extends MixinPlayerEntity {
     }
 
     private Stream<SoundPlayable> getAroundTamedSoundPlayable() {
-        return this.world.getOtherEntities(this, this.getBoundingBox().expand(8),
+        return this.getWorld().getOtherEntities(this, this.getBoundingBox().expand(8),
                         e -> e instanceof Tameable && ((Tameable) e).getTameOwnerUuid()
                                 .filter(id -> id.equals(this.getUuid()))
                                 .isPresent() && e instanceof SoundPlayable

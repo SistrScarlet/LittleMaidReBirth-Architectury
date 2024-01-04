@@ -7,7 +7,7 @@ import net.minecraftforge.common.ForgeMod;
 public class ReachAttributeUtilImpl {
 
     public static void addAttribute(DefaultAttributeContainer.Builder attributeBuilder) {
-        attributeBuilder.add(ForgeMod.REACH_DISTANCE.get());
+        attributeBuilder.add(ForgeMod.ATTACK_RANGE.get());
     }
 
     public static double getAttackRangeSq(LivingEntity entity) {
@@ -16,7 +16,7 @@ public class ReachAttributeUtilImpl {
     }
 
     public static double getAttackRange(LivingEntity entity) {
-        return entity.getAttributeValue(ForgeMod.REACH_DISTANCE.get());
+        return entity.getAttributeValue(ForgeMod.ATTACK_RANGE.get());
     }
 
     public static double getRangeSq(LivingEntity entity) {
@@ -25,7 +25,7 @@ public class ReachAttributeUtilImpl {
     }
 
     public static double getRange(LivingEntity entity) {
-        return entity.getAttributeValue(ForgeMod.REACH_DISTANCE.get());
+        return entity.getAttributeValue(ForgeMod.ATTACK_RANGE.get());
     }
 
 }

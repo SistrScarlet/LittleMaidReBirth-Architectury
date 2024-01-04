@@ -38,7 +38,7 @@ dependencies {
 
     modApi "me.shedaniel.cloth:cloth-config-forge:${rootProject.cloth_config_version}"
 
-    modImplementationMapped fileTree(dir: './mods', include: '*.jar')
+    modApi fileTree(dir: './mods', include: '*.jar')
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionForge")) { transitive = false }
@@ -57,17 +57,17 @@ shadowJar {
     exclude "architectury.common.json"
 
     configurations = [project.configurations.shadowCommon]
-    classifier "forge-dev"
+    archiveClassifier = "forge-dev"
 }
 
 remapJar {
     input.set shadowJar.archiveFile
     dependsOn shadowJar
-    classifier "Forge"
+    archiveClassifier = "Forge"
 }
 
 jar {
-    classifier "dev"
+    archiveClassifier = "dev"
 }
 
 sourcesJar {

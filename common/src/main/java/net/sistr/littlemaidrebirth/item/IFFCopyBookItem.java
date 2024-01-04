@@ -89,8 +89,9 @@ public class IFFCopyBookItem extends Item {
                     .collect(Collectors.toList()));
             user.sendMessage(new TranslatableText("item.littlemaidrebirth.iff_copy_book.message_apply"), true);
         }
-        user.world.playSound(null, user.getX(), user.getY(), user.getZ(),
+        user.getWorld().playSound(null, user.getX(), user.getY(), user.getZ(),
                 SoundEvents.BLOCK_NOTE_BLOCK_PLING, SoundCategory.PLAYERS, 1F, 1F);
+
         return TypedActionResult.success(stack);
     }
 

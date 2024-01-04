@@ -18,7 +18,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidmodelloader.LMMLMod;
@@ -47,7 +47,7 @@ public class IFFScreen extends Screen {
     private ListGUI<IFFGUIElement> iffGui;
 
     public IFFScreen(Entity entity, List<IFF> iffs) {
-        super(Text.of(""));
+        super(LiteralText.EMPTY);
         this.entity = entity;
         this.iffs = ImmutableList.copyOf(iffs);
     }

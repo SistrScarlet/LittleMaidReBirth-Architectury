@@ -31,7 +31,7 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
     }
 
     public void tick() {
-        if (mob.world.isClient() || !this.contract) {
+        if (mob.getWorld().isClient() || !this.contract) {
             return;
         }
         this.consumeInterval++;
@@ -70,8 +70,13 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
             while (!stack.isEmpty() && 0 < this.unpaidTimes && this.salaryItems.test(stack)) {
                 this.unpaidTimes--;
                 stack.decrement(1);
+                postReceive();
             }
         }
+    }
+
+    protected void postReceive() {
+
     }
 
     public void setUnpaidTimes(int unpaidTimes) {

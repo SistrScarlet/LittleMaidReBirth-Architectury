@@ -22,27 +22,27 @@ side = "BOTH"
 [[dependencies.littlemaidrebirth]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.18.2,)"
+versionRange = "[1.18,)"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.littlemaidrebirth]]
 modId = "architectury"
 mandatory = true
-versionRange = "[4.10.0,)"
+versionRange = "[4.0.0,)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.littlemaidrebirth]]
 modId = "cloth_config"
 mandatory = true
-versionRange = "[6.4.0,)"
+versionRange = "[6.0.0,)"
 ordering = "AFTER"
 side = "BOTH"
 
 [[dependencies.littlemaidrebirth]]
 modId = "littlemaidmodelloader"
 mandatory = true
-versionRange = "[4.6.0,)"
+versionRange = "[4.0.0,)"
 ordering = "AFTER"
 side = "BOTH"

@@ -18,20 +18,20 @@ import java.util.stream.Stream;
 public class MoveToDropItemGoal extends Goal {
     private final PathAwareEntity mob;
     private final int range;
+    private final int frequency;
     private final double speed;
-    private int cool;
 
-    public MoveToDropItemGoal(PathAwareEntity mob, int range, double speed) {
+    public MoveToDropItemGoal(PathAwareEntity mob, int range, int frequency, double speed) {
         this.mob = mob;
         this.range = range;
+        this.frequency = frequency;
         this.speed = speed;
         setControls(EnumSet.of(Control.MOVE, Control.LOOK));
     }
 
     @Override
     public boolean canStart() {
-        if (--cool < 0) {
-            cool = 60;
+        if (this.mob.getRandom().nextFloat() < 1.0f / this.getTickCount(frequency)) {
             Stream<BlockPos> positions = findAroundDropItem().stream().map(Entity::getBlockPos);
             Path path = positions.map(pos -> mob.getNavigation().findPathTo(pos, 0))
                     .filter(Objects::nonNull)
@@ -59,13 +59,8 @@ public class MoveToDropItemGoal extends Goal {
         return !mob.getNavigation().isIdle();
     }
 
-    @Override
-    public void tick() {
-        super.tick();
-    }
-
     public List<ItemEntity> findAroundDropItem() {
-        return mob.world.getEntitiesByClass(ItemEntity.class,
+        return mob.getWorld().getEntitiesByClass(ItemEntity.class,
                 mob.getBoundingBox().expand(range, range / 4F, range),
                 item -> !item.cannotPickup() && item.squaredDistanceTo(mob) < range * range);
     }

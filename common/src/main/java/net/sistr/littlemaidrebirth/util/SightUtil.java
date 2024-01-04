@@ -4,11 +4,13 @@ import net.minecraft.block.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -137,13 +139,14 @@ public class SightUtil {
     }
 
     public static Vec3d rotate(Vec3d vec, Vec3d axis, float angle) {
-        var point = new Quaternion((float) vec.x, (float) vec.y, (float) vec.z, 0);
+        throw new AssertionError();
+        /*var point = new Quaternion((float) vec.x, (float) vec.y, (float) vec.z, 0);
         var rotate = new Quaternion(new Vec3f(axis), angle, true);
         var rotateBar = rotate.copy();
         rotateBar.conjugate();
         rotate.hamiltonProduct(point);
         rotate.hamiltonProduct(rotateBar);
-        return new Vec3d(rotate.getX(), rotate.getY(), rotate.getZ());
+        return new Vec3d(rotate.getX(), rotate.getY(), rotate.getZ());*/
     }
 
     //getYawPitch->getVecの場合、こちらのyawとpitchの値をマイナスにすること

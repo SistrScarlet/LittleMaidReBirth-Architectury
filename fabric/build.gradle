@@ -42,9 +42,9 @@ dependencies {
         exclude(group: "net.fabricmc.fabric-api")
     }
 
-    modImplementationMapped fileTree(dir: './mods', include: '*.jar')
+    modApi fileTree(dir: './mods', include: '*.jar')
 
-    include modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${rootProject.reach_entity_attributes_version}")
+    //include modImplementation("com.jamieswhiteshirt:reach-entity-attributes:${rootProject.reach_entity_attributes_version}")
 
     common(project(path: ":common", configuration: "namedElements")) { transitive false }
     shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
@@ -62,18 +62,18 @@ shadowJar {
     exclude "architectury.common.json"
 
     configurations = [project.configurations.shadowCommon]
-    classifier "fabric-dev"
+    archiveClassifier = "fabric-dev"
 }
 
 remapJar {
     injectAccessWidener = true
     input.set shadowJar.archiveFile
     dependsOn shadowJar
-    classifier "Fabric"
+    archiveClassifier = "Fabric"
 }
 
 jar {
-    classifier "dev"
+    archiveClassifier = "dev"
 }
 
 sourcesJar {
