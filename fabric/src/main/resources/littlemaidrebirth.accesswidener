@@ -1,8 +1,0 @@
-accessWidener v2 named
-
-accessible field net/minecraft/entity/player/PlayerEntity inventory Lnet/minecraft/entity/player/PlayerInventory;
-mutable field net/minecraft/entity/player/PlayerEntity inventory Lnet/minecraft/entity/player/PlayerInventory;
-mutable field net/minecraft/entity/damage/EntityDamageSource source Lnet/minecraft/entity/Entity;
-accessible method net/minecraft/world/biome/SpawnSettings$SpawnDensity <init> (DD)V
-accessible class net/minecraft/world/biome/Biome$Weather
-accessible method net/minecraft/entity/SpawnRestriction register (Lnet/minecraft/entity/EntityType;Lnet/minecraft/entity/SpawnRestriction$Location;Lnet/minecraft/world/Heightmap$Type;Lnet/minecraft/entity/SpawnRestriction$SpawnPredicate;)V
