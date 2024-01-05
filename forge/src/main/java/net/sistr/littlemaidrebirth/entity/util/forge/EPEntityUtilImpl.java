@@ -4,7 +4,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.ForgeHooks;
 
 public class EPEntityUtilImpl {
     public static PersistentProjectileEntity arrowCustomHook(BowItem bowItem, PersistentProjectileEntity projectile) {
@@ -12,6 +11,6 @@ public class EPEntityUtilImpl {
     }
 
     public static ItemStack arrowCustomHook(LivingEntity user, ItemStack weapon, ItemStack arrow) {
-        return ForgeHooks.getProjectile(user, weapon, arrow);
+        return arrow;
     }
 }
