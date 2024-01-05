@@ -14,6 +14,7 @@ import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
 import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -49,8 +50,9 @@ public abstract class MixinServerPlayerEntity extends MixinPlayerEntity {
         }
     }
 
+    @Unique
     private Stream<SoundPlayable> getAroundTamedSoundPlayable() {
-        return this.getWorld().getOtherEntities(this, this.getBoundingBox().expand(8),
+        return this.getEntityWorld().getOtherEntities(this, this.getBoundingBox().expand(8),
                         e -> e instanceof Tameable && ((Tameable) e).getTameOwnerUuid()
                                 .filter(id -> id.equals(this.getUuid()))
                                 .isPresent() && e instanceof SoundPlayable

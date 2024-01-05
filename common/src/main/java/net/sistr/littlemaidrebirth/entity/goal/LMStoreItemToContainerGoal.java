@@ -54,12 +54,12 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
             return;
         }
 
-        Inventory container = HopperBlockEntity.getInventoryAt(this.mob.getWorld(), containerPos);
+        Inventory container = HopperBlockEntity.getInventoryAt(this.mob.getEntityWorld(), containerPos);
         if (container == null) {
             return;
         }
 
-        this.mob.getWorld().playSound(null, containerPos,
+        this.mob.getEntityWorld().playSound(null, containerPos,
                 SoundEvents.BLOCK_CHEST_OPEN, SoundCategory.BLOCKS,
                 1.0f, 1.0f);
         this.mob.swingHand(Hand.MAIN_HAND);

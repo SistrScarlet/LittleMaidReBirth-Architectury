@@ -31,7 +31,7 @@ public class MoveToDropItemGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        if (this.mob.getRandom().nextFloat() < 1.0f / this.getTickCount(frequency)) {
+        if (this.mob.getRandom().nextFloat() < 1.0f / frequency) {
             Stream<BlockPos> positions = findAroundDropItem().stream().map(Entity::getBlockPos);
             Path path = positions.map(pos -> mob.getNavigation().findPathTo(pos, 0))
                     .filter(Objects::nonNull)
@@ -60,7 +60,7 @@ public class MoveToDropItemGoal extends Goal {
     }
 
     public List<ItemEntity> findAroundDropItem() {
-        return mob.getWorld().getEntitiesByClass(ItemEntity.class,
+        return mob.getEntityWorld().getEntitiesByClass(ItemEntity.class,
                 mob.getBoundingBox().expand(range, range / 4F, range),
                 item -> !item.cannotPickup() && item.squaredDistanceTo(mob) < range * range);
     }

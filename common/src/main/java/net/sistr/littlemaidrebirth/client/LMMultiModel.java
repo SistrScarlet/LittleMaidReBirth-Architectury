@@ -1,7 +1,5 @@
 package net.sistr.littlemaidrebirth.client;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.entity.model.ModelWithHead;
 import net.minecraft.entity.EquipmentSlot;
@@ -18,7 +16,7 @@ import net.sistr.littlemaidmodelloader.maidmodel.ModelRenderer;
  */
 public class LMMultiModel<T extends LivingEntity & IHasMultiModel> extends MultiModel<T> implements ModelWithHead {
     private T entity;
-    private final ModelPart modelPart = new ModelPart(ImmutableList.of(), ImmutableMap.of());
+    private final ModelPart modelPart = new ModelPart(this);
 
     @Override
     public void animateModel(T entity, float limbAngle, float limbDistance, float tickDelta) {

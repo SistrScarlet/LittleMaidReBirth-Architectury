@@ -11,14 +11,11 @@ import net.minecraft.block.PlantBlock;
 import net.minecraft.block.SkullBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.SkullBlockEntityModel;
 import net.minecraft.client.render.block.entity.SkullBlockEntityRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.model.EntityModel;
-import net.minecraft.client.render.entity.model.EntityModelLoader;
 import net.minecraft.client.render.entity.model.ModelWithHead;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
@@ -33,8 +30,6 @@ import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.math.Vec3f;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
-import java.util.Map;
-
 /**
  * メイドさんの頭飾りレンダラ
  */
@@ -44,18 +39,16 @@ public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityM
     private final float scaleX;
     private final float scaleY;
     private final float scaleZ;
-    private final Map<SkullBlock.SkullType, SkullBlockEntityModel> headModels;
 
-    public LMHeadFeatureRenderer(FeatureRendererContext<T, M> context, EntityModelLoader loader) {
-        this(context, loader, 1.0f, 1.0f, 1.0f);
+    public LMHeadFeatureRenderer(FeatureRendererContext<T, M> context) {
+        this(context, 1.0f, 1.0f, 1.0f);
     }
 
-    public LMHeadFeatureRenderer(FeatureRendererContext<T, M> context, EntityModelLoader loader, float scaleX, float scaleY, float scaleZ) {
+    public LMHeadFeatureRenderer(FeatureRendererContext<T, M> context, float scaleX, float scaleY, float scaleZ) {
         super(context);
         this.scaleX = scaleX;
         this.scaleY = scaleY;
         this.scaleZ = scaleZ;
-        this.headModels = SkullBlockEntityRenderer.getModels(loader);
     }
 
     @Override
@@ -94,14 +87,12 @@ public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityM
                 NbtCompound nbtCompound;
                 matrixStack.scale(1.1875f, -1.1875f, -1.1875f);
                 GameProfile gameProfile = null;
-                if (itemStack.hasNbt() && (nbtCompound = itemStack.getNbt()).contains("SkullOwner", 10)) {
+                if (itemStack.hasTag() && (nbtCompound = itemStack.getTag()).contains("SkullOwner", 10)) {
                     gameProfile = NbtHelper.toGameProfile(nbtCompound.getCompound("SkullOwner"));
                 }
                 matrixStack.translate(-0.5, 0.0, -0.5);
                 SkullBlock.SkullType skullType = ((AbstractSkullBlock) ((BlockItem) item).getBlock()).getSkullType();
-                SkullBlockEntityModel skullBlockEntityModel = this.headModels.get(skullType);
-                RenderLayer renderLayer = SkullBlockEntityRenderer.getRenderLayer(skullType, gameProfile);
-                SkullBlockEntityRenderer.renderSkull(null, 180.0f, animationProgress, matrixStack, vertexConsumerProvider, light, skullBlockEntityModel, renderLayer);
+                SkullBlockEntityRenderer.render(null, 180.0f, skullType, gameProfile, animationProgress, matrixStack, vertexConsumerProvider, light);
             } else if (!(item instanceof ArmorItem) || ((ArmorItem) item).getSlotType() != EquipmentSlot.HEAD) {
                 translate(matrixStack, false);
                 MinecraftClient.getInstance().getHeldItemRenderer()

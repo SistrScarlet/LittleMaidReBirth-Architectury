@@ -54,7 +54,7 @@ public class PharmcistMode extends Mode {
         if (pos == null) {
             return Optional.empty();
         }
-        BlockEntity tile = mob.getWorld().getBlockEntity(pos);
+        BlockEntity tile = mob.getEntityWorld().getBlockEntity(pos);
         if (tile instanceof BrewingStandBlockEntity) {
             return Optional.of((BrewingStandBlockEntity) tile);
         }

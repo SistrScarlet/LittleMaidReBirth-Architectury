@@ -17,6 +17,10 @@ import java.util.UUID;
 public class WorldMaidSoulState extends PersistentState {
     private final Map<UUID, List<LittleMaidEntity.MaidSoul>> maidSoulsMap = Maps.newHashMap();
 
+    public WorldMaidSoulState() {
+        super("");
+    }
+
     public void add(UUID ownerId, LittleMaidEntity.MaidSoul maidSoul) {
         maidSoulsMap.computeIfAbsent(ownerId, (id) -> Lists.newArrayList())
                 .add(maidSoul);
@@ -49,26 +53,24 @@ public class WorldMaidSoulState extends PersistentState {
         return nbt;
     }
 
-    public static WorldMaidSoulState createFromNbt(NbtCompound nbt) {
-        WorldMaidSoulState worldMaidSoulState = new WorldMaidSoulState();
-        var nbtEntries = nbt.getList("maidSoulsEntries", NbtElement.COMPOUND_TYPE);
+    @Override
+    public void fromTag(NbtCompound tag) {
+        var nbtEntries = tag.getList("maidSoulsEntries", 10);
         for (NbtElement nbtEntry : nbtEntries) {
             var id = ((NbtCompound) nbtEntry).getUuid("id");
-            var nbtMaidSouls = ((NbtCompound) nbtEntry).getList("maidSouls", NbtElement.COMPOUND_TYPE);
+            var nbtMaidSouls = ((NbtCompound) nbtEntry).getList("maidSouls", 10);
             List<LittleMaidEntity.MaidSoul> maidSouls = Lists.newArrayList();
             for (NbtElement nbtMaidSoul : nbtMaidSouls) {
                 maidSouls.add(new LittleMaidEntity.MaidSoul((NbtCompound) nbtMaidSoul));
             }
-            worldMaidSoulState.maidSoulsMap.put(id, maidSouls);
+            this.maidSoulsMap.put(id, maidSouls);
         }
-        return worldMaidSoulState;
     }
 
     public static WorldMaidSoulState getWorldMaidSoulState(ServerWorld world) {
         var persistentStateManager = world.getPersistentStateManager();
 
         return persistentStateManager.getOrCreate(
-                WorldMaidSoulState::createFromNbt,
                 WorldMaidSoulState::new,
                 LMRBMod.MODID + "_maidsouls");
     }

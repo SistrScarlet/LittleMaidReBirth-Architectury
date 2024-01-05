@@ -21,7 +21,7 @@ public class StareAtHeldItemGoal<T extends PathAwareEntity> extends Goal {
 
     @Override
     public boolean canStart() {
-        stareAt = mob.getWorld().getClosestPlayer(mob, 4);
+        stareAt = mob.getEntityWorld().getClosestPlayer(mob, 4);
         return stareAt != null && isHeldTargetItem(stareAt);
     }
 

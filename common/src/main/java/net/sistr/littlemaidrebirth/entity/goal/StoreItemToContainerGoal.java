@@ -9,8 +9,8 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.sistr.littlemaidrebirth.util.BlockFinderPD;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.EnumSet;
 import java.util.function.Predicate;
 
@@ -39,9 +39,9 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
             this.count = 0;
             blockFinder = new BlockFinderPD(ImmutableList.of(this.mob.getBlockPos().up()),
                     this::isContainer,
-                    pos -> mob.getWorld().isAir(pos)
+                    pos -> mob.getEntityWorld().isAir(pos)
                             && Math.abs(pos.getY() - mob.getY()) < 2
-                            && pos.getSquaredDistance(this.mob.getPos()) < searchDistanceSq,
+                            && pos.getSquaredDistance(this.mob.getBlockPos()) < searchDistanceSq,
                     searchDistanceSq * 8);
         }
 
@@ -58,7 +58,7 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
     }
 
     protected boolean isContainer(BlockPos pos) {
-        BlockState state = mob.getWorld().getBlockState(pos);
+        BlockState state = mob.getEntityWorld().getBlockState(pos);
         return state.getBlock() instanceof ChestBlock
                 || state.getBlock() instanceof BarrelBlock;
     }
@@ -77,8 +77,4 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
         containerPos = null;
     }
 
-    @Override
-    public boolean shouldRunEveryTick() {
-        return true;
-    }
 }

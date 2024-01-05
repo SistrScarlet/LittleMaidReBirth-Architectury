@@ -36,8 +36,9 @@ public class FencerMode extends Mode {
                         * LMRBMod.getConfig().getFencerRangeFactor();
             }
 
+            //resetCooldown
             @Override
-            protected void resetCooldown() {
+            protected void method_28346() {
                 double attackSpeed = this.mob.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED);
                 int cool = MathHelper.ceil(1 / attackSpeed * 20
                         / LMRBMod.getConfig().getFencerAttackRateFactor());

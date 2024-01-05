@@ -96,10 +96,10 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
     protected void copyEntityData(Entity entity) {
         float yaw = this.bodyYaw;
         entity.setBodyYaw(yaw);
-        float f = MathHelper.wrapDegrees(yaw - this.getYaw());
+        float f = MathHelper.wrapDegrees(yaw - this.yaw);
         float f1 = MathHelper.clamp(f, -105.0F, 105.0F);
         entity.prevYaw += f1 - f;
-        entity.setYaw(yaw + f1 - f);
+        entity.yaw = (yaw + f1 - f);
         entity.setHeadYaw(yaw);
     }
 

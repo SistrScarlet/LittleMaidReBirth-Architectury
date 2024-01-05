@@ -77,9 +77,8 @@ public class IFFScreen extends Screen {
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         assert this.client != null;
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, MODEL_SELECT_GUI_TEXTURE);
+        RenderSystem.color4f(1.0f, 1.0f, 1.0f, 1.0f);
+        this.client.getTextureManager().bindTexture(MODEL_SELECT_GUI_TEXTURE);
         int relX = (this.width - GUI_WIDTH) / 2;
         int relY = (this.height - GUI_HEIGHT) / 2;
         this.drawTexture(matrices, relX, relY, 0, 0, GUI_WIDTH, GUI_HEIGHT);
@@ -140,8 +139,8 @@ public class IFFScreen extends Screen {
     }
 
     @Override
-    public void close() {
-        super.close();
+    public void onClose() {
+        super.onClose();
         C2SSetIFFPacket.sendC2SPacket(entity, iffs);
     }
 
@@ -174,8 +173,7 @@ public class IFFScreen extends Screen {
                     immediate.draw();
                     EntityRenderDispatcher entityRenderDispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
                     entityRenderDispatcher.setRenderShadows(true);
-                    RenderSystem.getModelViewStack().pop();
-                    DiffuseLighting.enableGuiDepthLighting();
+                    RenderSystem.popMatrix();
                 }
             });
             TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;

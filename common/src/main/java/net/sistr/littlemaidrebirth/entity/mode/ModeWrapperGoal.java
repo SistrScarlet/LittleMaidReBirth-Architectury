@@ -46,8 +46,4 @@ public class ModeWrapperGoal<T extends LivingEntity & HasMode> extends Goal {
         owner.getMode().get().tick();
     }
 
-    @Override
-    public boolean shouldRunEveryTick() {
-        return true;
-    }
 }

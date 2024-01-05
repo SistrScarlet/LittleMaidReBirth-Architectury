@@ -5,9 +5,7 @@ import com.google.common.collect.Lists;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
-import net.minecraft.tag.BiomeTags;
 import net.sistr.littlemaidrebirth.LMRBMod;
-import net.sistr.littlemaidrebirth.tags.LMTags;
 
 import java.util.List;
 
@@ -28,20 +26,11 @@ public class LMRBConfig implements ConfigData {
 
     @ConfigEntry.Category("spawn")
     @ConfigEntry.Gui.RequiresRestart
-    private List<String> maidSpawnBiomeTags = Lists.newArrayList(
-            LMTags.Biomes.MAID_SPAWN_BIOME.id().toString(),
-            BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE.id().toString(),
-            BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE.id().toString(),
-            BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE.id().toString(),
-            BiomeTags.VILLAGE_SNOWY_HAS_STRUCTURE.id().toString(),
-            BiomeTags.VILLAGE_TAIGA_HAS_STRUCTURE.id().toString()
-    );
+    private List<String> maidSpawnBiomes = Lists.newArrayList();
 
     @ConfigEntry.Category("spawn")
     @ConfigEntry.Gui.RequiresRestart
-    private List<String> maidSpawnExcludeBiomeTags = Lists.newArrayList(
-            LMTags.Biomes.MAID_SPAWN_EXCLUDE_BIOME.id().toString()
-    );
+    private List<String> maidSpawnExcludeBiomes = Lists.newArrayList();
 
     @ConfigEntry.Category("spawn")
     private int spawnWeight = 5;
@@ -169,12 +158,12 @@ public class LMRBConfig implements ConfigData {
         return canDespawn;
     }
 
-    public List<String> getMaidSpawnBiomeTags() {
-        return Lists.newArrayList(maidSpawnBiomeTags);
+    public List<String> getMaidSpawnBiomes() {
+        return Lists.newArrayList(maidSpawnBiomes);
     }
 
-    public List<String> getMaidSpawnExcludeBiomeTags() {
-        return maidSpawnExcludeBiomeTags;
+    public List<String> getMaidSpawnExcludeBiomes() {
+        return maidSpawnExcludeBiomes;
     }
 
     public int getSpawnWeight() {

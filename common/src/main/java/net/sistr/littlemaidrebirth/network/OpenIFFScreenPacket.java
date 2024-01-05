@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.network;
 
-import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
+import me.shedaniel.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -39,7 +39,7 @@ public class OpenIFFScreenPacket {
 
     public static PacketByteBuf createS2CPacket(Entity entity, List<IFF> iffs, PlayerEntity player) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getId());
+        buf.writeVarInt(entity.getEntityId());
         NbtCompound nbt = new NbtCompound();
         NbtList list = new NbtList();
         nbt.put("IFFs", list);
@@ -59,7 +59,7 @@ public class OpenIFFScreenPacket {
 
     public static PacketByteBuf createC2SPacket(Entity entity) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getId());
+        buf.writeVarInt(entity.getEntityId());
         return buf;
     }
 
@@ -74,7 +74,7 @@ public class OpenIFFScreenPacket {
 
     @Environment(EnvType.CLIENT)
     private static void openIFFScreen(int id, NbtCompound nbt, PlayerEntity player) {
-        Entity entity = player.getWorld().getEntityById(id);
+        Entity entity = player.getEntityWorld().getEntityById(id);
         if (!(entity instanceof HasIFF)) {
             return;
         }
@@ -86,7 +86,7 @@ public class OpenIFFScreenPacket {
                 .map(Optional::get)
                 .collect(Collectors.toList());
 
-        MinecraftClient.getInstance().setScreen(new IFFScreen(entity, iffs));
+        MinecraftClient.getInstance().openScreen(new IFFScreen(entity, iffs));
     }
 
     public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
@@ -95,7 +95,7 @@ public class OpenIFFScreenPacket {
     }
 
     private static void openIFFScreen(int id, PlayerEntity player) {
-        Entity entity = player.getWorld().getEntityById(id);
+        Entity entity = player.getEntityWorld().getEntityById(id);
         if (!(entity instanceof HasIFF)
                 || (entity instanceof TameableEntity
                 && !player.getUuid().equals(((TameableEntity) entity).getOwnerUuid()))) {

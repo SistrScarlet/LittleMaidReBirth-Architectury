@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.network;
 
-import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
+import me.shedaniel.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
@@ -30,7 +30,7 @@ public class C2SSetIFFPacket {
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, List<IFF> iffs) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getId());
+        buf.writeVarInt(entity.getEntityId());
         NbtCompound tag = new NbtCompound();
         NbtList list = new NbtList();
         tag.put("IFFs", list);
@@ -46,7 +46,7 @@ public class C2SSetIFFPacket {
     }
 
     private static void applyIFFServer(PlayerEntity player, int id, NbtCompound tag) {
-        Entity entity = player.getWorld().getEntityById(id);
+        Entity entity = player.getEntityWorld().getEntityById(id);
         if (!(entity instanceof HasIFF)) {
             return;
         }

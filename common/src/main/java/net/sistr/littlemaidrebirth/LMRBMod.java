@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth;
 
 
-import dev.architectury.registry.level.entity.EntityAttributeRegistry;
+import me.shedaniel.architectury.registry.entity.EntityAttributes;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
@@ -28,7 +28,7 @@ public class LMRBMod {
     }
 
     public static void registerAttribute() {
-        EntityAttributeRegistry.register(Registration.LITTLE_MAID_MOB, LittleMaidEntity::createLittleMaidAttributes);
+        EntityAttributes.register(Registration.LITTLE_MAID_MOB::get, LittleMaidEntity::createLittleMaidAttributes);
     }
 
     public static LMRBConfig getConfig() {

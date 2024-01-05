@@ -195,8 +195,8 @@ public class SightUtil {
         double horizon = Math.sqrt(x * x + z * z);
         float pitch = (float) (-(MathHelper.atan2(y, horizon) * (180D / Math.PI)));
         float yaw = (float) (MathHelper.atan2(z, x) * (180D / Math.PI)) - 90.0F;
-        owner.setPitch(updateRotation(owner.getPitch(), pitch, maxPitchIncrease));
-        owner.setYaw(updateRotation(owner.getYaw(), yaw, maxYawIncrease));
+        owner.pitch = (updateRotation(owner.pitch, pitch, maxPitchIncrease));
+        owner.yaw = (updateRotation(owner.yaw, yaw, maxYawIncrease));
     }
 
     private static float updateRotation(float angle, float targetAngle, float maxIncrease) {

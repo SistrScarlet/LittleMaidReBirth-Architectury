@@ -2,7 +2,7 @@ package net.sistr.littlemaidrebirth.api.mode;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tag.TagKey;
+import net.minecraft.tag.Tag;
 import net.minecraft.util.registry.Registry;
 
 /**
@@ -18,7 +18,7 @@ public class ItemMatchers {
         return new NameMatcher(name);
     }
 
-    public static ItemMatcher tag(TagKey<Item> tag) {
+    public static ItemMatcher tag(Tag.Identified<Item> tag) {
         return new TagMatcher(tag);
     }
 
@@ -43,11 +43,11 @@ public class ItemMatchers {
         }
     }
 
-    private record TagMatcher(TagKey<Item> tag) implements ItemMatcher {
+    private record TagMatcher(Tag.Identified<Item> tag) implements ItemMatcher {
 
         @Override
         public boolean isMatch(ItemStack stack) {
-            return stack.isIn(tag);
+            return tag.contains(stack.getItem());
         }
     }
 

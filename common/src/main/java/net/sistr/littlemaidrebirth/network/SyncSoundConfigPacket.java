@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.network;
 
-import dev.architectury.networking.NetworkManager;
 import io.netty.buffer.Unpooled;
+import me.shedaniel.architectury.networking.NetworkManager;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -31,7 +31,7 @@ public class SyncSoundConfigPacket {
 
     public static PacketByteBuf createC2SPacket(Entity entity, String configName) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getId());
+        buf.writeVarInt(entity.getEntityId());
         buf.writeString(configName);
         return buf;
     }
@@ -43,7 +43,7 @@ public class SyncSoundConfigPacket {
 
     public static PacketByteBuf createS2CPacket(Entity entity, String configName) {
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-        buf.writeVarInt(entity.getId());
+        buf.writeVarInt(entity.getEntityId());
         buf.writeString(configName);
         return buf;
     }
@@ -59,7 +59,7 @@ public class SyncSoundConfigPacket {
     private static void applySoundConfigClient(int id, String configName) {
         PlayerEntity player = MinecraftClient.getInstance().player;
         if (player == null) return;
-        World world = player.getWorld();
+        World world = player.getEntityWorld();
         Entity entity = world.getEntityById(id);
         if (entity instanceof SoundPlayable) {
             LMConfigManager.INSTANCE.getConfig(configName)
@@ -74,7 +74,7 @@ public class SyncSoundConfigPacket {
     }
 
     private static void applySoundConfigServer(PlayerEntity player, int id, String configName) {
-        World world = player.getWorld();
+        World world = player.getEntityWorld();
         Entity entity = world.getEntityById(id);
         if (!(entity instanceof SoundPlayable)) {
             return;

@@ -1,8 +1,8 @@
 package net.sistr.littlemaidrebirth.client;
 
 import net.minecraft.client.render.*;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
@@ -15,8 +15,8 @@ public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
     private static final Identifier TEXTURE = new Identifier(LMRBMod.MODID, "textures/entity/maid_soul/maid_soul.png");
     private static final Identifier HEART = new Identifier("textures/particle/heart.png");
 
-    public MaidSoulRenderer(EntityRendererFactory.Context ctx) {
-        super(ctx);
+    public MaidSoulRenderer(EntityRenderDispatcher dispatcher) {
+        super(dispatcher);
     }
 
     @Override
@@ -24,8 +24,8 @@ public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
         super.render(entity, yaw, tickDelta, matrices, vertexConsumers, light);
         float progress = (entity.age + tickDelta) % 40 / 40;
         float radius = 0.25f;
-        float cos = MathHelper.cos(progress * MathHelper.PI * 2) * radius;
-        float sin = MathHelper.sin(progress * MathHelper.PI * 2) * radius;
+        float cos = MathHelper.cos(progress * (float) Math.PI * 2) * radius;
+        float sin = MathHelper.sin(progress * (float) Math.PI * 2) * radius;
         float x = 0;
         float z = 0;
         float y = 0.25f;
@@ -37,8 +37,8 @@ public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
         float y2 = y - radius;
         var consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(HEART));
         var entry = matrices.peek();
-        var posMatrix = entry.getPositionMatrix();
-        var normMatrix = entry.getNormalMatrix();
+        var posMatrix = entry.getModel();
+        var normMatrix = entry.getNormal();
         //反時計回りが表
         //表を見て、右上、左上、左下、右下の順
         vertex(posMatrix, normMatrix, consumer, x1, y1, z1, 1.0f, 0.0f);
@@ -58,7 +58,7 @@ public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
                 .color(255, 255, 255, 255)
                 .texture(u, v)
                 .overlay(OverlayTexture.DEFAULT_UV)
-                .light(LightmapTextureManager.MAX_BLOCK_LIGHT_COORDINATE)
+                .light(LightmapTextureManager.pack(15, 15))
                 .normal(normalMatrix, 0, 0, 1)
                 .next();
     }

@@ -1,14 +1,12 @@
 package net.sistr.littlemaidrebirth.setup;
 
-import dev.architectury.registry.CreativeTabRegistry;
-import dev.architectury.registry.level.biome.BiomeModifications;
+import me.shedaniel.architectury.registry.BiomeModifications;
+import me.shedaniel.architectury.registry.CreativeTabs;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
-import net.minecraft.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.SpawnSettings;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Modes;
@@ -17,10 +15,11 @@ import net.sistr.littlemaidrebirth.entity.iff.IFFType;
 import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
 import net.sistr.littlemaidrebirth.network.Networking;
 
-import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ModSetup {
-    public static final ItemGroup ITEM_GROUP = CreativeTabRegistry
+    public static final ItemGroup ITEM_GROUP = CreativeTabs
             .create(new Identifier(LMRBMod.MODID, "common"), Items.CAKE::getDefaultStack);
 
     public static void init() {
@@ -45,18 +44,16 @@ public class ModSetup {
     }
 
     private static void registerSpawnSettingLM() {
-        var spawnBiomeTags = LMRBMod.getConfig().getMaidSpawnBiomeTags()
+        var spawnBiomeTags = LMRBMod.getConfig().getMaidSpawnBiomes()
                 .stream()
                 .filter(Identifier::isValid)
                 .map(Identifier::new)
-                .map(id -> TagKey.of(Registry.BIOME_KEY, id))
-                .toList();
-        var spawnExcludeBiomeTags = LMRBMod.getConfig().getMaidSpawnExcludeBiomeTags()
+                .collect(Collectors.toSet());
+        var spawnExcludeBiomeTags = LMRBMod.getConfig().getMaidSpawnExcludeBiomes()
                 .stream()
                 .filter(Identifier::isValid)
                 .map(Identifier::new)
-                .map(id -> TagKey.of(Registry.BIOME_KEY, id))
-                .toList();
+                .collect(Collectors.toSet());
         BiomeModifications.addProperties((context) -> canSpawnBiome(context, spawnBiomeTags, spawnExcludeBiomeTags),
                 (context, mutable) -> mutable.getSpawnProperties()
                         .addSpawn(Registration.LITTLE_MAID_MOB.get().getSpawnGroup(),
@@ -67,19 +64,10 @@ public class ModSetup {
     }
 
     private static boolean canSpawnBiome(BiomeModifications.BiomeContext context,
-                                         List<TagKey<Biome>> spawnBiomeTags,
-                                         List<TagKey<Biome>> spawnExcludeBiomeTags) {
-        for (TagKey<Biome> biomeTag : spawnBiomeTags) {
-            if (context.hasTag(biomeTag)) {
-                for (TagKey<Biome> excludeBiomeTag : spawnExcludeBiomeTags) {
-                    if (context.hasTag(excludeBiomeTag)) {
-                        return false;
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
+                                         Set<Identifier> spawnBiomeTags,
+                                         Set<Identifier> spawnExcludeBiomeTags) {
+        return spawnBiomeTags.contains(context.getKey())
+                && !spawnExcludeBiomeTags.contains(context.getKey());
     }
 
 }

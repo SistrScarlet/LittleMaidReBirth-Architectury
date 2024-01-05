@@ -49,13 +49,13 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
         if (freedomPos == null) {
             return;
         }
-        if (freedomPos.getSquaredDistance(mob.getPos()) < distanceSq) {
+        if (freedomPos.getSquaredDistance(mob.getBlockPos()) < distanceSq) {
             return;
         }
         if (0 < --reCalcCool) {
             return;
         }
-        reCalcCool = getTickCount(20);
+        reCalcCool = 20;
         //freedomPosを目指して移動
         Path path = mob.getNavigation().findPathTo(
                 freedomPos.getX(), freedomPos.getY(), freedomPos.getZ(), MathHelper.floor(distance * 0.5));
@@ -66,7 +66,7 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
         mob.getNavigation().stop();
         //移動しても着きそうにない場合はTP
         if (mob.isOnGround()
-                && mob.getWorld().isSpaceEmpty(
+                && mob.getEntityWorld().isSpaceEmpty(
                 mob.getBoundingBox()
                         .offset(mob.getPos().multiply(-1))
                         .offset(freedomPos))

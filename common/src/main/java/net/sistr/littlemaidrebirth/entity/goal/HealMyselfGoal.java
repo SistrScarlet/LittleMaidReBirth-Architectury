@@ -118,8 +118,4 @@ public class HealMyselfGoal<T extends PathAwareEntity & HasInventory> extends Go
         }
     }
 
-    @Override
-    public boolean shouldRunEveryTick() {
-        return true;
-    }
 }

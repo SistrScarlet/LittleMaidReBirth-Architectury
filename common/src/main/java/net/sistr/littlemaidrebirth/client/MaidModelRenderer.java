@@ -4,7 +4,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRendererFactory;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.render.entity.MobEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Items;
@@ -31,13 +31,13 @@ import static net.sistr.littlemaidmodelloader.maidmodel.IModelCaps.*;
 public class MaidModelRenderer extends MobEntityRenderer<LittleMaidEntity, LMMultiModel<LittleMaidEntity>> {
     private static final Identifier NULL_TEXTURE = new Identifier(LMRBMod.MODID, "null");
 
-    public MaidModelRenderer(EntityRendererFactory.Context ctx) {
-        super(ctx, new LMMultiModel<>(), 0.5F);
+    public MaidModelRenderer(EntityRenderDispatcher dispatcher) {
+        super(dispatcher, new LMMultiModel<>(), 0.5F);
         //エラー吐くので<>消した(ゴリ押し)
         this.addFeature(new MultiModelArmorLayer(this));
         this.addFeature(new MultiModelHeldItemLayer(this));
         this.addFeature(new MultiModelLightLayer(this));
-        this.addFeature(new LMHeadFeatureRenderer<>(this, ctx.getModelLoader()));
+        this.addFeature(new LMHeadFeatureRenderer(this));
     }
 
     @Override

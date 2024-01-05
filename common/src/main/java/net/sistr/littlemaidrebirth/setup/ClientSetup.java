@@ -1,6 +1,6 @@
 package net.sistr.littlemaidrebirth.setup;
 
-import dev.architectury.registry.menu.MenuRegistry;
+import me.shedaniel.architectury.registry.MenuRegistry;
 import net.sistr.littlemaidrebirth.client.LittleMaidScreen;
 
 public class ClientSetup {

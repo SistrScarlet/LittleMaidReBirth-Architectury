@@ -1,7 +1,6 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectCategory;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
@@ -82,8 +81,7 @@ public class HealerMode extends Mode {
                 && stack.getItem().getFoodComponent().getStatusEffects().stream()
                 //コンフィグで害のあるものも食えるか調整可能にする
                 //allMatchだとエフェクトが無い場合にfalseになってしまう
-                .noneMatch(p -> p.getFirst().getEffectType().getCategory()
-                        != StatusEffectCategory.BENEFICIAL);
+                .noneMatch(p -> !p.getFirst().getEffectType().isBeneficial());
     }
 
     public boolean isBeneficialPotion(LivingEntity owner, ItemStack stack, boolean fullHealth) {
@@ -93,7 +91,7 @@ public class HealerMode extends Mode {
         }
         //いずれかひとつでも有用でない効果がある場合はfalse
         if (potion.getEffects().stream()
-                .anyMatch(e -> e.getEffectType().getCategory() != StatusEffectCategory.BENEFICIAL)) {
+                .anyMatch(e -> !e.getEffectType().isBeneficial())) {
             return false;
         }
         //コンフィグで害のあるものも食えるか調整可能にする
@@ -117,7 +115,7 @@ public class HealerMode extends Mode {
         //飯
         if (foodIndex != -1) {
             ItemStack stack = inventory.getStack(foodIndex);
-            stack = owner.eatFood(owner.getWorld(), stack);
+            stack = owner.eatFood(owner.getEntityWorld(), stack);
             if (stack.isEmpty()) {
                 inventory.removeStack(foodIndex);
             } else {
@@ -127,13 +125,13 @@ public class HealerMode extends Mode {
         //薬
         if (potionIndex != -1) {
             ItemStack stack = inventory.getStack(potionIndex);
-            stack = stack.finishUsing(owner.getWorld(), owner);
+            stack = stack.finishUsing(owner.getEntityWorld(), owner);
             if (stack.isEmpty()) {
                 inventory.removeStack(potionIndex);
             } else {
                 inventory.setStack(potionIndex, stack);
             }
-            owner.getWorld().playSound(null, owner.getX(), owner.getY(), owner.getZ(),
+            owner.getEntityWorld().playSound(null, owner.getX(), owner.getY(), owner.getZ(),
                     SoundEvents.ENTITY_GENERIC_DRINK, SoundCategory.PLAYERS, 1.0f, 1.0f);
         }
         ((SoundPlayable) this.mob).play(LMSounds.HEALING);

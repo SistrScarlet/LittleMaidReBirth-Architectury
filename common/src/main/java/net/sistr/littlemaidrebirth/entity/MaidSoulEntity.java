@@ -1,6 +1,6 @@
 package net.sistr.littlemaidrebirth.entity;
 
-import dev.architectury.networking.NetworkManager;
+import me.shedaniel.architectury.networking.NetworkManager;
 import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -14,7 +14,6 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
@@ -46,23 +45,23 @@ public class MaidSoulEntity extends Entity {
         //上端下端のときrange = 0
         //waveProgressが0/半分/最後のときが上端下端
         float range = MathHelper.sin(
-                MathHelper.PI
+                (float) Math.PI
                         * ((float) ((this.waveProgress + loop / 4) % (loop / 2)) / (loop / 2f)))
                 * 0.4f + 0.1f;
         int rotateTicks = 20 * 1;
-        float rotate = MathHelper.PI * 2 * ((float) (this.age % rotateTicks) / rotateTicks);
+        float rotate = (float) Math.PI * 2 * ((float) (this.age % rotateTicks) / rotateTicks);
         float waveHeight = 1f;
         float x = (MathHelper.sin(rotate)) * range;
         float z = (MathHelper.cos(rotate)) * range;
         float y = MathHelper.sin(
-                MathHelper.PI * 2
+                (float) Math.PI * 2
                         * ((float) (this.waveProgress % loop) / loop))
                 * (waveHeight / 2);
 
-        var particle = ParticleTypes.ELECTRIC_SPARK;
+        var particle = ParticleTypes.CRIT;
 
         float yOffset = 0.25f;
-        var world = getWorld();
+        var world = getEntityWorld();
         world.addParticle(
                 particle,
                 this.getX() + x,
@@ -95,7 +94,9 @@ public class MaidSoulEntity extends Entity {
             var owner = serverWorld.getEntity(maidSoul.getOwnerUUID().get());
             if (owner != null) {
                 var toOwnerVec = owner.getPos().subtract(this.getPos()).normalize();
-                var distanceSq = Math.max(this.squaredDistanceTo(owner.getEyePos()), 0.5 * 0.5);
+                var distanceSq = Math.max(
+                        this.squaredDistanceTo(owner.getPos().add(0, owner.getEyeHeight(owner.getPose()), 0)),
+                        0.5 * 0.5);
                 var addVec = toOwnerVec.multiply(0.0125 / distanceSq);
                 if (addVec.lengthSquared() > 0.001 * 0.001) {
                     setVelocity(getVelocity().add(addVec));
@@ -137,14 +138,14 @@ public class MaidSoulEntity extends Entity {
     public void onPlayerCollision(PlayerEntity player) {
         super.onPlayerCollision(player);
         if (this.maidSoul == null) {
-            this.discard();
+            this.remove();
             return;
         }
         Optional<UUID> optional;
         if ((optional = this.maidSoul.getOwnerUUID()).isPresent()
                 && optional.get().equals(player.getUuid())) {
             player.sendPickup(this, 1);
-            if (this.getWorld() instanceof ServerWorld serverWorld) {
+            if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
                 var maidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
                 maidSoulState.add(player.getUuid(), this.maidSoul);
                 maidSoulState.markDirty();
@@ -156,20 +157,20 @@ public class MaidSoulEntity extends Entity {
                 double delta = 1.0;
                 //todo エフェクト調整
                 serverWorld.spawnParticles(
-                        new DustParticleEffect(new Vec3f(1.0f, 0.0f, 0.0f), size),
+                        new DustParticleEffect(1.0f, 0.0f, 0.0f, size),
                         this.getX(), this.getY(), this.getZ(),
                         count, delta, delta, delta, 0);
                 serverWorld.spawnParticles(
-                        new DustParticleEffect(new Vec3f(0.0f, 1.0f, 0.0f), size),
+                        new DustParticleEffect(0.0f, 1.0f, 0.0f, size),
                         this.getX(), this.getY(), this.getZ(),
                         count, delta, delta, delta, 0);
                 serverWorld.spawnParticles(
-                        new DustParticleEffect(new Vec3f(0.0f, 0.0f, 1.0f), size),
+                        new DustParticleEffect(0.0f, 0.0f, 1.0f, size),
                         this.getX(), this.getY(), this.getZ(),
                         count, delta, delta, delta, 0);
                 //todo 憑依ステータス効果
             }
-            this.discard();
+            this.remove();
         }
     }
 

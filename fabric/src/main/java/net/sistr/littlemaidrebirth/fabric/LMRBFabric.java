@@ -1,8 +1,8 @@
 package net.sistr.littlemaidrebirth.fabric;
 
+import me.shedaniel.architectury.registry.entity.EntityRenderers;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.world.Heightmap;
 import net.sistr.littlemaidrebirth.LMRBMod;
@@ -29,7 +29,7 @@ public class LMRBFabric implements ModInitializer, ClientModInitializer {
     public void onInitializeClient() {
         ClientSetup.init();
         //Forge側でうまく登録できないため、ここで登録
-        EntityRendererRegistry.register(Registration.LITTLE_MAID_MOB.get(), MaidModelRenderer::new);
-        EntityRendererRegistry.register(Registration.MAID_SOUL_ENTITY.get(), MaidSoulRenderer::new);
+        EntityRenderers.register(Registration.LITTLE_MAID_MOB.get(), MaidModelRenderer::new);
+        EntityRenderers.register(Registration.MAID_SOUL_ENTITY.get(), MaidSoulRenderer::new);
     }
 }

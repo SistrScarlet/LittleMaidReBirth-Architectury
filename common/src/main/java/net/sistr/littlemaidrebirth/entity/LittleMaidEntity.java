@@ -1,9 +1,9 @@
 package net.sistr.littlemaidrebirth.entity;
 
 import com.google.common.collect.Lists;
-import dev.architectury.extensions.network.EntitySpawnExtension;
-import dev.architectury.networking.NetworkManager;
-import dev.architectury.registry.menu.MenuRegistry;
+import me.shedaniel.architectury.extensions.network.EntitySpawnExtension;
+import me.shedaniel.architectury.networking.NetworkManager;
+import me.shedaniel.architectury.registry.MenuRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.entity.HopperBlockEntity;
@@ -32,7 +32,6 @@ import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.StackReference;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
@@ -83,12 +82,11 @@ import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.mode.HasMode;
 import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
-import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
 import net.sistr.littlemaidrebirth.mixin.CrossbowItemInvoker;
 import net.sistr.littlemaidrebirth.mixin.ItemEntityAccessor;
+import net.sistr.littlemaidrebirth.mixin.LivingEntityInvoker;
 import net.sistr.littlemaidrebirth.mixin.PersistentProjectileEntityAccessor;
-import net.sistr.littlemaidrebirth.mixin.ProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LMCollidable;
@@ -146,7 +144,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             new ItemContractable<>(this,
                     LMRBMod.getConfig().getConsumeSalaryInterval(),
                     LMRBMod.getConfig().getUnpaidCountLimit(),
-                    stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
+                    stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem()),
                     mob -> {
                         mob.setStrike(true);
                         mob.setWait(false);
@@ -252,7 +250,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new HealMyselfGoal<>(this,
                 config.getHealInterval(),
                 config.getHealAmount(),
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())));
 
         this.goalSelector.add(++priority, new WaitGoal<>(this));
 
@@ -289,10 +287,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this,
                 true,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())));
         this.goalSelector.add(priority, new LMStareAtHeldItemGoal<>(this,
                 true,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())));
 
         this.goalSelector.add(++priority,
                 new HasMMFollowTameOwnerGoal<>(
@@ -303,7 +301,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         //todo 頭の装飾品を仕舞わないようにする
         this.goalSelector.add(++priority, new LMStoreItemToContainerGoal<>(this,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)
+                stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem())
                         || this.hasModeImpl.getMode()
                         .filter(mode -> mode.getModeType().isModeItem(stack))
                         .isPresent(),
@@ -334,9 +332,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             }
         });
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+                stack -> LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())));
         this.goalSelector.add(++priority, new LMStareAtHeldItemGoal<>(this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
+                stack -> LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())));
         this.goalSelector.add(++priority, new WanderAroundFarGoal(this, 0.65f) {
             @Override
             public boolean canStart() {
@@ -353,7 +351,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.targetSelector.add(++priority, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
         this.targetSelector.add(++priority, new TrackOwnerAttackerGoal(this));
         this.targetSelector.add(++priority, new AttackWithOwnerGoal(this));
-        this.targetSelector.add(++priority, new ActiveTargetGoal<>(
+        this.targetSelector.add(++priority, new FollowTargetGoal<>(
                 this, LivingEntity.class, 5, true, false,
                 this::isEnemy));
     }
@@ -488,8 +486,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //原因はインベントリを開くまで同期されないため
         buf.writeItemStack(getInventory().getStack(18));
         //architectury側のミスでPitchYawが逆に与えられているのを修正
-        buf.writeFloat(this.getPitch());
-        buf.writeFloat(this.getYaw());
+        buf.writeFloat(this.pitch);
+        buf.writeFloat(this.yaw);
     }
 
     //蔵
@@ -513,8 +511,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 .ifPresent(this::setConfigHolder);
 
         getInventory().setStack(17, buf.readItemStack());
-        this.setPitch(buf.readFloat());
-        this.setYaw(buf.readFloat());
+        this.pitch = buf.readFloat();
+        this.yaw = buf.readFloat();
     }
 
     @Override
@@ -529,7 +527,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 play(LMSounds.RECONTRACT);
             }
             case 72 -> {//砂糖あげた時
-                this.getWorld().addParticle(ParticleTypes.NOTE,
+                this.getEntityWorld().addParticle(ParticleTypes.NOTE,
                         this.getX(),
                         this.getY() + this.getHeight(),
                         this.getZ(),
@@ -548,10 +546,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             double e = this.random.nextGaussian() * 0.02;
             double f = this.random.nextGaussian() * 0.02;
             this.world.addParticle(new DustParticleEffect(
-                            new Vec3f(
-                                    this.random.nextFloat(),
-                                    this.random.nextFloat(),
-                                    this.random.nextFloat()),
+                            this.random.nextFloat(),
+                            this.random.nextFloat(),
+                            this.random.nextFloat(),
                             1.0f),
                     this.getParticleX(1.0),
                     this.getRandomBodyY() + 0.5,
@@ -565,7 +562,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             double d = this.random.nextGaussian() * 0.02;
             double e = this.random.nextGaussian() * 0.02;
             double f = this.random.nextGaussian() * 0.02;
-            this.getWorld().addParticle(ParticleTypes.CLOUD,
+            this.getEntityWorld().addParticle(ParticleTypes.CLOUD,
                     this.getParticleX(1.0),
                     this.getRandomBodyY() + 0.5,
                     this.getParticleZ(1.0),
@@ -580,7 +577,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (this.experiencePickUpDelay > 0) {
             --this.experiencePickUpDelay;
         }
-        if (this.getWorld().isClient) {
+        if (this.getEntityWorld().isClient) {
             tickInterestedAngle();
         }
         playSoundCool = Math.max(0, playSoundCool - 1);
@@ -603,17 +600,17 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     protected void pickupItem() {
         if (this.getHealth() > 0.0f && !this.isSpectator()) {
-            Box aabb = this.hasVehicle() && !this.getVehicle().isRemoved()
+            Box aabb = this.hasVehicle() && !this.getVehicle().removed
                     ? this.getBoundingBox().union(this.getVehicle().getBoundingBox()).expand(1.0, 0.0, 1.0)
                     : this.getBoundingBox().expand(1.0, 0.5, 1.0);
-            List<Entity> list = this.getWorld().getOtherEntities(this, aabb);
+            List<Entity> list = this.getEntityWorld().getOtherEntities(this, aabb);
             ArrayList<Entity> list1 = Lists.newArrayList();
             for (Entity entity : list) {
                 if (entity.getType() == EntityType.EXPERIENCE_ORB) {
                     list1.add(entity);
                     continue;
                 }
-                if (entity.isRemoved()) continue;
+                if (entity.removed) continue;
                 if (entity instanceof ItemEntity itemEntity) {
                     this.pickupItemEntity(itemEntity);
                 } else if (entity instanceof PersistentProjectileEntity projectile) {
@@ -621,7 +618,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 }
             }
             if (!list1.isEmpty()) {
-                this.pickupExperienceOrb((ExperienceOrbEntity) Util.getRandom(list1, this.random));
+                this.pickupExperienceOrb((ExperienceOrbEntity) Util.getRandom(list1.toArray(), this.random));
             }
         }
     }
@@ -631,7 +628,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     protected void pickupItemEntity(ItemEntity itemEntity) {
-        if (this.getWorld().isClient) {
+        if (this.getEntityWorld().isClient) {
             return;
         }
         ItemStack itemStack = itemEntity.getStack();
@@ -644,29 +641,28 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             if (itemStack.getCount() != i) {
                 this.sendPickup(itemEntity, i);
                 if (itemStack.isEmpty()) {
-                    itemEntity.discard();
+                    itemEntity.remove();
                     itemStack.setCount(i);
                 }
-                this.triggerItemPickedUpByEntityCriteria(itemEntity);
             }
         }
     }
 
     protected void pickupArrowEntity(PersistentProjectileEntity projectile) {
-        if (this.getWorld().isClient || !((PersistentProjectileEntityAccessor) projectile).getInGround()
+        if (this.getEntityWorld().isClient || !((PersistentProjectileEntityAccessor) projectile).getInGround()
                 && !projectile.isNoClip() || projectile.shake > 0) {
             return;
         }
         if (projectile instanceof TridentEntity
-                && (!((ProjectileEntityAccessor) projectile).invokeIsOwner(this)
-                && projectile.getOwner() != null)) {
+                && projectile.getOwner() != null
+                && projectile.getOwner() != this) {
             return;
         }
         var arrow = ((PersistentProjectileEntityAccessor) projectile).invokeAsItemStack();
         arrow = HopperBlockEntity.transfer(null, this.getInventory(), arrow, null);
         if (arrow.isEmpty()) {
             this.sendPickup(projectile, 1);
-            projectile.discard();
+            projectile.remove();
         }
     }
 
@@ -752,7 +748,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void playAmbientSound() {
-        if (this.getWorld().isClient || this.dead || getConfigHolder()
+        if (this.getEntityWorld().isClient || this.dead || getConfigHolder()
                 .getParameter("LivingVoiceRate")
                 .map(s -> {
                     try {
@@ -767,15 +763,15 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (getHealth() / getMaxHealth() < 0.3F) {
             play(LMSounds.LIVING_WHINE);
         } else {
-            if (age % 4 == 0 && this.getWorld().isSkyVisible(this.getBlockPos())) {
-                Biome biome = this.getWorld().getBiome(getBlockPos()).value();
-                if (biome.isCold(getBlockPos())) {
+            if (age % 4 == 0 && this.getEntityWorld().isSkyVisible(this.getBlockPos())) {
+                Biome biome = this.getEntityWorld().getBiome(getBlockPos());
+                if (biome.getTemperature(getBlockPos()) <= 0) {
                     play(LMSounds.LIVING_COLD);
-                } else if (2 <= biome.getTemperature()) {
+                } else if (2 <= biome.getTemperature(getBlockPos())) {
                     play(LMSounds.LIVING_HOT);
                 }
             } else if (age % 4 == 1 && world.isRaining()) {
-                Biome biome = this.world.getBiome(getBlockPos()).value();
+                Biome biome = this.world.getBiome(getBlockPos());
                 if (biome.getPrecipitation() == Biome.Precipitation.RAIN)
                     play(LMSounds.LIVING_RAIN);
                 else if (biome.getPrecipitation() == Biome.Precipitation.SNOW)
@@ -783,7 +779,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             } else {
                 if (this.getMainHandStack().getItem() == Items.CLOCK
                         || this.getOffHandStack().getItem() == Items.CLOCK) {
-                    int time = (int) (this.getWorld().getTimeOfDay() % 24000);
+                    int time = (int) (this.getEntityWorld().getTimeOfDay() % 24000);
                     //時間約23500-1500はse_living_morning
                     //時間約12500-23500はse_living_night
                     if (time < 1500 || 23500 <= time) {
@@ -803,7 +799,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void onDeath(DamageSource source) {
         if (LMRBMod.getConfig().isCanResurrection()) {
-            this.unsetRemoved();
+            this.removed = false;
             this.dead = false;
             this.deathTime = 0;
             this.setHealth(this.getMaxHealth());
@@ -817,7 +813,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //死亡ボイスは必ず聞かせる
         this.playSoundCool = 0;
         play(LMSounds.DEATH);
-        if (this.getWorld() instanceof ServerWorld serverWorld)
+        if (this.getEntityWorld() instanceof ServerWorld serverWorld)
             this.getTameOwnerUuid().ifPresent(id -> {
                 var maidSoulEntity = new MaidSoulEntity(serverWorld, new MaidSoul(this.writeNbt(new NbtCompound())));
                 maidSoulEntity.setPosition(this.getX(), this.getY(), this.getZ());
@@ -829,7 +825,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public void installMaidSoul(MaidSoul maidSoul) {
         readNbt(maidSoul.getNbt());
         this.setHealth(getMaxHealth());
-        this.unsetRemoved();
+        this.removed = false;
         this.dead = false;
         this.deathTime = 0;
     }
@@ -849,7 +845,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             if (target instanceof EnderDragonPart) {
                 entity = ((EnderDragonPart) target).owner;
             }
-            if (!this.getWorld().isClient && !mainHandStack.isEmpty() && entity instanceof LivingEntity) {
+            if (!this.getEntityWorld().isClient && !mainHandStack.isEmpty() && entity instanceof LivingEntity) {
                 //バニラではこのメソッドの第三引数にはプレイヤーエンティティしか渡されない
                 //そのため、他Modにおいて必ずプレイヤーであると仮定して実装した場合にクラッシュする可能性がある
                 //その対策にtry/catchを置いておく
@@ -871,7 +867,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (this.dead) {
             return super.damage(source, amount);
         }
-        if (!this.getWorld().isClient) {
+        if (!this.getEntityWorld().isClient) {
             //味方のが当たってもちゃんと動くようにフレンド判定より前
             if (amount <= 0 && source.getSource() instanceof SnowballEntity) {
                 play(LMSounds.HURT_SNOW);
@@ -908,13 +904,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         boolean isHurtTime = 0 < this.hurtTime;
         boolean result = super.damage(source, amount);
-        if (!this.getWorld().isClient && !isHurtTime) {
+        if (!this.getEntityWorld().isClient && !isHurtTime) {
             if (result && 0 < amount && this.isWait() && getTameOwnerUuid().isPresent()) {
                 this.setWait(false);
             }
             if (!result || amount <= 0F) {
                 play(LMSounds.HURT_NO_DAMAGE);
-            } else if (amount > 0F && this.blockedByShield(source)) {
+            } else if (amount > 0F && ((LivingEntityInvoker) this).invokeBlockedByShield(source)) {
                 play(LMSounds.HURT_GUARD);
             } else if (source == DamageSource.FALL) {
                 play(LMSounds.HURT_FALL);
@@ -978,7 +974,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     14 - 2 * 4);
             this.playSound(SoundEvents.ENTITY_ARROW_SHOOT,
                     1.0f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 1.2f) + pullProgress * 0.5f);
-            this.getWorld().spawnEntity(arrow);
+            this.getEntityWorld().spawnEntity(arrow);
             arrowStack.decrement(1);
         } else if (stack.getItem() instanceof CrossbowItem) {
             this.shoot(this, CrossbowItemInvoker.getSpeed(stack));
@@ -1012,7 +1008,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 new Vec3d(xDiff, yDiff + horizonLen * 0.025, zDiff), multishotSpray);
         projectile.setVelocity(targetAt.getX(), targetAt.getY(), targetAt.getZ(),
                 speed * LMRBMod.getConfig().getArcherShootVelocityFactor(),
-                14 - entity.getWorld().getDifficulty().getId() * 4);
+                14 - entity.getEntityWorld().getDifficulty().getId() * 4);
         entity.playSound(SoundEvents.ITEM_CROSSBOW_SHOOT,
                 1.0f, 1.0f / (entity.getRandom().nextFloat() * 0.4f + 0.8f));
     }
@@ -1050,11 +1046,11 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     BiPredicate<Double, Double> finalPredicate = shouldBackPredicate;
                     shouldBackPredicate = (x, z) -> finalPredicate.test(x, z)
                             //足場がbox内にない
-                            || this.getWorld().isSpaceEmpty(this, this.getBoundingBox()
+                            || this.getEntityWorld().isSpaceEmpty(this, this.getBoundingBox()
                             .offset(x, 0, z)
                             .stretch(0, -(getDangerHeightThreshold() - fallDistance), 0))
                             //または、すぐ下に足場がなく、危険物がbox内にある
-                            || (this.getWorld().isSpaceEmpty(this, this.getBoundingBox()
+                            || (this.getEntityWorld().isSpaceEmpty(this, this.getBoundingBox()
                             .offset(x, 0, z)
                             .stretch(0, -stepHeight, 0))
                             && !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z)
@@ -1121,7 +1117,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             for (int y = 0; y < maxY - minY + 1; y++) {
                 for (int z = 0; z < maxZ - minZ + 1; z++) {
                     PathNodeType pathNodeType = this.getNavigation().getNodeMaker()
-                            .getDefaultNodeType(this.getWorld(), minX + x, minY + y, minZ + z);
+                            .getDefaultNodeType(this.getEntityWorld(), minX + x, minY + y, minZ + z);
                     if (pathNodeType == PathNodeType.DAMAGE_FIRE
                             || pathNodeType == PathNodeType.DAMAGE_OTHER //todo ?
                             || pathNodeType == PathNodeType.DAMAGE_OTHER
@@ -1135,7 +1131,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     private boolean isSafeFallHeight(Vec3d pos) {
-        BlockHitResult result = this.getWorld().raycast(new RaycastContext(
+        BlockHitResult result = this.getEntityWorld().raycast(new RaycastContext(
                 pos,
                 pos.subtract(0, getDangerHeightThreshold() - fallDistance + 0.1, 0),
                 RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
@@ -1149,7 +1145,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         BlockPos checkPos = new BlockPos(MathHelper.floor(pos.x), MathHelper.floor(pos.y - 1), MathHelper.floor(pos.z));
         for (int i = 0; i < pos.y - hitPos.y + 1; i++) {
             PathNodeType pathNodeType = this.getNavigation().getNodeMaker()
-                    .getDefaultNodeType(this.getWorld(), checkPos.getX(), checkPos.getY(), checkPos.getZ());
+                    .getDefaultNodeType(this.getEntityWorld(), checkPos.getX(), checkPos.getY(), checkPos.getZ());
             if (pathNodeType == PathNodeType.WALKABLE || pathNodeType == PathNodeType.BLOCKED) {
                 return true;
             }
@@ -1168,7 +1164,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         float canClipHeight = getDangerHeightThreshold() + 1.0f;
         //着地しているか、落下距離が危険高度未満かつ下に足場があるとき
         return this.isOnGround() || this.fallDistance < canClipHeight
-                && !this.getWorld().isSpaceEmpty(this, this.getBoundingBox()
+                && !this.getEntityWorld().isSpaceEmpty(this, this.getBoundingBox()
                 .stretch(0.0, this.fallDistance - canClipHeight, 0.0));
     }
 
@@ -1178,10 +1174,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return -fallDamage;
     }
 
+    //getLeashOffset()
     @Override
-    public Vec3d getLeashOffset() {
+    public Vec3d method_29919() {
         return new Vec3d(0.0, this.getStandingEyeHeight() - 0.15f, 1f / 16f);
     }
+
 
     //success 動作を実行し、手を振る
     //consume 動作を実行するが、手を振らない
@@ -1197,7 +1195,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         ItemStack stack = player.getStackInHand(hand);
         //オーナーが居ない場合
         if (!hasTameOwner()) {
-            if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
+            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
                 return contract(player, stack, false);
             }
             return ActionResult.PASS;
@@ -1208,10 +1206,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
         //ストライキ時
         if (isStrike()) {
-            if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
+            if (LMTags.Items.MAIDS_EMPLOYABLE.contains(stack.getItem())) {
                 return contract(player, stack, true);
             }
-            this.getWorld().sendEntityStatus(this, (byte) 6);
+            this.getEntityWorld().sendEntityStatus(this, (byte) 6);
             return ActionResult.PASS;
         }
         //サドル持ってるとき
@@ -1227,14 +1225,14 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     this.stopRiding();
                 }
             }
-            return ActionResult.success(this.getWorld().isClient);
+            return ActionResult.success(this.getEntityWorld().isClient);
         }
         //肩車されてるとき
         if (this.getVehicle() == player) {
             return ActionResult.PASS;
         }
         //砂糖
-        if (stack.isIn(LMTags.Items.MAIDS_SALARY)) {
+        if (LMTags.Items.MAIDS_SALARY.contains(stack.getItem())) {
             var config = LMRBMod.getConfig();
             heal(config.getHealAmount());
             return changeState(player, stack);
@@ -1242,90 +1240,90 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //Freedom切替
         if (stack.getItem() == Items.FEATHER) {
             if (getMovingMode() == MovingMode.ESCORT) {
-                this.getWorld().sendEntityStatus(this, (byte) 73);
+                this.getEntityWorld().sendEntityStatus(this, (byte) 73);
                 this.setMovingMode(MovingMode.FREEDOM);
                 this.setFreedomPos(this.getBlockPos());
             } else {
-                this.getWorld().sendEntityStatus(this, (byte) 74);
+                this.getEntityWorld().sendEntityStatus(this, (byte) 74);
                 this.setMovingMode(MovingMode.ESCORT);
             }
-            return ActionResult.success(this.getWorld().isClient);
+            return ActionResult.success(this.getEntityWorld().isClient);
         }
         //Tracer切替
         if ((this.getMovingMode() == MovingMode.FREEDOM
                 || this.getMovingMode() == MovingMode.TRACER)
                 && stack.getItem() == Items.REDSTONE) {
             if (this.getMovingMode() == MovingMode.FREEDOM) {
-                this.getWorld().sendEntityStatus(this, (byte) 75);
+                this.getEntityWorld().sendEntityStatus(this, (byte) 75);
                 this.setMovingMode(MovingMode.TRACER);
             } else {
-                this.getWorld().sendEntityStatus(this, (byte) 73);
+                this.getEntityWorld().sendEntityStatus(this, (byte) 73);
                 this.setMovingMode(MovingMode.FREEDOM);
                 this.setFreedomPos(this.getBlockPos());
             }
-            return ActionResult.success(this.getWorld().isClient);
+            return ActionResult.success(this.getEntityWorld().isClient);
         }
         //ガラス瓶->エンチャントの瓶
-        if (this.experiencePoints >= EXPERIENCE_BOTTLE_COST && stack.isOf(Items.GLASS_BOTTLE)) {
-            this.getWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
+        if (this.experiencePoints >= EXPERIENCE_BOTTLE_COST && stack.getItem() == Items.GLASS_BOTTLE) {
+            this.getEntityWorld().playSound(null, this.getX(), this.getY(), this.getZ(),
                     SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.PLAYERS, 1.0f, 1.0f);
-            ItemStack itemStack2 = ItemUsage.exchangeStack(stack, player, Items.EXPERIENCE_BOTTLE.getDefaultStack());
+            ItemStack itemStack2 = ItemUsage.method_30270(stack, player, Items.EXPERIENCE_BOTTLE.getDefaultStack(), true);
             player.setStackInHand(hand, itemStack2);
             this.addExperience(-EXPERIENCE_BOTTLE_COST);
-            return ActionResult.success(this.getWorld().isClient);
+            return ActionResult.success(this.getEntityWorld().isClient);
         }
         //モブミルク
-        if (LMRBMod.getConfig().isCanMilking() && stack.isOf(Items.BUCKET)) {
+        if (LMRBMod.getConfig().isCanMilking() && stack.getItem() == Items.BUCKET) {
             player.playSound(SoundEvents.ENTITY_COW_MILK, 1.0F, 1.0F);
-            ItemStack itemStack2 = ItemUsage.exchangeStack(stack, player, Items.MILK_BUCKET.getDefaultStack());
+            ItemStack itemStack2 = ItemUsage.method_30270(stack, player, Items.MILK_BUCKET.getDefaultStack(), true);
             player.setStackInHand(hand, itemStack2);
-            return ActionResult.success(this.getWorld().isClient);
+            return ActionResult.success(this.getEntityWorld().isClient);
         }
         openInventory(player);
-        return ActionResult.success(this.getWorld().isClient);
+        return ActionResult.success(this.getEntityWorld().isClient);
     }
 
     public ActionResult changeState(PlayerEntity player, ItemStack stack) {
-        this.getWorld().sendEntityStatus(this, (byte) 72);
+        this.getEntityWorld().sendEntityStatus(this, (byte) 72);
         this.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.random.nextFloat() * 0.1F + 1.0F);
         this.setFreedomPos(this.getBlockPos());
         this.getNavigation().stop();
         this.setWait(!this.isWait());
-        if (!player.getAbilities().creativeMode) {
+        if (!player.abilities.creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
-                player.getInventory().removeOne(stack);
+                player.inventory.removeOne(stack);
             }
         }
-        return ActionResult.success(this.getWorld().isClient);
+        return ActionResult.success(this.getEntityWorld().isClient);
     }
 
     public ActionResult contract(PlayerEntity player, ItemStack stack, boolean isReContract) {
         if (!isReContract) {
-            this.getWorld().sendEntityStatus(this, (byte) 70);
+            this.getEntityWorld().sendEntityStatus(this, (byte) 70);
             if (player instanceof ServerPlayerEntity) {
                 LMRBCriteria.CONTRACT_MAID.trigger((ServerPlayerEntity) player, this);
             }
         } else {
-            this.getWorld().sendEntityStatus(this, (byte) 71);
+            this.getEntityWorld().sendEntityStatus(this, (byte) 71);
         }
         this.setOwnerUuid(player.getUuid());
         setContractMM(true);
         //契約状態の更新
-        if (!this.getWorld().isClient) {
+        if (!this.getEntityWorld().isClient) {
             SyncMultiModelPacket.sendS2CPacket(this, this);
         }
         setStrike(false);
         itemContractable.setUnpaidTimes(0);
         getNavigation().stop();
         setMovingMode(MovingMode.ESCORT);
-        if (!player.getAbilities().creativeMode) {
+        if (!player.abilities.creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
-                player.getInventory().removeOne(stack);
+                player.inventory.removeOne(stack);
             }
         }
-        return ActionResult.success(this.getWorld().isClient);
+        return ActionResult.success(this.getEntityWorld().isClient);
     }
 
     public void addExperience(int experience) {
@@ -1334,7 +1332,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //GUI開くやつ
     public void openInventory(PlayerEntity player) {
-        if (player.getWorld().isClient) {
+        if (player.getEntityWorld().isClient) {
             return;
         }
         setAttacker(null);
@@ -1413,33 +1411,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     @Override
-    protected void damageHelmet(DamageSource source, float amount) {
-        if (!(amount <= 0.0f)) {
-            if ((amount /= 4.0f) < 1.0f) {
-                amount = 1.0f;
-            }
-            var stack = getEquippedStack(EquipmentSlot.HEAD);
-            if (source.isFire() && stack.getItem().isFireproof()
-                    || !(stack.getItem() instanceof ArmorItem)) {
-                return;
-            }
-            stack.damage((int) amount, this, arg -> arg.sendEquipmentBreakStatus(EquipmentSlot.HEAD));
-        }
-    }
-
-    @Override
     protected void damageShield(float amount) {
         //todo ガード実装
-    }
-
-    @Override
-    public StackReference getStackReference(int mappedIndex) {
-        var inv = getInventory();
-        int i = mappedIndex - 200;
-        if (0 <= i && i < inv.size()) {
-            return StackReference.of(inv, i);
-        }
-        return super.getStackReference(mappedIndex);
     }
 
     @Override
@@ -1626,7 +1599,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Environment(EnvType.CLIENT)
     public float getInterestedAngle(float tickDelta) {
         return (prevInterestedAngle + (interestedAngle - prevInterestedAngle) * tickDelta) *
-                ((getId() % 2 == 0 ? 0.08F : -0.08F) * (float) Math.PI);
+                ((getEntityId() % 2 == 0 ? 0.08F : -0.08F) * (float) Math.PI);
     }
 
     @Environment(EnvType.CLIENT)

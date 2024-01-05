@@ -49,7 +49,7 @@ public class RedstoneTraceGoal extends Goal {
                 .forEach(this.aroundSignalPos::add);
         //このタイマーは実行完了時にリセットされる
         //そのため、連続実行時は遅延無し
-        recalcTimer = getTickCount(20);
+        recalcTimer = 20;
         return !this.aroundSignalPos.isEmpty();
     }
 
@@ -90,16 +90,16 @@ public class RedstoneTraceGoal extends Goal {
     }
 
     protected boolean isEmitSignal(BlockPos pos) {
-        var state = mob.getWorld().getBlockState(pos);
+        var state = mob.getEntityWorld().getBlockState(pos);
         return Arrays.stream(Direction.values())
-                .anyMatch(direction -> 0 < state.getStrongRedstonePower(this.mob.getWorld(), pos, direction));
+                .anyMatch(direction -> 0 < state.getStrongRedstonePower(this.mob.getEntityWorld(), pos, direction));
     }
 
     protected float getRelYaw(BlockPos pos) {
         float x = (float) (pos.getX() + 0.5f - this.mob.getX());
         float z = (float) (pos.getZ() + 0.5f - this.mob.getZ());
         float yaw = (float) (-MathHelper.atan2(x, z) * (180 / Math.PI));
-        float mobYaw = this.mob.getYaw();
+        float mobYaw = this.mob.yaw;
         return MathHelper.subtractAngles(mobYaw, yaw);
     }
 

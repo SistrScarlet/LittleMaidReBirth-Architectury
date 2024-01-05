@@ -8,6 +8,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
@@ -47,7 +48,7 @@ public class RipperMode extends Mode {
                 this.mob.getX() - radius,
                 this.mob.getY() - radius / 2F,
                 this.mob.getZ() - radius);
-        return this.mob.getWorld().getOtherEntities(this.mob, bb, (entity) ->
+        return this.mob.getEntityWorld().getOtherEntities(this.mob, bb, (entity) ->
                 entity instanceof LivingEntity && entity instanceof Shearable
                         && ((Shearable) entity).isShearable());
     }
@@ -88,7 +89,7 @@ public class RipperMode extends Mode {
             this.timeToRecalcPath = 10;
             var path = this.mob.getNavigation().findPathTo(target.getX(), target.getY(), target.getZ(), 1);
             if (path == null || path.getEnd() == null
-                    || path.getEnd().getPos().add(0.5, 0, 0.5)
+                    || Vec3d.of(path.getEnd().getBlockPos()).add(0.5, 0, 0.5)
                     .squaredDistanceTo(target.getPos()) > 2.5f * 2.5f) {
                 this.shearable.remove();
                 this.timeToIgnore = 0;

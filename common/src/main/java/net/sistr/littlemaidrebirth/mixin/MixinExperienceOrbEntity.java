@@ -20,9 +20,6 @@ import java.util.Map;
 public abstract class MixinExperienceOrbEntity extends Entity implements LMCollidable {
 
     @Shadow
-    private int pickingCount;
-
-    @Shadow
     private int amount;
 
     public MixinExperienceOrbEntity(EntityType<?> type, World world) {
@@ -37,7 +34,7 @@ public abstract class MixinExperienceOrbEntity extends Entity implements LMColli
 
     @Override
     public void onCollision_LMRB(LittleMaidEntity littleMaid) {
-        if (!this.getWorld().isClient) {
+        if (!this.getEntityWorld().isClient) {
             if (littleMaid.experiencePickUpDelay == 0) {
                 littleMaid.experiencePickUpDelay = 2;
                 littleMaid.sendPickup(this, 1);
@@ -46,10 +43,7 @@ public abstract class MixinExperienceOrbEntity extends Entity implements LMColli
                     littleMaid.addExperience(i);
                 }
 
-                --this.pickingCount;
-                if (this.pickingCount == 0) {
-                    this.discard();
-                }
+                this.remove();
             }
         }
     }
