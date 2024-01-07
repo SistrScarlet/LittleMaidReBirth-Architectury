@@ -7,6 +7,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
+import net.minecraft.particle.DefaultParticleType;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -58,10 +59,10 @@ public class MaidSoulEntity extends Entity {
                         * ((float) (this.waveProgress % loop) / loop))
                 * (waveHeight / 2);
 
-        var particle = ParticleTypes.CRIT;
+        DefaultParticleType particle = ParticleTypes.CRIT;
 
         float yOffset = 0.25f;
-        var world = getEntityWorld();
+        World world = getEntityWorld();
         world.addParticle(
                 particle,
                 this.getX() + x,
@@ -89,22 +90,23 @@ public class MaidSoulEntity extends Entity {
 
         this.waveProgress++;
 
-        if (world instanceof ServerWorld serverWorld
+        if (world instanceof ServerWorld
                 && maidSoul != null && maidSoul.getOwnerUUID().isPresent()) {
-            var owner = serverWorld.getEntity(maidSoul.getOwnerUUID().get());
+            ServerWorld serverWorld = (ServerWorld) world;
+            Entity owner = serverWorld.getEntity(maidSoul.getOwnerUUID().get());
             if (owner != null) {
-                var toOwnerVec = owner.getPos().subtract(this.getPos()).normalize();
-                var distanceSq = Math.max(
+                Vec3d toOwnerVec = owner.getPos().subtract(this.getPos()).normalize();
+                double distanceSq = Math.max(
                         this.squaredDistanceTo(owner.getPos().add(0, owner.getEyeHeight(owner.getPose()), 0)),
                         0.5 * 0.5);
-                var addVec = toOwnerVec.multiply(0.0125 / distanceSq);
+                Vec3d addVec = toOwnerVec.multiply(0.0125 / distanceSq);
                 if (addVec.lengthSquared() > 0.001 * 0.001) {
                     setVelocity(getVelocity().add(addVec));
                 }
             }
         }
 
-        var velocity = getVelocity();
+        Vec3d velocity = getVelocity();
         double vx = Math.min(velocity.getX(), 0.2);
         double vy = Math.min(velocity.getY(), 0.2);
         double vz = Math.min(velocity.getZ(), 0.2);
@@ -145,8 +147,9 @@ public class MaidSoulEntity extends Entity {
         if ((optional = this.maidSoul.getOwnerUUID()).isPresent()
                 && optional.get().equals(player.getUuid())) {
             player.sendPickup(this, 1);
-            if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
-                var maidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
+            if (this.getEntityWorld() instanceof ServerWorld) {
+                ServerWorld serverWorld = (ServerWorld) this.getEntityWorld();
+                WorldMaidSoulState maidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
                 maidSoulState.add(player.getUuid(), this.maidSoul);
                 maidSoulState.markDirty();
                 serverWorld.playSound(null, this.getX(), this.getY(), this.getZ(),

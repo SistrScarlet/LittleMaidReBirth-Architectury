@@ -7,12 +7,15 @@ import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
+import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.IRangedWeapon;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+
+import java.util.Optional;
 
 public class ArcherMode extends RangedAttackBaseMode {
     protected int cool;
@@ -42,8 +45,8 @@ public class ArcherMode extends RangedAttackBaseMode {
             int interval = getInterval(itemStack);
             if (interval <= this.mob.getItemUseTime()) {
                 //射線チェック、射線に味方が居る場合は撃たない
-                var result = this.raycastShootLine(target, maxRange,
-                        e -> e instanceof LivingEntity living && this.mob.isFriend(living));
+                Optional<EntityHitResult> result = this.raycastShootLine(target, maxRange,
+                        e -> e instanceof LivingEntity && this.mob.isFriend((LivingEntity) e));
                 if (result.isPresent()) {
                     this.cool = 10;
                 } else {
@@ -76,8 +79,8 @@ public class ArcherMode extends RangedAttackBaseMode {
                     return;
                 }
                 //射線チェック
-                var result = raycastShootLine(target, maxRange,
-                        e -> e instanceof LivingEntity living && this.mob.isFriend(living));
+                Optional<EntityHitResult> result = raycastShootLine(target, maxRange,
+                        e -> e instanceof LivingEntity && this.mob.isFriend((LivingEntity) e));
                 if (result.isPresent()) {
                     this.cool = 10;
                 } else {//射撃
@@ -91,15 +94,15 @@ public class ArcherMode extends RangedAttackBaseMode {
     }
 
     protected int getInterval(ItemStack itemStack) {
-        return MathHelper.ceil((itemStack.getItem() instanceof IRangedWeapon rangedWeapon
-                ? rangedWeapon.getInterval_LMRB(itemStack, this.mob)
+        return MathHelper.ceil((itemStack.getItem() instanceof IRangedWeapon
+                ? ((IRangedWeapon) itemStack.getItem()).getInterval_LMRB(itemStack, this.mob)
                 : 20) / LMRBMod.getConfig().getArcherShootRateFactor());
     }
 
     @Override
     protected float getMaxRange(ItemStack itemStack) {
-        return (itemStack.getItem() instanceof IRangedWeapon rangedWeapon
-                ? rangedWeapon.getMaxRange_LMRB(itemStack, this.mob) : 16F)
+        return (itemStack.getItem() instanceof IRangedWeapon
+                ? ((IRangedWeapon) itemStack.getItem()).getMaxRange_LMRB(itemStack, this.mob) : 16F)
                 * LMRBMod.getConfig().getArcherRangeFactor();
     }
 

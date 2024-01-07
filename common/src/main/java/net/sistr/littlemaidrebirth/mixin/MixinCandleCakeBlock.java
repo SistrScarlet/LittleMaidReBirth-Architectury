@@ -13,6 +13,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
@@ -20,9 +21,12 @@ import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.List;
 
 @Mixin(CakeBlock.class)
 public abstract class MixinCandleCakeBlock {
@@ -33,21 +37,22 @@ public abstract class MixinCandleCakeBlock {
         //1.16.5版ではロウソクも着火具も不要
         //クライアントでは動かない
         if (getAroundAlterComponentBlocks(world, pos) >= 4
-                && world instanceof ServerWorld serverWorld) {
-            var worldMaidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
-            var maidSouls = worldMaidSoulState.get(player.getUuid());
+                && world instanceof ServerWorld) {
+            ServerWorld serverWorld = (ServerWorld) world;
+            WorldMaidSoulState worldMaidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
+            List<LittleMaidEntity.MaidSoul> maidSouls = worldMaidSoulState.get(player.getUuid());
             if (maidSouls.isEmpty()) {
                 //todo なんか報酬
                 return;
             }
             for (LittleMaidEntity.MaidSoul maidSoul : maidSouls) {
-                var maid = Registration.LITTLE_MAID_MOB.get().create(serverWorld);
+                LittleMaidEntity maid = Registration.LITTLE_MAID_MOB.get().create(serverWorld);
                 if (maid != null) {
                     maid.installMaidSoul(maidSoul);
                     maid.refreshPositionAfterTeleport(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
                     maid.setMovingMode(MovingMode.ESCORT);
                     maid.setWait(true);
-                    var eyePos = player.getPos().add(0, player.getEyeHeight(player.getPose()), 0);
+                    Vec3d eyePos = player.getPos().add(0, player.getEyeHeight(player.getPose()), 0);
                     maid.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, eyePos);
                     maid.getLookControl().lookAt(eyePos);
                     serverWorld.spawnEntity(maid);
@@ -103,13 +108,14 @@ public abstract class MixinCandleCakeBlock {
         }
     }
 
+    @Unique
     private static int getAroundAlterComponentBlocks(World world, BlockPos center) {
         int num = 0;
         for (int i = 0; i < 9; i++) {
             if (i == 4) {
                 continue;
             }
-            var blockState = world.getBlockState(center.add((i % 3) - 1, 0, (i / 3) - 1));
+            BlockState blockState = world.getBlockState(center.add((i % 3) - 1, 0, (i / 3) - 1));
             if (blockState.isIn(LMTags.Blocks.MAID_ALTER_COMPONENT_BLOCKS)) {
                 num++;
             }

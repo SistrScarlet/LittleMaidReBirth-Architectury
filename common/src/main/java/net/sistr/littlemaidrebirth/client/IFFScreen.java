@@ -8,8 +8,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
-import net.minecraft.client.render.DiffuseLighting;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
@@ -179,11 +177,14 @@ public class IFFScreen extends Screen {
             TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
             textRenderer.drawWithShadow(matrices, new TranslatableText(this.iff.getEntityType().getTranslationKey()),
                     this.x, this.y, 0xFFFFFFFF);
-            int color = switch (iff.getIFFTag()) {
-                case FRIEND -> 0xFF40FF40;
-                case ENEMY -> 0xFFFF4040;
-                default -> 0xFFFFFF40;
-            };
+            int color;
+            if (iff.getIFFTag() == IFFTag.FRIEND) {
+                color = 0xFF40FF40;
+            } else if (iff.getIFFTag() == IFFTag.ENEMY) {
+                color = 0xFFFF4040;
+            } else {
+                color = 0xFFFFFF40;
+            }
             textRenderer.drawWithShadow(matrices, iff.getIFFTag().getName(),
                     this.x, this.y + textRenderer.fontHeight * 2, color);
         }
@@ -201,10 +202,12 @@ public class IFFScreen extends Screen {
             if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
                 if (clickable.release(mouseX, mouseY)) {
                     IFFTag tag = this.iff.getIFFTag();
-                    switch (tag) {
-                        case ENEMY -> this.iff.setTag(IFFTag.FRIEND);
-                        case FRIEND -> this.iff.setTag(IFFTag.UNKNOWN);
-                        default -> this.iff.setTag(IFFTag.ENEMY);
+                    if (tag == IFFTag.ENEMY) {
+                        this.iff.setTag(IFFTag.FRIEND);
+                    } else if (tag == IFFTag.FRIEND) {
+                        this.iff.setTag(IFFTag.UNKNOWN);
+                    } else {
+                        this.iff.setTag(IFFTag.ENEMY);
                     }
                     MinecraftClient.getInstance().getSoundManager()
                             .play(PositionedSoundInstance.master(SoundEvents.UI_BUTTON_CLICK, 1.0F));

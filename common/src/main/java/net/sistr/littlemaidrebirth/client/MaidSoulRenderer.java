@@ -35,10 +35,10 @@ public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
         float z2 = z - sin;
         float y1 = y + radius;
         float y2 = y - radius;
-        var consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(HEART));
-        var entry = matrices.peek();
-        var posMatrix = entry.getModel();
-        var normMatrix = entry.getNormal();
+        VertexConsumer consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(HEART));
+        MatrixStack.Entry entry = matrices.peek();
+        Matrix4f posMatrix = entry.getModel();
+        Matrix3f normMatrix = entry.getNormal();
         //反時計回りが表
         //表を見て、右上、左上、左下、右下の順
         vertex(posMatrix, normMatrix, consumer, x1, y1, z1, 1.0f, 0.0f);

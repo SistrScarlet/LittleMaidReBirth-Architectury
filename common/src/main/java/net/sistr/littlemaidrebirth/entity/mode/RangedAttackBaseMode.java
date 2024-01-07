@@ -101,13 +101,13 @@ public abstract class RangedAttackBaseMode extends Mode {
     protected abstract float getMaxRange(ItemStack itemStack);
 
     protected Optional<EntityHitResult> raycastShootLine(LivingEntity target, float maxRange, Predicate<Entity> predicate) {
-        var targetAt = target.getPos().add(0, target.getEyeHeight(target.getPose()), 0);
-        var toTargetVec = targetAt.subtract(this.mob.getPos().add(0, this.mob.getEyeHeight(this.mob.getPose()), 0))
+        Vec3d targetAt = target.getPos().add(0, target.getEyeHeight(target.getPose()), 0);
+        Vec3d toTargetVec = targetAt.subtract(this.mob.getPos().add(0, this.mob.getEyeHeight(this.mob.getPose()), 0))
                 .normalize();
         Vec3d start = this.mob.getCameraPosVec(1F);
         Vec3d end = start.add(toTargetVec.multiply(maxRange));
         Box box = new Box(start, end).expand(1D);
-        var result = ProjectileUtil.getEntityCollision(mob.getEntityWorld(), this.mob, start, end, box, predicate);
+        EntityHitResult result = ProjectileUtil.getEntityCollision(mob.getEntityWorld(), this.mob, start, end, box, predicate);
         return Optional.ofNullable(result);
     }
 

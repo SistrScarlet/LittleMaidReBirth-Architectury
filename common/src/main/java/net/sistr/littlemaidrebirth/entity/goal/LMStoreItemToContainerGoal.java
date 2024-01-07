@@ -40,7 +40,7 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
     protected boolean isInventoryFull() {
         Inventory inventory = this.mob.getInventory();
         for (int i = 0; i < inventory.size(); i++) {
-            var stack = inventory.getStack(i);
+            ItemStack stack = inventory.getStack(i);
             if (stack.isEmpty()) {
                 return false;
             }
@@ -64,13 +64,13 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
                 1.0f, 1.0f);
         this.mob.swingHand(Hand.MAIN_HAND);
 
-        var inventory = this.mob.getInventory();
+        Inventory inventory = this.mob.getInventory();
         for (int i = 0; i < inventory.size(); i++) {
-            var stack = inventory.getStack(i);
+            ItemStack stack = inventory.getStack(i);
             if (this.exceptItems.test(stack)) {
                 continue;
             }
-            var newStack = HopperBlockEntity.transfer(inventory, container, stack, Direction.UP);
+            ItemStack newStack = HopperBlockEntity.transfer(inventory, container, stack, Direction.UP);
             inventory.setStack(i, newStack);
         }
     }

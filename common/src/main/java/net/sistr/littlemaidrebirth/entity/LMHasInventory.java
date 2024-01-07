@@ -40,7 +40,7 @@ public class LMHasInventory implements HasInventory {
         int i;
         NbtCompound nbt;
         for (i = 0; i < 18; ++i) {
-            var stack = this.inventory.getStack(i);
+            ItemStack stack = this.inventory.getStack(i);
             if (!stack.isEmpty()) {
                 nbt = new NbtCompound();
                 nbt.putByte("Slot", (byte) i);
@@ -83,7 +83,7 @@ public class LMHasInventory implements HasInventory {
     }
 
     public static Inventory getInvAndHands(LittleMaidEntity maid) {
-        var inv = maid.getInventory();
+        Inventory inv = maid.getInventory();
         return new Inventory() {
             @Override
             public int size() {
@@ -136,14 +136,14 @@ public class LMHasInventory implements HasInventory {
             @Override
             public ItemStack removeStack(int slot) {
                 if (slot == 0) {
-                    var stack = maid.getMainHandStack();
+                    ItemStack stack = maid.getMainHandStack();
                     if (stack.isEmpty()) {
                         return ItemStack.EMPTY;
                     }
                     maid.setStackInHand(Hand.MAIN_HAND, stack);
                     return stack;
                 } else if (slot == 1) {
-                    var stack = maid.getOffHandStack();
+                    ItemStack stack = maid.getOffHandStack();
                     if (stack.isEmpty()) {
                         return ItemStack.EMPTY;
                     }

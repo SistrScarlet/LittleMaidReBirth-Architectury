@@ -7,6 +7,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
+import net.minecraft.world.PersistentStateManager;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
@@ -36,13 +37,13 @@ public class WorldMaidSoulState extends PersistentState {
 
     @Override
     public NbtCompound writeNbt(NbtCompound nbt) {
-        var nbtEntries = new NbtList();
+        NbtList nbtEntries = new NbtList();
         for (Map.Entry<UUID, List<LittleMaidEntity.MaidSoul>> entry : maidSoulsMap.entrySet()) {
-            var uuid = entry.getKey();
-            var list = entry.getValue();
-            var nbtEntry = new NbtCompound();
+            UUID uuid = entry.getKey();
+            List<LittleMaidEntity.MaidSoul> list = entry.getValue();
+            NbtCompound nbtEntry = new NbtCompound();
             nbtEntry.putUuid("id", uuid);
-            var nbtMaidSouls = new NbtList();
+            NbtList nbtMaidSouls = new NbtList();
             for (LittleMaidEntity.MaidSoul maidSoul : list) {
                 nbtMaidSouls.add(maidSoul.getNbt());
             }
@@ -55,10 +56,10 @@ public class WorldMaidSoulState extends PersistentState {
 
     @Override
     public void fromTag(NbtCompound tag) {
-        var nbtEntries = tag.getList("maidSoulsEntries", 10);
+        NbtList nbtEntries = tag.getList("maidSoulsEntries", 10);
         for (NbtElement nbtEntry : nbtEntries) {
-            var id = ((NbtCompound) nbtEntry).getUuid("id");
-            var nbtMaidSouls = ((NbtCompound) nbtEntry).getList("maidSouls", 10);
+            UUID id = ((NbtCompound) nbtEntry).getUuid("id");
+            NbtList nbtMaidSouls = ((NbtCompound) nbtEntry).getList("maidSouls", 10);
             List<LittleMaidEntity.MaidSoul> maidSouls = Lists.newArrayList();
             for (NbtElement nbtMaidSoul : nbtMaidSouls) {
                 maidSouls.add(new LittleMaidEntity.MaidSoul((NbtCompound) nbtMaidSoul));
@@ -68,7 +69,7 @@ public class WorldMaidSoulState extends PersistentState {
     }
 
     public static WorldMaidSoulState getWorldMaidSoulState(ServerWorld world) {
-        var persistentStateManager = world.getPersistentStateManager();
+        PersistentStateManager persistentStateManager = world.getPersistentStateManager();
 
         return persistentStateManager.getOrCreate(
                 WorldMaidSoulState::new,

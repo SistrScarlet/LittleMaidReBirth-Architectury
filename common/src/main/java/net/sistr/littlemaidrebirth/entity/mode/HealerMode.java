@@ -5,6 +5,7 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.sound.SoundCategory;
@@ -85,7 +86,7 @@ public class HealerMode extends Mode {
     }
 
     public boolean isBeneficialPotion(LivingEntity owner, ItemStack stack, boolean fullHealth) {
-        var potion = PotionUtil.getPotion(stack);
+        Potion potion = PotionUtil.getPotion(stack);
         if (potion == Potions.EMPTY) {
             return false;
         }

@@ -23,7 +23,7 @@ public class SightUtil {
                                                   float distance, float yawFov, float pitchFov, float targetExpand,
                                                   Predicate<Entity> predicate) {
         Vec3d lookTo = lookFor.normalize().multiply(distance);
-        var bb = new Box(
+        Box bb = new Box(
                 viewPos.getX(),
                 viewPos.getY(),
                 viewPos.getZ(),
@@ -31,7 +31,7 @@ public class SightUtil {
                 viewPos.getY() + lookTo.getY(),
                 viewPos.getZ() + lookTo.getZ())
                 .expand(1);
-        var sightChecker = getSightChecker(viewPos, lookFor, getYawPitch(lookFor)[0], yawFov, pitchFov);
+        SightUtil.SightChecker sightChecker = getSightChecker(viewPos, lookFor, getYawPitch(lookFor)[0], yawFov, pitchFov);
         return world.getOtherEntities(entity, bb, inBB -> {
             if (sightChecker.check(inBB.getBoundingBox().expand(targetExpand)) == SightState.HIDE) {
                 return false;
@@ -47,12 +47,12 @@ public class SightUtil {
         //x軸をy軸に回して視線方向Pitch軸
         //視線方向と視線方向Pitch軸の外積から視線方向Yaw軸が得られる
         //視線方向から視線方向Pitch軸にΘ - 90度回すと上面の法線(内向き)が得られる
-        var lookForPitchAxis = rotate(new Vec3d(1, 0, 0), new Vec3d(0, 1, 0), -yaw);
-        var lookForYawAxis = lookFor.crossProduct(lookForPitchAxis);
-        var upNorm = rotate(lookFor, lookForPitchAxis, pitchFov - 90f);
-        var downNorm = rotate(lookFor, lookForPitchAxis, -pitchFov + 90f);
-        var rightNorm = rotate(lookFor, lookForYawAxis, yawFov - 90f);
-        var leftNorm = rotate(lookFor, lookForYawAxis, -yawFov + 90f);
+        Vec3d lookForPitchAxis = rotate(new Vec3d(1, 0, 0), new Vec3d(0, 1, 0), -yaw);
+        Vec3d lookForYawAxis = lookFor.crossProduct(lookForPitchAxis);
+        Vec3d upNorm = rotate(lookFor, lookForPitchAxis, pitchFov - 90f);
+        Vec3d downNorm = rotate(lookFor, lookForPitchAxis, -pitchFov + 90f);
+        Vec3d rightNorm = rotate(lookFor, lookForYawAxis, yawFov - 90f);
+        Vec3d leftNorm = rotate(lookFor, lookForYawAxis, -yawFov + 90f);
         return new SightChecker() {
             @Override
             public boolean check(Vec3d targetPos) {
@@ -230,15 +230,15 @@ public class SightUtil {
 
         //デフォルト実装では8点全部が外になるくらいデカいBoxはダメ
         default SightState check(Box box) {
-            var eight = getEight(box);
-            var bbb = check(eight[0]);
-            var bbt = check(eight[1]);
-            var btb = check(eight[2]);
-            var btt = check(eight[3]);
-            var tbb = check(eight[4]);
-            var tbt = check(eight[5]);
-            var ttb = check(eight[6]);
-            var ttt = check(eight[7]);
+            Vec3d[] eight = getEight(box);
+            boolean bbb = check(eight[0]);
+            boolean bbt = check(eight[1]);
+            boolean btb = check(eight[2]);
+            boolean btt = check(eight[3]);
+            boolean tbb = check(eight[4]);
+            boolean tbt = check(eight[5]);
+            boolean ttb = check(eight[6]);
+            boolean ttt = check(eight[7]);
             if (bbb && bbt && btb && btt && tbb && tbt && ttb && ttt) {
                 return SightState.ALL;
             }

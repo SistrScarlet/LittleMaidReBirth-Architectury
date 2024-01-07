@@ -127,7 +127,7 @@ public class HasModeImpl implements HasMode {
     }
 
     public Mode getNewMode() {
-        var mainHand = owner.getMainHandStack();
+        ItemStack mainHand = owner.getMainHandStack();
         for (Tuple<ItemMatcher, Mode> tuple : this.itemMatchers) {
             if (tuple.getA().isMatch(mainHand)) {
                 return tuple.getB();

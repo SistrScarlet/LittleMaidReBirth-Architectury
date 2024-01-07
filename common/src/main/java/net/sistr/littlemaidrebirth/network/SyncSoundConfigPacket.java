@@ -80,9 +80,9 @@ public class SyncSoundConfigPacket {
             return;
         }
         if (entity instanceof Tameable
-                && ((Tameable) entity).getTameOwnerUuid()
+                && !((Tameable) entity).getTameOwnerUuid()
                 .filter(ownerId -> ownerId.equals(player.getUuid()))
-                .isEmpty()) {
+                .isPresent()) {
             return;
         }
         LMConfigManager.INSTANCE.getConfig(configName)

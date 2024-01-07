@@ -55,8 +55,8 @@ public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityM
     public void render(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider,
                        int light, T livingEntity,
                        float animationProgress, float g, float h, float j, float k, float l) {
-        var lastStack = livingEntity.getInventory().getStack(17);
-        var lastItem = lastStack.getItem();
+        ItemStack lastStack = livingEntity.getInventory().getStack(17);
+        Item lastItem = lastStack.getItem();
         boolean showLastItem = !lastStack.isEmpty()
                 && lastItem instanceof BlockItem
                 && ((BlockItem) lastItem).getBlock() instanceof PlantBlock;

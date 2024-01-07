@@ -97,10 +97,12 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         });
         this.addButton(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> {
-                    switch (movingMode) {
-                        case ESCORT -> movingMode = MovingMode.FREEDOM;
-                        case FREEDOM -> movingMode = MovingMode.TRACER;
-                        case TRACER -> movingMode = MovingMode.ESCORT;
+                    if (movingMode == MovingMode.ESCORT) {
+                        movingMode = MovingMode.FREEDOM;
+                    } else if (movingMode == MovingMode.FREEDOM) {
+                        movingMode = MovingMode.TRACER;
+                    } else {
+                        movingMode = MovingMode.ESCORT;
                     }
                     stateText = getStateText();
                 }) {

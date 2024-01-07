@@ -1,7 +1,9 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
 import com.google.common.collect.Lists;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -69,7 +71,7 @@ public class RedstoneTraceGoal extends Goal {
                         //あと高度が高い位置を優先して取る
                         -MathHelper.subtractAngles(getRelYaw(pos), 55f) + 180f - pos.getY()))
                 .ifPresent(pos -> {
-                    var navigation = this.mob.getNavigation();
+                    EntityNavigation navigation = this.mob.getNavigation();
                     if (!navigation.startMovingAlong(navigation.findPathTo(pos, 0), this.speed)) {
                         navigation.stop();
                     }
@@ -90,7 +92,7 @@ public class RedstoneTraceGoal extends Goal {
     }
 
     protected boolean isEmitSignal(BlockPos pos) {
-        var state = mob.getEntityWorld().getBlockState(pos);
+        BlockState state = mob.getEntityWorld().getBlockState(pos);
         return Arrays.stream(Direction.values())
                 .anyMatch(direction -> 0 < state.getStrongRedstonePower(this.mob.getEntityWorld(), pos, direction));
     }

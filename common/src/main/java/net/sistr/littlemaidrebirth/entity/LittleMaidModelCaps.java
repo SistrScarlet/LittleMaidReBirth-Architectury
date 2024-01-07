@@ -16,22 +16,32 @@ public class LittleMaidModelCaps extends EntityCaps {
     //todo インベントリ系
     @Override
     public Object getCapsValue(int pIndex, Object... pArg) {
-        return switch (pIndex) {
-            case caps_entityIdFactor -> maid.getIdFactor();
-            case caps_aimedBow -> maid.isAimingBow();
-            case caps_isLookSuger -> maid.isBegging();
-            case caps_interestedAngle -> maid.getInterestedAngle((Float) pArg[0]);
-            case caps_isFreedom -> maid.getMovingMode() == MovingMode.FREEDOM;
-            case caps_isTracer -> maid.getMovingMode() == MovingMode.TRACER;
-            case caps_isContract -> maid.isContractMM();
-            case caps_isClock -> maid.getMainHandStack().getItem() == Items.CLOCK
+        if (pIndex == caps_entityIdFactor) {
+            return maid.getIdFactor();
+        } else if (pIndex == caps_aimedBow) {
+            return maid.isAimingBow();
+        } else if (pIndex == caps_isLookSuger) {
+            return maid.isBegging();
+        } else if (pIndex == caps_interestedAngle) {
+            return maid.getInterestedAngle((Float) pArg[0]);
+        } else if (pIndex == caps_isFreedom) {
+            return maid.getMovingMode() == MovingMode.FREEDOM;
+        } else if (pIndex == caps_isTracer) {
+            return maid.getMovingMode() == MovingMode.TRACER;
+        } else if (pIndex == caps_isContract) {
+            return maid.isContractMM();
+        } else if (pIndex == caps_isClock) {
+            return maid.getMainHandStack().getItem() == Items.CLOCK
                     || maid.getOffHandStack().getItem() == Items.CLOCK;
-            case caps_job -> maid.getMode()
+        } else if (pIndex == caps_job) {
+            return maid.getMode()
                     .map(Mode::getName)
                     .map(String::toLowerCase)
                     .orElse(null);
-            case caps_isLeeding -> maid.isLeashed();
-            default -> super.getCapsValue(pIndex, pArg);
-        };
+        } else if (pIndex == caps_isLeeding) {
+            return maid.isLeashed();
+        } else {
+            return super.getCapsValue(pIndex, pArg);
+        }
     }
 }

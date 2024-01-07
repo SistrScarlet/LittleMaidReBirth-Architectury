@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Shearable;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
@@ -87,7 +88,7 @@ public class RipperMode extends Mode {
         }
         if (--this.timeToRecalcPath <= 0) {
             this.timeToRecalcPath = 10;
-            var path = this.mob.getNavigation().findPathTo(target.getX(), target.getY(), target.getZ(), 1);
+            Path path = this.mob.getNavigation().findPathTo(target.getX(), target.getY(), target.getZ(), 1);
             if (path == null || path.getEnd() == null
                     || Vec3d.of(path.getEnd().getBlockPos()).add(0.5, 0, 0.5)
                     .squaredDistanceTo(target.getPos()) > 2.5f * 2.5f) {

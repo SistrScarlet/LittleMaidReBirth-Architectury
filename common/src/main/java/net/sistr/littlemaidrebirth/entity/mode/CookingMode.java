@@ -8,6 +8,7 @@ import net.minecraft.block.entity.AbstractFurnaceBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
+import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
@@ -72,18 +73,20 @@ public class CookingMode extends Mode {
         //物を焼き始めるときの判定
 
         //燃料がないならリターン
-        if (getFuel().isEmpty()) {
+        if (!getFuel().isPresent()) {
             return false;
         }
         //かまどが無いか、焼けない場合は再探索
         //なお上でチェックしているため、furnacePosがあるならかまどは必ず使用可能
         if (furnacePos == null
-                || !canCookingFurnace(furnace = getFurnaceBlockEntity(furnacePos).orElseThrow())) {
+                || !canCookingFurnace(furnace = getFurnaceBlockEntity(furnacePos)
+                .orElseThrow(RuntimeException::new))) {
             furnacePos = findFurnacePos().orElse(null);
             if (furnacePos == null) {
                 return false;
             }
-            furnace = getFurnaceBlockEntity(furnacePos).orElseThrow();
+            furnace = getFurnaceBlockEntity(furnacePos)
+                    .orElseThrow(RuntimeException::new);
             return true;
         }
         return true;
@@ -151,7 +154,7 @@ public class CookingMode extends Mode {
     }
 
     public boolean isUsingFurnaceByOtherMaid(BlockPos furnacePos) {
-        var user = USED_FURNACE_MAP.get(furnacePos);
+        LittleMaidEntity user = USED_FURNACE_MAP.get(furnacePos);
         if (user != null && user != this.mob) {
             if (!user.isAlive() || user != user.getEntityWorld().getEntityById(user.getEntityId())) {
                 USED_FURNACE_MAP.remove(furnacePos);
@@ -206,7 +209,7 @@ public class CookingMode extends Mode {
             return false;
         }
         //かまどが変わっていたら終了
-        var tmp = getFurnaceBlockEntity(furnacePos).orElse(null);
+        AbstractFurnaceBlockEntity tmp = getFurnaceBlockEntity(furnacePos).orElse(null);
         if (tmp != furnace) {
             furnacePos = null;
             furnace = null;
@@ -227,7 +230,7 @@ public class CookingMode extends Mode {
                 }
             }
         }
-        var recipeType = ((AbstractFurnaceAccessor) furnace).getRecipeType_LM();
+        RecipeType<? extends AbstractCookingRecipe> recipeType = ((AbstractFurnaceAccessor) furnace).getRecipeType_LM();
         //燃料と焼くものがある場合はtrue
         //どちらか無ければfalse
         return (burning || getFuel().isPresent())
@@ -252,7 +255,7 @@ public class CookingMode extends Mode {
                 double x = furnacePos.getX() + 0.5D;
                 double y = furnacePos.getY() + 0.5D;
                 double z = furnacePos.getZ() + 0.5D;
-                var path = this.mob.getNavigation().findPathTo(x, y, z, 2);
+                Path path = this.mob.getNavigation().findPathTo(x, y, z, 2);
                 this.mob.getNavigation().startMovingAlong(path, 1);
             }
             return;
@@ -374,7 +377,7 @@ public class CookingMode extends Mode {
             }
             //かまどからアイテムをすべて取り出す
             for (int i = 0; i < furnace.size(); i++) {
-                var stack = furnace.getStack(i);
+                ItemStack stack = furnace.getStack(i);
                 if (!stack.isEmpty()) {
                     stack = HopperBlockEntity.transfer(null, this.mob.getInventory(), stack, null);
                     if (stack.isEmpty()) {

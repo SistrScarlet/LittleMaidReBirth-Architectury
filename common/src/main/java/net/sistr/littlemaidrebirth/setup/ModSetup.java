@@ -44,12 +44,12 @@ public class ModSetup {
     }
 
     private static void registerSpawnSettingLM() {
-        var spawnBiomeTags = LMRBMod.getConfig().getMaidSpawnBiomes()
+        Set<Identifier> spawnBiomeTags = LMRBMod.getConfig().getMaidSpawnBiomes()
                 .stream()
                 .filter(Identifier::isValid)
                 .map(Identifier::new)
                 .collect(Collectors.toSet());
-        var spawnExcludeBiomeTags = LMRBMod.getConfig().getMaidSpawnExcludeBiomes()
+        Set<Identifier> spawnExcludeBiomeTags = LMRBMod.getConfig().getMaidSpawnExcludeBiomes()
                 .stream()
                 .filter(Identifier::isValid)
                 .map(Identifier::new)

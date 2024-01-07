@@ -98,12 +98,16 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
             };
             this.armorInventory = new Inventory() {
                 private EquipmentSlot index(int slot) {
-                    return switch (slot) {
-                        case 0 -> EquipmentSlot.FEET;
-                        case 1 -> EquipmentSlot.LEGS;
-                        case 2 -> EquipmentSlot.CHEST;
-                        default -> EquipmentSlot.HEAD;
-                    };
+                    switch (slot) {
+                        case 0:
+                            return EquipmentSlot.FEET;
+                        case 1:
+                            return EquipmentSlot.LEGS;
+                        case 2:
+                            return EquipmentSlot.CHEST;
+                        default:
+                            return EquipmentSlot.HEAD;
+                    }
                 }
 
                 @Override

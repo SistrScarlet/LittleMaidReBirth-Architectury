@@ -35,6 +35,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.network.Packet;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.DustParticleEffect;
@@ -141,7 +142,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //移譲s
     private final LMHasInventory littleMaidInventory = new LMHasInventory();
     private final ItemContractable<LittleMaidEntity> itemContractable =
-            new ItemContractable<>(this,
+            new ItemContractable<LittleMaidEntity>(this,
                     LMRBMod.getConfig().getConsumeSalaryInterval(),
                     LMRBMod.getConfig().getUnpaidCountLimit(),
                     stack -> LMTags.Items.MAIDS_SALARY.contains(stack.getItem()),
@@ -156,7 +157,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 @Override
                 protected void postReceive() {
                     super.postReceive();
-                    var maid = LittleMaidEntity.this;
+                    LittleMaidEntity maid = LittleMaidEntity.this;
                     maid.swingHand(Hand.MAIN_HAND);
                     maid.playSound(SoundEvents.ENTITY_ITEM_PICKUP,
                             1.0F, maid.getRandom().nextFloat() * 0.1F + 1.0F);
@@ -231,7 +232,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 config.getTeleportStartRange()));
         //緊急テレポート
         this.goalSelector.add(priority,
-                new HasMMTeleportTameOwnerGoal<>(this,
+                new HasMMTeleportTameOwnerGoal<LittleMaidEntity>(this,
                         config.getEmergencyTeleportStartRange()) {
                     @Override
                     public boolean canStart() {
@@ -254,7 +255,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         this.goalSelector.add(++priority, new WaitGoal<>(this));
 
-        this.goalSelector.add(++priority, new ModeWrapperGoal<>(this) {
+        this.goalSelector.add(++priority, new ModeWrapperGoal<LittleMaidEntity>(this) {
             @Override
             public boolean canStart() {
                 return (config.isEnableWorkInEmergency() || !isEmergency()) && super.canStart();
@@ -267,7 +268,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         });
 
         this.goalSelector.add(++priority,
-                new HasMMFollowTameOwnerGoal<>(
+                new HasMMFollowTameOwnerGoal<LittleMaidEntity>(
                         this,
                         1.0f,
                         config.getSprintStartRange(),
@@ -328,7 +329,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new EscapeDangerGoal(this, 1.25) {
             @Override
             public boolean canStart() {
-                return LittleMaidEntity.this.getTameOwner().isEmpty() && super.canStart();
+                return !LittleMaidEntity.this.getTameOwner().isPresent() && super.canStart();
             }
         });
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this, false,
@@ -338,7 +339,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new WanderAroundFarGoal(this, 0.65f) {
             @Override
             public boolean canStart() {
-                return LittleMaidEntity.this.getTameOwner().isEmpty() && super.canStart();
+                return !LittleMaidEntity.this.getTameOwner().isPresent() && super.canStart();
             }
         });
 
@@ -402,7 +403,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         readInventory(nbt);
         this.experiencePoints = nbt.getInt("XpTotal");
         if (maidVersion == 0) {
-            var list = nbt.getList("Inventory", 10);
+            NbtList list = nbt.getList("Inventory", 10);
             for (int i = 0; i < list.size(); i++) {
                 NbtCompound nbtCompound = list.getCompound(i);
                 int j = nbtCompound.getByte("Slot") & 255;
@@ -440,21 +441,21 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     public void setRandomTexture() {
-        var textureHolderList = LMTextureManager.INSTANCE.getAllTextures().stream()
+        List<TextureHolder> textureHolderList = LMTextureManager.INSTANCE.getAllTextures().stream()
                 .filter(h -> h.hasSkinTexture(false))//野生テクスチャがある
                 .filter(h -> LMModelManager.INSTANCE.hasModel(h.getModelName()))
-                .toList();
+                .collect(Collectors.toList());
         if (textureHolderList.isEmpty()) {
             return;
         }
-        var textureHolder = textureHolderList.get(idFactor % textureHolderList.size());
-        var colorList = Arrays.stream(TextureColors.values())
+        TextureHolder textureHolder = textureHolderList.get(idFactor % textureHolderList.size());
+        List<TextureColors> colorList = Arrays.stream(TextureColors.values())
                 .filter(c -> textureHolder.getTexture(c, false, false).isPresent())
-                .toList();
+                .collect(Collectors.toList());
         if (colorList.isEmpty()) {
             return;
         }
-        var color = colorList.get(idFactor % colorList.size());
+        TextureColors color = colorList.get(idFactor % colorList.size());
         this.setColorMM(color);
         this.setTextureHolder(textureHolder, Layer.SKIN, Part.HEAD);
         if (textureHolder.hasArmorTexture()) {
@@ -517,26 +518,26 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void handleStatus(byte status) {
-        switch (status) {
-            case 70 -> {//雇用時
-                showEmoteParticle(true);
-                play(LMSounds.GET_CAKE);
-            }
-            case 71 -> {//再雇用時
-                showEmoteParticle(true);
-                play(LMSounds.RECONTRACT);
-            }
-            case 72 -> {//砂糖あげた時
-                this.getEntityWorld().addParticle(ParticleTypes.NOTE,
-                        this.getX(),
-                        this.getY() + this.getHeight(),
-                        this.getZ(),
-                        6 / 24f, 0, 0);
-            }
-            case 73 -> showFreedomParticle();//toFreedom
-            case 74 -> showEmoteParticle(false);//toEscort
-            case 75 -> showTracerParticle();//toTracer
-            default -> super.handleStatus(status);
+        if (status == 70) {
+            showEmoteParticle(true);
+            play(LMSounds.GET_CAKE);
+        } else if (status == 71) {
+            showEmoteParticle(true);
+            play(LMSounds.RECONTRACT);
+        } else if (status == 72) {
+            this.getEntityWorld().addParticle(ParticleTypes.NOTE,
+                    this.getX(),
+                    this.getY() + this.getHeight(),
+                    this.getZ(),
+                    6 / 24f, 0, 0);
+        } else if (status == 73) {
+            showFreedomParticle();
+        } else if (status == 74) {
+            showEmoteParticle(false);
+        } else if (status == 75) {
+            showTracerParticle();
+        } else {
+            super.handleStatus(status);
         }
     }
 
@@ -611,10 +612,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     continue;
                 }
                 if (entity.removed) continue;
-                if (entity instanceof ItemEntity itemEntity) {
-                    this.pickupItemEntity(itemEntity);
-                } else if (entity instanceof PersistentProjectileEntity projectile) {
-                    this.pickupArrowEntity(projectile);
+                if (entity instanceof ItemEntity) {
+                    this.pickupItemEntity((ItemEntity) entity);
+                } else if (entity instanceof PersistentProjectileEntity) {
+                    this.pickupArrowEntity((PersistentProjectileEntity) entity);
                 }
             }
             if (!list1.isEmpty()) {
@@ -658,7 +659,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 && projectile.getOwner() != this) {
             return;
         }
-        var arrow = ((PersistentProjectileEntityAccessor) projectile).invokeAsItemStack();
+        ItemStack arrow = ((PersistentProjectileEntityAccessor) projectile).invokeAsItemStack();
         arrow = HopperBlockEntity.transfer(null, this.getInventory(), arrow, null);
         if (arrow.isEmpty()) {
             this.sendPickup(projectile, 1);
@@ -668,7 +669,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
-        return LMRBMod.getConfig().isCanDespawn() && getTameOwnerUuid().isEmpty();
+        return LMRBMod.getConfig().isCanDespawn() && !getTameOwnerUuid().isPresent();
     }
 
     //canSpawnとかでも使われる
@@ -813,13 +814,15 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //死亡ボイスは必ず聞かせる
         this.playSoundCool = 0;
         play(LMSounds.DEATH);
-        if (this.getEntityWorld() instanceof ServerWorld serverWorld)
+        if (this.getEntityWorld() instanceof ServerWorld) {
+            ServerWorld serverWorld = (ServerWorld) this.getEntityWorld();
             this.getTameOwnerUuid().ifPresent(id -> {
-                var maidSoulEntity = new MaidSoulEntity(serverWorld, new MaidSoul(this.writeNbt(new NbtCompound())));
+                MaidSoulEntity maidSoulEntity = new MaidSoulEntity(serverWorld, new MaidSoul(this.writeNbt(new NbtCompound())));
                 maidSoulEntity.setPosition(this.getX(), this.getY(), this.getZ());
                 maidSoulEntity.setVelocity(new Vec3d(random.nextGaussian() * 0.02, 0.2, random.nextGaussian() * 0.02));
                 serverWorld.spawnEntity(maidSoulEntity);
             });
+        }
     }
 
     public void installMaidSoul(MaidSoul maidSoul) {
@@ -956,14 +959,15 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void attack(LivingEntity target, float pullProgress) {
-        var stack = this.getMainHandStack();
+        ItemStack stack = this.getMainHandStack();
         //弾が無い場合は実行されないはずだが、念のためチェック
-        var arrowStack = this.getArrowType(stack);
+        ItemStack arrowStack = this.getArrowType(stack);
         if (arrowStack.isEmpty() && EnchantmentHelper.getLevel(Enchantments.INFINITY, stack) == 0) {
             return;
         }
-        if (stack.getItem() instanceof BowItem bowItem) {
-            var arrow = ProjectileUtil.createArrowProjectile(this, arrowStack, pullProgress);
+        if (stack.getItem() instanceof BowItem) {
+            BowItem bowItem = (BowItem) stack.getItem();
+            PersistentProjectileEntity arrow = ProjectileUtil.createArrowProjectile(this, arrowStack, pullProgress);
             arrow = EPEntityUtil.arrowCustomHook(bowItem, arrow);
             double xDiff = target.getX() - this.getX();
             double yDiff = target.getEyeY() - arrow.getY();
@@ -1220,7 +1224,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 }
                 this.startRiding(player);
             } else {
-                var vehicle = this.getVehicle();
+                Entity vehicle = this.getVehicle();
                 if (vehicle == player) {
                     this.stopRiding();
                 }
@@ -1233,7 +1237,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
         //砂糖
         if (LMTags.Items.MAIDS_SALARY.contains(stack.getItem())) {
-            var config = LMRBMod.getConfig();
+            LMRBConfig config = LMRBMod.getConfig();
             heal(config.getHealAmount());
             return changeState(player, stack);
         }
@@ -1404,7 +1408,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         || !(stack.getItem() instanceof ArmorItem)) {
                     continue;
                 }
-                var slot = EquipmentSlot.fromTypeIndex(EquipmentSlot.Type.ARMOR, i);
+                EquipmentSlot slot = EquipmentSlot.fromTypeIndex(EquipmentSlot.Type.ARMOR, i);
                 stack.damage((int) amount, this, arg -> arg.sendEquipmentBreakStatus(slot));
             }
         }
@@ -1417,16 +1421,17 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public ItemStack getArrowType(ItemStack stack) {
-        if (!(stack.getItem() instanceof RangedWeaponItem ranged)) {
+        if (!(stack.getItem() instanceof RangedWeaponItem)) {
             return ItemStack.EMPTY;
         }
+        RangedWeaponItem ranged = (RangedWeaponItem) stack.getItem();
         Predicate<ItemStack> predicate = ranged.getHeldProjectiles();
         ItemStack itemStack = RangedWeaponItem.getHeldProjectile(this, predicate);
         if (!itemStack.isEmpty()) {
             return EPEntityUtil.arrowCustomHook(this, stack, itemStack);
         }
         predicate = ranged.getProjectiles();
-        var inv = getInventory();
+        Inventory inv = getInventory();
         for (int i = 0; i < inv.size(); ++i) {
             ItemStack itemStack2 = inv.getStack(i);
             if (predicate.test(itemStack2)) {
@@ -1879,7 +1884,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
 
         protected boolean hasEmptySlot() {
-            var inv = this.maid.getInventory();
+            Inventory inv = this.maid.getInventory();
             for (int i = 0; i < inv.size(); i++) {
                 if (inv.getStack(i).isEmpty()) {
                     return true;
