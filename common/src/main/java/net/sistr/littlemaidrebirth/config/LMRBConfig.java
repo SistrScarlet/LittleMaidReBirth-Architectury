@@ -26,7 +26,14 @@ public class LMRBConfig implements ConfigData {
 
     @ConfigEntry.Category("spawn")
     @ConfigEntry.Gui.RequiresRestart
-    private List<String> maidSpawnBiomes = Lists.newArrayList();
+    private List<String> maidSpawnBiomes = Lists.newArrayList(
+            "minecraft:plains",
+            "minecraft:desert",
+            "minecraft:forest",
+            "minecraft:taiga",
+            "minecraft:snowy_tundra",
+            "minecraft:savanna"
+    );
 
     @ConfigEntry.Category("spawn")
     @ConfigEntry.Gui.RequiresRestart
