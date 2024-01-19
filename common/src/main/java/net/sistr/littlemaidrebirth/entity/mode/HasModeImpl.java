@@ -13,7 +13,6 @@ import net.sistr.littlemaidmodelloader.util.Tuple;
 import net.sistr.littlemaidrebirth.api.mode.ItemMatcher;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.entity.util.HasInventory;
-import org.apache.commons.compress.utils.Lists;
 
 import java.util.*;
 
@@ -38,12 +37,6 @@ public class HasModeImpl implements HasMode {
 
     protected void updateMatchList() {
         this.itemMatchers.clear();
-        List<Tuple<Mode, Tuple<ItemMatcher.Priority, ItemMatcher>>> list = Lists.newArrayList();
-        for (Mode mode : this.modes) {
-            for (Tuple<ItemMatcher.Priority, ItemMatcher> tuple : mode.getModeType().getItemMatcherList()) {
-                list.add(new Tuple<>(mode, tuple));
-            }
-        }
         this.modes.stream()
                 .flatMap(mode -> mode.getModeType().getItemMatcherList().stream()
                         .map(tuple -> new Tuple<>(mode, tuple)))
