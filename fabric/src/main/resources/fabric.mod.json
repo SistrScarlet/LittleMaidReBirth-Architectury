@@ -39,7 +39,6 @@
     "fabric": "*",
     "minecraft": "1.16.5",
     "architectury": ">=1.0.0",
-    "modmenu": ">=1.0.0",
     "cloth-config2": ">=4.0.0",
     "littlemaidmodelloader": ">=2.6.0"
   }
