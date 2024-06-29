@@ -1,11 +1,10 @@
 package net.sistr.littlemaidrebirth.api.mode;
 
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ShearsItem;
 import net.minecraft.item.SwordItem;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.entity.mode.*;
 import net.sistr.littlemaidrebirth.tags.LMTags;
@@ -65,8 +64,8 @@ public class Modes {
         return ModeType.<TorcherMode>builder((type, maid) ->
                         new TorcherMode(type, "Torcher", maid, 12F))
                 .addItemMatcher(stack ->
-                        stack.getItem() instanceof BlockItem
-                                && 9 < ((BlockItem) stack.getItem()).getBlock().getDefaultState().getLuminance(),
+                                stack.getItem() instanceof BlockItem
+                                        && 9 < ((BlockItem) stack.getItem()).getBlock().getDefaultState().getLuminance(),
                         ItemMatcher.Priority.LOWER)
                 .addItemMatcher(ItemMatchers.tag(LMTags.Items.TORCHER_MODE), ItemMatcher.Priority.HIGHER);
     }
@@ -74,8 +73,8 @@ public class Modes {
     public static ModeType.Builder<HealerMode> buildHealerMode() {
         return ModeType.<HealerMode>builder((type, maid) ->
                         new HealerMode(type, "Healer", maid))
-                .addItemMatcher(stack -> stack.getItem().isFood(), ItemMatcher.Priority.LOWER)
-                .addItemMatcher(stack -> PotionUtil.getPotion(stack) != Potions.EMPTY, ItemMatcher.Priority.LOWER)
+                .addItemMatcher(stack -> stack.getComponents().contains(DataComponentTypes.FOOD), ItemMatcher.Priority.LOWER)
+                .addItemMatcher(stack -> stack.getComponents().contains(DataComponentTypes.POTION_CONTENTS), ItemMatcher.Priority.LOWER)
                 .addItemMatcher(ItemMatchers.tag(LMTags.Items.HEALER_MODE), ItemMatcher.Priority.HIGHER);
     }
 
@@ -89,7 +88,7 @@ public class Modes {
     }
 
     private static void register(String id, ModeType<?> modeType) {
-        ModeManager.INSTANCE.register(new Identifier(MODID, id), modeType);
+        ModeManager.INSTANCE.register(Identifier.of(MODID, id), modeType);
     }
 
 }

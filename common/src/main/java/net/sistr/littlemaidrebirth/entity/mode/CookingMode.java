@@ -8,13 +8,13 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.recipe.AbstractCookingRecipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.recipe.input.SingleStackRecipeInput;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -179,7 +179,7 @@ public class CookingMode extends Mode {
 
     //todo 問題ないかチェック
     public Optional<? extends RecipeEntry<? extends AbstractCookingRecipe>> getRecipe(ItemStack stack, RecipeType<? extends AbstractCookingRecipe> recipeType) {
-        return mob.getWorld().getRecipeManager().getFirstMatch(recipeType, new SimpleInventory(stack), mob.getWorld());
+        return mob.getWorld().getRecipeManager().getFirstMatch(recipeType, new SingleStackRecipeInput(stack), mob.getWorld());
     }
 
     public boolean isSearchable(BlockPos pos) {
@@ -187,7 +187,7 @@ public class CookingMode extends Mode {
         return Math.abs(pos.getY() - this.mob.getY()) < 2
                 && pos.isWithinDistance(this.mob.getPos(), 6)
                 && ((state = this.mob.getWorld().getBlockState(pos))
-                .canPathfindThrough(this.mob.getWorld(), pos, NavigationType.LAND)
+                .canPathfindThrough(NavigationType.LAND)
                 //ドアも通過
                 || (state.getBlock() instanceof DoorBlock
                 && ((DoorBlock) state.getBlock()).getBlockSetType().canOpenByHand()));
@@ -396,8 +396,8 @@ public class CookingMode extends Mode {
 
     @Override
     public void readModeData(NbtCompound nbt) {
-        if (nbt.contains("FurnacePos"))
-            furnacePos = NbtHelper.toBlockPos(nbt.getCompound("FurnacePos"));
+        NbtHelper.toBlockPos(nbt, "FurnacePos")
+                .ifPresent(pos -> furnacePos = pos);
     }
 
 }

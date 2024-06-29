@@ -3,7 +3,6 @@ package net.sistr.littlemaidrebirth.entity;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -245,7 +244,7 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
     }
 
     private void layoutMaidInventorySlots() {
-        Identifier atlas = new Identifier("textures/atlas/blocks.png");
+        Identifier atlas = Identifier.of("textures/atlas/blocks.png");
         //index 0~17
         addSlotBox(maidInventory, 0, 8, 76, 9, 18, 2, 18);
 
@@ -254,7 +253,7 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
         addSlot(new Slot(handInventory, 1, 152, 44) {
             @Override
             public Pair<Identifier, Identifier> getBackgroundSprite() {
-                return Pair.of(atlas, new Identifier("item/empty_armor_slot_shield"));
+                return Pair.of(atlas, Identifier.of("item/empty_armor_slot_shield"));
             }
         });
 
@@ -268,12 +267,12 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
 
             @Override
             public boolean canInsert(ItemStack stack) {
-                return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.HEAD;
+                return LittleMaidScreenHandler.this.maid.getPreferredEquipmentSlot(stack) == EquipmentSlot.HEAD;
             }
 
             @Override
             public Pair<Identifier, Identifier> getBackgroundSprite() {
-                return Pair.of(atlas, new Identifier("item/empty_armor_slot_helmet"));
+                return Pair.of(atlas, Identifier.of("item/empty_armor_slot_helmet"));
             }
         });
         addSlot(new Slot(armorInventory, EquipmentSlot.CHEST.getEntitySlotId(), 8, 44) {
@@ -284,12 +283,12 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
 
             @Override
             public boolean canInsert(ItemStack stack) {
-                return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.CHEST;
+                return LittleMaidScreenHandler.this.maid.getPreferredEquipmentSlot(stack) == EquipmentSlot.CHEST;
             }
 
             @Override
             public Pair<Identifier, Identifier> getBackgroundSprite() {
-                return Pair.of(atlas, new Identifier("item/empty_armor_slot_chestplate"));
+                return Pair.of(atlas, Identifier.of("item/empty_armor_slot_chestplate"));
             }
         });
         addSlot(new Slot(armorInventory, EquipmentSlot.LEGS.getEntitySlotId(), 80, 8) {
@@ -300,12 +299,12 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
 
             @Override
             public boolean canInsert(ItemStack stack) {
-                return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.LEGS;
+                return LittleMaidScreenHandler.this.maid.getPreferredEquipmentSlot(stack) == EquipmentSlot.LEGS;
             }
 
             @Override
             public Pair<Identifier, Identifier> getBackgroundSprite() {
-                return Pair.of(atlas, new Identifier("item/empty_armor_slot_leggings"));
+                return Pair.of(atlas, Identifier.of("item/empty_armor_slot_leggings"));
             }
         });
         addSlot(new Slot(armorInventory, EquipmentSlot.FEET.getEntitySlotId(), 80, 44) {
@@ -316,12 +315,12 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
 
             @Override
             public boolean canInsert(ItemStack stack) {
-                return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.FEET;
+                return LittleMaidScreenHandler.this.maid.getPreferredEquipmentSlot(stack) == EquipmentSlot.FEET;
             }
 
             @Override
             public Pair<Identifier, Identifier> getBackgroundSprite() {
-                return Pair.of(atlas, new Identifier("item/empty_armor_slot_boots"));
+                return Pair.of(atlas, Identifier.of("item/empty_armor_slot_boots"));
             }
         });
     }

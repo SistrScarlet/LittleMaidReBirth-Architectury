@@ -46,7 +46,9 @@ public class LMMultiModel<T extends LivingEntity & IHasMultiModel> extends Multi
                     modelPart.pitch = 0;
                     ModelRenderer modelRenderer;
                     ItemStack stack = this.entity.getEquippedStack(EquipmentSlot.HEAD);
-                    if (MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.HEAD) {
+                    //todo このコード実装変じゃない？確認
+                    if (this.entity instanceof MobEntity mob
+                            && mob.getPreferredEquipmentSlot(stack) == EquipmentSlot.HEAD) {
                         modelRenderer = model.bipedHead;
                     } else {
                         modelRenderer = model.bipedHead;

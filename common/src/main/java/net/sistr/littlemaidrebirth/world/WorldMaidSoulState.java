@@ -6,8 +6,8 @@ import net.minecraft.datafixer.DataFixTypes;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.ChunkUpdateState;
 import net.minecraft.world.PersistentState;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
@@ -20,9 +20,9 @@ public class WorldMaidSoulState extends PersistentState {
     private final Map<UUID, List<LittleMaidEntity.MaidSoul>> maidSoulsMap = Maps.newHashMap();
 
     //todo DataFixTypes、とは？
-    public static PersistentState.Type<WorldMaidSoulState> getPersistentStateType() {
-        return new PersistentState.Type<>(WorldMaidSoulState::new,
-                WorldMaidSoulState::createFromNbt, DataFixTypes.PLAYER);
+    public static Type<WorldMaidSoulState> getPersistentStateType() {
+        return new Type<>(WorldMaidSoulState::new,
+                (nbt, registryLookup) -> WorldMaidSoulState.createFromNbt(nbt), DataFixTypes.PLAYER);
     }
 
     public void add(UUID ownerId, LittleMaidEntity.MaidSoul maidSoul) {
@@ -39,7 +39,7 @@ public class WorldMaidSoulState extends PersistentState {
     }
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
         var nbtEntries = new NbtList();
         for (Map.Entry<UUID, List<LittleMaidEntity.MaidSoul>> entry : maidSoulsMap.entrySet()) {
             var uuid = entry.getKey();

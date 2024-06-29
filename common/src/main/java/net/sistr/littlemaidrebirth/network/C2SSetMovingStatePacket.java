@@ -6,7 +6,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
@@ -17,22 +18,23 @@ import net.sistr.littlemaidrebirth.entity.util.MovingMode;
  */
 public class C2SSetMovingStatePacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "set_moving_state");
+            Identifier.of(LMRBMod.MODID, "set_moving_state");
 
     @Environment(EnvType.CLIENT)
-    public static void sendC2SPacket(Entity entity, MovingMode state) {
-        PacketByteBuf buf = createC2SPacket(entity, state);
+    public static void sendC2SPacket(Entity entity, MovingMode state, DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = createC2SPacket(entity, state, registryManager);
         NetworkManager.sendToServer(ID, buf);
     }
 
-    public static PacketByteBuf createC2SPacket(Entity entity, MovingMode state) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+    public static RegistryByteBuf createC2SPacket(Entity entity, MovingMode state,
+                                                  DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = new RegistryByteBuf(Unpooled.buffer(), registryManager);
         buf.writeVarInt(entity.getId());
         buf.writeEnumConstant(state);
         return buf;
     }
 
-    public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+    public static void receiveC2SPacket(RegistryByteBuf buf, NetworkManager.PacketContext context) {
         int id = buf.readVarInt();
         MovingMode movingMode = buf.readEnumConstant(MovingMode.class);
         context.queue(() -> applyMovingStateServer(context.getPlayer(), id, movingMode));

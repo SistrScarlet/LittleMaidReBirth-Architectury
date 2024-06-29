@@ -29,7 +29,7 @@ import static net.sistr.littlemaidmodelloader.maidmodel.IModelCaps.*;
  */
 @Environment(EnvType.CLIENT)
 public class MaidModelRenderer extends MobEntityRenderer<LittleMaidEntity, LMMultiModel<LittleMaidEntity>> {
-    private static final Identifier NULL_TEXTURE = new Identifier(LMRBMod.MODID, "null");
+    private static final Identifier NULL_TEXTURE = Identifier.of(LMRBMod.MODID, "null");
 
     public MaidModelRenderer(EntityRendererFactory.Context ctx) {
         super(ctx, new LMMultiModel<>(), 0.5F);
@@ -41,8 +41,8 @@ public class MaidModelRenderer extends MobEntityRenderer<LittleMaidEntity, LMMul
     }
 
     @Override
-    protected void setupTransforms(LittleMaidEntity entity, MatrixStack matrices, float animationProgress, float bodyYaw, float tickDelta) {
-        super.setupTransforms(entity, matrices, animationProgress, bodyYaw, tickDelta);
+    protected void setupTransforms(LittleMaidEntity entity, MatrixStack matrices, float animationProgress, float bodyYaw, float tickDelta, float scale) {
+        super.setupTransforms(entity, matrices, animationProgress, bodyYaw, tickDelta, scale);
         entity.getModel(IHasMultiModel.Layer.SKIN, IHasMultiModel.Part.HEAD)
                 .ifPresent(model -> model.setupTransform(entity.getCaps(),
                         new MMMatrixStack(matrices), animationProgress, bodyYaw, tickDelta));

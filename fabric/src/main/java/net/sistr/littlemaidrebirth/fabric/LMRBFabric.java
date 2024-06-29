@@ -3,6 +3,7 @@ package net.sistr.littlemaidrebirth.fabric;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.entity.SpawnLocationTypes;
 import net.minecraft.entity.SpawnRestriction;
 import net.minecraft.world.Heightmap;
 import net.sistr.littlemaidrebirth.LMRBMod;
@@ -21,7 +22,7 @@ public class LMRBFabric implements ModInitializer, ClientModInitializer {
         ModSetup.init();
 
         SpawnRestriction.register(Registration.LITTLE_MAID_MOB.get(),
-                SpawnRestriction.Location.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                SpawnLocationTypes.ON_GROUND, Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
                 (type, world, spawnReason, pos, random) -> LittleMaidEntity.isValidNaturalSpawn(world, pos));
     }
 

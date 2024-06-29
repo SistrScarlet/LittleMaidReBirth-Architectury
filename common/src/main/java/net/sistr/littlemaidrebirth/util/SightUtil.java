@@ -179,7 +179,7 @@ public class SightUtil {
                 return true;
             }
             var blockState = world.getBlockState(result.getBlockPos());
-            if (blockState.getBlock().isTransparent(blockState, world, result.getBlockPos())) {
+            if (blockState.isTransparent(world, result.getBlockPos())) {
                 view = result.getPos().add(toEnd);
                 continue;
             }

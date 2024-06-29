@@ -71,7 +71,7 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
                         .offset(mob.getPos().multiply(-1))
                         .offset(freedomPos))
         ) {
-            mob.teleport(freedomPos.getX() + 0.5D, freedomPos.getY(), freedomPos.getZ() + 0.5D);
+            mob.teleport(freedomPos.getX() + 0.5D, freedomPos.getY(), freedomPos.getZ() + 0.5D, false);
         }
 
     }

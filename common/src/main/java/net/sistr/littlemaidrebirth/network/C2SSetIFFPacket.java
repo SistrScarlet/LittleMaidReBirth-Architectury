@@ -9,7 +9,8 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
@@ -25,11 +26,11 @@ import java.util.stream.Collectors;
  */
 public class C2SSetIFFPacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "set_iff");
+            Identifier.of(LMRBMod.MODID, "set_iff");
 
     @Environment(EnvType.CLIENT)
-    public static void sendC2SPacket(Entity entity, List<IFF> iffs) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+    public static void sendC2SPacket(Entity entity, List<IFF> iffs, DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = new RegistryByteBuf(Unpooled.buffer(), registryManager);
         buf.writeVarInt(entity.getId());
         NbtCompound tag = new NbtCompound();
         NbtList list = new NbtList();
@@ -39,7 +40,7 @@ public class C2SSetIFFPacket {
         NetworkManager.sendToServer(ID, buf);
     }
 
-    public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+    public static void receiveC2SPacket(RegistryByteBuf buf, NetworkManager.PacketContext context) {
         int id = buf.readVarInt();
         NbtCompound tag = buf.readNbt();
         context.queue(() -> applyIFFServer(context.getPlayer(), id, tag));

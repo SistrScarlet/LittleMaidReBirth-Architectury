@@ -1,11 +1,14 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
@@ -13,6 +16,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.IRangedWeapon;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.mixin.CrossbowItemInvoker;
 
 public class ArcherMode extends RangedAttackBaseMode {
     protected int cool;
@@ -24,8 +28,9 @@ public class ArcherMode extends RangedAttackBaseMode {
 
     @Override
     public boolean shouldExecute() {
-        return (!this.mob.getProjectileType(this.mob.getMainHandStack()).isEmpty()
-                || EnchantmentHelper.getLevel(Enchantments.INFINITY, this.mob.getMainHandStack()) > 0)
+        var projectile = this.mob.getProjectileType(this.mob.getMainHandStack());
+        return (!projectile.isEmpty()
+                || EnchantmentHelper.getAmmoUse((ServerWorld) this.mob.getWorld(), this.mob.getMainHandStack(), projectile, 0) > 0)
                 && super.shouldExecute();
     }
 
@@ -52,10 +57,10 @@ public class ArcherMode extends RangedAttackBaseMode {
                     this.mob.shootAt(target, 1.0f);
                     this.mob.play(LMSounds.SHOOT);
                     this.mob.swingHand(Hand.MAIN_HAND);
-                    itemStack.damage(1, this.mob, e -> e.sendToolBreakStatus(Hand.MAIN_HAND));
+                    itemStack.damage(1, this.mob, EquipmentSlot.MAINHAND);
                 }
             }
-        } else if (itemStack.getItem() instanceof CrossbowItem) {
+        } else if (itemStack.getItem() instanceof CrossbowItem crossbowItem) {
             if (!CrossbowItem.isCharged(itemStack)) {
                 //チャージ前か、チャージしていない
                 if (!this.mob.isCharging() || !this.mob.isUsingItem()) {
@@ -63,7 +68,7 @@ public class ArcherMode extends RangedAttackBaseMode {
                     this.mob.setCharging(true);
                 } else {//チャージ中
                     //チャージが終わった
-                    if (this.mob.getItemUseTime() >= CrossbowItem.getPullTime(this.mob.getActiveItem())) {
+                    if (this.mob.getItemUseTime() >= CrossbowItem.getPullTime(this.mob.getActiveItem(), this.mob)) {
                         //チャージはこのメソッドから行われる
                         this.mob.stopUsingItem();
                         this.mob.setCharging(false);
@@ -81,10 +86,15 @@ public class ArcherMode extends RangedAttackBaseMode {
                 if (result.isPresent()) {
                     this.cool = 10;
                 } else {//射撃
-                    this.mob.shootAt(target, 1.0f);
-                    CrossbowItem.setCharged(itemStack, false);
-                    this.mob.play(LMSounds.SHOOT);
-                    this.mob.swingHand(Hand.MAIN_HAND);
+                    //仕様変更あり
+                    //this.mob.shootAt(target, 1.0f);
+                    ChargedProjectilesComponent chargedProjectilesComponent = itemStack.get(DataComponentTypes.CHARGED_PROJECTILES);
+                    if (chargedProjectilesComponent != null && !chargedProjectilesComponent.isEmpty()) {
+                        var speed = CrossbowItemInvoker.getSpeed(chargedProjectilesComponent);
+                        crossbowItem.shootAll(this.mob.getWorld(), this.mob, Hand.MAIN_HAND, itemStack, speed, 0f, target);
+                        this.mob.play(LMSounds.SHOOT);
+                        this.mob.swingHand(Hand.MAIN_HAND);
+                    }
                 }
             }
         }

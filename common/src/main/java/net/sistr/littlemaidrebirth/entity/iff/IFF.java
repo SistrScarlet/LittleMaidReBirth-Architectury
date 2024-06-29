@@ -43,7 +43,7 @@ public class IFF {
      */
     public IFF readTag(NbtCompound nbt) {
         iffTag = IFFTag.getTagFromId(nbt.getInt("IFFTag"));
-        iffType = IFFTypeManager.getINSTANCE().getIFFType(new Identifier(nbt.getString("IFFType")))
+        iffType = IFFTypeManager.getINSTANCE().getIFFType(Identifier.of(nbt.getString("IFFType")))
                 .orElseThrow(() -> new RuntimeException("存在しないIFFTypeです。"));
         entityType = EntityType.get(nbt.getString("EntityType"))
                 .orElseThrow(() -> new RuntimeException("存在しないEntityTypeです。"));

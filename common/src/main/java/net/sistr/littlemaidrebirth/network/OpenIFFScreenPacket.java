@@ -11,6 +11,8 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
@@ -30,15 +32,17 @@ import java.util.stream.Collectors;
  */
 public class OpenIFFScreenPacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "open_iff_screen");
+            Identifier.of(LMRBMod.MODID, "open_iff_screen");
 
-    public static void sendS2CPacket(Entity entity, List<IFF> iffs, PlayerEntity player) {
-        PacketByteBuf buf = createS2CPacket(entity, iffs, player);
+    public static void sendS2CPacket(Entity entity, List<IFF> iffs, PlayerEntity player,
+                                     DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = createS2CPacket(entity, iffs, player, registryManager);
         NetworkManager.sendToPlayer((ServerPlayerEntity) player, ID, buf);
     }
 
-    public static PacketByteBuf createS2CPacket(Entity entity, List<IFF> iffs, PlayerEntity player) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+    public static RegistryByteBuf createS2CPacket(Entity entity, List<IFF> iffs, PlayerEntity player,
+                                                  DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = new RegistryByteBuf(Unpooled.buffer(), registryManager);
         buf.writeVarInt(entity.getId());
         NbtCompound nbt = new NbtCompound();
         NbtList list = new NbtList();
@@ -49,22 +53,22 @@ public class OpenIFFScreenPacket {
     }
 
     @Environment(EnvType.CLIENT)
-    public static void sendC2SPacket(Entity entity) {
+    public static void sendC2SPacket(Entity entity, DynamicRegistryManager registryManager) {
         if (!(entity instanceof HasIFF)) {
             return;
         }
-        PacketByteBuf buf = createC2SPacket(entity);
+        RegistryByteBuf buf = createC2SPacket(entity, registryManager);
         NetworkManager.sendToServer(ID, buf);
     }
 
-    public static PacketByteBuf createC2SPacket(Entity entity) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+    public static RegistryByteBuf createC2SPacket(Entity entity, DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = new RegistryByteBuf(Unpooled.buffer(), registryManager);
         buf.writeVarInt(entity.getId());
         return buf;
     }
 
     @Environment(EnvType.CLIENT)
-    public static void receiveS2CPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+    public static void receiveS2CPacket(RegistryByteBuf buf, NetworkManager.PacketContext context) {
         PlayerEntity player = context.getPlayer();
         if (player == null) return;
         int id = buf.readVarInt();
@@ -89,19 +93,20 @@ public class OpenIFFScreenPacket {
         MinecraftClient.getInstance().setScreen(new IFFScreen(entity, iffs));
     }
 
-    public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+    public static void receiveC2SPacket(RegistryByteBuf buf, NetworkManager.PacketContext context) {
         int id = buf.readVarInt();
-        context.queue(() -> openIFFScreen(id, context.getPlayer()));
+        var registry = context.registryAccess();
+        context.queue(() -> openIFFScreen(id, context.getPlayer(), registry));
     }
 
-    private static void openIFFScreen(int id, PlayerEntity player) {
+    private static void openIFFScreen(int id, PlayerEntity player, DynamicRegistryManager registryManager) {
         Entity entity = player.getWorld().getEntityById(id);
         if (!(entity instanceof HasIFF)
                 || (entity instanceof TameableEntity
                 && !player.getUuid().equals(((TameableEntity) entity).getOwnerUuid()))) {
             return;
         }
-        sendS2CPacket(entity, ((HasIFF) entity).getIFFs(), player);
+        sendS2CPacket(entity, ((HasIFF) entity).getIFFs(), player, registryManager);
     }
 
 }

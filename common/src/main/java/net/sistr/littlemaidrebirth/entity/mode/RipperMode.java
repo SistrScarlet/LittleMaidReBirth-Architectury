@@ -2,11 +2,11 @@ package net.sistr.littlemaidrebirth.entity.mode;
 
 import com.google.common.collect.Lists;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Shearable;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
@@ -77,7 +77,7 @@ public class RipperMode extends Mode {
             ItemStack stack = this.mob.getMainHandStack();
             if (((Shearable) target).isShearable()) {
                 ((Shearable) target).sheared(SoundCategory.PLAYERS);
-                stack.damage(1, this.mob, e -> e.sendToolBreakStatus(Hand.MAIN_HAND));
+                stack.damage(1, this.mob, EquipmentSlot.MAINHAND);
             }
             this.shearable.remove();
             this.timeToIgnore = 0;

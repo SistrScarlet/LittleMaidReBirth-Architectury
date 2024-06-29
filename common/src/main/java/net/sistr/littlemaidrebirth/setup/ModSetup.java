@@ -16,6 +16,7 @@ import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
 import net.sistr.littlemaidrebirth.network.Networking;
 
 import java.util.List;
+import java.util.Objects;
 
 public class ModSetup {
 
@@ -43,14 +44,14 @@ public class ModSetup {
     private static void registerSpawnSettingLM() {
         var spawnBiomeTags = LMRBMod.getConfig().getMaidSpawnBiomeTags()
                 .stream()
-                .filter(Identifier::isValid)
-                .map(Identifier::new)
+                .map(Identifier::tryParse)
+                .filter(Objects::nonNull)
                 .map(id -> TagKey.of(RegistryKeys.BIOME, id))
                 .toList();
         var spawnExcludeBiomeTags = LMRBMod.getConfig().getMaidSpawnExcludeBiomeTags()
                 .stream()
-                .filter(Identifier::isValid)
-                .map(Identifier::new)
+                .map(Identifier::tryParse)
+                .filter(Objects::nonNull)
                 .map(id -> TagKey.of(RegistryKeys.BIOME, id))
                 .toList();
         BiomeModifications.addProperties((context) -> canSpawnBiome(context, spawnBiomeTags, spawnExcludeBiomeTags),

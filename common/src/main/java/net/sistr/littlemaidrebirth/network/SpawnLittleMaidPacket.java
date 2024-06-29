@@ -18,8 +18,8 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import java.util.UUID;
 
 public class SpawnLittleMaidPacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "spawn_littlemaid");
-
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "spawn_littlemaid");
+/*
     @SuppressWarnings({"unchecked", "UnstableApiUsage", "deprecation"})
     public static Packet<ClientPlayPacketListener> create(LittleMaidEntity maid) {
         var buf = new PacketByteBuf(Unpooled.buffer());
@@ -92,6 +92,6 @@ public class SpawnLittleMaidPacket {
 
             ((ClientWorld) world).addEntity(maid);
         }
-    }
+    }*/
 
 }

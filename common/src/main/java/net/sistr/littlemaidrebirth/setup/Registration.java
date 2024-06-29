@@ -36,11 +36,11 @@ public class Registration {
     public static final RegistrySupplier<EntityType<LittleMaidEntity>> LITTLE_MAID_MOB =
             ENTITIES.register("little_maid_mob", () ->
                     EntityType.Builder.<LittleMaidEntity>create(LittleMaidEntity::new, SpawnGroup.CREATURE)
-                            .setDimensions(0.5F, 1.35F).build("little_maid_mob"));
+                            .dimensions(0.5F, 1.35F).build("little_maid_mob"));
     public static final RegistrySupplier<EntityType<MaidSoulEntity>> MAID_SOUL_ENTITY =
             ENTITIES.register("maid_soul", () ->
                     EntityType.Builder.<MaidSoulEntity>create(MaidSoulEntity::new, SpawnGroup.MISC)
-                            .setDimensions(0.5F, 0.5F).build("maid_soul"));
+                            .dimensions(0.5F, 0.5F).build("maid_soul"));
 
     //アイテムグループ
     public static final RegistrySupplier<ItemGroup> ITEM_GROUP = ITEM_GROUPS.register("common",

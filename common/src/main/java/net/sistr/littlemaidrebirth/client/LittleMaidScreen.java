@@ -33,20 +33,20 @@ import java.util.function.Supplier;
 @Environment(EnvType.CLIENT)
 public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final Identifier GUI =
-            new Identifier("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
+            Identifier.of("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
     private static final Identifier SALARY_WINDOW_TEXTURE =
-            new Identifier("littlemaidrebirth", "textures/gui/salary_window.png");
+            Identifier.of("littlemaidrebirth", "textures/gui/salary_window.png");
     private static final IconDrawer HEART_ICON_DRAWER = new IconDrawer(
             9, 9,
-            new Identifier("textures/gui/sprites/hud/heart/container.png"),
-            new Identifier("textures/gui/sprites/hud/heart/half.png"),
-            new Identifier("textures/gui/sprites/hud/heart/full.png"),
-            new Identifier("textures/gui/sprites/hud/heart/container.png"));
+            Identifier.of("textures/gui/sprites/hud/heart/container.png"),
+            Identifier.of("textures/gui/sprites/hud/heart/half.png"),
+            Identifier.of("textures/gui/sprites/hud/heart/full.png"),
+            Identifier.of("textures/gui/sprites/hud/heart/container.png"));
     private static final IconDrawer ARMOR_ICON_DRAWER = new IconDrawer(
             9, 9,
-            new Identifier("textures/gui/sprites/hud/armor_empty.png"),
-            new Identifier("textures/gui/sprites/hud/armor_half.png"),
-            new Identifier("textures/gui/sprites/hud/armor_full.png"));
+            Identifier.of("textures/gui/sprites/hud/armor_empty.png"),
+            Identifier.of("textures/gui/sprites/hud/armor_half.png"),
+            Identifier.of("textures/gui/sprites/hud/armor_full.png"));
     private static final ItemStack ARMOR = Items.LEATHER_CHESTPLATE.getDefaultStack();
     private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
     private static final ItemStack NOTE = Items.NOTE_BLOCK.getDefaultStack();
@@ -82,26 +82,27 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int size = 20;
         int layer = -1;
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> owner.getTameOwner().ifPresent(OpenIFFScreenPacket::sendC2SPacket), Supplier::get) {
+                button -> owner.getTameOwner()
+                        .ifPresent(l -> OpenIFFScreenPacket.sendC2SPacket(l, l.getRegistryManager())), Supplier::get) {
             @Override
-            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+            public void renderWidget(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderWidget(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
                 context.drawItem(BOOK, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
                 button -> client.setScreen(new SoundPackSelectScreen<>(title, owner)), Supplier::get) {
             @Override
-            public void renderButton(DrawContext context, int x, int y, float delta) {
-                super.renderButton(context, x, y, delta);
+            public void renderWidget(DrawContext context, int x, int y, float delta) {
+                super.renderWidget(context, x, y, delta);
                 context.drawItem(NOTE, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> client.setScreen(new ModelSelectScreen<>(title, owner.getWorld(), owner)), Supplier::get) {
+                button -> client.setScreen(new ModelSelectScreen<>(title, owner.getEntityWorld(), owner)), Supplier::get) {
             @Override
-            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+            public void renderWidget(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderWidget(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
                 context.drawItem(ARMOR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
@@ -115,16 +116,17 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                     stateText = getStateText();
                 }, Supplier::get) {
             @Override
-            public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-                super.renderButton(context, mouseX, mouseY, delta);
+            public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+                super.renderWidget(context, mouseX, mouseY, delta);
                 context.drawItem(FEATHER, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> C2SSetBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck()), Supplier::get) {
+                button -> C2SSetBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck(), this.owner.getRegistryManager()),
+                Supplier::get) {
             @Override
-            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+            public void renderWidget(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderWidget(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
                 context.drawItem(LittleMaidScreen.this.owner.isBloodSuck() ? IRON_AXE : IRON_SWORD,
                         this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
@@ -145,8 +147,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                     showSalaryWindow = true;
                 }, Supplier::get) {
             @Override
-            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+            public void renderWidget(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderWidget(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
                 context.drawItem(SUGAR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
@@ -265,7 +267,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     public void close() {
         super.close();
         if (prevMovingMode != movingMode) {
-            C2SSetMovingStatePacket.sendC2SPacket(owner, movingMode);
+            C2SSetMovingStatePacket.sendC2SPacket(owner, movingMode, this.owner.getRegistryManager());
         }
     }
 

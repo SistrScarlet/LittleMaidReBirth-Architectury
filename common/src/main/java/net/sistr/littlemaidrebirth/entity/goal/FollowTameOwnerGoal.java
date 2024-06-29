@@ -27,7 +27,7 @@ public class FollowTameOwnerGoal<T extends PathAwareEntity & Tameable> extends G
         this.followStartSq = followStart * followStart;
         this.followEndSq = followEnd * followEnd;
         this.navigation = tameable.getNavigation();
-        this.setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
+        this.setControls(EnumSet.of(Control.MOVE, Control.LOOK));
         if (!(tameable.getNavigation() instanceof MobNavigation) && !(tameable.getNavigation() instanceof BirdNavigation)) {
             throw new IllegalArgumentException("Unsupported mob type for FollowOwnerGoal");
         }

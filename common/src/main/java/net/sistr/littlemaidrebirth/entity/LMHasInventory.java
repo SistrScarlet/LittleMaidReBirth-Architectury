@@ -10,9 +10,11 @@ import net.minecraft.util.Hand;
 import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 public class LMHasInventory implements HasInventory {
+    private final LittleMaidEntity maid;
     private final Inventory inventory;
 
-    public LMHasInventory() {
+    public LMHasInventory(LittleMaidEntity maid) {
+        this.maid = maid;
         this.inventory = new SimpleInventory(18);
     }
 
@@ -44,7 +46,7 @@ public class LMHasInventory implements HasInventory {
             if (!stack.isEmpty()) {
                 nbt = new NbtCompound();
                 nbt.putByte("Slot", (byte) i);
-                stack.writeNbt(nbt);
+                stack.encode(this.maid.getRegistryManager(), nbt);
                 nbtList.add(nbt);
             }
         }
@@ -58,7 +60,7 @@ public class LMHasInventory implements HasInventory {
         for (int i = 0; i < nbtList.size(); ++i) {
             NbtCompound nbtCompound = nbtList.getCompound(i);
             int j = nbtCompound.getByte("Slot") & 255;
-            ItemStack stack = ItemStack.fromNbt(nbtCompound);
+            ItemStack stack = ItemStack.fromNbtOrEmpty(this.maid.getRegistryManager(), nbtCompound);
             if (!stack.isEmpty()) {
                 if (j < 18) {
                     this.inventory.setStack(j, stack);
@@ -73,7 +75,7 @@ public class LMHasInventory implements HasInventory {
         for (int i = 0; i < nbtList.size(); ++i) {
             NbtCompound nbtCompound = nbtList.getCompound(i);
             int j = nbtCompound.getByte("Slot") & 255;
-            ItemStack stack = ItemStack.fromNbt(nbtCompound);
+            ItemStack stack = ItemStack.fromNbtOrEmpty(this.maid.getRegistryManager(), nbtCompound);
             if (!stack.isEmpty()) {
                 if (1 <= j && j <= 18) {
                     this.inventory.setStack(j - 1, stack);

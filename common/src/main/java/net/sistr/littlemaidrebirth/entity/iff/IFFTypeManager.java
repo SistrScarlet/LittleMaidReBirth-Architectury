@@ -86,7 +86,7 @@ public class IFFTypeManager {
      * NBTからIFFTypeを読み込む
      */
     public Optional<IFFType> loadIFFType(NbtCompound nbt) {
-        Identifier id = new Identifier(nbt.getString("IFFType"));
+        Identifier id = Identifier.of(nbt.getString("IFFType"));
         return getIFFType(id);
     }
 

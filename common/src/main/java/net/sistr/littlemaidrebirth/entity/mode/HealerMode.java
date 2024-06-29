@@ -1,13 +1,12 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.PotionUtil;
-import net.minecraft.potion.Potions;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
@@ -78,37 +77,55 @@ public class HealerMode extends Mode {
     }
 
     public boolean isFood(ItemStack stack) {
-        return stack.isFood()
-                && stack.getItem().getFoodComponent().getStatusEffects().stream()
-                //コンフィグで害のあるものも食えるか調整可能にする
-                //allMatchだとエフェクトが無い場合にfalseになってしまう
-                .noneMatch(p -> p.getFirst().getEffectType().getCategory()
-                        != StatusEffectCategory.BENEFICIAL);
+        var components = stack.getComponents();
+        var foodComponent = components.get(DataComponentTypes.FOOD);
+
+        return foodComponent != null
+                && foodComponent.effects().stream()
+                .allMatch(p -> p.effect().getEffectType().value().isBeneficial());
     }
 
+    //todo コンフィグで害のあるものも食えるか調整可能にする
     public boolean isBeneficialPotion(LivingEntity owner, ItemStack stack, boolean fullHealth) {
-        var potion = PotionUtil.getPotion(stack);
-        if (potion == Potions.EMPTY) {
+        var components = stack.getComponents();
+        var potionContents = components.get(DataComponentTypes.POTION_CONTENTS);
+
+        if (potionContents == null) {
             return false;
         }
+
         //いずれかひとつでも有用でない効果がある場合はfalse
-        if (potion.getEffects().stream()
-                .anyMatch(e -> e.getEffectType().getCategory() != StatusEffectCategory.BENEFICIAL)) {
-            return false;
+        for (StatusEffectInstance statusEffectInstance : potionContents.getEffects()) {
+            var statusEffect = statusEffectInstance.getEffectType().value();
+            if (!statusEffect.isBeneficial()) {
+                return false;
+            }
         }
-        //コンフィグで害のあるものも食えるか調整可能にする
-        return potion.getEffects().stream()
-                //即時回復ではないか、体力が減ってるならtrue
-                //即時回復は体力が減っていないとfalse
-                .filter(e -> e.getEffectType() != StatusEffects.INSTANT_HEALTH || !fullHealth)
-                //ご主人が持っていないエフェクトか、レベルが上なら適用する
-                .anyMatch(e -> owner.getStatusEffects().isEmpty()
-                        || owner.getStatusEffects()
-                        .stream()
-                        //いずれか一つでもご主人が持ってたらダメ
-                        .noneMatch(oE -> oE.getEffectType() == e.getEffectType()
-                                && e.getAmplifier() <= oE.getAmplifier())
-                );
+
+        //即時回復かつご主人が体力満タンならfalse
+        for (StatusEffectInstance statusEffectInstance : potionContents.getEffects()) {
+            if (statusEffectInstance.getEffectType() == StatusEffects.INSTANT_HEALTH && fullHealth) {
+                return false;
+            }
+        }
+
+        //付与される以上のエフェクトをご主人が持っていたらfalse
+        var effects = owner.getStatusEffects();
+        if (!effects.isEmpty()) {
+            for (StatusEffectInstance statusEffectInstance : potionContents.getEffects()) {
+                for (StatusEffectInstance ownerEffect : effects) {
+
+                    if (statusEffectInstance.getEffectType() == ownerEffect.getEffectType()) {
+                        if (ownerEffect.getAmplifier() > statusEffectInstance.getAmplifier()) {
+                            return false;
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     @Override
@@ -117,11 +134,14 @@ public class HealerMode extends Mode {
         //飯
         if (foodIndex != -1) {
             ItemStack stack = inventory.getStack(foodIndex);
-            stack = owner.eatFood(owner.getWorld(), stack);
-            if (stack.isEmpty()) {
-                inventory.removeStack(foodIndex);
-            } else {
-                inventory.setStack(foodIndex, stack);
+            var foodComponent = stack.getComponents().get(DataComponentTypes.FOOD);
+            if (foodComponent != null) {
+                stack = owner.eatFood(owner.getWorld(), stack, foodComponent);
+                if (stack.isEmpty()) {
+                    inventory.removeStack(foodIndex);
+                } else {
+                    inventory.setStack(foodIndex, stack);
+                }
             }
         }
         //薬

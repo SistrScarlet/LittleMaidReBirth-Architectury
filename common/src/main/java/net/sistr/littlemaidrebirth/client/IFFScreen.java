@@ -14,7 +14,6 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.sound.PositionedSoundInstance;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
@@ -38,7 +37,7 @@ public class IFFScreen extends Screen {
     private static final int GUI_WIDTH = 256;
     private static final int GUI_HEIGHT = 196;
     public static final Identifier MODEL_SELECT_GUI_TEXTURE =
-            new Identifier(LMMLMod.MODID, "textures/gui/model_select.png");
+            Identifier.of(LMMLMod.MODID, "textures/gui/model_select.png");
     private final Entity entity;
     private final ImmutableList<IFF> iffs;
     private ScrollBar scrollBar;
@@ -135,7 +134,7 @@ public class IFFScreen extends Screen {
     @Override
     public void close() {
         super.close();
-        C2SSetIFFPacket.sendC2SPacket(entity, iffs);
+        C2SSetIFFPacket.sendC2SPacket(entity, iffs, this.entity.getRegistryManager());
     }
 
     public static class IFFGUIElement extends GUIElement implements ListGUIElement {

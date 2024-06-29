@@ -6,7 +6,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
@@ -16,22 +17,24 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
  */
 public class C2SSetBloodSuckPacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "set_blood_suck");
+            Identifier.of(LMRBMod.MODID, "set_blood_suck");
 
     @Environment(EnvType.CLIENT)
-    public static void sendC2SPacket(Entity entity, boolean isBloodSuck) {
-        PacketByteBuf buf = createC2SPacket(entity, isBloodSuck);
+    public static void sendC2SPacket(Entity entity, boolean isBloodSuck,
+                                     DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = createC2SPacket(entity, isBloodSuck, registryManager);
         NetworkManager.sendToServer(ID, buf);
     }
 
-    public static PacketByteBuf createC2SPacket(Entity entity, boolean isBloodSuck) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+    public static RegistryByteBuf createC2SPacket(Entity entity, boolean isBloodSuck,
+                                                  DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = new RegistryByteBuf(Unpooled.buffer(), registryManager);
         buf.writeVarInt(entity.getId());
         buf.writeBoolean(isBloodSuck);
         return buf;
     }
 
-    public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+    public static void receiveC2SPacket(RegistryByteBuf buf, NetworkManager.PacketContext context) {
         int id = buf.readVarInt();
         boolean isBloodSuck = buf.readBoolean();
         context.queue(() -> applyBloodSuckServer(context.getPlayer(), id, isBloodSuck));

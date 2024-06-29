@@ -7,7 +7,8 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
+import net.minecraft.network.RegistryByteBuf;
+import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
@@ -21,35 +22,36 @@ import net.sistr.littlemaidrebirth.entity.util.Tameable;
  */
 public class SyncSoundConfigPacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "sync_sound_config");
+            Identifier.of(LMRBMod.MODID, "sync_sound_config");
 
     @Environment(EnvType.CLIENT)
-    public static void sendC2SPacket(Entity entity, String configName) {
-        PacketByteBuf buf = createC2SPacket(entity, configName);
+    public static void sendC2SPacket(Entity entity, String configName, DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = createC2SPacket(entity, configName, registryManager);
         NetworkManager.sendToServer(ID, buf);
     }
 
-    public static PacketByteBuf createC2SPacket(Entity entity, String configName) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+    public static RegistryByteBuf createC2SPacket(Entity entity, String configName, DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = new RegistryByteBuf(Unpooled.buffer(), registryManager);
         buf.writeVarInt(entity.getId());
         buf.writeString(configName);
         return buf;
     }
 
-    public static void sendS2CPacket(Entity entity, String configName) {
-        PacketByteBuf buf = createS2CPacket(entity, configName);
+    public static void sendS2CPacket(Entity entity, String configName, DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = createS2CPacket(entity, configName, registryManager);
         NetworkManager.sendToPlayers(PlayerList.tracking(entity), ID, buf);
     }
 
-    public static PacketByteBuf createS2CPacket(Entity entity, String configName) {
-        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+    public static RegistryByteBuf createS2CPacket(Entity entity, String configName,
+                                                  DynamicRegistryManager registryManager) {
+        RegistryByteBuf buf = new RegistryByteBuf(Unpooled.buffer(), registryManager);
         buf.writeVarInt(entity.getId());
         buf.writeString(configName);
         return buf;
     }
 
     @Environment(EnvType.CLIENT)
-    public static void receiveS2CPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+    public static void receiveS2CPacket(RegistryByteBuf buf, NetworkManager.PacketContext context) {
         int id = buf.readVarInt();
         String configName = buf.readString();
         context.queue(() -> applySoundConfigClient(id, configName));
@@ -67,13 +69,15 @@ public class SyncSoundConfigPacket {
         }
     }
 
-    public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+    public static void receiveC2SPacket(RegistryByteBuf buf, NetworkManager.PacketContext context) {
         int id = buf.readVarInt();
         String configName = buf.readString(32767);
-        context.queue(() -> applySoundConfigServer(context.getPlayer(), id, configName));
+        var registry = context.registryAccess();
+        context.queue(() -> applySoundConfigServer(context.getPlayer(), id, configName, registry));
     }
 
-    private static void applySoundConfigServer(PlayerEntity player, int id, String configName) {
+    private static void applySoundConfigServer(PlayerEntity player, int id, String configName,
+                                               DynamicRegistryManager registryManager) {
         World world = player.getWorld();
         Entity entity = world.getEntityById(id);
         if (!(entity instanceof SoundPlayable)) {
@@ -87,7 +91,7 @@ public class SyncSoundConfigPacket {
         }
         LMConfigManager.INSTANCE.getConfig(configName)
                 .ifPresent(((SoundPlayable) entity)::setConfigHolder);
-        sendS2CPacket(entity, configName);
+        sendS2CPacket(entity, configName, registryManager);
     }
 
 }

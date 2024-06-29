@@ -9,10 +9,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.iff.*;
-import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -90,12 +90,12 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
     }
 
     @Override
-    protected Vector3f getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
+    protected Vec3d getPassengerAttachmentPos(Entity passenger, EntityDimensions dimensions, float scaleFactor) {
         if (passenger instanceof LittleMaidEntity) {
             float playerHeight = 1.8f;
             float percent = (playerHeight - 6f / 16f) / playerHeight;
             float z = -6 / 16f * 0.9375F;
-            return new Vector3f(0.0f, dimensions.height * percent, z);
+            return new Vec3d(0.0f, dimensions.height() * percent, z);
         }
         return super.getPassengerAttachmentPos(passenger, dimensions, scaleFactor);
     }
