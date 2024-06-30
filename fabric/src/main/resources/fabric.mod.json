@@ -42,6 +42,6 @@
     "fabric-api": "*",
     "architectury": ">=13.0.1",
     "cloth-config": ">=15.0.0",
-    "littlemaidmodelloader": "10.0.0-alpha"
+    "littlemaidmodelloader": "10.0.0-alpha2"
   }
 }
