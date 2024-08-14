@@ -36,21 +36,19 @@ public abstract class MixinExperienceOrbEntity extends Entity implements LMColli
     protected abstract int getMendingRepairAmount(int experienceAmount);
 
     @Override
-    public void onCollision_LMRB(LittleMaidEntity littleMaid) {
-        if (!this.getWorld().isClient) {
-            if (littleMaid.experiencePickUpDelay == 0) {
-                littleMaid.experiencePickUpDelay = 2;
-                littleMaid.sendPickup(this, 1);
-                int i = this.repairGears_LM(littleMaid, this.amount);
-                if (i > 0) {
-                    littleMaid.addExperience(i);
-                }
-
-                --this.pickingCount;
-                if (this.pickingCount == 0) {
-                    this.discard();
-                }
-            }
+    public void onCollision_LMRB(LittleMaidEntity maid) {
+        if (this.getWorld().isClient || maid.experiencePickUpDelay != 0) {
+            return;
+        }
+        maid.experiencePickUpDelay = 2;
+        maid.sendPickup(this, 1);
+        int i = this.repairGears_LM(maid, this.amount);
+        if (i > 0) {
+            maid.addExperience(i);
+        }
+        --this.pickingCount;
+        if (this.pickingCount == 0) {
+            this.discard();
         }
     }
 

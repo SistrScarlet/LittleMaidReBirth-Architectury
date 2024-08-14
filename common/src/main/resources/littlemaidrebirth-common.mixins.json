@@ -11,6 +11,7 @@
     "MixinCandleCakeBlock",
     "MixinCrossBowItem",
     "MixinExperienceOrbEntity",
+    "MixinItemEntity",
     "MixinPlayerEntity",
     "MixinRangedWeaponItem",
     "MixinSaddleItem",

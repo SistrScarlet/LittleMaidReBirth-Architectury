@@ -5,7 +5,6 @@ import dev.architectury.extensions.network.EntitySpawnExtension;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
@@ -25,10 +24,8 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
-import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.StackReference;
@@ -86,9 +83,6 @@ import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.entity.util.*;
 import net.sistr.littlemaidrebirth.mixin.CrossbowItemInvoker;
-import net.sistr.littlemaidrebirth.mixin.ItemEntityAccessor;
-import net.sistr.littlemaidrebirth.mixin.PersistentProjectileEntityAccessor;
-import net.sistr.littlemaidrebirth.mixin.ProjectileEntityAccessor;
 import net.sistr.littlemaidrebirth.network.SpawnLittleMaidPacket;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
@@ -623,79 +617,39 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     protected void mobTick() {
         super.mobTick();
-        pickupItem();
+        if (TameableUtil.hasTameOwner(this)
+                || LMRBMod.getConfig().isCanPickupItemByNoOwner()) {
+            pickupItem();
+        }
         itemContractable.tick();
         hasModeImpl.tick();
     }
 
-    //todo 処理を調整、不具合修正
-    //todo 野良メイドさんがアイテム拾うか否か
+    //todo 経験値拾えるかコンフィグ
+    //todo メイドさんのアイテム拾い範囲コンフィグ
     protected void pickupItem() {
-        if (this.getHealth() > 0.0f && !this.isSpectator()) {
-            Box aabb = this.hasVehicle() && !this.getVehicle().isRemoved()
-                    ? this.getBoundingBox().union(this.getVehicle().getBoundingBox()).expand(1.0, 0.0, 1.0)
-                    : this.getBoundingBox().expand(1.0, 0.5, 1.0);
-            List<Entity> list = this.getWorld().getOtherEntities(this, aabb);
-            ArrayList<Entity> list1 = Lists.newArrayList();
-            for (Entity entity : list) {
-                if (entity.getType() == EntityType.EXPERIENCE_ORB) {
-                    list1.add(entity);
-                    continue;
-                }
-                if (entity.isRemoved()) continue;
-                if (entity instanceof ItemEntity itemEntity) {
-                    this.pickupItemEntity(itemEntity);
-                } else if (entity instanceof PersistentProjectileEntity projectile) {
-                    this.pickupArrowEntity(projectile);
-                }
-            }
-            if (!list1.isEmpty()) {
-                this.pickupExperienceOrb((ExperienceOrbEntity) Util.getRandom(list1, this.random));
-            }
-        }
-    }
-
-    private void pickupExperienceOrb(ExperienceOrbEntity xpOrb) {
-        ((LMCollidable) xpOrb).onCollision_LMRB(this);
-    }
-
-    protected void pickupItemEntity(ItemEntity itemEntity) {
-        if (this.getWorld().isClient) {
+        if (this.getHealth() <= 0 || this.isSpectator()) {
             return;
         }
-        ItemStack itemStack = itemEntity.getStack();
-        int i = itemStack.getCount();
-        if (!itemEntity.cannotPickup()
-                && (((ItemEntityAccessor) itemEntity).getOwner() == null
-                || (((ItemEntityAccessor) itemEntity).getOwner().equals(this.getUuid())))
-        ) {
-            itemStack = HopperBlockEntity.transfer(null, this.getInventory(), itemStack, null);
-            if (itemStack.getCount() != i) {
-                this.sendPickup(itemEntity, i);
-                if (itemStack.isEmpty()) {
-                    itemEntity.discard();
-                    itemStack.setCount(i);
-                }
-                this.triggerItemPickedUpByEntityCriteria(itemEntity);
+        //乗り物にライド中の処理は省略
+        var aabb = this.getBoundingBox().expand(1.0, 0.5, 1.0);
+        var aroundItems = this.getWorld().getOtherEntities(this, aabb);
+        var exps = Lists.newArrayList();
+        for (Entity entity : aroundItems) {
+            if (entity instanceof ExperienceOrbEntity) {
+                exps.add(entity);
+                continue;
+            }
+            if (entity.isRemoved()) continue;
+            if (entity instanceof LMCollidable collidable) {
+                collidable.onCollision_LMRB(this);
             }
         }
-    }
-
-    protected void pickupArrowEntity(PersistentProjectileEntity projectile) {
-        if (this.getWorld().isClient || !((PersistentProjectileEntityAccessor) projectile).getInGround()
-                && !projectile.isNoClip() || projectile.shake > 0) {
-            return;
-        }
-        if (projectile instanceof TridentEntity
-                && (!((ProjectileEntityAccessor) projectile).invokeIsOwner(this)
-                && projectile.getOwner() != null)) {
-            return;
-        }
-        var arrow = ((PersistentProjectileEntityAccessor) projectile).invokeAsItemStack();
-        arrow = HopperBlockEntity.transfer(null, this.getInventory(), arrow, null);
-        if (arrow.isEmpty()) {
-            this.sendPickup(projectile, 1);
-            projectile.discard();
+        if (!exps.isEmpty()) {
+            var collidable = ((LMCollidable) Util.getRandom(exps, this.random));
+            if (collidable != null) {
+                collidable.onCollision_LMRB(this);
+            }
         }
     }
 
