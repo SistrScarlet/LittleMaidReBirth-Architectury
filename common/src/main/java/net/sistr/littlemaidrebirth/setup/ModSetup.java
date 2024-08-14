@@ -26,6 +26,7 @@ public class ModSetup {
             registerSpawnSettingLM();
         }
 
+        //todo IFFの初期化に関する仕様を再考
         IFFTypeManager iffTypeManager = IFFTypeManager.getINSTANCE();
         Registries.ENTITY_TYPE.stream()
                 .filter(EntityType::isSummonable)
@@ -41,6 +42,7 @@ public class ModSetup {
     }
 
     private static void registerSpawnSettingLM() {
+        //todo メイドさんのスポーン設定容易化
         var spawnBiomeTags = LMRBMod.getConfig().getMaidSpawnBiomeTags()
                 .stream()
                 .filter(Identifier::isValid)

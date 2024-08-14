@@ -11,6 +11,7 @@ import java.util.EnumSet;
 
 //雇い主が居ない場合も実行される
 //todo 移動範囲は大体±１０ブロックの正方形で、起点から約１７ブロック以上離れると起点に転移します。
+//todo 移動範囲などをコンフィグ化
 public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal {
     private final T maid;
     private final double distance;

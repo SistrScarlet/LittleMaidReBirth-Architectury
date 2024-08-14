@@ -14,6 +14,7 @@ import java.util.List;
 /**
  * LMRBのコンフィグ
  */
+//todo コンフィグの取り扱いを再考
 @Config(name = LMRBMod.MODID)
 public class LMRBConfig implements ConfigData {
 

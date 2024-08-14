@@ -11,6 +11,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 /**
  * メイドさんに関するタグを置いとくとこ
  */
+//todo 判定をタグとコンフィグで行えるように仕様を調整
 public class LMTags {
 
     public static class Items {

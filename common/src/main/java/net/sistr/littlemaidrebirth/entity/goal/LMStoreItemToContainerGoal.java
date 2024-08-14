@@ -48,6 +48,7 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
         return true;
     }
 
+    //todo チェストに仕舞わない条件を追加する
     @Override
     protected void storeItems() {
         if (containerPos == null) {

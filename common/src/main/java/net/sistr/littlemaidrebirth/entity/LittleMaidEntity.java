@@ -129,6 +129,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         Contractable, HasMode, HasIFF, AimingPoseable, IHasMultiModel, SoundPlayable, HasMovingMode,
         RangedAttackMob, CrossbowUser {
     //LMM_FLAGSのindex
+    //todo enumにまとめる
     private static final int WAIT_INDEX = 0;
     private static final int AIMING_INDEX = 1;
     private static final int BEGGING_INDEX = 2;
@@ -213,6 +214,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //スタティックなメソッド
 
+    //todo メイドさんに付与する属性の再考
     public static DefaultAttributeContainer.Builder createLittleMaidAttributes() {
         DefaultAttributeContainer.Builder builder = TameableEntity.createMobAttributes()
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3D)
@@ -224,6 +226,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return builder;
     }
 
+    //todo コンフィグでスポーン条件を設定可能にする
     public static boolean isValidNaturalSpawn(WorldAccess world, BlockPos pos) {
         return world.getBlockState(pos.down()).isFullCube(world, pos)
                 && world.getBaseLightLevel(pos, 0) > 8;
@@ -236,6 +239,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     protected void initGoals() {
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
+
+        //todo Goalsの優先度を調整する
 
         this.goalSelector.add(++priority, new HasMMTeleportTameOwnerGoal<>(this,
                 config.getTeleportStartRange()));
@@ -449,6 +454,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
     }
 
+    //todo IdFactorが確実にセットされたタイミングで実行されるようにする
     public void setRandomTexture() {
         var textureHolderList = LMTextureManager.INSTANCE.getAllTextures().stream()
                 .filter(h -> h.hasSkinTexture(false))//野生テクスチャがある
@@ -625,6 +631,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         hasModeImpl.tick();
     }
 
+    //todo 処理を調整、不具合修正
+    //todo 野良メイドさんがアイテム拾うか否か
     protected void pickupItem() {
         if (this.getHealth() > 0.0f && !this.isSpectator()) {
             Box aabb = this.hasVehicle() && !this.getVehicle().isRemoved()
@@ -700,6 +708,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     //canSpawnとかでも使われる
+    //todo スポーン条件をコンフィグで設定可能にする
     @Override
     public float getPathfindingFavor(BlockPos pos, WorldView world) {
         return world.getBlockState(pos.down()).isFullCube(world, pos) ? 10.0F : world.getPhototaxisFavor(pos);
@@ -716,6 +725,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return null;
     }
 
+    //todo マウント系の位置を調整
     /**
      * 上に乗ってるエンティティへのオフセット
      */
@@ -762,6 +772,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return entity;
     }
 
+    //todo これ何のメソッド？
     @Override
     public boolean isInWalkTargetRange(BlockPos pos) {
         //自身または主人から16ブロック以内
@@ -774,6 +785,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return false;
     }
 
+    //todo ボイス周りの調整、コンフィグ化
     @Override
     public void playAmbientSound() {
         if (this.getWorld().isClient || this.dead || getConfigHolder()
@@ -827,6 +839,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void onDeath(DamageSource source) {
+        //todo 死亡キャンセル廃止
         if (LMRBMod.getConfig().isCanResurrection()) {
             this.unsetRemoved();
             this.dead = false;
@@ -839,6 +852,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             return;
         }
         super.onDeath(source);
+        //todo 強制再生メソッドを生やす
         //死亡ボイスは必ず聞かせる
         this.playSoundCool = 0;
         play(LMSounds.DEATH);
@@ -859,6 +873,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.deathTime = 0;
     }
 
+    //todo 処理の改善
     @Override
     public boolean tryAttack(Entity target) {
         boolean result = super.tryAttack(target);
@@ -891,6 +906,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return result;
     }
 
+    //todo 処理の見直し
     @Override
     public boolean damage(DamageSource source, float amount) {
         if (this.dead) {
@@ -978,6 +994,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //射撃
 
+    //todo try/catchを挟む。処理の見直し
     @Override
     public void attack(LivingEntity target, float pullProgress) {
         var stack = this.getMainHandStack();
@@ -1021,6 +1038,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.shoot(this, target, projectile, multiShotSpray, CrossbowItemInvoker.getSpeed(crossbow));
     }
 
+    //todo 弾道調整
     @Override
     public void shoot(LivingEntity entity, LivingEntity target,
                       ProjectileEntity projectile, float multishotSpray, float speed) {
@@ -1042,6 +1060,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     }
 
+    //todo コメントを差す
     @Override
     protected Vec3d adjustMovementForSneaking(Vec3d movement, MovementType type) {
         if (type != MovementType.SELF && type != MovementType.PLAYER) {
@@ -1198,6 +1217,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return -fallDamage;
     }
 
+    //todo 複数モデルで問題ないかチェック
     @Override
     public Vec3d getLeashOffset() {
         return new Vec3d(0.0, this.getStandingEyeHeight() - 0.15f, 1f / 16f);
@@ -1209,6 +1229,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //fail 動作を実行せず、他の動作も許可しない
     //下二つならここ以外で手に持ったアイテムが使用される場合がある
     //継承元のコードは無視
+    //todo 処理の見直し、処理を追加可能に
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         if (player.isSneaking()) {
@@ -1413,6 +1434,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.littleMaidInventory.readInventory(tag);
     }
 
+    //todo 計算式の見直し
     @Override
     protected void damageArmor(DamageSource source, float amount) {
         if (!(amount <= 0.0f)) {
@@ -1452,6 +1474,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //todo ガード実装
     }
 
+    //todo どこで使われるメソッド？
     @Override
     public StackReference getStackReference(int mappedIndex) {
         var inv = getInventory();
@@ -1462,6 +1485,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return super.getStackReference(mappedIndex);
     }
 
+    //todo 処理の見直し
     @Override
     public ItemStack getProjectileType(ItemStack stack) {
         if (!(stack.getItem() instanceof RangedWeaponItem ranged)) {
@@ -1521,6 +1545,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return this.experiencePoints;
     }
 
+    //todo IdFactorの仕様の見直し
     @Override
     public void setUuid(UUID uuid) {
         super.setUuid(uuid);
@@ -1537,6 +1562,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //テイム関連
 
+    //Tameableの仕様を再考
     @Override
     public Optional<LivingEntity> getTameOwner() {
         return Optional.ofNullable(getOwner());
@@ -1732,6 +1758,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //IFF
 
+    //todo Tameable関連
     @Override
     public Optional<IFFTag> identify(LivingEntity target) {
         UUID ownerId = this.getOwnerUuid();
@@ -1867,6 +1894,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //音声関係
 
+    //todo 強制再生メソッドを生やす
+    //todo 再生クールダウンをコンフィグ化
     @Override
     public void play(String soundName) {
         if (0 < this.playSoundCool) {
@@ -1898,6 +1927,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return SpawnLittleMaidPacket.create(this);
     }
 
+    //todo クラスの移動
     public static class LMMoveToDropItemGoal extends MoveToDropItemGoal {
         protected final LittleMaidEntity maid;
 
@@ -1937,6 +1967,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     }).orElse(super.findAroundDropItem());
         }
 
+        //todo コンフィグで設定可能にする
         private boolean isOwnerRange(Entity entity, Entity owner) {
             final Vec3d ownerPos = owner.getPos();
             final Vec3d entityPos = entity.getPos().subtract(ownerPos);
@@ -1971,6 +2002,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
     }
 
+    //todo このクラス置く場所ここで正しい？
     public static class MaidSoul {
         private final NbtCompound nbt;
 

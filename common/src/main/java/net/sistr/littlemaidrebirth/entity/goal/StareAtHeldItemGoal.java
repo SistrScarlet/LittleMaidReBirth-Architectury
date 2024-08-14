@@ -19,6 +19,7 @@ public class StareAtHeldItemGoal<T extends PathAwareEntity> extends Goal {
         setControls(EnumSet.of(Control.LOOK));
     }
 
+    //todo 範囲のコンフィグ化
     @Override
     public boolean canStart() {
         stareAt = mob.getWorld().getClosestPlayer(mob, 4);

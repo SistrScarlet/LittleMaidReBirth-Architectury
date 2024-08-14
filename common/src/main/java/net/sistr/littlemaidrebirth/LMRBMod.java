@@ -18,6 +18,7 @@ public class LMRBMod {
     private static ConfigHolder<LMRBConfig> CONFIG_HOLDER;
 
     public static void init() {
+        //todo コンフィグ周りの扱いの改善
         AutoConfig.register(LMRBConfig.class, GsonConfigSerializer::new);
         CONFIG_HOLDER = AutoConfig.getConfigHolder(LMRBConfig.class);
 

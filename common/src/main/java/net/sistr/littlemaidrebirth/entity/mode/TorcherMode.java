@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 
 //暗所発見->移動->設置
 //置いてすぐはライトレベルに変化が無い点に注意
+//todo 処理の改善
 public class TorcherMode extends Mode {
     protected final LittleMaidEntity mob;
     protected final float distance;

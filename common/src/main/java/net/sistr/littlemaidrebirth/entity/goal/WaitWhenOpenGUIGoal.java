@@ -9,6 +9,7 @@ import net.sistr.littlemaidrebirth.entity.util.Tameable;
 
 import java.util.EnumSet;
 
+//todo 実装
 public class WaitWhenOpenGUIGoal<T extends PathAwareEntity, M extends ScreenHandler & GuiEntitySupplier<T>> extends Goal {
     private final T mob;
     private final Tameable tameable;

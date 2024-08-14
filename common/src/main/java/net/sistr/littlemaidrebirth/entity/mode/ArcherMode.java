@@ -29,6 +29,7 @@ public class ArcherMode extends RangedAttackBaseMode {
                 && super.shouldExecute();
     }
 
+    //todo 処理の見直し
     @Override
     protected void tickRangedAttack(LivingEntity target, ItemStack itemStack, boolean canSee, double distanceSq, float maxRange) {
         if (itemStack.getItem() instanceof BowItem) {

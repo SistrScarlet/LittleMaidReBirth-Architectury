@@ -23,6 +23,7 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 //即時回復を含むポーションは、体力が減るまで使わない
 //…ご主人がアンデッドの場合でも、即時回復を使う。ご主人は死ぬ。
 //todo コンフィグで害のあるものも食えるか調整可能にする
+//todo 処理の整理
 public class HealerMode extends Mode {
     protected final LittleMaidEntity mob;
     protected LivingEntity owner;

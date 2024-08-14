@@ -76,6 +76,7 @@ public class HasModeImpl implements HasMode {
             this.tempModeData = nbt.getCompound("ModeData");
     }
 
+    //todo 処理の整理
     public void tick() {
         if (!isModeContinue()) {
             //手持ちアイテムに現在のモードで適用できるかチェック
