@@ -1735,10 +1735,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Environment(EnvType.CLIENT)
     public Optional<String> getModeName() {
-        if (this.isStrike()) {
-            //todo ストライキ時の表記
-            return Optional.empty();
-        }
         String modeName = this.dataTracker.get(MODE_NAME);
         if (modeName.isEmpty()) return Optional.empty();
         return Optional.of(modeName);

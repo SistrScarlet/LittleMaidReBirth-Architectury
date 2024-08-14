@@ -144,6 +144,9 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     public Text getStateText() {
+        if (owner.isStrike()) {
+            return Text.translatable("state." + LMRBMod.MODID + ".Strike");
+        }
         MutableText stateText = Text.translatable("state." + LMRBMod.MODID + "." + movingMode.getName());
         owner.getModeName().ifPresent(
                 modeName -> stateText.append(" : ")
