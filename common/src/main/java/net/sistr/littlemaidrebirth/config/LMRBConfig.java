@@ -121,9 +121,6 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Category("maid")
     private boolean nonMobDamageImmunity = false;
 
-    @ConfigEntry.Category("maid")
-    private boolean canResurrection;
-
     //mode
 
     @ConfigEntry.Category("mode")
@@ -188,10 +185,6 @@ public class LMRBConfig implements ConfigData {
 
     public int getMaxSpawnGroupSize() {
         return maxSpawnGroupSize;
-    }
-
-    public boolean isCanResurrection() {
-        return canResurrection;
     }
 
     public boolean isCanPickupItemByNoOwner() {

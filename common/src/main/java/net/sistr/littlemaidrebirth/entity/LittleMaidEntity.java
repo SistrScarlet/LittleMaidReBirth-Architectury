@@ -839,18 +839,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void onDeath(DamageSource source) {
-        //todo 死亡キャンセル廃止
-        if (LMRBMod.getConfig().isCanResurrection()) {
-            this.unsetRemoved();
-            this.dead = false;
-            this.deathTime = 0;
-            this.setHealth(this.getMaxHealth());
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 60, 5));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 60, 5));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.BLINDNESS, 20 * 60, 5));
-            this.addStatusEffect(new StatusEffectInstance(StatusEffects.MINING_FATIGUE, 20 * 60, 5));
-            return;
-        }
         super.onDeath(source);
         //todo 強制再生メソッドを生やす
         //死亡ボイスは必ず聞かせる
