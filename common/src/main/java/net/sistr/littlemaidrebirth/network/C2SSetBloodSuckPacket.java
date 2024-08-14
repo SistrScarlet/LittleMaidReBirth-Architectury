@@ -10,6 +10,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 /**
  * クライアントからサーバーへBloodSuckを設定するパケット
@@ -39,14 +40,14 @@ public class C2SSetBloodSuckPacket {
 
     private static void applyBloodSuckServer(PlayerEntity player, int id, boolean isBloodSuck) {
         Entity entity = player.getWorld().getEntityById(id);
-        if (!(entity instanceof LittleMaidEntity)) {
+        if (!(entity instanceof LittleMaidEntity maid)) {
             return;
         }
         //ご主人がいて、送信元のプレイヤーがご主人なら
-        if (((LittleMaidEntity) entity).getTameOwnerUuid()
+        if (TameableUtil.getTameOwnerUuid(maid)
                 .filter(uuid -> player.getUuid().equals(uuid))
                 .isPresent()) {
-            ((LittleMaidEntity) entity).setBloodSuck(isBloodSuck);
+            maid.setBloodSuck(isBloodSuck);
         }
     }
 }

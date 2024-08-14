@@ -9,6 +9,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.Direction;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 import java.util.function.Predicate;
 
@@ -22,8 +23,8 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
     @Override
     public boolean canStart() {
         return !this.mob.isStrike()
-                && this.mob.hasTameOwner()
-                && !this.mob.isWait()
+                && TameableUtil.getTameOwnerUuid(mob).isPresent()
+                && !TameableUtil.isWait(mob)
                 && (this.mob.getMovingMode() == MovingMode.FREEDOM
                 || this.mob.getMovingMode() == MovingMode.TRACER)
                 && super.canStart();
@@ -31,7 +32,7 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
 
     @Override
     public boolean shouldContinue() {
-        return !this.mob.isWait()
+        return !TameableUtil.isWait(mob)
                 && this.mob.getMovingMode() == MovingMode.FREEDOM
                 && super.shouldContinue();
     }

@@ -1,12 +1,12 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
-import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.ItemStack;
-import net.sistr.littlemaidrebirth.entity.util.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 import java.util.function.Predicate;
 
-public class TameableStareAtHeldItemGoal<T extends PathAwareEntity & Tameable> extends StareAtHeldItemGoal<T> {
+public class TameableStareAtHeldItemGoal<T extends TameableEntity> extends StareAtHeldItemGoal<T> {
     protected final boolean isTamed;
 
     public TameableStareAtHeldItemGoal(T mob, boolean isTamed, Predicate<ItemStack> targetItem) {
@@ -16,6 +16,6 @@ public class TameableStareAtHeldItemGoal<T extends PathAwareEntity & Tameable> e
 
     @Override
     public boolean canStart() {
-        return this.mob.getTameOwner().isPresent() == isTamed && super.canStart();
+        return TameableUtil.getTameOwnerUuid(mob).isPresent() == isTamed && super.canStart();
     }
 }

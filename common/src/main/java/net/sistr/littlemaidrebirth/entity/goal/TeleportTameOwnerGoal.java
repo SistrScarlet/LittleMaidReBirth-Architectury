@@ -6,13 +6,13 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
-import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.sistr.littlemaidrebirth.entity.util.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
-public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends Goal {
+public class TeleportTameOwnerGoal<T extends TameableEntity> extends Goal {
     protected final T tameable;
     protected final World world;
     protected final float teleportStartSq;
@@ -29,12 +29,12 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
 
     @Override
     public boolean canStart() {
-        LivingEntity tameOwner = this.tameable.getTameOwner().orElse(null);
+        LivingEntity tameOwner = TameableUtil.getTameOwner(this.tameable).orElse(null);
         if (tameOwner == null) {
             return false;
         } else if (tameOwner.isSpectator()) {
             return false;
-        } else if (this.tameable.isWait()) {
+        } else if (this.tameable.isSitting()) {
             return false;
         } else if (this.tameable.squaredDistanceTo(tameOwner) < teleportStartSq) {
             return false;
@@ -45,7 +45,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
     }
 
     public boolean shouldContinue() {
-        if (this.tameable.isWait()) {
+        if (this.tameable.isSitting()) {
             return false;
         } else {
             return teleportStartSq < this.tameable.squaredDistanceTo(this.owner);

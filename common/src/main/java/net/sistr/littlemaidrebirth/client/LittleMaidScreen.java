@@ -23,6 +23,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import net.sistr.littlemaidrebirth.network.C2SSetBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetMovingStatePacket;
 import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
@@ -72,7 +73,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int size = 20;
         int layer = -1;
         this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> owner.getTameOwner().ifPresent(OpenIFFScreenPacket::sendC2SPacket), Supplier::get) {
+                button -> TameableUtil.getTameOwner(owner).ifPresent(OpenIFFScreenPacket::sendC2SPacket), Supplier::get) {
             @Override
             public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);

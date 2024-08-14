@@ -6,6 +6,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.Tameable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
@@ -14,7 +15,7 @@ import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.manager.LMConfigManager;
 import net.sistr.littlemaidmodelloader.util.PlayerList;
 import net.sistr.littlemaidrebirth.LMRBMod;
-import net.sistr.littlemaidrebirth.entity.util.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 /**
  * サウンドコンフィグを同期するパケット
@@ -79,8 +80,8 @@ public class SyncSoundConfigPacket {
         if (!(entity instanceof SoundPlayable)) {
             return;
         }
-        if (entity instanceof Tameable
-                && ((Tameable) entity).getTameOwnerUuid()
+        if (entity instanceof Tameable tameable
+                && TameableUtil.getTameOwnerUuid(tameable)
                 .filter(ownerId -> ownerId.equals(player.getUuid()))
                 .isEmpty()) {
             return;

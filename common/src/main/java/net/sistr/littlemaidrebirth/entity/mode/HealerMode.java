@@ -16,6 +16,7 @@ import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LMHasInventory;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 //空腹なら食料を食わせる。ただし害のあるものは食べさせない
 //有用なポーション効果があるアイテムは、常時効果が切れないように使用する
@@ -41,7 +42,7 @@ public class HealerMode extends Mode {
         if (this.mob.getRandom().nextFloat() > 1 / 20f) {
             return false;
         }
-        LivingEntity owner = mob.getTameOwner().orElse(null);
+        LivingEntity owner = TameableUtil.getTameOwner(mob).orElse(null);
         if (!(owner instanceof PlayerEntity)) return false;
         this.owner = owner;
         boolean isHunger = ((PlayerEntity) owner).getHungerManager().isNotFull();
@@ -51,7 +52,7 @@ public class HealerMode extends Mode {
 
     @Override
     public boolean shouldContinueExecuting() {
-        LivingEntity owner = mob.getTameOwner().orElse(null);
+        LivingEntity owner = TameableUtil.getTameOwner(mob).orElse(null);
         if (!(owner instanceof PlayerEntity)) return false;
         boolean isHunger = ((PlayerEntity) owner).getHungerManager().isNotFull();
         boolean fullHealth = owner.getMaxHealth() <= owner.getHealth();

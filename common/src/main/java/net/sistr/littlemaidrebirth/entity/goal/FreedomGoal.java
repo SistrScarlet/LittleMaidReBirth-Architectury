@@ -6,6 +6,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 import java.util.EnumSet;
 
@@ -29,7 +30,7 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
 
     @Override
     public boolean canStart() {
-        return !maid.isWait()
+        return !TameableUtil.isWait(maid)
                 && maid.getNavigation().isIdle()
                 && maid.getMovingMode() == MovingMode.FREEDOM
                 && super.canStart();

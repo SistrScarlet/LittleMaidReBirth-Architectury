@@ -11,6 +11,7 @@ import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 /**
  * C2Sで移動状態をセットするパケット
@@ -40,15 +41,15 @@ public class C2SSetMovingStatePacket {
 
     private static void applyMovingStateServer(PlayerEntity player, int id, MovingMode movingMode) {
         Entity entity = player.getWorld().getEntityById(id);
-        if (!(entity instanceof LittleMaidEntity)
-                || ((LittleMaidEntity) entity).getTameOwnerUuid()
+        if (!(entity instanceof LittleMaidEntity maid)
+                || TameableUtil.getTameOwnerUuid(maid)
                 .filter(ownerId -> ownerId.equals(player.getUuid()))
                 .isEmpty()) {
             return;
         }
-        ((LittleMaidEntity) entity).setMovingMode(movingMode);
+        maid.setMovingMode(movingMode);
         if (movingMode == MovingMode.FREEDOM) {
-            ((LittleMaidEntity) entity).setFreedomPos(entity.getBlockPos());
+            maid.setFreedomPos(entity.getBlockPos());
         }
     }
 

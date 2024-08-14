@@ -19,6 +19,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
@@ -55,7 +56,7 @@ public abstract class MixinCandleCakeBlock {
                     maid.installMaidSoul(maidSoul);
                     maid.refreshPositionAfterTeleport(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
                     maid.setMovingMode(MovingMode.ESCORT);
-                    maid.setWait(true);
+                    TameableUtil.setWait(maid, true);
                     maid.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, player.getEyePos());
                     maid.getLookControl().lookAt(player);
                     serverWorld.spawnEntity(maid);

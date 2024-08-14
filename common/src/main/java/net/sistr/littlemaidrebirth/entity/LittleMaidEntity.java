@@ -22,8 +22,6 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -86,7 +84,6 @@ import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.mode.HasMode;
 import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
-import net.sistr.littlemaidrebirth.entity.util.Tameable;
 import net.sistr.littlemaidrebirth.entity.util.*;
 import net.sistr.littlemaidrebirth.mixin.CrossbowItemInvoker;
 import net.sistr.littlemaidrebirth.mixin.ItemEntityAccessor;
@@ -125,7 +122,7 @@ import java.util.stream.Collectors;
 //todo はしご
 //todo おさわり厳禁：他人のメイドに触ると殴られる
 //todo 他人のメイドに視線を合わせた時、ご主人の名札を浮かべる
-public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, HasInventory, Tameable,
+public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, HasInventory,
         Contractable, HasMode, HasIFF, AimingPoseable, IHasMultiModel, SoundPlayable, HasMovingMode,
         RangedAttackMob, CrossbowUser {
     //LMM_FLAGSのindex
@@ -155,7 +152,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
                     mob -> {
                         mob.setStrike(true);
-                        mob.setWait(false);
+                        TameableUtil.setWait(mob, false);
                         if (mob.getMovingMode() != MovingMode.FREEDOM) {
                             mob.setMovingMode(MovingMode.FREEDOM);
                             mob.freedomPos = mob.getBlockPos();
@@ -343,7 +340,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new EscapeDangerGoal(this, 1.25) {
             @Override
             public boolean canStart() {
-                return LittleMaidEntity.this.getTameOwner().isEmpty() && super.canStart();
+                return TameableUtil.getTameOwner(LittleMaidEntity.this).isEmpty() && super.canStart();
             }
         });
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this, false,
@@ -353,7 +350,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new WanderAroundFarGoal(this, 0.65f) {
             @Override
             public boolean canStart() {
-                return LittleMaidEntity.this.getTameOwner().isEmpty() && super.canStart();
+                return TameableUtil.getTameOwner(LittleMaidEntity.this).isEmpty() && super.canStart();
             }
         });
 
@@ -393,8 +390,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         writeInventory(nbt);
         nbt.putInt("XpTotal", this.experiencePoints);
-        if (getTameOwnerUuid().isPresent()) {
-            nbt.putBoolean("Wait", this.isWait());
+        if (TameableUtil.getTameOwnerUuid(this).isPresent()) {
+            nbt.putBoolean("Wait", TameableUtil.isWait(this));
             nbt.putByte("MovingMode", (byte) this.getMovingMode().getId());
             writeContractable(nbt);
             writeIFF(nbt);
@@ -434,8 +431,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             }
         }
 
-        if (getTameOwnerUuid().isPresent()) {
-            setWait(nbt.getBoolean("Wait"));
+        if (TameableUtil.getTameOwnerUuid(this).isPresent()) {
+            TameableUtil.setWait(this, nbt.getBoolean("Wait"));
             setMovingMode(MovingMode.fromId(nbt.getInt("MovingMode")));
             readContractable(nbt);
             readIFF(nbt);
@@ -704,7 +701,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
-        return LMRBMod.getConfig().isCanDespawn() && getTameOwnerUuid().isEmpty();
+        return LMRBMod.getConfig().isCanDespawn()
+                && TameableUtil.getTameOwnerUuid(this).isEmpty();
     }
 
     //canSpawnとかでも使われる
@@ -726,6 +724,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     //todo マウント系の位置を調整
+
     /**
      * 上に乗ってるエンティティへのオフセット
      */
@@ -777,7 +776,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public boolean isInWalkTargetRange(BlockPos pos) {
         //自身または主人から16ブロック以内
         if (pos.isWithinDistance(pos, 16)
-                || getTameOwner()
+                || TameableUtil.getTameOwner(this)
                 .filter(owner -> owner.getBlockPos().isWithinDistance(pos, 16))
                 .isPresent()) {
             return super.isInWalkTargetRange(pos);
@@ -845,7 +844,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.playSoundCool = 0;
         play(LMSounds.DEATH);
         if (this.getWorld() instanceof ServerWorld serverWorld)
-            this.getTameOwnerUuid().ifPresent(id -> {
+            TameableUtil.getTameOwnerUuid(this).ifPresent(id -> {
                 var maidSoulEntity = new MaidSoulEntity(serverWorld, new MaidSoul(this.writeNbt(new NbtCompound())));
                 maidSoulEntity.setPosition(this.getX(), this.getY(), this.getZ());
                 maidSoulEntity.setVelocity(new Vec3d(random.nextGaussian() * 0.02, 0.2, random.nextGaussian() * 0.02));
@@ -925,7 +924,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         float factor = config.getGeneralMaidDamageFactor();
         if ((config.isEnableWorkInEmergency() || !isEmergency())
-                && !isWait() && this.getMode().map(Mode::isBattleMode).orElse(false)) {
+                && !TameableUtil.isWait(this) && this.getMode().map(Mode::isBattleMode).orElse(false)) {
             factor *= config.getBattleModeMaidDamageFactor();
         } else {
             factor *= config.getNonBattleModeMaidDamageFactor();
@@ -938,8 +937,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         boolean isHurtTime = 0 < this.hurtTime;
         boolean result = super.damage(source, amount);
         if (!this.getWorld().isClient && !isHurtTime) {
-            if (result && 0 < amount && this.isWait() && getTameOwnerUuid().isPresent()) {
-                this.setWait(false);
+            if (result && 0 < amount && TameableUtil.isWait(this)
+                    && TameableUtil.getTameOwnerUuid(this).isPresent()) {
+                TameableUtil.setWait(this, false);
             }
             if (!result || amount <= 0F) {
                 play(LMSounds.HURT_NO_DAMAGE);
@@ -1225,7 +1225,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
         ItemStack stack = player.getStackInHand(hand);
         //オーナーが居ない場合
-        if (!hasTameOwner()) {
+        if (TameableUtil.getTameOwnerUuid(this).isEmpty()) {
             if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
                 return contract(player, stack, false);
             }
@@ -1319,7 +1319,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.random.nextFloat() * 0.1F + 1.0F);
         this.setFreedomPos(this.getBlockPos());
         this.getNavigation().stop();
-        this.setWait(!this.isWait());
+        TameableUtil.switchWait(this);
         if (!player.getAbilities().creativeMode) {
             stack.decrement(1);
             if (stack.isEmpty()) {
@@ -1550,41 +1550,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //テイム関連
 
-    //Tameableの仕様を再考
-    @Override
-    public Optional<LivingEntity> getTameOwner() {
-        return Optional.ofNullable(getOwner());
-    }
-
-    @Override
-    public void setTameOwnerUuid(UUID id) {
-        setOwnerUuid(id);
-    }
-
     @Override
     public void setOwnerUuid(@Nullable UUID uuid) {
         super.setOwnerUuid(uuid);
         this.setContract(true);
-    }
-
-    @Override
-    public Optional<UUID> getTameOwnerUuid() {
-        return Optional.ofNullable(getOwnerUuid());
-    }
-
-    @Override
-    public boolean hasTameOwner() {
-        return getTameOwnerUuid().isPresent();
-    }
-
-    @Override
-    public boolean isWait() {
-        return this.getLMMFlag(WAIT_INDEX);
-    }
-
-    @Override
-    public void setWait(boolean isWait) {
-        this.setLMMFlag(WAIT_INDEX, isWait);
     }
 
     public void setFreedomPos(@Nullable BlockPos freedomPos) {
@@ -1608,22 +1577,22 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public boolean isInSittingPose() {
-        return this.isWait();
+        return TameableUtil.isWait(this);
     }
 
     @Override
     public void setSitting(boolean sitting) {
-        this.setWait(sitting);
+        this.setLMMFlag(WAIT_INDEX, sitting);
     }
 
     @Override
     public boolean isSitting() {
-        return this.isWait();
+        return this.getLMMFlag(WAIT_INDEX);
     }
 
     @Override
     public boolean isTamed() {
-        return hasTameOwner();
+        return TameableUtil.getTameOwnerUuid(this).isPresent();
     }
 
     @Override
@@ -1668,7 +1637,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //todo モデルの方とTameableと被りがあってややこい
     @Override
     public boolean isContract() {
-        return this.hasTameOwner();
+        return TameableUtil.getTameOwnerUuid(this).isPresent();
     }
 
     @Override
@@ -1752,12 +1721,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 return Optional.of(IFFTag.FRIEND);
             }
             //同じ主を持つ者はフレンド
-            if (target instanceof net.sistr.littlemaidrebirth.entity.util.Tameable && ownerId.equals(((Tameable) target).getTameOwnerUuid().orElse(null))
-                    || target instanceof TameableEntity && ownerId.equals(((TameableEntity) target).getOwnerUuid())) {
+            if (target instanceof Tameable tameableTarget
+                    && TameableUtil.equalTameOwner(this, tameableTarget)) {
                 return Optional.of(IFFTag.FRIEND);
             }
         }
-        return getTameOwner()
+        return TameableUtil.getTameOwner(this)
                 .filter(owner -> owner instanceof HasIFF)
                 .map(owner -> (HasIFF) owner)
                 .flatMap(t -> t.identify(target));
@@ -1843,8 +1812,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     /**
      * マルチモデルの使用テクスチャが契約時のものかどうか
      * ※実際に契約状態かどうかをチェックする場合、
-     * {@link #hasTameOwner()}か、
-     * {@link #getTameOwnerUuid()}の返り値が存在するかでチェックすること
+     * {@link TameableUtil#getTameOwnerUuid(Tameable)}がisPresent()かでチェックすること
      */
     @Override
     public boolean isContractMM() {
@@ -1923,8 +1891,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         @Override
         public boolean canStart() {
             return (LMRBMod.getConfig().isCanPickupItemByNoOwner()
-                    || maid.getTameOwner().isPresent())
-                    && !maid.isWait()
+                    || TameableUtil.getTameOwner(maid).isPresent())
+                    && !TameableUtil.isWait(maid)
                     && hasEmptySlot()
                     && super.canStart();
         }
@@ -1941,8 +1909,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         @Override
         public List<ItemEntity> findAroundDropItem() {
-            return maid.getTameOwner()
-                    .filter(owner -> !maid.isWait())
+            return TameableUtil.getTameOwner(maid)
+                    .filter(owner -> !TameableUtil.isWait(maid))
                     .map(owner -> {
                         return super.findAroundDropItem().stream()
                                 .filter(item -> !isOwnerRange(item, owner))

@@ -6,12 +6,12 @@ import net.minecraft.entity.ai.pathing.BirdNavigation;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
-import net.minecraft.entity.mob.PathAwareEntity;
-import net.sistr.littlemaidrebirth.entity.util.Tameable;
+import net.minecraft.entity.passive.TameableEntity;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 import java.util.EnumSet;
 
-public class FollowTameOwnerGoal<T extends PathAwareEntity & Tameable> extends Goal {
+public class FollowTameOwnerGoal<T extends TameableEntity> extends Goal {
     protected final T tameable;
     protected final float speed;
     protected final float followStartSq;
@@ -35,12 +35,12 @@ public class FollowTameOwnerGoal<T extends PathAwareEntity & Tameable> extends G
 
     @Override
     public boolean canStart() {
-        LivingEntity tameOwner = this.tameable.getTameOwner().orElse(null);
+        LivingEntity tameOwner = TameableUtil.getTameOwner(tameable).orElse(null);
         if (tameOwner == null) {
             return false;
         } else if (tameOwner.isSpectator()) {
             return false;
-        } else if (this.tameable.isWait()) {
+        } else if (TameableUtil.isWait(tameable)) {
             return false;
         } else if (this.tameable.squaredDistanceTo(tameOwner) < followStartSq) {
             return false;
@@ -53,7 +53,7 @@ public class FollowTameOwnerGoal<T extends PathAwareEntity & Tameable> extends G
     public boolean shouldContinue() {
         if (this.navigation.isIdle()) {
             return false;
-        } else if (this.tameable.isWait()) {
+        } else if (TameableUtil.isWait(tameable)) {
             return false;
         } else {
             return followEndSq < this.tameable.squaredDistanceTo(this.owner);

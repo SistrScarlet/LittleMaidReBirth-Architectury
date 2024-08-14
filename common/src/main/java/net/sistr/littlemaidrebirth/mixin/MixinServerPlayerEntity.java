@@ -3,6 +3,7 @@ package net.sistr.littlemaidrebirth.mixin;
 import com.mojang.datafixers.util.Either;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Tameable;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -12,7 +13,7 @@ import net.minecraft.world.World;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
-import net.sistr.littlemaidrebirth.entity.util.Tameable;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -51,7 +52,8 @@ public abstract class MixinServerPlayerEntity extends MixinPlayerEntity {
 
     private Stream<SoundPlayable> getAroundTamedSoundPlayable() {
         return this.getWorld().getOtherEntities(this, this.getBoundingBox().expand(8),
-                        e -> e instanceof Tameable && ((Tameable) e).getTameOwnerUuid()
+                        e -> e instanceof Tameable tameable
+                                && TameableUtil.getTameOwnerUuid(tameable)
                                 .filter(id -> id.equals(this.getUuid()))
                                 .isPresent() && e instanceof SoundPlayable
                 ).stream()

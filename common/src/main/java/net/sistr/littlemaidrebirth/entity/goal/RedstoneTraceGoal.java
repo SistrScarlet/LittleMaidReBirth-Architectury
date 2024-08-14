@@ -7,6 +7,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -36,7 +37,7 @@ public class RedstoneTraceGoal extends Goal {
             recalcTimer--;
             return false;
         }
-        if (mob.isWait()
+        if (TameableUtil.isWait(mob)
                 || mob.getMovingMode() != MovingMode.TRACER
                 || !this.mob.getNavigation().isIdle()) {
             return false;
@@ -56,7 +57,7 @@ public class RedstoneTraceGoal extends Goal {
 
     @Override
     public boolean shouldContinue() {
-        return !mob.isWait()
+        return !TameableUtil.isWait(mob)
                 && mob.getMovingMode() == MovingMode.TRACER
                 && !this.mob.getNavigation().isIdle();
     }
