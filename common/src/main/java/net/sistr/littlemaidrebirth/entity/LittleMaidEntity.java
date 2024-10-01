@@ -253,7 +253,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
 
-        this.goalSelector.add(++priority, new HealMyselfGoal<>(this,
+        this.goalSelector.add(++priority, new LMHealMyselfGoal(this,
                 config.getHealInterval(),
                 config.getHealAmount(),
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
