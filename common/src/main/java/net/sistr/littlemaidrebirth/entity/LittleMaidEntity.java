@@ -227,10 +227,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //todo 速度をconfig化
     @Override
     protected void initGoals() {
-
+        reset2NonContractGoal();
     }
 
-    protected void initContractGoal() {
+    protected void reset2ContractGoal() {
+        this.goalSelector.clear(g -> true);
+        this.targetSelector.clear(g -> true);
+
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
@@ -344,7 +347,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 this::isEnemy));
     }
 
-    protected void initNonContractGoal() {
+    protected void reset2NonContractGoal() {
+        this.goalSelector.clear(g -> true);
+        this.targetSelector.clear(g -> true);
+
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
@@ -1634,6 +1640,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void setContract(boolean isContract) {
         itemContractable.setContract(isContract);
+        if (isContract) {
+            reset2ContractGoal();
+        }
     }
 
     @Override
@@ -1650,6 +1659,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void writeContractable(NbtCompound nbt) {
         itemContractable.writeContractable(nbt);
+        if (itemContractable.isContract()) {
+            reset2ContractGoal();
+        }
     }
 
     @Override
