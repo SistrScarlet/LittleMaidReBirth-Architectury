@@ -15,7 +15,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 //ドロップアイテムに向かうGoal
-public class MoveToDropItemGoal extends Goal {
+public abstract class MoveToDropItemGoal extends Goal {
     private final PathAwareEntity mob;
     private final int range;
     private final int frequency;
@@ -31,19 +31,21 @@ public class MoveToDropItemGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        if (this.mob.getRandom().nextFloat() < 1.0f / this.getTickCount(frequency)) {
-            Stream<BlockPos> positions = findAroundDropItem().stream().map(Entity::getBlockPos);
-            Path path = positions.map(pos -> mob.getNavigation().findPathTo(pos, 0))
-                    .filter(Objects::nonNull)
-                    .filter(Path::reachesTarget)
-                    .findAny().orElse(null);
-            if (path != null) {
-                mob.getNavigation().startMovingAlong(path, speed);
-                return true;
-            }
-
+        if (this.mob.getRandom().nextFloat() > 1.0f / this.getTickCount(frequency)
+                || isInventoryFull()) {
+            return false;
         }
-        return false;
+        Stream<BlockPos> positions = findAroundDropItem().stream().map(Entity::getBlockPos);
+        Path path = positions.map(pos -> mob.getNavigation().findPathTo(pos, 0))
+                .filter(Objects::nonNull)
+                .filter(Path::reachesTarget)
+                .findAny().orElse(null);
+        if (path == null) {
+            return false;
+        }
+
+        mob.getNavigation().startMovingAlong(path, speed);
+        return true;
     }
 
     @Override
@@ -59,9 +61,11 @@ public class MoveToDropItemGoal extends Goal {
         return !mob.getNavigation().isIdle();
     }
 
+    public abstract boolean isInventoryFull();
+
     public List<ItemEntity> findAroundDropItem() {
         return mob.getWorld().getEntitiesByClass(ItemEntity.class,
-                mob.getBoundingBox().expand(range, range / 4F, range),
+                mob.getBoundingBox().expand(range, range / 4f, range),
                 item -> !item.cannotPickup() && item.squaredDistanceTo(mob) < range * range);
     }
 }

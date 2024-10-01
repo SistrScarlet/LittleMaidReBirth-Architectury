@@ -228,27 +228,21 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //todo 速度をconfig化
     @Override
     protected void initGoals() {
+
+    }
+
+    protected void initContractGoal() {
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
-        //todo Goalsの優先度を調整する
-
-        this.goalSelector.add(++priority, new HasMMTeleportTameOwnerGoal<>(this,
-                config.getTeleportStartRange()));
+        this.goalSelector.add(++priority, new LMTeleportTameOwnerGoal(this,
+                config.getTeleportStartRange(),
+                false));
         //緊急テレポート
         this.goalSelector.add(priority,
-                new HasMMTeleportTameOwnerGoal<>(this,
-                        config.getEmergencyTeleportStartRange()) {
-                    @Override
-                    public boolean canStart() {
-                        return isEmergency() && super.canStart();
-                    }
-
-                    @Override
-                    public boolean shouldContinue() {
-                        return isEmergency() && super.shouldContinue();
-                    }
-                });
+                new LMTeleportTameOwnerGoal(this,
+                        config.getEmergencyTeleportStartRange(),
+                        true));
 
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
@@ -298,13 +292,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 true,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
 
-        this.goalSelector.add(++priority,
-                new HasMMFollowTameOwnerGoal<>(
-                        this,
-                        1.0f,
-                        config.getFollowStartRange(),
-                        config.getFollowEndRange()));
-
         //todo 頭の装飾品を仕舞わないようにする
         this.goalSelector.add(++priority, new LMStoreItemToContainerGoal<>(this,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)
@@ -314,23 +301,76 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 8
         ));
 
+        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 40, 1D) {
+            @Override
+            public boolean canStart() {
+                return (config.isEnableWorkInEmergency() || !isEmergency())
+                        && super.canStart();
+            }
+
+            @Override
+            public List<ItemEntity> findAroundDropItem() {
+                return TameableUtil.getTameOwner(maid)
+                        .map(owner -> {
+                            return super.findAroundDropItem().stream()
+                                    .filter(item -> !this.isOwnerRange(item, owner))
+                                    .collect(Collectors.toList());
+                            //ご主人様が存在しない場合は普通にとる
+                        }).orElse(super.findAroundDropItem());
+            }
+        });
+
+        this.goalSelector.add(++priority,
+                new HasMMFollowTameOwnerGoal<>(
+                        this,
+                        1.0f,
+                        config.getFollowStartRange(),
+                        config.getFollowEndRange()));
+
         this.goalSelector.add(++priority, new RedstoneTraceGoal(this, 0.65f));
         this.goalSelector.add(++priority, new FreedomGoal<>(this,
                 0.65D, config.getFreedomRange()));
 
+        //視線
+        this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
+        this.goalSelector.add(priority, new LookAroundGoal(this));
+
+        //ターゲット系
+        priority = -1;
+        this.targetSelector.add(++priority, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
+        this.targetSelector.add(++priority, new TrackOwnerAttackerGoal(this));
+        this.targetSelector.add(++priority, new AttackWithOwnerGoal(this));
+        this.targetSelector.add(++priority, new ActiveTargetGoal<>(
+                this, LivingEntity.class, 5, true, false,
+                this::isEnemy));
+    }
+
+    protected void initNonContractGoal() {
+        int priority = -1;
+        LMRBConfig config = LMRBMod.getConfig();
+
+        this.goalSelector.add(++priority, new SwimGoal(this));
+        this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
+
+        this.goalSelector.add(++priority, new LMHealMyselfGoal(this,
+                config.getHealInterval(),
+                config.getHealAmount(),
+                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+
+        this.goalSelector.add(++priority, new WaitGoal<>(this));
+
         this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 40, 1D) {
             @Override
             public boolean canStart() {
-                return (config.isEnableWorkInEmergency() || !isEmergency()) && super.canStart();
-            }
-
-            @Override
-            public boolean shouldContinue() {
-                return (config.isEnableWorkInEmergency() || !isEmergency()) && super.shouldContinue();
+                return config.isCanPickupItemByNoOwner()
+                        && (config.isEnableWorkInEmergency() || !isEmergency())
+                        && super.canStart();
             }
         });
 
-        //野良
+        this.goalSelector.add(++priority, new FreedomGoal<>(this,
+                0.65D, config.getFreedomRange()));
+
         this.goalSelector.add(++priority, new EscapeDangerGoal(this, 1.25) {
             @Override
             public boolean canStart() {
@@ -1713,6 +1753,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     public boolean isEnemy(LivingEntity entity) {
+        if (!TameableUtil.hasTameOwner(this)) {
+            return false;
+        }
         return isBloodSuck() ? !isFriend(entity) : identify(entity).orElse(null) == IFFTag.ENEMY;
     }
 
@@ -1831,59 +1874,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public Packet<ClientPlayPacketListener> createSpawnPacket() {
         return SpawnLittleMaidPacket.create(this);
-    }
-
-    //todo クラスの移動
-    public static class LMMoveToDropItemGoal extends MoveToDropItemGoal {
-        protected final LittleMaidEntity maid;
-
-        public LMMoveToDropItemGoal(LittleMaidEntity maid, int range, int frequency, double speed) {
-            super(maid, range, frequency, speed);
-            this.maid = maid;
-        }
-
-        @Override
-        public boolean canStart() {
-            return (LMRBMod.getConfig().isCanPickupItemByNoOwner()
-                    || TameableUtil.getTameOwner(maid).isPresent())
-                    && !TameableUtil.isWait(maid)
-                    && hasEmptySlot()
-                    && super.canStart();
-        }
-
-        protected boolean hasEmptySlot() {
-            var inv = this.maid.getInventory();
-            for (int i = 0; i < inv.size(); i++) {
-                if (inv.getStack(i).isEmpty()) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        @Override
-        public List<ItemEntity> findAroundDropItem() {
-            return TameableUtil.getTameOwner(maid)
-                    .filter(owner -> !TameableUtil.isWait(maid))
-                    .map(owner -> {
-                        return super.findAroundDropItem().stream()
-                                .filter(item -> !isOwnerRange(item, owner))
-                                .collect(Collectors.toList());
-                        //ご主人様が存在しない場合は普通にとる
-                    }).orElse(super.findAroundDropItem());
-        }
-
-        //todo コンフィグで設定可能にする
-        private boolean isOwnerRange(Entity entity, Entity owner) {
-            final Vec3d ownerPos = owner.getPos();
-            final Vec3d entityPos = entity.getPos().subtract(ownerPos);
-            final Vec3d ownerRot = owner.getRotationVec(1F).multiply(4);
-            final double dot = entityPos.dotProduct(ownerRot);
-            final double range = 4;
-            //プレイヤー位置を原点としたアイテムの位置と、プレイヤーの向きの内積がプラス
-            //かつ内積の大きさが4m以下
-            return 0 < dot && dot < range * range;
-        }
     }
 
     public static class LMStareAtHeldItemGoal<T extends LittleMaidEntity> extends TameableStareAtHeldItemGoal<T> {

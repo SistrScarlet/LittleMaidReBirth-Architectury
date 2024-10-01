@@ -2,17 +2,18 @@ package net.sistr.littlemaidrebirth.entity.goal;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.Tameable;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
-import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
-public class TeleportTameOwnerGoal<T extends TameableEntity> extends Goal {
+public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends Goal {
     protected final T tameable;
     protected final World world;
     protected final float teleportStartSq;
@@ -34,8 +35,6 @@ public class TeleportTameOwnerGoal<T extends TameableEntity> extends Goal {
             return false;
         } else if (tameOwner.isSpectator()) {
             return false;
-        } else if (this.tameable.isSitting()) {
-            return false;
         } else if (this.tameable.squaredDistanceTo(tameOwner) < teleportStartSq) {
             return false;
         } else {
@@ -45,11 +44,7 @@ public class TeleportTameOwnerGoal<T extends TameableEntity> extends Goal {
     }
 
     public boolean shouldContinue() {
-        if (this.tameable.isSitting()) {
-            return false;
-        } else {
-            return teleportStartSq < this.tameable.squaredDistanceTo(this.owner);
-        }
+        return teleportStartSq < this.tameable.squaredDistanceTo(this.owner);
     }
 
     @Override
