@@ -87,7 +87,7 @@ public class HealMyselfGoal<T extends PathAwareEntity & HasInventory> extends Go
 
         var healItem = getHealItem(healItemSlot);
         //回復アイテム存在チェック
-        if (isHealItem(healItem)) {
+        if (!isHealItem(healItem)) {
             healItemSlot = -1;
             return;
         }
