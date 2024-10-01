@@ -8,7 +8,6 @@ import net.fabricmc.api.Environment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
-import net.minecraft.entity.ai.RangedAttackMob;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
@@ -118,7 +117,7 @@ import java.util.stream.Collectors;
 //todo 他人のメイドに視線を合わせた時、ご主人の名札を浮かべる
 public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, HasInventory,
         Contractable, HasMode, HasIFF, AimingPoseable, IHasMultiModel, SoundPlayable, HasMovingMode,
-        RangedAttackMob, CrossbowUser {
+        CrossbowUser {
     //LMM_FLAGSのindex
     //todo enumにまとめる
     private static final int WAIT_INDEX = 0;
@@ -207,7 +206,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //todo メイドさんに付与する属性の再考
     public static DefaultAttributeContainer.Builder createLittleMaidAttributes() {
-        DefaultAttributeContainer.Builder builder = TameableEntity.createMobAttributes()
+        DefaultAttributeContainer.Builder builder = createMobAttributes()
                 .add(EntityAttributes.GENERIC_MOVEMENT_SPEED, 0.3D)
                 .add(EntityAttributes.GENERIC_ATTACK_DAMAGE)
                 .add(EntityAttributes.GENERIC_ATTACK_SPEED)
@@ -877,7 +876,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 try {
                     mainHandStack.getItem().postHit(mainHandStack, (LivingEntity) entity, this);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LMRBMod.LOGGER.error("メイドさんの攻撃時に例外が発生しました。", e);
                 }
                 if (mainHandStack.isEmpty()) {
                     this.setStackInHand(Hand.MAIN_HAND, ItemStack.EMPTY);
@@ -1116,7 +1115,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             mZ += dot;
         }
         while (mX != 0.0 && mZ != 0.0 && pushBackPredicate.test(mX, mZ)) {
-            mX = mX < dot && mX >= -dot ? 0.0 : (mX > 0.0 ? (mX -= dot) : (mX += dot));
+            mX = mX < dot && mX >= -dot ? 0.0 : (mX > 0.0 ? mX - dot : mX + dot);
             if (mZ < dot && mZ >= -dot) {
                 mZ = 0.0;
                 continue;
@@ -1144,7 +1143,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     PathNodeType pathNodeType = this.getNavigation().getNodeMaker()
                             .getDefaultNodeType(this.getWorld(), minX + x, minY + y, minZ + z);
                     if (pathNodeType == PathNodeType.DAMAGE_FIRE
-                            || pathNodeType == PathNodeType.DAMAGE_OTHER //todo ?
                             || pathNodeType == PathNodeType.DAMAGE_OTHER
                             || pathNodeType == PathNodeType.LAVA) {
                         return false;
@@ -1175,7 +1173,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 return true;
             }
             if (pathNodeType == PathNodeType.DAMAGE_FIRE
-                    || pathNodeType == PathNodeType.DAMAGE_OTHER//todo ?
                     || pathNodeType == PathNodeType.DAMAGE_OTHER
                     || pathNodeType == PathNodeType.LAVA) {
                 return false;
