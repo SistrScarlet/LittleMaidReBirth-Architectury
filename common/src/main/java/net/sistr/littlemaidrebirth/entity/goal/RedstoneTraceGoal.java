@@ -32,6 +32,10 @@ public class RedstoneTraceGoal extends Goal {
 
     @Override
     public boolean canStart() {
+        if (!TameableUtil.hasTameOwner(this.mob)) {
+            return false;
+        }
+
         //実行に失敗した場合、遅延される
         if (0 < recalcTimer) {
             recalcTimer--;

@@ -227,24 +227,17 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //todo 速度をconfig化
     @Override
     protected void initGoals() {
-        reset2NonContractGoal();
-    }
-
-    protected void reset2ContractGoal() {
-        this.goalSelector.clear(g -> true);
-        this.targetSelector.clear(g -> true);
-
         int priority = -1;
         LMRBConfig config = LMRBMod.getConfig();
 
-        this.goalSelector.add(++priority, new LMTeleportTameOwnerGoal(this,
-                config.getTeleportStartRange(),
-                false));
         //緊急テレポート
         this.goalSelector.add(priority,
                 new LMTeleportTameOwnerGoal(this,
                         config.getEmergencyTeleportStartRange(),
                         true));
+        this.goalSelector.add(++priority, new LMTeleportTameOwnerGoal(this,
+                config.getTeleportStartRange(),
+                false));
 
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
@@ -306,7 +299,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 40, 1D) {
             @Override
             public boolean canStart() {
-                return (config.isEnableWorkInEmergency() || !isEmergency())
+                return TameableUtil.hasTameOwner(LittleMaidEntity.this)
+                        && (config.isEnableWorkInEmergency() || !isEmergency())
                         && super.canStart();
             }
 
@@ -333,53 +327,21 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new FreedomGoal<>(this,
                 0.65D, config.getFreedomRange()));
 
-        //視線
-        this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
-        this.goalSelector.add(priority, new LookAroundGoal(this));
-
-        //ターゲット系
-        priority = -1;
-        this.targetSelector.add(++priority, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
-        this.targetSelector.add(++priority, new TrackOwnerAttackerGoal(this));
-        this.targetSelector.add(++priority, new AttackWithOwnerGoal(this));
-        this.targetSelector.add(++priority, new ActiveTargetGoal<>(
-                this, LivingEntity.class, 5, true, false,
-                this::isEnemy));
-    }
-
-    protected void reset2NonContractGoal() {
-        this.goalSelector.clear(g -> true);
-        this.targetSelector.clear(g -> true);
-
-        int priority = -1;
-        LMRBConfig config = LMRBMod.getConfig();
-
-        this.goalSelector.add(++priority, new SwimGoal(this));
-        this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
-
-        this.goalSelector.add(++priority, new LMHealMyselfGoal(this,
-                config.getHealInterval(),
-                config.getHealAmount(),
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
-
-        this.goalSelector.add(++priority, new WaitGoal<>(this));
-
+        //野良
         this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 40, 1D) {
             @Override
             public boolean canStart() {
-                return config.isCanPickupItemByNoOwner()
+                return !TameableUtil.hasTameOwner(LittleMaidEntity.this)
+                        && config.isCanPickupItemByNoOwner()
                         && (config.isEnableWorkInEmergency() || !isEmergency())
                         && super.canStart();
             }
         });
-
-        this.goalSelector.add(++priority, new FreedomGoal<>(this,
-                0.65D, config.getFreedomRange()));
-
         this.goalSelector.add(++priority, new EscapeDangerGoal(this, 1.25) {
             @Override
             public boolean canStart() {
-                return TameableUtil.getTameOwner(LittleMaidEntity.this).isEmpty() && super.canStart();
+                return !TameableUtil.hasTameOwner(LittleMaidEntity.this)
+                        && super.canStart();
             }
         });
         this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this, false,
@@ -389,7 +351,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new WanderAroundFarGoal(this, 0.65f) {
             @Override
             public boolean canStart() {
-                return TameableUtil.getTameOwner(LittleMaidEntity.this).isEmpty() && super.canStart();
+                return !TameableUtil.hasTameOwner(LittleMaidEntity.this)
+                        && super.canStart();
             }
         });
 
@@ -1640,9 +1603,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void setContract(boolean isContract) {
         itemContractable.setContract(isContract);
-        if (isContract) {
-            reset2ContractGoal();
-        }
     }
 
     @Override
@@ -1659,9 +1619,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void writeContractable(NbtCompound nbt) {
         itemContractable.writeContractable(nbt);
-        if (itemContractable.isContract()) {
-            reset2ContractGoal();
-        }
     }
 
     @Override

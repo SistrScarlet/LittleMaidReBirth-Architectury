@@ -30,7 +30,8 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
 
     @Override
     public boolean canStart() {
-        return !TameableUtil.isWait(maid)
+        return TameableUtil.hasTameOwner(maid)
+                && !TameableUtil.isWait(maid)
                 && maid.getNavigation().isIdle()
                 && maid.getMovingMode() == MovingMode.FREEDOM
                 && super.canStart();
