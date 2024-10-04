@@ -21,6 +21,7 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
     private int unpaidTimes;
     private boolean contract;
     private boolean strike;
+	private int xpTotal; // Add XPtotal field
 
     public ItemContractable(T mob, int maxConsumeInterval, int maxUnpaidTimes, Predicate<ItemStack> salaryItems, Consumer<T> strikeCallback) {
         this.mob = mob;
@@ -28,6 +29,13 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
         this.maxUnpaidTimes = maxUnpaidTimes;
         this.salaryItems = salaryItems;
         this.strikeCallback = strikeCallback;
+    }
+    // Getter and Setter for XPtotal
+    public int getXpTotal() {
+        return xpTotal;
+    }
+	public void setXpTotal(int xpTotal) {
+        this.xpTotal = xpTotal;
     }
 
     public void tick() {
@@ -113,6 +121,8 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
         itemContractable.putBoolean("contract", contract);
         itemContractable.putBoolean("strike", strike);
         itemContractable.putInt("consumeInterval", consumeInterval);
+        itemContractable.putInt("unpaidTimes", unpaidTimes); // Save unpaidTimes
+		itemContractable.putInt("XpTotal", xpTotal); // Save XPtotal
         nbt.put("ItemContractable", itemContractable);
     }
 
@@ -125,5 +135,8 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
         contract = itemContractable.getBoolean("contract");
         strike = itemContractable.getBoolean("strike");
         consumeInterval = itemContractable.getInt("consumeInterval");
+        unpaidTimes = itemContractable.getInt("unpaidTimes"); // Load unpaidTimes
+		xpTotal = itemContractable.getInt("XpTotal"); // Load XPtotal
+
     }
 }

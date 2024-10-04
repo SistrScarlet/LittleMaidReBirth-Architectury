@@ -2,6 +2,7 @@ package net.sistr.littlemaidrebirth.client;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
+
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.font.TextRenderer;
@@ -20,6 +21,9 @@ import net.sistr.littlemaidmodelloader.client.screen.GUIElement;
 import net.sistr.littlemaidmodelloader.client.screen.ModelSelectScreen;
 import net.sistr.littlemaidmodelloader.client.screen.SoundPackSelectScreen;
 import net.sistr.littlemaidrebirth.LMRBMod;
+import net.sistr.littlemaidrebirth.config.LMRBConfig;
+
+import net.sistr.littlemaidrebirth.client.LittleMaidScreen.SalaryGUI;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
@@ -119,11 +123,15 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                         this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
+
+        LMRBConfig config = LMRBMod.getConfig();
+        int maxUnpaidDays = config.getUnpaidCountLimit();
+
         this.salaryWindow = new WindowGUIComponent(
                 this.width / 2 - 40, this.height / 2 - 40, 80, 80,
                 ImmutableList.<GUIElement>builder()
                         .add(new SalaryGUI(80, 80, this.width / 2 - 40, this.height / 2 - 40,
-                                this.textRenderer, 7, unpaidDays))
+                                this.textRenderer, maxUnpaidDays, unpaidDays))
                         .build()) {
             @Override
             public void render(DrawContext context, int mouseX, int mouseY, float delta) {
@@ -131,13 +139,30 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             }
         };
         this.addDrawableChild(new ButtonWidget(left - size, top + size * (layer += 2), size, size, Text.of(""),
-                button -> {//ウィンドウを出す
+                button -> {
                     showSalaryWindow = true;
                 }, Supplier::get) {
             @Override
             public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
                 context.drawItem(SUGAR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
+				int remainingDays = maxUnpaidDays - unpaidDays;
+				String remainingDaysText = remainingDays + " days";
+				int textWidth = textRenderer.getWidth(remainingDaysText);
+				
+				// Determine the color based on the remaining days
+				int color;
+				if (remainingDays == 1) {
+					color = 0xFF0000; // Red for 1 day remaining
+				} else if (remainingDays < 3) {
+					color = 0xFFFF00; // Yellow for less than 3 days remaining
+				} else {
+					color = 0xFFFFFF; // Default white color
+				}
+				
+				context.drawText(textRenderer, remainingDaysText,
+						this.getX() - 8 + this.width / 2 - textWidth / 2,
+						this.getY() - 8 + this.height / 2 + 10, color, false);
             }
         });
         stateText = getStateText();
@@ -154,7 +179,6 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     @Override
     public void handledScreenTick() {
         super.handledScreenTick();
-        //少し重たいかもしれないが、screenを開く直前にsetModeNameした場合に取得がズレるので毎tickやる
         stateText = getStateText();
     }
 
@@ -289,20 +313,35 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             this.unpaidDays = unpaidDays;
         }
 
-        @Override
-        public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-            var matrices = context.getMatrices();
-            matrices.push();
-            RenderSystem.enableDepthTest();
-            String unpaid = (maxUnpaidDays - unpaidDays) + " / " + maxUnpaidDays;
-            int textWidth = textRenderer.getWidth(unpaid);
-            matrices.translate(0, 0, 300);
-            context.drawText(textRenderer, unpaid,
-                    (int) (this.x + this.width / 2f - textWidth / 2f),
-                    (int) (this.y + this.height / 2f - textRenderer.fontHeight / 2f), 0x0, false);
-            matrices.pop();
-        }
-
+		@Override
+		public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+			var matrices = context.getMatrices();
+			matrices.push();
+			RenderSystem.enableDepthTest();
+			context.drawTexture(SALARY_WINDOW_TEXTURE, this.x, this.y, 0, 0, 80, 80, 128, 128);
+			
+			String unpaid = (maxUnpaidDays - unpaidDays) + " / " + maxUnpaidDays;
+			int textWidth = textRenderer.getWidth(unpaid);
+			matrices.translate(0, 0, 300);
+			context.drawText(textRenderer, unpaid,
+					(int) (this.x + this.width / 2f - textWidth / 2f),
+					(int) (this.y + this.height / 2f - textRenderer.fontHeight / 2f), 0x0, false);
+			
+			int remainingDays = maxUnpaidDays - unpaidDays;
+			String remainingDaysText = remainingDays + " days until strike";
+			int remainingDaysTextWidth = textRenderer.getWidth(remainingDaysText);
+			context.drawText(textRenderer, remainingDaysText,
+					(int) (this.x + this.width / 2f - remainingDaysTextWidth / 2f),
+					(int) (this.y + this.height / 2f + textRenderer.fontHeight), 0xFFFFFF, false);
+			
+			// Debug information
+			int debugX = this.x + 5;
+			int debugY = this.y + 5;
+			context.drawText(textRenderer, "maxUnpaidDays: " + maxUnpaidDays, debugX, debugY, 0xFF0000, false);
+			context.drawText(textRenderer, "unpaidDays: " + unpaidDays, debugX, debugY + 10, 0xFF0000, false);
+			context.drawText(textRenderer, "remainingDays: " + remainingDays, debugX, debugY + 20, 0xFF0000, false);
+			
+			matrices.pop();
+		}
     }
-
 }

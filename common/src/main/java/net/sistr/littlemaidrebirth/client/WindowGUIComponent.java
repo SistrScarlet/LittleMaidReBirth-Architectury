@@ -19,13 +19,19 @@ public class WindowGUIComponent extends GUIElement {
     private int clickAtX;
     private int clickAtY;
     private final List<Pos2d> prevElementsPos;
+    private final int zIndex;
 
     public WindowGUIComponent(int x, int y, int width, int height, Collection<GUIElement> elements) {
+        this(x, y, width, height, elements, 300); // Default zIndex to 300
+    }
+
+    public WindowGUIComponent(int x, int y, int width, int height, Collection<GUIElement> elements, int zIndex) {
         super(width, height);
         this.x = x;
         this.y = y;
         this.elements = ImmutableList.copyOf(elements);
         this.prevElementsPos = elements.stream().map(e -> new Pos2d(e.getX(), e.getY())).collect(Collectors.toList());
+        this.zIndex = zIndex;
     }
 
     @Override
@@ -42,32 +48,31 @@ public class WindowGUIComponent extends GUIElement {
         }
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        for (GUIElement element : elements) {
-            if (element.mouseClicked(mouseX, mouseY, button)) {
-                return true;
-            }
-        }
-        if (this.x < mouseX && mouseX < this.x + this.width
-                && this.y < mouseY && mouseY < this.y + this.height) {
-            if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
-                click = true;
-                prevX = this.x;
-                prevY = this.y;
-                clickAtX = (int) mouseX;
-                clickAtY = (int) mouseY;
-                ListIterator<Pos2d> iterator = prevElementsPos.listIterator();
-                for (GUIElement element : elements) {
-                    iterator.next();
-                    iterator.set(new Pos2d(element.getX(), element.getY()));
-                }
-            }
-            return true;
-        }
-        return false;
-    }
-
+	@Override
+	public boolean mouseClicked(double mouseX, double mouseY, int button) {
+		for (GUIElement element : elements) {
+			if (element.mouseClicked(mouseX, mouseY, button)) {
+				return true;
+			}
+		}
+		if (this.x < mouseX && mouseX < this.x + this.width
+				&& this.y < mouseY && mouseY < this.y + this.height) {
+			if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT) {
+				click = true;
+				prevX = this.x;
+				prevY = this.y;
+				clickAtX = (int) mouseX;
+				clickAtY = (int) mouseY;
+				ListIterator<Pos2d> iterator = prevElementsPos.listIterator();
+				for (GUIElement element : elements) {
+					iterator.next();
+					iterator.set(new Pos2d(element.getX(), element.getY()));
+				}
+			}
+			return true;
+		}
+		return false;
+	}
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         for (GUIElement element : elements) {

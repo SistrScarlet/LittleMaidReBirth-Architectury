@@ -79,6 +79,9 @@ import net.sistr.littlemaidrebirth.advancement.criterion.LMRBCriteria;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity.LMMoveToDropItemGoal;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity.LMStareAtHeldItemGoal;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity.MaidSoul;
 import net.sistr.littlemaidrebirth.entity.goal.*;
 import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
 import net.sistr.littlemaidrebirth.entity.iff.IFF;
@@ -129,6 +132,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         Contractable, HasMode, HasIFF, AimingPoseable, IHasMultiModel, SoundPlayable, HasMovingMode,
         RangedAttackMob, CrossbowUser {
     //LMM_FLAGSのindex
+	private int xpTotal;
     private static final int WAIT_INDEX = 0;
     private static final int AIMING_INDEX = 1;
     private static final int BEGGING_INDEX = 2;
@@ -144,6 +148,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     //エンチャントの瓶はランダムな経験値を排出するため、その平均値を作成コストとする
     private static final int EXPERIENCE_BOTTLE_COST = 7;
+	public int getExperiencePoints() {
+		return xpTotal;
+	}
 
     //移譲s
     private final LMHasInventory littleMaidInventory = new LMHasInventory();
@@ -384,6 +391,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         super.writeCustomDataToNbt(nbt);
+		
         nbt.putByte("maidVersion", (byte) 1);
 
         writeInventory(nbt);
@@ -1687,6 +1695,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return itemContractable.getUnpaidTimes();
     }
 
+	public void setUnpaidDays(int unpaidDays) {
+        itemContractable.setUnpaidTimes(unpaidDays);
+    }	
     //モード機能
 
     @Override
