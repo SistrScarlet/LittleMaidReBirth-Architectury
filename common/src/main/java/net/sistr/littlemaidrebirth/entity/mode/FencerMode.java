@@ -19,6 +19,7 @@ public class FencerMode extends Mode {
     protected final LittleMaidEntity mob;
     protected final MeleeAttackGoal melee;
 
+    // todo 相手が無敵時間中は殴らない
     public FencerMode(ModeType<? extends FencerMode> modeType, String name, LittleMaidEntity mob, double speed, boolean memory) {
         super(modeType, name);
         this.mob = mob;
