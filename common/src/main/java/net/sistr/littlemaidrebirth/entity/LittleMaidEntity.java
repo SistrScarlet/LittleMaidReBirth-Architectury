@@ -233,11 +233,16 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //緊急テレポート
         this.goalSelector.add(priority,
                 new LMTeleportTameOwnerGoal(this,
-                        config.getEmergencyTeleportStartRange(),
-                        true));
+                        config.getEmergencyTeleportStartRange()) {
+                    @Override
+                    public boolean canStart() {
+                        return isEmergency()
+                                && LittleMaidEntity.this.hurtTime > 0
+                                && super.canStart();
+                    }
+                });
         this.goalSelector.add(++priority, new LMTeleportTameOwnerGoal(this,
-                config.getTeleportStartRange(),
-                false));
+                config.getTeleportStartRange()));
 
         this.goalSelector.add(++priority, new SwimGoal(this));
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
