@@ -5,6 +5,7 @@ import dev.architectury.extensions.network.EntitySpawnExtension;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
@@ -20,6 +21,8 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
+import net.minecraft.entity.effect.StatusEffectInstance;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -87,6 +90,7 @@ import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LMCollidable;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
+import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -220,6 +224,78 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public static boolean isValidNaturalSpawn(WorldAccess world, BlockPos pos) {
         return world.getBlockState(pos.down()).isFullCube(world, pos)
                 && world.getBaseLightLevel(pos, 0) > 8;
+    }
+
+    public static void resurrectionMaid(ServerWorld world, BlockPos pos, PlayerEntity player) {
+        var worldMaidSoulState = WorldMaidSoulState.getWorldMaidSoulState(world);
+        var maidSouls = worldMaidSoulState.get(player.getUuid());
+        if (maidSouls.isEmpty()) {
+            //todo なんか報酬
+            return;
+        }
+        for (LittleMaidEntity.MaidSoul maidSoul : maidSouls) {
+            var maid = Registration.LITTLE_MAID_MOB.get().create(world);
+            if (maid != null) {
+                maid.installMaidSoul(maidSoul);
+                maid.refreshPositionAfterTeleport(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
+
+                maid.setMovingMode(MovingMode.ESCORT);
+                TameableUtil.setWait(maid, true);
+                maid.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, player.getEyePos());
+                maid.getLookControl().lookAt(player);
+
+                maid.extinguish();
+                maid.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 100, 10));
+
+                world.spawnEntity(maid);
+            }
+        }
+        worldMaidSoulState.remove(player.getUuid());
+        worldMaidSoulState.markDirty();
+        world.removeBlock(pos, false);
+        world.playSound(null, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5,
+                SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS, 1.0f, 2.0f);
+        world.playSound(null, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5,
+                SoundEvents.ENTITY_FIREWORK_ROCKET_BLAST, SoundCategory.PLAYERS, 1.0f, 2.0f);
+        //todo 演出強化
+        world.spawnParticles(ParticleTypes.EXPLOSION,
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                1, 0, 0, 0, 0);
+        float size = 0.5f;
+        int count = 10;
+        double delta = 1.5;
+        world.spawnParticles(
+                new DustParticleEffect(new Vector3f(1.0f, 0.0f, 0.0f), size),
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                count, delta, delta, delta, 0);
+        world.spawnParticles(
+                new DustParticleEffect(new Vector3f(1.0f, 0.65f, 0.0f), size),
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                count, delta, delta, delta, 0);
+        world.spawnParticles(
+                new DustParticleEffect(new Vector3f(1.0f, 1.0f, 0.0f), size),
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                count, delta, delta, delta, 0);
+        world.spawnParticles(
+                new DustParticleEffect(new Vector3f(0.0f, 1.0f, 0.0f), size),
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                count, delta, delta, delta, 0);
+        world.spawnParticles(
+                new DustParticleEffect(new Vector3f(0.0f, 1.0f, 1.0f), size),
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                count, delta, delta, delta, 0);
+        world.spawnParticles(
+                new DustParticleEffect(new Vector3f(0.0f, 0.0f, 1.0f), size),
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                count, delta, delta, delta, 0);
+        world.spawnParticles(
+                new DustParticleEffect(new Vector3f(0.5f, 0.0f, 1.0f), size),
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                count, delta, delta, delta, 0);
+        world.spawnParticles(
+                ParticleTypes.HEART,
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                count, delta, delta, delta, 0);
     }
 
     //登録メソッドたち
