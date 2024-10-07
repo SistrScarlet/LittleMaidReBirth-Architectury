@@ -410,6 +410,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         config.getFollowStartRange(),
                         config.getFollowEndRange()));
 
+        this.goalSelector.add(++priority, new PlaySnowGoal(this));
+
         this.goalSelector.add(++priority, new RedstoneTraceGoal(this, 0.65f));
         this.goalSelector.add(++priority, new FreedomGoal<>(this,
                 0.65D, config.getFreedomRange()));
