@@ -137,8 +137,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Boolean> CHARGING =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Boolean> ACCELERATE =
+            DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     //エンチャントの瓶はランダムな経験値を排出するため、その平均値を作成コストとする
     private static final int EXPERIENCE_BOTTLE_COST = 7;
+    public static final int PRE_AC_TICKS = 4 * 20;
+    public static final int MAX_AC_COUNT = 8;
 
     //移譲s
     private final LMHasInventory littleMaidInventory = new LMHasInventory();
@@ -181,6 +185,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     private int playSoundCool;
     private int idFactor;
     public int experiencePickUpDelay;
+    // クライアント側のこの値は信用ならない
+    private int accelerationTicks;
 
 
     //コンストラクタ
@@ -458,6 +464,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.dataTracker.startTracking(MOVING_MODE, (byte) 0);
         this.dataTracker.startTracking(MODE_NAME, "");
         this.dataTracker.startTracking(CHARGING, false);
+        this.dataTracker.startTracking(ACCELERATE, false);
     }
 
     public void addDefaultModes(LittleMaidEntity maid) {
@@ -487,6 +494,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
         this.multiModel.writeToNbt(nbt);
         nbt.putString("SoundConfigName", getConfigHolder().getName());
+
+        nbt.putInt("accelerationTicks", accelerationTicks);
     }
 
     @Override
@@ -532,6 +541,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             LMConfigManager.INSTANCE.getConfig(nbt.getString("SoundConfigName"))
                     .ifPresent(this::setConfigHolder);
         }
+
+        accelerationTicks = nbt.getInt("accelerationTicks");
     }
 
     //todo IdFactorが確実にセットされたタイミングで実行されるようにする
@@ -600,6 +611,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //architectury側のミスでPitchYawが逆に与えられているのを修正
         buf.writeFloat(this.getPitch());
         buf.writeFloat(this.getYaw());
+        buf.writeVarInt(this.accelerationTicks);
     }
 
     //蔵
@@ -625,6 +637,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         getInventory().setStack(17, buf.readItemStack());
         this.setPitch(buf.readFloat());
         this.setYaw(buf.readFloat());
+        this.accelerationTicks = buf.readVarInt();
     }
 
     @Override
@@ -687,6 +700,15 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void tick() {
+        int tickMultiple = getTickMultiple();
+        for (int i = 0; i < tickMultiple; i++) {
+            inTickMultiplePre();
+            super.tick();
+            inTickMultiplePost();
+        }
+    }
+
+    protected void inTickMultiplePre() {
         if (this.experiencePickUpDelay > 0) {
             --this.experiencePickUpDelay;
         }
@@ -694,7 +716,11 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             tickInterestedAngle();
         }
         playSoundCool = Math.max(0, playSoundCool - 1);
-        super.tick();
+        decAccelerationTicks();
+    }
+
+    protected void inTickMultiplePost() {
+
     }
 
     @Override
@@ -1259,6 +1285,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //下二つならここ以外で手に持ったアイテムが使用される場合がある
     //継承元のコードは無視
     //todo 処理の見直し、処理を追加可能に
+    //todo 使用アイテムをコンフィグから追加可能に
     @Override
     public ActionResult interactMob(PlayerEntity player, Hand hand) {
         if (player.isSneaking()) {
@@ -1349,6 +1376,22 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             player.playSound(SoundEvents.ENTITY_COW_MILK, 1.0F, 1.0F);
             ItemStack itemStack2 = ItemUsage.exchangeStack(stack, player, Items.MILK_BUCKET.getDefaultStack());
             player.setStackInHand(hand, itemStack2);
+            return ActionResult.success(this.getWorld().isClient);
+        }
+        //todo コンフィグで値を変更可能に
+        if (stack.getItem() == Items.GUNPOWDER) {
+            // 同期ズレ防止のため、if条件を付加する場合は結果をパケットで送信すること
+            int resumeCount = Math.min(MAX_AC_COUNT, stack.getCount());
+            int acTicks = resumeCount * PRE_AC_TICKS;
+            setAccelerationTicks(acTicks);
+
+            if (!player.getAbilities().creativeMode) {
+                stack.decrement(resumeCount);
+                if (stack.isEmpty()) {
+                    player.getInventory().removeOne(stack);
+                }
+            }
+
             return ActionResult.success(this.getWorld().isClient);
         }
         openInventory(player);
@@ -1671,6 +1714,37 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         } else {
             interestedAngle = interestedAngle + (0.0F - interestedAngle) * 0.4F;
         }
+    }
+
+    //　加速機能
+
+    public int getTickMultiple() {
+        return this.isAcceleration() ? 2 : 1;
+    }
+
+    public void setAccelerationTicks(int ticks) {
+        this.accelerationTicks = ticks;
+        if (ticks > 0) {
+            this.dataTracker.set(ACCELERATE, true);
+        }
+    }
+
+    public void decAccelerationTicks() {
+        if (this.accelerationTicks > 0) {
+            this.accelerationTicks--;
+        }
+        if (this.accelerationTicks <= 0) {
+            this.accelerationTicks = 0;
+            this.dataTracker.set(ACCELERATE, false);
+        }
+    }
+
+    public int getAccelerationTicks() {
+        return this.accelerationTicks;
+    }
+
+    public boolean isAcceleration() {
+        return this.dataTracker.get(ACCELERATE);
     }
 
     //お給料

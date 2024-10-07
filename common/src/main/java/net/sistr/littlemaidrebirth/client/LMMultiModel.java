@@ -3,20 +3,23 @@ package net.sistr.littlemaidrebirth.client;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.client.model.ModelPart;
+import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.ModelWithHead;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModel;
 import net.sistr.littlemaidmodelloader.entity.compound.IHasMultiModel;
 import net.sistr.littlemaidmodelloader.maidmodel.ModelLittleMaidBase;
 import net.sistr.littlemaidmodelloader.maidmodel.ModelRenderer;
+import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 /**
  * LM専用に拡張
  */
-public class LMMultiModel<T extends LivingEntity & IHasMultiModel> extends MultiModel<T> implements ModelWithHead {
+public class LMMultiModel<T extends LittleMaidEntity> extends MultiModel<T> implements ModelWithHead {
     private T entity;
     private final ModelPart modelPart = new ModelPart(ImmutableList.of(), ImmutableMap.of());
 
@@ -30,6 +33,22 @@ public class LMMultiModel<T extends LivingEntity & IHasMultiModel> extends Multi
     public void setAngles(T entity, float limbAngle, float limbDistance, float animationProgress, float headYaw, float headPitch) {
         this.entity = entity;
         super.setAngles(entity, limbAngle, limbDistance, animationProgress, headYaw, headPitch);
+    }
+
+    @Override
+    public void render(MatrixStack matrices, VertexConsumer vertices, int light, int overlay, float red, float green, float blue, float alpha) {
+        if (this.entity == null) {
+            return;
+        }
+        if (this.entity.isAcceleration()) {
+            float percent = MathHelper.clamp(
+                    (float) this.entity.getAccelerationTicks()
+                            / (LittleMaidEntity.PRE_AC_TICKS * LittleMaidEntity.MAX_AC_COUNT),
+                    0, 1);
+            green -= 0.4f * percent + 0.1f;
+            blue -= 0.4f * percent + 0.1f;
+        }
+        super.render(matrices, vertices, light, overlay, red, green, blue, alpha);
     }
 
     @Override
