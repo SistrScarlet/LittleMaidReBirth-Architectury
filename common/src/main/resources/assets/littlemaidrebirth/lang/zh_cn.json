@@ -14,6 +14,9 @@
   "mode.littlemaidrebirth.Torcher": "照明模式",
   "mode.littlemaidrebirth.Healer": "奶妈模式",
 
+  "gui.littlemaidrebirth.level": "等级: %s",
+  "gui.littlemaidrebirth.remaining_days": "%s 天",
+
   "item.littlemaidrebirth.little_maid_spawn_egg": "小女仆刷怪蛋",
   "item.littlemaidrebirth.iff_copy_book": "敌我识别复制书",
   "item.littlemaidrebirth.iff_copy_book.tooltip": "已复制敌我识别信息",

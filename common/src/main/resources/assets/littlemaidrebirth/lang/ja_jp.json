@@ -14,6 +14,10 @@
   "mode.littlemaidrebirth.Torcher": "照明係",
   "mode.littlemaidrebirth.Healer": "回復係",
 
+  "gui.littlemaidrebirth.level": "レベル: %s",
+  "gui.littlemaidrebirth.remaining_days": "%s日",
+
+
   "item.littlemaidrebirth.little_maid_spawn_egg": "リトルメイドのスポーンエッグ",
   "item.littlemaidrebirth.iff_copy_book": "IFFをコピーする本",
   "item.littlemaidrebirth.iff_copy_book.tooltip": "IFF書き込み済み",

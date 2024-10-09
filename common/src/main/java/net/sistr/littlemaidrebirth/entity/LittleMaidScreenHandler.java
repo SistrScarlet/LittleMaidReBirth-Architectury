@@ -34,9 +34,11 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
 
         LittleMaidEntity maid = (LittleMaidEntity) playerInventory.player.getWorld().getEntityById(entityId);
         this.maid = maid;
+		
         if (maid == null) {
             throw new RuntimeException("メイドさんが存在しません。");
         } else {
+			
             this.maidInventory = maid.getInventory();
             this.handInventory = new Inventory() {
                 private EquipmentSlot index(int slot) {
@@ -176,12 +178,18 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
     public int getUnpaidDays() {
         return unpaidDays;
     }
-
+    public int getMaidLevel() {
+        return maid.getLevel();
+    }
+    public int getRemainingDays() {
+        return maid.getRemainingDays();
+    }
     @Override
     public boolean canUse(PlayerEntity player) {
         return this.maid != null && this.maid.isAlive() && this.maid.squaredDistanceTo(player) < 8.0F * 8.0F;
     }
 
+	
     //18 + 2 + 4 = 24、24 + 4 * 9 = 60
     //0~17メイドインベントリ、18~19メインサブ、20~23防具、24~59プレイヤーインベントリ
     @Override

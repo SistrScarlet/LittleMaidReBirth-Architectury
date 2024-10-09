@@ -14,6 +14,10 @@
   "mode.littlemaidrebirth.Torcher": "Torcher",
   "mode.littlemaidrebirth.Healer": "Healer",
 
+  "gui.littlemaidrebirth.level": "Level: %s",
+  "gui.littlemaidrebirth.remaining_days": "%s days",
+
+
   "item.littlemaidrebirth.little_maid_spawn_egg": "LittleMaid Spawn Egg",
   "item.littlemaidrebirth.iff_copy_book": "IFF Copy Book",
   "item.littlemaidrebirth.iff_copy_book.tooltip": "IFF written",

@@ -14,6 +14,8 @@ import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.damage.DamageEffects;
@@ -133,6 +135,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         RangedAttackMob, CrossbowUser {
     //LMM_FLAGSのindex
 	private int xpTotal;
+    private int level;
+    private static final UUID LEVEL_UP_MODIFIER_UUID = UUID.randomUUID();
+    private static final int HP_BONUS_INTERVAL = 5;
+    private static final double HP_BONUS_AMOUNT = 1.0;
     private static final int WAIT_INDEX = 0;
     private static final int AIMING_INDEX = 1;
     private static final int BEGGING_INDEX = 2;
@@ -146,11 +152,57 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Boolean> CHARGING =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    //エンチャントの瓶はランダムな経験値を排出するため、その平均値を作成コストとする
+	private static final TrackedData<Integer> LEVEL = DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> REMAINING_DAYS = DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.INTEGER);
+	private int unpaidDays;
+			//エンチャントの瓶はランダムな経験値を排出するため、その平均値を作成コストとする
     private static final int EXPERIENCE_BOTTLE_COST = 7;
+
 	public int getExperiencePoints() {
 		return xpTotal;
 	}
+
+	// Define the XP required for each level
+	private static final int[] XP_LEVELS = {
+		7, 16, 27, 40, 55, 72, 91, 112, 135, 160, 187, 216, 247, 280, 315, 352, 394, 441, 493, 550,
+		612, 679, 751, 828, 910, 997, 1089, 1186, 1288, 1395, 1507, 1628, 1758, 1897, 2045, 2202,
+		2368, 2543, 2727, 2920, 3122, 3333, 3553, 3782, 4020, 4267, 4523, 4788, 5062, 5345, 5637,
+		5938, 6248, 6567, 6895, 7232, 7578, 7933, 8297, 8670, 9052, 9443, 9843
+	};
+	
+
+    public int getLevel() {
+        return this.dataTracker.get(LEVEL);
+    }
+
+	
+    private void setLevel(int level) {
+        this.dataTracker.set(LEVEL, level);
+    }
+
+    private void updateLevel() {
+        for (int i = 0; i < XP_LEVELS.length; i++) {
+            if (xpTotal < XP_LEVELS[i]) {
+                setLevel(i + 1);
+				applyLevelUpBonus();
+                return;
+            }
+        }
+        setLevel(XP_LEVELS.length);
+        applyLevelUpBonus();
+    }
+    public int getRemainingDays() {
+        return this.dataTracker.get(REMAINING_DAYS);
+    }
+
+    private void setRemainingDays(int days) {
+        this.dataTracker.set(REMAINING_DAYS, days);
+    }
+
+    public void updateRemainingDays() {
+        int maxUnpaidDays = LMRBMod.getConfig().getUnpaidCountLimit();
+        setRemainingDays(maxUnpaidDays - unpaidDays);
+    }
 
     //移譲s
     private final LMHasInventory littleMaidInventory = new LMHasInventory();
@@ -380,6 +432,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.dataTracker.startTracking(MOVING_MODE, (byte) 0);
         this.dataTracker.startTracking(MODE_NAME, "");
         this.dataTracker.startTracking(CHARGING, false);
+		this.dataTracker.startTracking(LEVEL, 1); // レベルを1に初期化
+		this.dataTracker.startTracking(REMAINING_DAYS, 0);// 契約期間を0に初期化
+
     }
 
     public void addDefaultModes(LittleMaidEntity maid) {
@@ -396,6 +451,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         writeInventory(nbt);
         nbt.putInt("XpTotal", this.experiencePoints);
+		nbt.putInt("Level", this.level);
+		nbt.putInt("UnpaidDays", this.unpaidDays);
+        nbt.putInt("RemainingDays", this.getRemainingDays());
         if (getTameOwnerUuid().isPresent()) {
             nbt.putBoolean("Wait", this.isWait());
             nbt.putByte("MovingMode", (byte) this.getMovingMode().getId());
@@ -419,6 +477,16 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         readInventory(nbt);
         this.experiencePoints = nbt.getInt("XpTotal");
+		if (nbt.contains("Level")) {
+			setLevel(nbt.getInt("Level"));
+		}
+		if (nbt.contains("UnpaidDays")) {
+            this.unpaidDays = nbt.getInt("UnpaidDays");
+            updateRemainingDays();
+        }
+        if (nbt.contains("RemainingDays")) {
+            setRemainingDays(nbt.getInt("RemainingDays"));
+        }
         if (maidVersion == 0) {
             var list = nbt.getList("Inventory", 10);
             for (int i = 0; i < list.size(); i++) {
@@ -436,7 +504,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 }
             }
         }
-
+		if (nbt.contains("XpTotal")) {
+			this.xpTotal = nbt.getInt("XpTotal");
+			updateLevel(); // Ensure level is updated based on the XP total
+		}
         if (getTameOwnerUuid().isPresent()) {
             setWait(nbt.getBoolean("Wait"));
             setMovingMode(MovingMode.fromId(nbt.getInt("MovingMode")));
@@ -1358,8 +1429,20 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     public void addExperience(int experience) {
         this.experiencePoints = MathHelper.clamp(this.experiencePoints + experience, 0, Integer.MAX_VALUE);
+		updateLevel();
     }
 
+
+    private void applyLevelUpBonus() {
+        int level = getLevel();
+        if (level % HP_BONUS_INTERVAL == 0) {
+            EntityAttributeInstance healthAttribute = this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+            if (healthAttribute != null) {
+                EntityAttributeModifier modifier = new EntityAttributeModifier(LEVEL_UP_MODIFIER_UUID, "Level up bonus", HP_BONUS_AMOUNT, EntityAttributeModifier.Operation.ADDITION);
+                healthAttribute.addPersistentModifier(modifier);
+            }
+        }
+    }
     //GUI開くやつ
     public void openInventory(PlayerEntity player) {
         if (player.getWorld().isClient) {

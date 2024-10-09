@@ -33,6 +33,8 @@ import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
 
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.text.StrBuilder;
+
 //todo モード名表示/移動状態をアイコンで表記
 @Environment(EnvType.CLIENT)
 public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
@@ -40,6 +42,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             new Identifier("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
     private static final Identifier SALARY_WINDOW_TEXTURE =
             new Identifier("littlemaidrebirth", "textures/gui/salary_window.png");
+	private static final Identifier SALARY_WINDOW_EMPTY_TEXTURE =
+            new Identifier("littlemaidrebirth", "textures/gui/salary_window_empty.png");
     private static final Identifier ICONS = new Identifier("textures/gui/icons.png");
     private static final ItemStack ARMOR = Items.LEATHER_CHESTPLATE.getDefaultStack();
     private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
@@ -131,7 +135,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 this.width / 2 - 40, this.height / 2 - 40, 80, 80,
                 ImmutableList.<GUIElement>builder()
                         .add(new SalaryGUI(80, 80, this.width / 2 - 40, this.height / 2 - 40,
-                                this.textRenderer, maxUnpaidDays, unpaidDays))
+                                this.textRenderer, maxUnpaidDays, unpaidDays, owner))
                         .build()) {
             @Override
             public void render(DrawContext context, int mouseX, int mouseY, float delta) {
@@ -146,8 +150,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
                 super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
                 context.drawItem(SUGAR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
-				int remainingDays = maxUnpaidDays - unpaidDays;
-				String remainingDaysText = remainingDays + " days";
+				int remainingDays = maxUnpaidDays - owner.getUnpaidDays();
+				String remainingDaysText = Text.translatable("gui.littlemaidrebirth.remaining_days", remainingDays).getString();
 				int textWidth = textRenderer.getWidth(remainingDaysText);
 				
 				// Determine the color based on the remaining days
@@ -238,24 +242,35 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             drawArmor(context);
         } else {
             drawHealth(context, mouseX, mouseY);
+			
         }
     }
 
-    protected void drawHealth(DrawContext context, int mouseX, int mouseY) {
-        float left = (width - backgroundWidth) / 2F;
-        float top = (height - backgroundHeight) / 2F;
-        if (left + 98 <= mouseX && mouseX < left + 98 + 5 * 9 && top + 7 <= mouseY && mouseY < top + 7 + 2 * 9) {
-            String healthStr = MathHelper.ceil(owner.getHealth()) + " / " + MathHelper.ceil(owner.getMaxHealth());
-            context.drawText(textRenderer, healthStr,
-                    98 + (int) ((5 * 9 - textRenderer.getWidth(healthStr)) / 2F),
-                    16 - (int) (textRenderer.fontHeight / 2F), 0x404040, false);
-        } else {
-            float health = (owner.getHealth() / owner.getMaxHealth()) * 20F;
-            drawHealth(context, 98, 7, MathHelper.clamp(health - 10, 0, 10), 5);
-            drawHealth(context, 98, 16, MathHelper.clamp(health, 0, 10), 5);
-        }
-        RenderSystem.setShaderTexture(0, GUI);
-    }
+	protected void drawHealth(DrawContext context, int mouseX, int mouseY) {
+		float left = (width - backgroundWidth) / 2F;
+		float top = (height - backgroundHeight) / 2F;
+	
+		// HP表示
+		if (left + 98 <= mouseX && mouseX < left + 98 + 5 * 9 && top + 7 <= mouseY && mouseY < top + 7 + 2 * 9) {
+			String healthStr = MathHelper.ceil(owner.getHealth()) + " / " + MathHelper.ceil(owner.getMaxHealth());
+			context.drawText(textRenderer, healthStr,
+					98 + (int) ((5 * 9 - textRenderer.getWidth(healthStr)) / 2F),
+					16 - (int) (textRenderer.fontHeight / 2F), 0x404040, false);
+		} else {
+			float health = (owner.getHealth() / owner.getMaxHealth()) * 20F;
+			drawHealth(context, 98, 7, MathHelper.clamp(health - 10, 0, 10), 5);
+			drawHealth(context, 98, 16, MathHelper.clamp(health, 0, 10), 5);
+		}
+	
+		// レベル表示
+		int level = owner.getLevel();
+		Text levelText = Text.translatable("gui.littlemaidrebirth.level", level);
+		context.drawText(textRenderer, levelText.getString(),
+				98 + (int) ((5 * 9 - textRenderer.getWidth(levelText.getString())) / 2F),
+				30 - (int) (textRenderer.fontHeight / 2F), 0x404040, false);
+
+		RenderSystem.setShaderTexture(0, GUI);
+	}
 
     protected void drawArmor(DrawContext context) {
         float armor = owner.getArmor();
@@ -299,49 +314,46 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         }
     }
 
-    public static class SalaryGUI extends GUIElement {
-        private final TextRenderer textRenderer;
-        private final int maxUnpaidDays;
-        private final int unpaidDays;
-
-        protected SalaryGUI(int width, int height, int x, int y, TextRenderer textRenderer, int maxUnpaidDays, int unpaidDays) {
-            super(width, height);
-            this.x = x;
-            this.y = y;
-            this.textRenderer = textRenderer;
-            this.maxUnpaidDays = maxUnpaidDays;
-            this.unpaidDays = unpaidDays;
-        }
-
+	public static class SalaryGUI extends GUIElement {
+		private final TextRenderer textRenderer;
+		private final int maxUnpaidDays;
+		private final int unpaidDays;
+		private final LittleMaidEntity owner;
+	
+		protected SalaryGUI(int width, int height, int x, int y, TextRenderer textRenderer, int maxUnpaidDays, int unpaidDays, LittleMaidEntity owner) {
+			super(width, height);
+			this.x = x;
+			this.y = y;
+			this.textRenderer = textRenderer;
+			this.maxUnpaidDays = maxUnpaidDays;
+			this.unpaidDays = unpaidDays;
+			this.owner = owner;
+		}
+	
 		@Override
 		public void render(DrawContext context, int mouseX, int mouseY, float delta) {
 			var matrices = context.getMatrices();
 			matrices.push();
 			RenderSystem.enableDepthTest();
-			context.drawTexture(SALARY_WINDOW_TEXTURE, this.x, this.y, 0, 0, 80, 80, 128, 128);
-			
-			String unpaid = (maxUnpaidDays - unpaidDays) + " / " + maxUnpaidDays;
+	
+			// Draw the empty background
+			context.drawTexture(SALARY_WINDOW_EMPTY_TEXTURE, this.x, this.y, 0, 0, this.width, this.height, 128, 128);
+	
+			// Calculate the width of the overlay based on the remaining days
+			int remainingDays = maxUnpaidDays - unpaidDays;
+			int overlayWidth = (int) ((remainingDays / (float) maxUnpaidDays) * this.width);
+	
+			// Draw the overlay
+			context.drawTexture(SALARY_WINDOW_TEXTURE, this.x, this.y, 0, 0, overlayWidth, this.height, 128, 128);
+	
+			// Draw the text
+			String unpaid = remainingDays + " / " + maxUnpaidDays;
 			int textWidth = textRenderer.getWidth(unpaid);
 			matrices.translate(0, 0, 300);
 			context.drawText(textRenderer, unpaid,
 					(int) (this.x + this.width / 2f - textWidth / 2f),
 					(int) (this.y + this.height / 2f - textRenderer.fontHeight / 2f), 0x0, false);
-			
-			int remainingDays = maxUnpaidDays - unpaidDays;
-			String remainingDaysText = remainingDays + " days until strike";
-			int remainingDaysTextWidth = textRenderer.getWidth(remainingDaysText);
-			context.drawText(textRenderer, remainingDaysText,
-					(int) (this.x + this.width / 2f - remainingDaysTextWidth / 2f),
-					(int) (this.y + this.height / 2f + textRenderer.fontHeight), 0xFFFFFF, false);
-			
-			// Debug information
-			int debugX = this.x + 5;
-			int debugY = this.y + 5;
-			context.drawText(textRenderer, "maxUnpaidDays: " + maxUnpaidDays, debugX, debugY, 0xFF0000, false);
-			context.drawText(textRenderer, "unpaidDays: " + unpaidDays, debugX, debugY + 10, 0xFF0000, false);
-			context.drawText(textRenderer, "remainingDays: " + remainingDays, debugX, debugY + 20, 0xFF0000, false);
-			
 			matrices.pop();
 		}
-    }
+	}
 }
