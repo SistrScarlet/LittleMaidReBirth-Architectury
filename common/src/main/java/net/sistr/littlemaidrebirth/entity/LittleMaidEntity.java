@@ -1433,16 +1433,31 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
 
-    private void applyLevelUpBonus() {
-        int level = getLevel();
-        if (level % HP_BONUS_INTERVAL == 0) {
-            EntityAttributeInstance healthAttribute = this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
-            if (healthAttribute != null) {
-                EntityAttributeModifier modifier = new EntityAttributeModifier(LEVEL_UP_MODIFIER_UUID, "Level up bonus", HP_BONUS_AMOUNT, EntityAttributeModifier.Operation.ADDITION);
-                healthAttribute.addPersistentModifier(modifier);
-            }
-        }
-    }
+	private void applyLevelUpBonus() {
+		int level = getLevel();
+		if (level % HP_BONUS_INTERVAL == 0) {
+			EntityAttributeInstance healthAttribute = this.getAttributeInstance(EntityAttributes.GENERIC_MAX_HEALTH);
+			if (healthAttribute != null) {
+				EntityAttributeModifier existingModifier = healthAttribute.getModifier(LEVEL_UP_MODIFIER_UUID);
+				if (existingModifier != null) {
+					// Update the existing modifier's value
+					double newAmount = existingModifier.getValue() + HP_BONUS_AMOUNT;
+					healthAttribute.removeModifier(existingModifier);
+					EntityAttributeModifier updatedModifier = new EntityAttributeModifier(LEVEL_UP_MODIFIER_UUID, "Level up bonus", newAmount, EntityAttributeModifier.Operation.ADDITION);
+					healthAttribute.addPersistentModifier(updatedModifier);
+					LMRBMod.LOGGER.info("更新した体力ボーナス: " + newAmount);
+				} else {
+					// Add a new modifier
+					EntityAttributeModifier newModifier = new EntityAttributeModifier(LEVEL_UP_MODIFIER_UUID, "Level up bonus", HP_BONUS_AMOUNT, EntityAttributeModifier.Operation.ADDITION);
+					healthAttribute.addPersistentModifier(newModifier);
+					LMRBMod.LOGGER.info("新增した体力ボーナス: " + HP_BONUS_AMOUNT);
+				}
+				LMRBMod.LOGGER.info("今の体力: " + getHealth());
+			} else {
+				LMRBMod.LOGGER.warn("体力属性が見つかりませんでした");
+			}
+		}
+	}
     //GUI開くやつ
     public void openInventory(PlayerEntity player) {
         if (player.getWorld().isClient) {
