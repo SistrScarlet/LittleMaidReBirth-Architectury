@@ -7,13 +7,20 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.util.Hand;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 public class LMHasInventory implements HasInventory {
     private final Inventory inventory;
+    private int workItemSlotNum = LMRBMod.getConfig().getDefaultWorkItemSlotNum();
 
     public LMHasInventory() {
         this.inventory = new SimpleInventory(18);
+    }
+
+    public LMHasInventory(int workItemSlotNum) {
+        this.inventory = new SimpleInventory(18);
+        this.workItemSlotNum = workItemSlotNum;
     }
 
     @Override
@@ -21,9 +28,18 @@ public class LMHasInventory implements HasInventory {
         return inventory;
     }
 
+    public int getWorkItemSlotNum() {
+        return workItemSlotNum;
+    }
+
+    public void setWorkItemSlotNum(int workItemSlotNum) {
+        this.workItemSlotNum = workItemSlotNum;
+    }
+
     @Override
     public void writeInventory(NbtCompound nbt) {
         nbt.put("Inventory", this.writeNbt(new NbtList()));
+        nbt.putByte("workItemSlotNum", (byte) this.workItemSlotNum);
     }
 
     @Override
@@ -33,6 +49,9 @@ public class LMHasInventory implements HasInventory {
             this.readNbtOld(nbt.getList("Inventory", 10));
         } else {
             this.readNbt(nbt.getList("Inventory", 10));
+        }
+        if (nbt.contains("workItemSlotNum")) {
+            this.workItemSlotNum = nbt.getByte("workItemSlotNum") & 255;
         }
     }
 

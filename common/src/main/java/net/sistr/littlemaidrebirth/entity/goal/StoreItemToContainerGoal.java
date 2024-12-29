@@ -9,8 +9,8 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.sistr.littlemaidrebirth.util.BlockFinderPD;
-
 import org.jetbrains.annotations.Nullable;
+
 import java.util.EnumSet;
 import java.util.function.Predicate;
 
@@ -33,23 +33,40 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
 
     @Override
     public boolean canStart() {
-        if (!isInventoryFull()) return false;
+        boolean runningBF = blockFinder != null
+                && !blockFinder.isEnd()
+                && count++ < 1000;
+        // BF実行中なら
+        if (runningBF) {
+            blockFinder.tick();
 
-        if (blockFinder == null || blockFinder.isEnd() || count++ > 1000) {
-            this.count = 0;
-            blockFinder = new BlockFinderPD(ImmutableList.of(this.mob.getBlockPos().up()),
-                    this::isContainer,
-                    pos -> mob.getWorld().isAir(pos)
-                            && Math.abs(pos.getY() - mob.getY()) < 2
-                            && pos.getSquaredDistance(this.mob.getPos()) < searchDistanceSq,
-                    searchDistanceSq * 8);
+            var result = blockFinder.getResult();
+
+            // BFの結果が得られて、かつ仕舞うアイテムがあるなら
+            if (result.isPresent() && hasStoreItems()) {
+                containerPos = result.get();
+                return true;
+            }
+
+            return false;
         }
 
-        blockFinder.tick();
+        // shouldStoreItemの毎tickチェックを避ける
+        if (this.mob.getRandom().nextInt(20) == 0
+                && hasStoreItems()) {
+            bootBF();
+        }
+        return false;
+    }
 
-        containerPos = blockFinder.getResult().orElse(null);
-
-        return containerPos != null;
+    public void bootBF() {
+        this.count = 0;
+        blockFinder = new BlockFinderPD(ImmutableList.of(this.mob.getBlockPos().up()),
+                this::isContainer,
+                pos -> mob.getWorld().isAir(pos)
+                        && Math.abs(pos.getY() - mob.getY()) < 2
+                        && pos.getSquaredDistance(this.mob.getPos()) < searchDistanceSq,
+                searchDistanceSq * 8);
     }
 
     @Override
@@ -63,7 +80,7 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
                 || state.getBlock() instanceof BarrelBlock;
     }
 
-    protected abstract boolean isInventoryFull();
+    protected abstract boolean hasStoreItems();
 
     protected abstract void storeItems();
 

@@ -19,6 +19,7 @@ import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.client.screen.GUIElement;
 import net.sistr.littlemaidmodelloader.client.screen.ModelSelectScreen;
 import net.sistr.littlemaidmodelloader.client.screen.SoundPackSelectScreen;
+import net.sistr.littlemaidmodelloader.util.Tuple;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
@@ -26,8 +27,10 @@ import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import net.sistr.littlemaidrebirth.network.C2SSetBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetMovingStatePacket;
+import net.sistr.littlemaidrebirth.network.C2SSetWorkItemSlotNumPacket;
 import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
 //todo モード名表示/移動状態をアイコンで表記
@@ -45,6 +48,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final ItemStack IRON_SWORD = Items.IRON_SWORD.getDefaultStack();
     private static final ItemStack IRON_AXE = Items.IRON_AXE.getDefaultStack();
     private static final ItemStack SUGAR = Items.SUGAR.getDefaultStack();
+    private static final ItemStack CHEST = Items.CHEST.getDefaultStack();
     private final LittleMaidEntity owner;
     private final int unpaidDays;
     private WindowGUIComponent salaryWindow;
@@ -52,12 +56,15 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private Text stateText;
     private final MovingMode prevMovingMode;
     private MovingMode movingMode;
+    private int workItemSlotNum;
+    private boolean isSettingWISN;
 
     public LittleMaidScreen(LittleMaidScreenHandler screenContainer, PlayerInventory inv, Text titleIn) {
         super(screenContainer, inv, titleIn);
         this.backgroundHeight = 208;
         owner = screenContainer.getGuiEntity();
         unpaidDays = screenContainer.getUnpaidDays();
+        workItemSlotNum = screenContainer.getWorkItemSlotNum();
         prevMovingMode = movingMode = owner.getMovingMode();
     }
 
@@ -69,6 +76,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             return;
         }
         int left = (int) ((this.width - backgroundWidth) / 2F) - 5;
+        int right = (int) ((this.width - backgroundWidth) / 2F) + backgroundWidth + 5;
         int top = (int) ((this.height - backgroundHeight) / 2F);
         int size = 20;
         int layer = -1;
@@ -141,6 +149,16 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 context.drawItem(SUGAR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
             }
         });
+        this.addDrawableChild(new ButtonWidget(right, top + 75, size, size, Text.of(""),
+                button -> {//お仕事アイテムスロット数設定状態に移行
+                    isSettingWISN = true;
+                }, Supplier::get) {
+            @Override
+            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
+                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
+                context.drawItem(CHEST, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
+            }
+        });
         stateText = getStateText();
     }
 
@@ -176,10 +194,25 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         if (showSalaryWindow) {
             salaryWindow.render(context, mouseX, mouseY, partialTicks);
         }
+        if (isSettingWISN) {
+            renderWISNSetting(context, mouseX, mouseY, partialTicks);
+        }
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        // お仕事アイテムスロット数設定中に、クリックした場合
+        if (isSettingWISN) {
+            // スロットをクリックしたなら、そのスロットの一つ手前までで設定する
+            getMaidSlotPos(mouseX, mouseY)
+                    .ifPresent(pos -> {
+                        workItemSlotNum = convSlotIndex(pos.getA(), pos.getB());
+                        C2SSetWorkItemSlotNumPacket.sendC2SPacket(owner, workItemSlotNum);
+                    });
+
+            isSettingWISN = false;
+            return true;
+        }
         if (showSalaryWindow) {
             if (!salaryWindow.mouseClicked(mouseX, mouseY, button)) {
                 showSalaryWindow = false;
@@ -188,6 +221,27 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         }
 
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    public Optional<Tuple<Integer, Integer>> getMaidSlotPos(double x, double y) {
+        float left = (width - backgroundWidth) / 2F;
+        float top = (height - backgroundHeight) / 2F;
+        float baseLeft = left + 7;
+        float baseTop = top + 75;
+        int size = 18;
+        int slotCol = 9;
+        int slotRow = 2;
+        if (baseLeft <= x && x < baseLeft + size * slotCol
+                && baseTop <= y && y < baseTop + size * slotRow) {
+            int indexX = MathHelper.floor((x - baseLeft) / size);
+            int indexY = MathHelper.floor((y - baseTop) / size);
+            return Optional.of(new Tuple<>(indexX, indexY));
+        }
+        return Optional.empty();
+    }
+
+    public int convSlotIndex(int x, int y) {
+        return y * 9 + x;
     }
 
     @Override
@@ -269,6 +323,51 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int relX = (this.width - this.backgroundWidth) / 2;
         int relY = (this.height - this.backgroundHeight) / 2;
         context.drawTexture(GUI, relX, relY, 0, 0, this.backgroundWidth, this.backgroundHeight);
+
+        if (!isSettingWISN) {
+            drawWorkItemSlotOverlay(context, workItemSlotNum);
+        }
+    }
+
+    public void renderWISNSetting(DrawContext context, int mouseX, int mouseY, float delta) {
+        int relX = (this.width - this.backgroundWidth) / 2;
+        int relY = (this.height - this.backgroundHeight) / 2;
+        int slotSize = 18;
+        int top = relY + 75;
+        int bottom = top + slotSize * 2;
+        int left = relX + 7;
+        int right = left + slotSize * 9;
+        int color = 0x80000000;
+        // スロットを抜いて黒くする
+        context.fill(0, 0, this.width, top, color);
+        context.fill(0, top, left, bottom, color);
+        context.fill(right, top, this.width, bottom, color);
+        context.fill(0, bottom, this.width, this.height, color);
+
+        var optional = getMaidSlotPos(mouseX, mouseY);
+        if (optional.isPresent()) {
+            var pos = optional.get();
+            int index = convSlotIndex(pos.getA(), pos.getB());
+            drawWorkItemSlotOverlay(context, index);
+        } else {
+            drawWorkItemSlotOverlay(context, workItemSlotNum);
+        }
+    }
+
+    // お仕事アイテムスロットをオーバーレイ表示する
+    public void drawWorkItemSlotOverlay(DrawContext context, int num) {
+        int relX = (this.width - this.backgroundWidth) / 2;
+        int relY = (this.height - this.backgroundHeight) / 2;
+
+        for (int i = 0; i < num; i++) {
+            int slotSize = 18;
+            // (7, 75)が原点
+            int baseX = relX + 7;
+            int baseY = relY + 75;
+            int x = baseX + slotSize * (i % 9);
+            int y = baseY + slotSize * (i / 9);
+            context.fill(x, y, x + slotSize, y + slotSize, 0x40FF4040);
+        }
     }
 
     @Override

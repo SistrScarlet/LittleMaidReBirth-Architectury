@@ -60,6 +60,7 @@
   "text.autoconfig.littlemaidrebirth.option.immortal": "不死者か",
   "text.autoconfig.littlemaidrebirth.option.fallImmunity": "落下免疫",
   "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "非モブダメージ免疫",
+  "text.autoconfig.littlemaidrebirth.option.defaultWorkItemSlotNum": "デフォルトのお仕事アイテムスロット数",
   "text.autoconfig.littlemaidrebirth.option.canResurrection": "リザレクション可か(WIP)",
 
   "text.autoconfig.littlemaidrebirth.category.mode": "モード",

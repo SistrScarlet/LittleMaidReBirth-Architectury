@@ -1508,6 +1508,14 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.littleMaidInventory.readInventory(tag);
     }
 
+    public int getWorkItemSlotNum() {
+        return this.littleMaidInventory.getWorkItemSlotNum();
+    }
+
+    public void setWorkItemSlotNum(int num) {
+        this.littleMaidInventory.setWorkItemSlotNum(num);
+    }
+
     //todo 計算式の見直し
     @Override
     protected void damageArmor(DamageSource source, float amount) {

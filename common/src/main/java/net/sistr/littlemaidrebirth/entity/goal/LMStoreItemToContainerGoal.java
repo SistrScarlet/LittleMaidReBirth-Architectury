@@ -31,22 +31,21 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
     }
 
     @Override
-    public boolean shouldContinue() {
-        return !TameableUtil.isWait(mob)
-                && this.mob.getMovingMode() == MovingMode.FREEDOM
-                && super.shouldContinue();
-    }
-
-    @Override
-    protected boolean isInventoryFull() {
+    protected boolean hasStoreItems() {
         Inventory inventory = this.mob.getInventory();
-        for (int i = 0; i < inventory.size(); i++) {
+        boolean hasStoreItem = false;
+        for (int i = this.mob.getWorkItemSlotNum(); i < inventory.size(); i++) {
             var stack = inventory.getStack(i);
             if (stack.isEmpty()) {
                 return false;
             }
+            // 仕舞うべきアイテムならフラグを立てる
+            if (!hasStoreItem && !this.exceptItems.test(stack)) {
+                hasStoreItem = true;
+            }
         }
-        return true;
+        // 仕舞うべきアイテムがあればtrue
+        return hasStoreItem;
     }
 
     //todo チェストに仕舞うときの演出を強化する
@@ -68,7 +67,7 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
         this.mob.swingHand(Hand.MAIN_HAND);
 
         var inventory = this.mob.getInventory();
-        for (int i = 0; i < inventory.size(); i++) {
+        for (int i = this.mob.getWorkItemSlotNum(); i < inventory.size(); i++) {
             var stack = inventory.getStack(i);
             if (this.exceptItems.test(stack)) {
                 continue;

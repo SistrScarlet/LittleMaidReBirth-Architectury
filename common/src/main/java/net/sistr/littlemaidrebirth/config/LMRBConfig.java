@@ -121,6 +121,9 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Category("maid")
     private boolean nonMobDamageImmunity = false;
 
+    @ConfigEntry.Category("maid")
+    private int defaultWorkItemSlotNum = 9;
+
     //mode
 
     @ConfigEntry.Category("mode")
@@ -301,6 +304,10 @@ public class LMRBConfig implements ConfigData {
 
     public boolean isNonMobDamageImmunity() {
         return nonMobDamageImmunity;
+    }
+
+    public int getDefaultWorkItemSlotNum() {
+        return defaultWorkItemSlotNum;
     }
 
     public boolean isSilentDefaultVoice() {

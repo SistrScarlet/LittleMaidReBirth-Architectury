@@ -60,6 +60,7 @@
   "text.autoconfig.littlemaidrebirth.option.immortal": "Immortal",
   "text.autoconfig.littlemaidrebirth.option.fallImmunity": "Fall Immunity",
   "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "Non Mob Damage Immunity",
+  "text.autoconfig.littlemaidrebirth.option.defaultWorkItemSlotNum": "Default Work Item Slot Number",
   "text.autoconfig.littlemaidrebirth.option.canResurrection": "Can Resurrection(WIP)",
 
   "text.autoconfig.littlemaidrebirth.category.mode": "Mode",
