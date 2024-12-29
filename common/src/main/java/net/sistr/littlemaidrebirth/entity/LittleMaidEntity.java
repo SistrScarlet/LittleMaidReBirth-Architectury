@@ -1508,12 +1508,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.littleMaidInventory.readInventory(tag);
     }
 
-    public int getWorkItemSlotNum() {
-        return this.littleMaidInventory.getWorkItemSlotNum();
+    public int getWorkItemSlotSize() {
+        return this.littleMaidInventory.getWorkItemSlotSize();
     }
 
     public void setWorkItemSlotNum(int num) {
-        this.littleMaidInventory.setWorkItemSlotNum(num);
+        this.littleMaidInventory.setWorkItemSlotSize(num);
     }
 
     //todo 計算式の見直し

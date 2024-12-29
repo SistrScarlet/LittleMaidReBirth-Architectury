@@ -26,6 +26,15 @@
   "advancements.husbandry.contract_maid.title": "悟り。",
   "advancements.husbandry.contract_maid.description": "リトルメイドを雇用する",
 
+  "gui.littlemaidrebirth.littlemaid.tooltip.open_iff_setting": "IFF(敵味方識別)設定",
+  "gui.littlemaidrebirth.littlemaid.tooltip.open_sound_pack_select": "サウンドパック選択",
+  "gui.littlemaidrebirth.littlemaid.tooltip.open_model_select": "モデル選択",
+  "gui.littlemaidrebirth.littlemaid.tooltip.change_moving_mode": "移動モード変更",
+  "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck": "戦闘対象変更",
+  "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.to_blood_suck": "―現在メイドさんは冷静で、ENEMYのモブだけ狩る",
+  "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.is_blood_suck": "―現在メイドさんは血に飢え、UNKNOWNのモブまで狩る",
+  "gui.littlemaidrebirth.littlemaid.tooltip.setting_work_item_slot": "お仕事アイテムスロット設定―メイドさんは\"このスロットのアイテム\"をチェストに仕舞わない",
+
   "text.autoconfig.littlemaidrebirth.title": "LittleMaid ReBirth コンフィグ",
   "text.autoconfig.littlemaidrebirth.category.spawn": "スポーン",
   "text.autoconfig.littlemaidrebirth.option.canSpawn": "スポーンできるか",
@@ -60,7 +69,7 @@
   "text.autoconfig.littlemaidrebirth.option.immortal": "不死者か",
   "text.autoconfig.littlemaidrebirth.option.fallImmunity": "落下免疫",
   "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "非モブダメージ免疫",
-  "text.autoconfig.littlemaidrebirth.option.defaultWorkItemSlotNum": "デフォルトのお仕事アイテムスロット数",
+  "text.autoconfig.littlemaidrebirth.option.defaultWorkItemSlotSize": "デフォルトのお仕事アイテムスロットサイズ",
   "text.autoconfig.littlemaidrebirth.option.canResurrection": "リザレクション可か(WIP)",
 
   "text.autoconfig.littlemaidrebirth.category.mode": "モード",

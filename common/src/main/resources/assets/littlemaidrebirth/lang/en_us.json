@@ -26,6 +26,15 @@
   "advancements.husbandry.contract_maid.title": "Realization",
   "advancements.husbandry.contract_maid.description": "Employ a LittleMaid",
 
+  "gui.littlemaidrebirth.littlemaid.tooltip.open_iff_setting": "IFF (identification of friend or foe) setting",
+  "gui.littlemaidrebirth.littlemaid.tooltip.open_sound_pack_select": "Sound Pack Selection",
+  "gui.littlemaidrebirth.littlemaid.tooltip.open_model_select": "Model Selection",
+  "gui.littlemaidrebirth.littlemaid.tooltip.change_moving_mode": "Moving mode change",
+  "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck": "Change target of combat",
+  "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.to_blood_suck": " - Currently the maid is calm and only hunts ENEMY mobs",
+  "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.is_blood_suck": " - Currently the maid is bloodthirsty and even hunt UNKNOWN mobs",
+  "gui.littlemaidrebirth.littlemaid.tooltip.setting_work_item_slot": "Work item slot setting - the maid does not store \"items in this slot\" in the chest.",
+
   "text.autoconfig.littlemaidrebirth.title": "LittleMaid ReBirth Config",
   "text.autoconfig.littlemaidrebirth.category.spawn": "Spawn",
   "text.autoconfig.littlemaidrebirth.option.canSpawn": "Can Spawn",
@@ -60,7 +69,7 @@
   "text.autoconfig.littlemaidrebirth.option.immortal": "Immortal",
   "text.autoconfig.littlemaidrebirth.option.fallImmunity": "Fall Immunity",
   "text.autoconfig.littlemaidrebirth.option.nonMobDamageImmunity": "Non Mob Damage Immunity",
-  "text.autoconfig.littlemaidrebirth.option.defaultWorkItemSlotNum": "Default Work Item Slot Number",
+  "text.autoconfig.littlemaidrebirth.option.defaultWorkItemSlotSize": "Default Work Item Slot Size",
   "text.autoconfig.littlemaidrebirth.option.canResurrection": "Can Resurrection(WIP)",
 
   "text.autoconfig.littlemaidrebirth.category.mode": "Mode",

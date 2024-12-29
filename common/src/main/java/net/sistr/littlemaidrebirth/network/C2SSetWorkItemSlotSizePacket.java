@@ -16,9 +16,9 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 /**
  * クライアントからサーバーへ仕事アイテムスロット数をセットするパケット
  */
-public class C2SSetWorkItemSlotNumPacket {
+public class C2SSetWorkItemSlotSizePacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "set_work_item_slot_num");
+            new Identifier(LMRBMod.MODID, "set_work_item_slot_size");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(LittleMaidEntity entity, int num) {

@@ -22,17 +22,17 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
     private final Inventory armorInventory;
     private final LittleMaidEntity maid;
     private final int unpaidDays;
-    private final int workItemSlotNum;
+    private final int workItemSlotSize;
 
     public LittleMaidScreenHandler(int syncId, PlayerInventory playerInventory, PacketByteBuf packet) {
         this(syncId, playerInventory, packet.readVarInt(), packet.readByte(), packet.readByte());
     }
 
-    public LittleMaidScreenHandler(int syncId, PlayerInventory playerInventory, int entityId, int unpaidDays, int workItemSlotNum) {
+    public LittleMaidScreenHandler(int syncId, PlayerInventory playerInventory, int entityId, int unpaidDays, int workItemSlotSize) {
         super(Registration.LITTLE_MAID_SCREEN_HANDLER.get(), syncId);
         this.playerInventory = playerInventory;
         this.unpaidDays = unpaidDays;
-        this.workItemSlotNum = workItemSlotNum;
+        this.workItemSlotSize = workItemSlotSize;
 
         LittleMaidEntity maid = (LittleMaidEntity) playerInventory.player.getWorld().getEntityById(entityId);
         this.maid = maid;
@@ -179,8 +179,8 @@ public class LittleMaidScreenHandler extends ScreenHandler implements GuiEntityS
         return unpaidDays;
     }
 
-    public int getWorkItemSlotNum() {
-        return workItemSlotNum;
+    public int getWorkItemSlotSize() {
+        return workItemSlotSize;
     }
 
     @Override

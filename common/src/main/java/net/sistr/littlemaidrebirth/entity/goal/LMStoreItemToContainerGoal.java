@@ -34,7 +34,7 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
     protected boolean hasStoreItems() {
         Inventory inventory = this.mob.getInventory();
         boolean hasStoreItem = false;
-        for (int i = this.mob.getWorkItemSlotNum(); i < inventory.size(); i++) {
+        for (int i = this.mob.getWorkItemSlotSize(); i < inventory.size(); i++) {
             var stack = inventory.getStack(i);
             if (stack.isEmpty()) {
                 return false;
@@ -67,7 +67,7 @@ public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends Stor
         this.mob.swingHand(Hand.MAIN_HAND);
 
         var inventory = this.mob.getInventory();
-        for (int i = this.mob.getWorkItemSlotNum(); i < inventory.size(); i++) {
+        for (int i = this.mob.getWorkItemSlotSize(); i < inventory.size(); i++) {
             var stack = inventory.getStack(i);
             if (this.exceptItems.test(stack)) {
                 continue;

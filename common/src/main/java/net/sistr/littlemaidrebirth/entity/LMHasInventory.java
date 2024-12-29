@@ -12,15 +12,15 @@ import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 public class LMHasInventory implements HasInventory {
     private final Inventory inventory;
-    private int workItemSlotNum = LMRBMod.getConfig().getDefaultWorkItemSlotNum();
+    private int workItemSlotSize = LMRBMod.getConfig().getDefaultWorkItemSlotSize();
 
     public LMHasInventory() {
         this.inventory = new SimpleInventory(18);
     }
 
-    public LMHasInventory(int workItemSlotNum) {
+    public LMHasInventory(int workItemSlotSize) {
         this.inventory = new SimpleInventory(18);
-        this.workItemSlotNum = workItemSlotNum;
+        this.workItemSlotSize = workItemSlotSize;
     }
 
     @Override
@@ -28,18 +28,18 @@ public class LMHasInventory implements HasInventory {
         return inventory;
     }
 
-    public int getWorkItemSlotNum() {
-        return workItemSlotNum;
+    public int getWorkItemSlotSize() {
+        return workItemSlotSize;
     }
 
-    public void setWorkItemSlotNum(int workItemSlotNum) {
-        this.workItemSlotNum = workItemSlotNum;
+    public void setWorkItemSlotSize(int workItemSlotSize) {
+        this.workItemSlotSize = workItemSlotSize;
     }
 
     @Override
     public void writeInventory(NbtCompound nbt) {
         nbt.put("Inventory", this.writeNbt(new NbtList()));
-        nbt.putByte("workItemSlotNum", (byte) this.workItemSlotNum);
+        nbt.putByte("workItemSlotSize", (byte) this.workItemSlotSize);
     }
 
     @Override
@@ -50,8 +50,8 @@ public class LMHasInventory implements HasInventory {
         } else {
             this.readNbt(nbt.getList("Inventory", 10));
         }
-        if (nbt.contains("workItemSlotNum")) {
-            this.workItemSlotNum = nbt.getByte("workItemSlotNum") & 255;
+        if (nbt.contains("workItemSlotSize")) {
+            this.workItemSlotSize = nbt.getByte("workItemSlotSize") & 255;
         }
     }
 

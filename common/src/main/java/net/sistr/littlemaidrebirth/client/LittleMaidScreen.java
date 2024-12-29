@@ -1,13 +1,12 @@
 package net.sistr.littlemaidrebirth.client;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.gui.screen.ingame.InventoryScreen;
+import net.minecraft.client.gui.tooltip.Tooltip;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -16,7 +15,6 @@ import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
-import net.sistr.littlemaidmodelloader.client.screen.GUIElement;
 import net.sistr.littlemaidmodelloader.client.screen.ModelSelectScreen;
 import net.sistr.littlemaidmodelloader.client.screen.SoundPackSelectScreen;
 import net.sistr.littlemaidmodelloader.util.Tuple;
@@ -27,8 +25,9 @@ import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import net.sistr.littlemaidrebirth.network.C2SSetBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetMovingStatePacket;
-import net.sistr.littlemaidrebirth.network.C2SSetWorkItemSlotNumPacket;
+import net.sistr.littlemaidrebirth.network.C2SSetWorkItemSlotSizePacket;
 import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -38,8 +37,6 @@ import java.util.function.Supplier;
 public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final Identifier GUI =
             new Identifier("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
-    private static final Identifier SALARY_WINDOW_TEXTURE =
-            new Identifier("littlemaidrebirth", "textures/gui/salary_window.png");
     private static final Identifier ICONS = new Identifier("textures/gui/icons.png");
     private static final ItemStack ARMOR = Items.LEATHER_CHESTPLATE.getDefaultStack();
     private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
@@ -47,24 +44,19 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final ItemStack FEATHER = Items.FEATHER.getDefaultStack();
     private static final ItemStack IRON_SWORD = Items.IRON_SWORD.getDefaultStack();
     private static final ItemStack IRON_AXE = Items.IRON_AXE.getDefaultStack();
-    private static final ItemStack SUGAR = Items.SUGAR.getDefaultStack();
     private static final ItemStack CHEST = Items.CHEST.getDefaultStack();
     private final LittleMaidEntity owner;
-    private final int unpaidDays;
-    private WindowGUIComponent salaryWindow;
-    private boolean showSalaryWindow;
     private Text stateText;
     private final MovingMode prevMovingMode;
     private MovingMode movingMode;
-    private int workItemSlotNum;
-    private boolean isSettingWISN;
+    private int workItemSlotSize;
+    private boolean isSettingWISS;
 
     public LittleMaidScreen(LittleMaidScreenHandler screenContainer, PlayerInventory inv, Text titleIn) {
         super(screenContainer, inv, titleIn);
         this.backgroundHeight = 208;
         owner = screenContainer.getGuiEntity();
-        unpaidDays = screenContainer.getUnpaidDays();
-        workItemSlotNum = screenContainer.getWorkItemSlotNum();
+        workItemSlotSize = screenContainer.getWorkItemSlotSize();
         prevMovingMode = movingMode = owner.getMovingMode();
     }
 
@@ -80,31 +72,17 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int top = (int) ((this.height - backgroundHeight) / 2F);
         int size = 20;
         int layer = -1;
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> TameableUtil.getTameOwner(owner).ifPresent(OpenIFFScreenPacket::sendC2SPacket), Supplier::get) {
-            @Override
-            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                context.drawItem(BOOK, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
-            }
-        });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> client.setScreen(new SoundPackSelectScreen<>(title, owner)), Supplier::get) {
-            @Override
-            public void renderButton(DrawContext context, int x, int y, float delta) {
-                super.renderButton(context, x, y, delta);
-                context.drawItem(NOTE, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
-            }
-        });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> client.setScreen(new ModelSelectScreen<>(title, owner.getWorld(), owner)), Supplier::get) {
-            @Override
-            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                context.drawItem(ARMOR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
-            }
-        });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
+        this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, BOOK,
+                Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.open_iff_setting"),
+                button -> TameableUtil.getTameOwner(owner).ifPresent(OpenIFFScreenPacket::sendC2SPacket)));
+        this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, NOTE,
+                Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.open_sound_pack_select"),
+                button -> client.setScreen(new SoundPackSelectScreen<>(title, owner))));
+        this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, ARMOR,
+                Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.open_model_select"),
+                button -> client.setScreen(new ModelSelectScreen<>(title, owner.getWorld(), owner))));
+        this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, FEATHER,
+                Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.change_moving_mode"),
                 button -> {
                     switch (movingMode) {
                         case ESCORT -> movingMode = MovingMode.FREEDOM;
@@ -112,53 +90,34 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                         case TRACER -> movingMode = MovingMode.ESCORT;
                     }
                     stateText = getStateText();
-                }, Supplier::get) {
+                }));
+        this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, FEATHER,
+                Text.empty(),
+                button -> C2SSetBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck())
+        ) {
+            private static final Text changeBloodSuck
+                    = Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck");
+            private static final Text toBloodSuck
+                    = changeBloodSuck.copy().append(Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.to_blood_suck"));
+            private static final Text isBloodSuck
+                    = changeBloodSuck.copy().append(Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.is_blood_suck"));
+
             @Override
-            public void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+            protected ItemStack getIconItem() {
+                return LittleMaidScreen.this.owner.isBloodSuck() ? IRON_AXE : IRON_SWORD;
+            }
+
+            @Override
+            protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
                 super.renderButton(context, mouseX, mouseY, delta);
-                context.drawItem(FEATHER, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
+
+                setTooltip(Tooltip.of(LittleMaidScreen.this.owner.isBloodSuck() ? isBloodSuck : toBloodSuck));
             }
         });
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * ++layer, size, size, Text.of(""),
-                button -> C2SSetBloodSuckPacket.sendC2SPacket(this.owner, !this.owner.isBloodSuck()), Supplier::get) {
-            @Override
-            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                context.drawItem(LittleMaidScreen.this.owner.isBloodSuck() ? IRON_AXE : IRON_SWORD,
-                        this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
-            }
-        });
-        this.salaryWindow = new WindowGUIComponent(
-                this.width / 2 - 40, this.height / 2 - 40, 80, 80,
-                ImmutableList.<GUIElement>builder()
-                        .add(new SalaryGUI(80, 80, this.width / 2 - 40, this.height / 2 - 40,
-                                this.textRenderer, 7, unpaidDays))
-                        .build()) {
-            @Override
-            public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-                context.drawTexture(SALARY_WINDOW_TEXTURE, this.x, this.y, 0, 0, 80, 80, 128, 128);
-            }
-        };
-        this.addDrawableChild(new ButtonWidget(left - size, top + size * (layer += 2), size, size, Text.of(""),
-                button -> {//ウィンドウを出す
-                    showSalaryWindow = true;
-                }, Supplier::get) {
-            @Override
-            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                context.drawItem(SUGAR, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
-            }
-        });
-        this.addDrawableChild(new ButtonWidget(right, top + 75, size, size, Text.of(""),
-                button -> {//お仕事アイテムスロット数設定状態に移行
-                    isSettingWISN = true;
-                }, Supplier::get) {
-            @Override
-            public void renderButton(DrawContext context, int p_renderButton_1_, int p_renderButton_2_, float p_renderButton_3_) {
-                super.renderButton(context, p_renderButton_1_, p_renderButton_2_, p_renderButton_3_);
-                context.drawItem(CHEST, this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
-            }
-        });
+        this.addDrawableChild(new IconButtonWidget(right, top + 75, CHEST,
+                Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.setting_work_item_slot"),
+                button -> isSettingWISS = true
+        ));
         stateText = getStateText();
     }
 
@@ -191,32 +150,23 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 (this.width - this.backgroundWidth) / 2F + 52 - mouseX,
                 (this.height - this.backgroundHeight) / 2F + 30 - mouseY, owner);
 
-        if (showSalaryWindow) {
-            salaryWindow.render(context, mouseX, mouseY, partialTicks);
-        }
-        if (isSettingWISN) {
-            renderWISNSetting(context, mouseX, mouseY, partialTicks);
+        if (isSettingWISS) {
+            renderWISSSetting(context, mouseX, mouseY, partialTicks);
         }
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         // お仕事アイテムスロット数設定中に、クリックした場合
-        if (isSettingWISN) {
+        if (isSettingWISS) {
             // スロットをクリックしたなら、そのスロットの一つ手前までで設定する
             getMaidSlotPos(mouseX, mouseY)
                     .ifPresent(pos -> {
-                        workItemSlotNum = convSlotIndex(pos.getA(), pos.getB());
-                        C2SSetWorkItemSlotNumPacket.sendC2SPacket(owner, workItemSlotNum);
+                        workItemSlotSize = convSlotIndex(pos.getA(), pos.getB());
+                        C2SSetWorkItemSlotSizePacket.sendC2SPacket(owner, workItemSlotSize);
                     });
 
-            isSettingWISN = false;
-            return true;
-        }
-        if (showSalaryWindow) {
-            if (!salaryWindow.mouseClicked(mouseX, mouseY, button)) {
-                showSalaryWindow = false;
-            }
+            isSettingWISS = false;
             return true;
         }
 
@@ -242,22 +192,6 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
 
     public int convSlotIndex(int x, int y) {
         return y * 9 + x;
-    }
-
-    @Override
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (showSalaryWindow && salaryWindow.mouseReleased(mouseX, mouseY, button)) {
-            return true;
-        }
-        return super.mouseReleased(mouseX, mouseY, button);
-    }
-
-    @Override
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        if (showSalaryWindow && salaryWindow.mouseDragged(mouseX, mouseY, button, deltaX, deltaY)) {
-            return true;
-        }
-        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
@@ -324,12 +258,12 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int relY = (this.height - this.backgroundHeight) / 2;
         context.drawTexture(GUI, relX, relY, 0, 0, this.backgroundWidth, this.backgroundHeight);
 
-        if (!isSettingWISN) {
-            drawWorkItemSlotOverlay(context, workItemSlotNum);
+        if (!isSettingWISS) {
+            drawWorkItemSlotOverlay(context, workItemSlotSize);
         }
     }
 
-    public void renderWISNSetting(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderWISSSetting(DrawContext context, int mouseX, int mouseY, float delta) {
         int relX = (this.width - this.backgroundWidth) / 2;
         int relY = (this.height - this.backgroundHeight) / 2;
         int slotSize = 18;
@@ -350,7 +284,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             int index = convSlotIndex(pos.getA(), pos.getB());
             drawWorkItemSlotOverlay(context, index);
         } else {
-            drawWorkItemSlotOverlay(context, workItemSlotNum);
+            drawWorkItemSlotOverlay(context, workItemSlotSize);
         }
     }
 
@@ -378,34 +312,30 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         }
     }
 
-    public static class SalaryGUI extends GUIElement {
-        private final TextRenderer textRenderer;
-        private final int maxUnpaidDays;
-        private final int unpaidDays;
+    public static class IconButtonWidget extends ButtonWidget {
+        public static final int DEFAULT_SIZE = 20;
+        private final ItemStack iconItem;
 
-        protected SalaryGUI(int width, int height, int x, int y, TextRenderer textRenderer, int maxUnpaidDays, int unpaidDays) {
-            super(width, height);
-            this.x = x;
-            this.y = y;
-            this.textRenderer = textRenderer;
-            this.maxUnpaidDays = maxUnpaidDays;
-            this.unpaidDays = unpaidDays;
+        public IconButtonWidget(int x, int y, ItemStack iconItem, Text tooltip, PressAction onPress) {
+            this(x, y, DEFAULT_SIZE, DEFAULT_SIZE, Text.empty(), onPress, Supplier::get, iconItem);
+            this.setTooltip(Tooltip.of(tooltip));
+        }
+
+        public IconButtonWidget(int x, int y, int width, int height, Text message,
+                                PressAction onPress, NarrationSupplier narrationSupplier, ItemStack iconItem) {
+            super(x, y, width, height, message, onPress, narrationSupplier);
+            this.iconItem = iconItem;
+        }
+
+        protected ItemStack getIconItem() {
+            return iconItem;
         }
 
         @Override
-        public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-            var matrices = context.getMatrices();
-            matrices.push();
-            RenderSystem.enableDepthTest();
-            String unpaid = (maxUnpaidDays - unpaidDays) + " / " + maxUnpaidDays;
-            int textWidth = textRenderer.getWidth(unpaid);
-            matrices.translate(0, 0, 300);
-            context.drawText(textRenderer, unpaid,
-                    (int) (this.x + this.width / 2f - textWidth / 2f),
-                    (int) (this.y + this.height / 2f - textRenderer.fontHeight / 2f), 0x0, false);
-            matrices.pop();
+        protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
+            super.renderButton(context, mouseX, mouseY, delta);
+            context.drawItem(getIconItem(), this.getX() - 8 + this.width / 2, this.getY() - 8 + this.height / 2);
         }
-
     }
 
 }

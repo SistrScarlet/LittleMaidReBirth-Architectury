@@ -122,7 +122,7 @@ public class LMRBConfig implements ConfigData {
     private boolean nonMobDamageImmunity = false;
 
     @ConfigEntry.Category("maid")
-    private int defaultWorkItemSlotNum = 9;
+    private int defaultWorkItemSlotSize = 9;
 
     //mode
 
@@ -306,8 +306,8 @@ public class LMRBConfig implements ConfigData {
         return nonMobDamageImmunity;
     }
 
-    public int getDefaultWorkItemSlotNum() {
-        return defaultWorkItemSlotNum;
+    public int getDefaultWorkItemSlotSize() {
+        return defaultWorkItemSlotSize;
     }
 
     public boolean isSilentDefaultVoice() {
