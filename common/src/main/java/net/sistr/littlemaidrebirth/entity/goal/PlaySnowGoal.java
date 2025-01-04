@@ -52,6 +52,7 @@ public class PlaySnowGoal extends Goal {
         state = 0;
         timer = 0;
         target = null;
+        this.mob.setPlayingSnow(true);
     }
 
     @Override
@@ -153,6 +154,7 @@ public class PlaySnowGoal extends Goal {
     @Override
     public void stop() {
         this.mob.setSneaking(false);
+        this.mob.setPlayingSnow(false);
     }
 
     @Override

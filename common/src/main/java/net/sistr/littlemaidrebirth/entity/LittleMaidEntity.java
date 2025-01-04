@@ -129,6 +129,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     private static final int BEGGING_INDEX = 2;
     private static final int BLOOD_SUCK_INDEX = 3;
     private static final int STRIKE_INDEX = 4;
+    private static final int PLAYING_SNOW_INDEX = 5;
     private static final TrackedData<Byte> LMM_FLAGS =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
     private static final TrackedData<Byte> MOVING_MODE =
@@ -1970,6 +1971,14 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public boolean isArmorGlint(Part part) {
         return multiModel.isArmorGlint(part);
+    }
+
+    public boolean isPlayingSnow() {
+        return this.getLMMFlag(PLAYING_SNOW_INDEX);
+    }
+
+    public void setPlayingSnow(boolean isPlayingSnow) {
+        this.setLMMFlag(PLAYING_SNOW_INDEX, isPlayingSnow);
     }
 
     //音声関係
