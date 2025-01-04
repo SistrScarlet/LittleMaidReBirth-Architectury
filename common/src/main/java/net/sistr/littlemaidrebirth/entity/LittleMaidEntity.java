@@ -609,7 +609,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         buf.writeString(getConfigHolder().getName());
         //頭の装飾品が表示されない対策
         //原因はインベントリを開くまで同期されないため
-        buf.writeItemStack(getInventory().getStack(18));
+        buf.writeItemStack(getInventory().getStack(17));
         //architectury側のミスでPitchYawが逆に与えられているのを修正
         buf.writeFloat(this.getPitch());
         buf.writeFloat(this.getYaw());
