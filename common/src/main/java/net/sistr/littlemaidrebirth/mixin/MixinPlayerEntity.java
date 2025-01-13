@@ -77,6 +77,7 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
     public void updatePassengerPosition(Entity passenger, PositionUpdater positionUpdater) {
         if (!(passenger instanceof LittleMaidEntity)) {
             super.updatePassengerPosition(passenger, positionUpdater);
+            return;
         }
         if (!this.hasPassenger(passenger)) {
             return;
@@ -92,6 +93,7 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
     public void onPassengerLookAround(Entity passenger) {
         if (!(passenger instanceof LittleMaidEntity)) {
             super.onPassengerLookAround(passenger);
+            return;
         }
         copyEntityData(passenger);
     }
