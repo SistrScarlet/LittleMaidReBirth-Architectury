@@ -1001,9 +1001,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         } else {
             factor *= config.getNonBattleModeMaidDamageFactor();
         }
-        if (factor == 0) {
-            return false;
-        }
         amount *= factor;
 
         boolean isHurtTime = 0 < this.hurtTime;

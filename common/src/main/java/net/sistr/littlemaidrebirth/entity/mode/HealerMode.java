@@ -125,6 +125,7 @@ public class HealerMode extends Mode {
             } else {
                 inventory.setStack(foodIndex, stack);
             }
+            this.mob.play(LMSounds.HEALING);
         }
         //薬
         if (potionIndex != -1) {
@@ -137,7 +138,7 @@ public class HealerMode extends Mode {
             }
             owner.getWorld().playSound(null, owner.getX(), owner.getY(), owner.getZ(),
                     SoundEvents.ENTITY_GENERIC_DRINK, SoundCategory.PLAYERS, 1.0f, 1.0f);
+            this.mob.play(LMSounds.HEALING_POTION);
         }
-        ((SoundPlayable) this.mob).play(LMSounds.HEALING);
     }
 }

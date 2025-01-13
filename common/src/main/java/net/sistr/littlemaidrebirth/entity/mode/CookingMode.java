@@ -18,7 +18,6 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
@@ -195,7 +194,8 @@ public class CookingMode extends Mode {
     public void startExecuting() {
         findCool = 0;
         USED_FURNACE_MAP.put(furnacePos, mob);
-        ((SoundPlayable) mob).play(LMSounds.COOKING_START);
+        mob.play(LMSounds.COOKING_START);
+        playSoundCool = 20;
     }
 
     @Override
@@ -322,6 +322,10 @@ public class CookingMode extends Mode {
             inventory.removeStack(fuelIndex);
             furnace.markDirty();
             pickupAction();
+            if (playSoundCool < 0) {
+                playSoundCool = 20;
+                mob.play(LMSounds.ADD_FUEL);
+            }
             break;
         }
     }
@@ -339,7 +343,7 @@ public class CookingMode extends Mode {
             pickupAction();
             if (playSoundCool < 0) {
                 playSoundCool = 20;
-                ((SoundPlayable) mob).play(LMSounds.COOKING_OVER);
+                mob.play(LMSounds.COOKING_OVER);
             }
             ItemStack copy = resultStack.copy();
             ItemStack leftover = HopperBlockEntity.transfer(furnace, inventory, furnace.removeStack(resultSlot, 1), null);
@@ -353,11 +357,8 @@ public class CookingMode extends Mode {
     }
 
     public void pickupAction() {
-        if (playSoundCool < 0) {
-            playSoundCool = 20;
-            this.mob.swingHand(Hand.MAIN_HAND);
-            this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
-        }
+        this.mob.swingHand(Hand.MAIN_HAND);
+        this.mob.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.mob.getRandom().nextFloat() * 0.1F + 1.0F);
     }
 
     @Override
