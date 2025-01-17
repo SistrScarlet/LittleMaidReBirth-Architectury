@@ -34,6 +34,7 @@ public class PlaySnowGoal extends Goal {
     @Override
     public boolean canStart() {
         var time = this.mob.getWorld().getTimeOfDay();
+        time = time % 24000;
         // 朝～昼以外はやらない
         if (time < 0 || 12500 < time) {
             return false;
