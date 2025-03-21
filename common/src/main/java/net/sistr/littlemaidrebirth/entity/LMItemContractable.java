@@ -21,11 +21,12 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class LMItemContractable<T extends LittleMaidEntity> extends ItemContractable<LittleMaidEntity> implements SalaryBoxPosListener {
     protected final ObjectArraySet<BlockPos> salaryBoxPosSet = new ObjectArraySet<>(getMaxMemorySalaryBoxPos());
 
-    public LMItemContractable(T mob, int maxConsumeInterval, int maxUnpaidTimes,
+    public LMItemContractable(T mob, Supplier<Integer> maxConsumeInterval, Supplier<Integer> maxUnpaidTimes,
                               Predicate<ItemStack> salaryItems) {
         super(mob, maxConsumeInterval, maxUnpaidTimes, salaryItems);
     }

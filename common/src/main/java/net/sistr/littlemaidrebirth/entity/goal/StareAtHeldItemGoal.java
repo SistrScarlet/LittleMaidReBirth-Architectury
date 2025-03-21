@@ -7,22 +7,24 @@ import net.minecraft.item.ItemStack;
 
 import java.util.EnumSet;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class StareAtHeldItemGoal<T extends PathAwareEntity> extends Goal {
     protected final T mob;
+    protected final Supplier<Float> stareAtRange;
     protected final Predicate<ItemStack> targetItem;
     protected PlayerEntity stareAt;
 
-    public StareAtHeldItemGoal(T mob, Predicate<ItemStack> targetItem) {
+    public StareAtHeldItemGoal(T mob, Supplier<Float> stareAtRange, Predicate<ItemStack> targetItem) {
         this.mob = mob;
+        this.stareAtRange = stareAtRange;
         this.targetItem = targetItem;
         setControls(EnumSet.of(Control.LOOK));
     }
 
-    //todo 範囲のコンフィグ化
     @Override
     public boolean canStart() {
-        stareAt = mob.getWorld().getClosestPlayer(mob, 4);
+        stareAt = mob.getWorld().getClosestPlayer(mob, stareAtRange.get());
         return stareAt != null && isHeldTargetItem(stareAt);
     }
 

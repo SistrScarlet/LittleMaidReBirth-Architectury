@@ -5,6 +5,7 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
@@ -13,6 +14,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 //todo 180度ターン時に首がグリッとなるのがこわい
@@ -20,11 +22,11 @@ import java.util.stream.Stream;
 //todo 処理の再実装
 public class RedstoneTraceGoal extends Goal {
     protected final LittleMaidEntity mob;
-    protected final float speed;
+    protected final Supplier<Float> speed;
     protected final List<BlockPos> aroundSignalPos = Lists.newArrayList();
     protected int recalcTimer;
 
-    public RedstoneTraceGoal(LittleMaidEntity mob, float speed) {
+    public RedstoneTraceGoal(LittleMaidEntity mob, Supplier<Float> speed) {
         this.mob = mob;
         this.speed = speed;
         this.setControls(EnumSet.of(Control.LOOK, Control.MOVE));
@@ -76,7 +78,7 @@ public class RedstoneTraceGoal extends Goal {
                         -MathHelper.subtractAngles(getRelYaw(pos), 55f) + 180f - pos.getY()))
                 .ifPresent(pos -> {
                     var navigation = this.mob.getNavigation();
-                    if (!navigation.startMovingAlong(navigation.findPathTo(pos, 0), this.speed)) {
+                    if (!navigation.startMovingAlong(navigation.findPathTo(pos, 0), this.speed.get())) {
                         navigation.stop();
                     }
                 });
@@ -88,9 +90,11 @@ public class RedstoneTraceGoal extends Goal {
     }
 
     protected Stream<BlockPos> getAroundSignalPoses() {
+        int horizon = LMRBMod.getConfig().movement.tracerHorizonRange;
+        int vertical = LMRBMod.getConfig().movement.tracerVerticalRange;
         return BlockPos.stream(
-                        this.mob.getBlockPos().add(4, 2, 4),
-                        this.mob.getBlockPos().add(-4, -2, -4))
+                        this.mob.getBlockPos().add(horizon, vertical, horizon),
+                        this.mob.getBlockPos().add(-horizon, -vertical, -horizon))
                 .map(BlockPos::toImmutable)
                 .filter(this::isEmitSignal);
     }

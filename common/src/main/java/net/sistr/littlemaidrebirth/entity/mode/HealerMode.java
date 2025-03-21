@@ -22,7 +22,6 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 //即時回復を含む食料は普通に使う
 //即時回復を含むポーションは、体力が減るまで使わない
 //…ご主人がアンデッドの場合でも、即時回復を使う。ご主人は死ぬ。
-//todo コンフィグで害のあるものも食えるか調整可能にする
 //todo 処理の整理
 public class HealerMode extends Mode {
     protected final LittleMaidEntity mob;
@@ -81,7 +80,6 @@ public class HealerMode extends Mode {
     public boolean isFood(ItemStack stack) {
         return stack.isFood()
                 && stack.getItem().getFoodComponent().getStatusEffects().stream()
-                //コンフィグで害のあるものも食えるか調整可能にする
                 //allMatchだとエフェクトが無い場合にfalseになってしまう
                 .noneMatch(p -> p.getFirst().getEffectType().getCategory()
                         != StatusEffectCategory.BENEFICIAL);

@@ -12,12 +12,13 @@ import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class LMStoreItemToContainerGoal<T extends LittleMaidEntity> extends StoreItemToContainerGoal<T> {
 
     public LMStoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems,
-                                      int searchDistance) {
-        super(mob, exceptItems, searchDistance);
+                                      Supplier<Float> searchRange) {
+        super(mob, exceptItems, searchRange);
     }
 
     @Override

@@ -19,7 +19,6 @@ public class LMRBMod {
     private static ConfigHolder<LMRBConfig> CONFIG_HOLDER;
 
     public static void init() {
-        //todo コンフィグ周りの扱いの改善
         AutoConfig.register(LMRBConfig.class, Toml4jConfigSerializer::new);
         CONFIG_HOLDER = AutoConfig.getConfigHolder(LMRBConfig.class);
 

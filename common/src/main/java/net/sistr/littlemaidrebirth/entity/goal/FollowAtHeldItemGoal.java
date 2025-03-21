@@ -5,20 +5,22 @@ import net.minecraft.item.ItemStack;
 
 import java.util.EnumSet;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class FollowAtHeldItemGoal<T extends TameableEntity> extends TameableStareAtHeldItemGoal<T> {
+    private final Supplier<Float> followRangeSq;
     protected int reCalcCool;
 
-    public FollowAtHeldItemGoal(T mob, boolean isTamed, Predicate<ItemStack> targetItem) {
-        super(mob, isTamed, targetItem);
+    public FollowAtHeldItemGoal(T mob, Supplier<Float> stareAtRange, Predicate<ItemStack> targetItem, Supplier<Float> followRange, boolean isTamed) {
+        super(mob, stareAtRange, targetItem, isTamed);
+        this.followRangeSq = () -> followRange.get() * followRange.get();
         setControls(EnumSet.of(Control.MOVE));
     }
 
     @Override
     public void tick() {
         super.tick();
-        //todo config化
-        if (mob.squaredDistanceTo(stareAt) < 1.5f * 1.5f) {
+        if (mob.squaredDistanceTo(stareAt) < followRangeSq.get()) {
             mob.getNavigation().stop();
             return;
         }

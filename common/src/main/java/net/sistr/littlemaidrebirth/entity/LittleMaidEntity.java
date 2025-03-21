@@ -98,6 +98,7 @@ import org.joml.Vector3f;
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 //メイドさん本体
@@ -143,15 +144,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     //エンチャントの瓶はランダムな経験値を排出するため、その平均値を作成コストとする
     private static final int EXPERIENCE_BOTTLE_COST = 7;
-    public static final int PRE_AC_TICKS = 4 * 20;
-    public static final int MAX_AC_COUNT = 8;
 
     //移譲s
     public final LMHasInventory littleMaidInventory = new LMHasInventory();
     public final LMItemContractable<LittleMaidEntity> itemContractable =
             new LMItemContractable<>(this,
-                    LMRBMod.getConfig().contract.consumeSalaryInterval,
-                    LMRBMod.getConfig().contract.unpaidDaysLimit,
+                    () -> getConfig().contract.consumeSalaryInterval,
+                    () -> getConfig().contract.unpaidDaysLimit,
                     (ItemStack stack) -> stack.isIn(LMTags.Items.MAIDS_SALARY));
     public final HasModeImpl hasModeImpl = new HasModeImpl(this, this, new HashSet<>());
     public final MultiModelCompound multiModel;
@@ -290,16 +289,15 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //登録メソッドたち
 
-    //todo 速度をconfig化
     @Override
     protected void initGoals() {
         int priority = -1;
-        LMRBConfig config = LMRBMod.getConfig();
+        LMRBConfig config = getConfig();
 
         //緊急テレポート
         this.goalSelector.add(priority,
                 new LMTeleportTameOwnerGoal(this,
-                        config.movement.emergencyTeleportStartDistance) {
+                        () -> config.movement.emergencyTeleportStartDistance) {
                     @Override
                     public boolean canStart() {
                         return isEmergency()
@@ -313,8 +311,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
 
         this.goalSelector.add(++priority, new LMHealMyselfGoal(this,
-                config.health.healInterval,
-                config.health.healAmount,
+                () -> config.health.healInterval,
+                () -> config.health.healAmount,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
 
         this.goalSelector.add(++priority, new LMCollectSalaryFromContainerGoal<>(this));
@@ -322,7 +320,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority, new WaitGoal<>(this));
 
         this.goalSelector.add(++priority, new LMTeleportTameOwnerGoal(this,
-                config.movement.teleportStartDistance));
+                () -> config.movement.teleportStartDistance));
 
         this.goalSelector.add(++priority, new ModeWrapperGoal<>(this) {
             @Override
@@ -343,9 +341,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority,
                 new HasMMFollowTameOwnerGoal<>(
                         this,
-                        1.0f,
-                        config.movement.sprintStartDistance,
-                        config.movement.sprintEndDistance) {
+                        () -> config.movement.sprintSpeed,
+                        () -> config.movement.sprintStartDistance,
+                        () -> config.movement.sprintEndDistance) {
                     @Override
                     public void start() {
                         super.start();
@@ -359,12 +357,11 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     }
                 });
 
-        this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this,
-                true,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
-        this.goalSelector.add(priority, new LMStareAtHeldItemGoal<>(this,
-                true,
-                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
+        this.goalSelector.add(++priority, new LMFollowAtHeldItemGoal<>(this,
+                () -> config.misc.stareAtSalaryRange,
+                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
+                () -> config.misc.followAtHeldSalaryRange,
+                true));
 
         //todo 頭の装飾品を仕舞わないようにする
         this.goalSelector.add(++priority, new LMStoreItemToContainerGoal<>(this,
@@ -372,10 +369,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         || this.hasModeImpl.getMode()
                         .filter(mode -> mode.getModeType().isModeItem(stack))
                         .isPresent(),
-                8
+                () -> config.work.searchContainerRange
         ));
 
-        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 40, 1D) {
+        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this,
+                () -> config.movement.pickupItemRange,
+                () -> config.movement.pickupItemFrequency,
+                () -> config.movement.pickupItemSpeed) {
             @Override
             public boolean canStart() {
                 return TameableUtil.hasTameOwner(LittleMaidEntity.this)
@@ -398,18 +398,23 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(++priority,
                 new HasMMFollowTameOwnerGoal<>(
                         this,
-                        1.0f,
-                        config.movement.followStartDistance,
-                        config.movement.followEndDistance));
+                        () -> config.movement.followSpeed,
+                        () -> config.movement.followStartDistance,
+                        () -> config.movement.followEndDistance));
 
         this.goalSelector.add(++priority, new PlaySnowGoal(this));
 
-        this.goalSelector.add(++priority, new RedstoneTraceGoal(this, 0.65f));
+        this.goalSelector.add(++priority, new RedstoneTraceGoal(this,
+                () -> config.movement.tracerSpeed));
         this.goalSelector.add(++priority, new FreedomGoal<>(this,
-                0.65D, config.movement.freedomRange));
+                config.movement.freedomSpeed,
+                () -> config.movement.freedomRange));
 
         //野良
-        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this, 8, 40, 1D) {
+        this.goalSelector.add(++priority, new LMMoveToDropItemGoal(this,
+                () -> config.movement.pickupItemRange,
+                () -> config.movement.pickupItemFrequency,
+                () -> config.movement.pickupItemSpeed) {
             @Override
             public boolean canStart() {
                 return !TameableUtil.hasTameOwner(LittleMaidEntity.this)
@@ -418,18 +423,19 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         && super.canStart();
             }
         });
-        this.goalSelector.add(++priority, new EscapeDangerGoal(this, 1.25) {
+        this.goalSelector.add(++priority, new EscapeDangerGoal(this, config.movement.escapeSpeed) {
             @Override
             public boolean canStart() {
                 return !TameableUtil.hasTameOwner(LittleMaidEntity.this)
                         && super.canStart();
             }
         });
-        this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
-        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal<>(this, false,
-                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)));
-        this.goalSelector.add(++priority, new WanderAroundFarGoal(this, 0.65f) {
+        this.goalSelector.add(++priority, new LMFollowAtHeldItemGoal<>(this,
+                () -> config.misc.stareAtEmployItemRange,
+                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE),
+                () -> config.misc.followAtHeldEmployItemRange,
+                false));
+        this.goalSelector.add(++priority, new WanderAroundFarGoal(this, config.movement.freedomSpeed) {
             @Override
             public boolean canStart() {
                 return !TameableUtil.hasTameOwner(LittleMaidEntity.this)
@@ -585,14 +591,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     public void setRandomVoice() {
-        if (LMRBMod.getConfig().spawn.silentDefaultVoice) {
+        if (getConfig().spawn.silentDefaultVoice) {
             soundPlayer.setConfigHolder(LMConfigManager.EMPTY_CONFIG);
         } else {
             List<ConfigHolder> configs = LMConfigManager.INSTANCE.getAllConfig();
             soundPlayer.setConfigHolder(configs.get(idFactor % configs.size()));
         }
-        String defaultSoundPackName = LMRBMod.getConfig().spawn.defaultSoundPackName;
-        //noinspection ConstantValue
+        String defaultSoundPackName = getConfig().spawn.defaultSoundPackName;
         if (!defaultSoundPackName.isEmpty()) {
             LMConfigManager.INSTANCE.getAllConfig().stream()
                     .filter(c -> c.getPackName().equalsIgnoreCase(defaultSoundPackName))
@@ -742,16 +747,18 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     protected void mobTick() {
         super.mobTick();
         if (TameableUtil.hasTameOwner(this)
-                || LMRBMod.getConfig().misc.canPickupItemByNoOwner) {
+                || getConfig().misc.canPickupItemByNoOwner) {
             pickupItem();
         }
         itemContractable.tick();
         hasModeImpl.tick();
     }
 
-    //todo 経験値拾えるかコンフィグ
-    //todo メイドさんのアイテム拾い範囲コンフィグ
     protected void pickupItem() {
+        if (!getConfig().misc.canPickupExperienceOrb
+                && !getConfig().misc.canPickupItem) {
+            return;
+        }
         if (this.getHealth() <= 0 || this.isSpectator()) {
             return;
         }
@@ -761,7 +768,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         var exps = Lists.newArrayList();
         for (Entity entity : aroundItems) {
             if (entity instanceof ExperienceOrbEntity) {
-                exps.add(entity);
+                if (getConfig().misc.canPickupExperienceOrb) {
+                    exps.add(entity);
+                }
+                continue;
+            }
+            if (!getConfig().misc.canPickupItem) {
                 continue;
             }
             if (entity.isRemoved()) continue;
@@ -779,7 +791,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public boolean canImmediatelyDespawn(double distanceSquared) {
-        return LMRBMod.getConfig().spawn.canDespawn
+        return getConfig().spawn.canDespawn
                 && TameableUtil.getTameOwnerUuid(this).isEmpty();
     }
 
@@ -984,7 +996,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 return false;
             }
         }
-        LMRBConfig config = LMRBMod.getConfig();
+        LMRBConfig config = getConfig();
         if (config.health.nonMobDamageImmunity && source.getAttacker() == null) {
             return false;
         }
@@ -1032,7 +1044,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     public boolean isEmergency() {
-        LMRBConfig config = LMRBMod.getConfig();
+        LMRBConfig config = getConfig();
         //危機閾値以下の体力の場合、危機状態とする
         return this.getHealth() / this.getMaxHealth()
                 <= config.health.emergencyMaidHealthThreshold;
@@ -1040,7 +1052,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void setHealth(float health) {
-        LMRBConfig config = LMRBMod.getConfig();
+        LMRBConfig config = getConfig();
         if (config.health.disableMaidDeath && health <= 0) {
             super.setHealth(1);
             return;
@@ -1074,7 +1086,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             double zDiff = target.getZ() - this.getZ();
             double horizonLen = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
             arrow.setVelocity(xDiff, yDiff + horizonLen * 0.025, zDiff,
-                    pullProgress * 3.0f * LMRBMod.getConfig().work.archerShootVelocityFactor,
+                    pullProgress * 3.0f * getConfig().work.archerShootVelocityFactor,
                     14 - 2 * 4);
             this.playSound(SoundEvents.ENTITY_ARROW_SHOOT,
                     1.0f, 1.0f / (this.getRandom().nextFloat() * 0.4f + 1.2f) + pullProgress * 0.5f);
@@ -1112,7 +1124,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         Vector3f targetAt = this.getProjectileLaunchVelocity(entity,
                 new Vec3d(xDiff, yDiff + horizonLen * 0.025, zDiff), multishotSpray);
         projectile.setVelocity(targetAt.x(), targetAt.y(), targetAt.z(),
-                speed * LMRBMod.getConfig().work.archerShootVelocityFactor,
+                speed * getConfig().work.archerShootVelocityFactor,
                 14 - entity.getWorld().getDifficulty().getId() * 4);
         entity.playSound(SoundEvents.ITEM_CROSSBOW_SHOOT,
                 1.0f, 1.0f / (entity.getRandom().nextFloat() * 0.4f + 0.8f));
@@ -1130,9 +1142,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             return movement;
         }
 
-        LMRBConfig config = LMRBMod.getConfig();
+        LMRBConfig config = getConfig();
 
-        if (!config.health.immortal && !LMRBMod.getConfig().health.nonMobDamageImmunity && config.health.enableSafeMove
+        if (!config.health.immortal && !getConfig().health.nonMobDamageImmunity && config.health.enableSafeMove
                 && this.canClipAtLedge()) {
             boolean shouldBackByDamage = isDamageSourceEmpty(this.getBoundingBox())
                     && !this.isDamageSourceEmpty(this.getBoundingBox().offset(movement.x, 0, movement.z));
@@ -1338,7 +1350,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
         //砂糖
         if (stack.isIn(LMTags.Items.MAIDS_SALARY)) {
-            var config = LMRBMod.getConfig();
+            var config = getConfig();
             heal(config.health.healAmount);
             return changeState(player, stack);
         }
@@ -1378,17 +1390,18 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             return ActionResult.success(this.getWorld().isClient);
         }
         //モブミルク
-        if (LMRBMod.getConfig().misc.canMilking && stack.isOf(Items.BUCKET)) {
+        if (getConfig().misc.canMilking && stack.isOf(Items.BUCKET)) {
             player.playSound(SoundEvents.ENTITY_COW_MILK, 1.0F, 1.0F);
             ItemStack itemStack2 = ItemUsage.exchangeStack(stack, player, Items.MILK_BUCKET.getDefaultStack());
             player.setStackInHand(hand, itemStack2);
             return ActionResult.success(this.getWorld().isClient);
         }
-        //todo コンフィグで値を変更可能に
         if (stack.getItem() == Items.GUNPOWDER) {
+            int maxAccelerationStack = getConfig().misc.maxAccelerationStack;
+            int accelerationTicks = getConfig().misc.accelerationTicksPerStack;
             // 同期ズレ防止のため、if条件を付加する場合は結果をパケットで送信すること
-            int resumeCount = Math.min(MAX_AC_COUNT, stack.getCount());
-            int acTicks = resumeCount * PRE_AC_TICKS;
+            int resumeCount = Math.min(maxAccelerationStack, stack.getCount());
+            int acTicks = resumeCount * accelerationTicks;
             setAccelerationTicks(acTicks);
 
             if (!player.getAbilities().creativeMode) {
@@ -1733,7 +1746,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //　加速機能
 
     public int getTickMultiple() {
-        return this.isAcceleration() ? 2 : 1;
+        return this.isAcceleration() ? getConfig().misc.accelerationMultiple : 1;
     }
 
     public void setAccelerationTicks(int ticks) {
@@ -1763,7 +1776,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //お給料
 
-    //todo モデルの方とTameableと被りがあってややこい
     @Override
     public boolean isContract() {
         return TameableUtil.getTameOwnerUuid(this).isPresent();
@@ -1847,7 +1859,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     //IFF
 
-    //todo Tameable関連
     @Override
     public Optional<IFFTag> identify(LivingEntity target) {
         UUID ownerId = this.getOwnerUuid();
@@ -2000,7 +2011,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (0 < this.playSoundCool) {
             return;
         }
-        this.playSoundCool = 5;
+        this.playSoundCool = getConfig().misc.playSoundInterval;
         if (isBloodSuck()) {
             if (soundName.equals(LMSounds.FIND_TARGET_N)) {
                 soundName = LMSounds.FIND_TARGET_B;
@@ -2026,11 +2037,15 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return SpawnLittleMaidPacket.create(this);
     }
 
-    public static class LMStareAtHeldItemGoal<T extends LittleMaidEntity> extends TameableStareAtHeldItemGoal<T> {
+    public static LMRBConfig getConfig() {
+        return LMRBMod.getConfig();
+    }
+
+    public static class LMFollowAtHeldItemGoal<T extends LittleMaidEntity> extends FollowAtHeldItemGoal<T> {
         private final LittleMaidEntity maid;
 
-        public LMStareAtHeldItemGoal(T maid, boolean isTamed, Predicate<ItemStack> targetItem) {
-            super(maid, isTamed, targetItem);
+        public LMFollowAtHeldItemGoal(T maid, Supplier<Float> stareAtRange, Predicate<ItemStack> targetItem, Supplier<Float> followRange, boolean isTamed) {
+            super(maid, stareAtRange, targetItem, followRange, isTamed);
             this.maid = maid;
         }
 

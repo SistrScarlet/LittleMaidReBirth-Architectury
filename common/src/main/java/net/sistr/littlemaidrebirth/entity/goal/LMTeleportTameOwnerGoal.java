@@ -3,10 +3,12 @@ package net.sistr.littlemaidrebirth.entity.goal;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
+import java.util.function.Supplier;
+
 public class LMTeleportTameOwnerGoal extends TeleportTameOwnerGoal<LittleMaidEntity> {
     protected final LittleMaidEntity maid;
 
-    public LMTeleportTameOwnerGoal(LittleMaidEntity maid, float teleportStart) {
+    public LMTeleportTameOwnerGoal(LittleMaidEntity maid, Supplier<Float> teleportStart) {
         super(maid, teleportStart);
         this.maid = maid;
     }

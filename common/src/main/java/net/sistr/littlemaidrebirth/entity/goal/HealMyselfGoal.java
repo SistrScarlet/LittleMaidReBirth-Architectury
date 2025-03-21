@@ -5,20 +5,22 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 import java.util.EnumSet;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class HealMyselfGoal<T extends PathAwareEntity & HasInventory> extends Goal {
     protected final T mob;
-    protected final int healInterval;
-    protected final int healAmount;
+    protected final Supplier<Integer> healInterval;
+    protected final Supplier<Integer> healAmount;
     protected final Predicate<ItemStack> healItemPred;
     protected int cool;
     protected int healItemSlot = -1;
 
-    public HealMyselfGoal(T mob, int healInterval, int healAmount, Predicate<ItemStack> healItemPred) {
+    public HealMyselfGoal(T mob, Supplier<Integer> healInterval, Supplier<Integer> healAmount, Predicate<ItemStack> healItemPred) {
         this.mob = mob;
         this.healInterval = healInterval;
         this.healAmount = healAmount;
@@ -54,9 +56,8 @@ public class HealMyselfGoal<T extends PathAwareEntity & HasInventory> extends Go
         return mob.hurtTime > 0;
     }
 
-    //todo コンフィグに低ヘルス判定しきい値を追加
     protected boolean isEnoughHealth() {
-        return mob.getHealth() / mob.getMaxHealth() > 0.75f;
+        return mob.getHealth() / mob.getMaxHealth() > LMRBMod.getConfig().health.healDelayThreshold;
     }
 
     @Override
@@ -83,7 +84,7 @@ public class HealMyselfGoal<T extends PathAwareEntity & HasInventory> extends Go
         if (0 < cool--) {
             return;
         }
-        cool = healInterval;
+        cool = healInterval.get();
 
         var healItem = getHealItem(healItemSlot);
         //回復アイテム存在チェック
@@ -98,7 +99,7 @@ public class HealMyselfGoal<T extends PathAwareEntity & HasInventory> extends Go
 
     public void heal(ItemStack healItem) {
         //回復
-        mob.heal(healAmount);
+        mob.heal(healAmount.get());
         //アイテム消費
         consumeHealItem(healItem);
         //回復演出

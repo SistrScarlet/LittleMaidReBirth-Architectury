@@ -8,26 +8,28 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.util.BlockFinderPD;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumSet;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extends Goal {
     protected final T mob;
     protected final Predicate<ItemStack> exceptItems;
-    protected final int searchDistanceSq;
+    protected final Supplier<Float> searchRangeSq;
     @Nullable
     protected BlockPos containerPos;
     @Nullable
     protected BlockFinderPD blockFinder;
     protected int count;
 
-    public StoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems, int searchDistance) {
+    public StoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems, Supplier<Float> searchRange) {
         this.mob = mob;
         this.exceptItems = exceptItems;
-        this.searchDistanceSq = searchDistance * searchDistance;
+        this.searchRangeSq = () -> searchRange.get() * searchRange.get();
         this.setControls(EnumSet.of(Control.MOVE));
     }
 
@@ -61,12 +63,13 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
 
     public void bootBF() {
         this.count = 0;
+        float searchRangeSq = this.searchRangeSq.get();
         blockFinder = new BlockFinderPD(ImmutableList.of(this.mob.getBlockPos().up()),
                 this::isContainer,
                 pos -> mob.getWorld().isAir(pos)
                         && Math.abs(pos.getY() - mob.getY()) < 2
-                        && pos.getSquaredDistance(this.mob.getPos()) < searchDistanceSq,
-                searchDistanceSq * 8);
+                        && pos.getSquaredDistance(this.mob.getPos()) < searchRangeSq,
+                MathHelper.ceil(searchRangeSq));
     }
 
     @Override

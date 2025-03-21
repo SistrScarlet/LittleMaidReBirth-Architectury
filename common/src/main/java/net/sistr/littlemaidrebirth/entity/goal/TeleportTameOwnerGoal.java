@@ -15,19 +15,20 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 import java.util.EnumSet;
+import java.util.function.Supplier;
 
 public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends Goal {
     protected final T tameable;
     protected final World world;
-    protected final float teleportStartSq;
+    protected final Supplier<Float> teleportStartSq;
     private final EntityNavigation navigation;
     private LivingEntity owner;
     private int updateCountdownTicks;
 
-    public TeleportTameOwnerGoal(T tameable, float teleportStart) {
+    public TeleportTameOwnerGoal(T tameable, Supplier<Float> teleportStart) {
         this.tameable = tameable;
         this.world = tameable.getWorld();
-        this.teleportStartSq = teleportStart * teleportStart;
+        this.teleportStartSq = () -> teleportStart.get() * teleportStart.get();
         this.navigation = tameable.getNavigation();
         this.setControls(EnumSet.of(Control.MOVE));
     }
@@ -39,7 +40,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
             return false;
         } else if (tameOwner.isSpectator()) {
             return false;
-        } else if (this.tameable.squaredDistanceTo(tameOwner) < teleportStartSq) {
+        } else if (this.tameable.squaredDistanceTo(tameOwner) < teleportStartSq.get()) {
             return false;
         } else {
             this.owner = tameOwner;
@@ -48,7 +49,7 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
     }
 
     public boolean shouldContinue() {
-        return teleportStartSq < this.tameable.squaredDistanceTo(this.owner);
+        return teleportStartSq.get() < this.tameable.squaredDistanceTo(this.owner);
     }
 
     @Override

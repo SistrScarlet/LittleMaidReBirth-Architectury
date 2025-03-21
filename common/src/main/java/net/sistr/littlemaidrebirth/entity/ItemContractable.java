@@ -8,19 +8,20 @@ import net.sistr.littlemaidrebirth.entity.util.Contractable;
 import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 //クライアント側では概ね役に立たない
 public class ItemContractable<T extends LivingEntity & HasInventory> implements Contractable {
     protected final T mob;
-    protected final int maxConsumeInterval;
-    protected final int maxUnpaidTimes;
+    protected final Supplier<Integer> maxConsumeInterval;
+    protected final Supplier<Integer> maxUnpaidTimes;
     protected final Predicate<ItemStack> salaryItems;
     protected int consumeInterval;
     protected int unpaidTimes;
     protected boolean contract;
     protected boolean strike;
 
-    public ItemContractable(T mob, int maxConsumeInterval, int maxUnpaidTimes, Predicate<ItemStack> salaryItems) {
+    public ItemContractable(T mob, Supplier<Integer> maxConsumeInterval, Supplier<Integer> maxUnpaidTimes, Predicate<ItemStack> salaryItems) {
         this.mob = mob;
         this.maxConsumeInterval = maxConsumeInterval;
         this.maxUnpaidTimes = maxUnpaidTimes;
@@ -40,7 +41,7 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
     }
 
     protected void intervalTick() {
-        if (this.maxConsumeInterval < this.consumeInterval) {
+        if (this.maxConsumeInterval.get() < this.consumeInterval) {
             this.consumeInterval = 0;
             this.unpaidTimes++;
         }
@@ -55,7 +56,7 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
     protected void nonStrikeIntervalTick() {
         if (0 < unpaidTimes) {
             receiveSalary(mob.getInventory());
-            if (maxUnpaidTimes < unpaidTimes) {
+            if (maxUnpaidTimes.get() < unpaidTimes) {
                 this.strike = true;
                 onStrike();
             }

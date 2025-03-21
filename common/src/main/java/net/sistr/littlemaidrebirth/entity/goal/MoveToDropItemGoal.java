@@ -12,16 +12,17 @@ import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 //ドロップアイテムに向かうGoal
 public abstract class MoveToDropItemGoal extends Goal {
     private final PathAwareEntity mob;
-    private final int range;
-    private final int frequency;
-    private final double speed;
+    private final Supplier<Float> range;
+    private final Supplier<Integer> frequency;
+    private final Supplier<Float> speed;
 
-    public MoveToDropItemGoal(PathAwareEntity mob, int range, int frequency, double speed) {
+    public MoveToDropItemGoal(PathAwareEntity mob, Supplier<Float> range, Supplier<Integer> frequency, Supplier<Float> speed) {
         this.mob = mob;
         this.range = range;
         this.frequency = frequency;
@@ -31,7 +32,7 @@ public abstract class MoveToDropItemGoal extends Goal {
 
     @Override
     public boolean canStart() {
-        if (this.mob.getRandom().nextFloat() > 1.0f / this.getTickCount(frequency)
+        if (this.mob.getRandom().nextFloat() > 1.0f / this.getTickCount(frequency.get())
                 || isInventoryFull()) {
             return false;
         }
@@ -44,7 +45,7 @@ public abstract class MoveToDropItemGoal extends Goal {
             return false;
         }
 
-        mob.getNavigation().startMovingAlong(path, speed);
+        mob.getNavigation().startMovingAlong(path, speed.get());
         return true;
     }
 
@@ -64,6 +65,7 @@ public abstract class MoveToDropItemGoal extends Goal {
     public abstract boolean isInventoryFull();
 
     public List<ItemEntity> findAroundDropItem() {
+        float range = this.range.get();
         return mob.getWorld().getEntitiesByClass(ItemEntity.class,
                 mob.getBoundingBox().expand(range, range / 4f, range),
                 item -> !item.cannotPickup() && item.squaredDistanceTo(mob) < range * range);

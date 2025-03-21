@@ -14,6 +14,7 @@ import net.sistr.littlemaidmodelloader.client.renderer.MultiModel;
 import net.sistr.littlemaidmodelloader.entity.compound.IHasMultiModel;
 import net.sistr.littlemaidmodelloader.maidmodel.ModelLittleMaidBase;
 import net.sistr.littlemaidmodelloader.maidmodel.ModelRenderer;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 /**
@@ -43,7 +44,7 @@ public class LMMultiModel<T extends LittleMaidEntity> extends MultiModel<T> impl
         if (this.entity.isAcceleration()) {
             float percent = MathHelper.clamp(
                     (float) this.entity.getAccelerationTicks()
-                            / (LittleMaidEntity.PRE_AC_TICKS * LittleMaidEntity.MAX_AC_COUNT),
+                            / (LMRBMod.getConfig().misc.accelerationTicksPerStack * LMRBMod.getConfig().misc.maxAccelerationStack),
                     0, 1);
             green -= 0.4f * percent + 0.1f;
             blue -= 0.4f * percent + 0.1f;

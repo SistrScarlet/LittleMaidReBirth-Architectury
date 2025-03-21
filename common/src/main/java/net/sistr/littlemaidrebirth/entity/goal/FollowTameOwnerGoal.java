@@ -10,22 +10,23 @@ import net.minecraft.entity.passive.TameableEntity;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 import java.util.EnumSet;
+import java.util.function.Supplier;
 
 public class FollowTameOwnerGoal<T extends TameableEntity> extends Goal {
     protected final T tameable;
-    protected final float speed;
-    protected final float followStartSq;
-    protected final float followEndSq;
+    protected final Supplier<Float> speed;
+    protected final Supplier<Float> followStartSq;
+    protected final Supplier<Float> followEndSq;
     private final EntityNavigation navigation;
     private LivingEntity owner;
     private int updateCountdownTicks;
     private float oldWaterPathfindingPenalty;
 
-    public FollowTameOwnerGoal(T tameable, float speed, float followStart, float followEnd) {
+    public FollowTameOwnerGoal(T tameable, Supplier<Float> speed, Supplier<Float> followStart, Supplier<Float> followEnd) {
         this.tameable = tameable;
         this.speed = speed;
-        this.followStartSq = followStart * followStart;
-        this.followEndSq = followEnd * followEnd;
+        this.followStartSq = () -> followStart.get() * followStart.get();
+        this.followEndSq = () -> followEnd.get() * followEnd.get();
         this.navigation = tameable.getNavigation();
         this.setControls(EnumSet.of(Goal.Control.MOVE, Goal.Control.LOOK));
         if (!(tameable.getNavigation() instanceof MobNavigation) && !(tameable.getNavigation() instanceof BirdNavigation)) {
@@ -42,7 +43,7 @@ public class FollowTameOwnerGoal<T extends TameableEntity> extends Goal {
             return false;
         } else if (TameableUtil.isWait(tameable)) {
             return false;
-        } else if (this.tameable.squaredDistanceTo(tameOwner) < followStartSq) {
+        } else if (this.tameable.squaredDistanceTo(tameOwner) < followStartSq.get()) {
             return false;
         } else {
             this.owner = tameOwner;
@@ -56,7 +57,7 @@ public class FollowTameOwnerGoal<T extends TameableEntity> extends Goal {
         } else if (TameableUtil.isWait(tameable)) {
             return false;
         } else {
-            return followEndSq < this.tameable.squaredDistanceTo(this.owner);
+            return followEndSq.get() < this.tameable.squaredDistanceTo(this.owner);
         }
     }
 
@@ -81,7 +82,7 @@ public class FollowTameOwnerGoal<T extends TameableEntity> extends Goal {
             return;
         }
         this.updateCountdownTicks = getTickCount(10);
-        this.navigation.startMovingTo(this.owner, this.speed);
+        this.navigation.startMovingTo(this.owner, this.speed.get());
     }
 
 }

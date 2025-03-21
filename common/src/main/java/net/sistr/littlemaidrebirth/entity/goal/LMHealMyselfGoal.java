@@ -5,9 +5,10 @@ import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class LMHealMyselfGoal extends HealMyselfGoal<LittleMaidEntity> {
-    public LMHealMyselfGoal(LittleMaidEntity mob, int healInterval, int healAmount, Predicate<ItemStack> healItemPred) {
+    public LMHealMyselfGoal(LittleMaidEntity mob, Supplier<Integer> healInterval, Supplier<Integer> healAmount, Predicate<ItemStack> healItemPred) {
         super(mob, healInterval, healAmount, healItemPred);
     }
 

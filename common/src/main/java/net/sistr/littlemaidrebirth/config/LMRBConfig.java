@@ -43,10 +43,13 @@ public class LMRBConfig implements ConfigData {
         public List<String> maidSpawnExcludeBiomeTags = Lists.newArrayList(
                 LMTags.Biomes.MAID_SPAWN_EXCLUDE_BIOME.id().toString()
         );
+        @ConfigEntry.Gui.RequiresRestart
         @ConfigEntry.Gui.Tooltip
         public int spawnWeight = 5;
+        @ConfigEntry.Gui.RequiresRestart
         @ConfigEntry.Gui.Tooltip
         public int minSpawnGroupSize = 1;
+        @ConfigEntry.Gui.RequiresRestart
         @ConfigEntry.Gui.Tooltip
         public int maxSpawnGroupSize = 3;
         @ConfigEntry.Gui.Tooltip
@@ -65,6 +68,8 @@ public class LMRBConfig implements ConfigData {
         public int healInterval = 2;
         @ConfigEntry.Gui.Tooltip
         public int healAmount = 1;
+        @ConfigEntry.Gui.Tooltip
+        public float healDelayThreshold = 0.75f;
         @ConfigEntry.Gui.Tooltip
         public boolean disableMaidDeath = false;
         @ConfigEntry.Gui.Tooltip
@@ -95,12 +100,25 @@ public class LMRBConfig implements ConfigData {
     public Movement movement = new Movement();
 
     public static class Movement {
+        @ConfigEntry.Gui.RequiresRestart
+        @ConfigEntry.Gui.Tooltip
+        public float freedomSpeed = 0.65f;
         @ConfigEntry.Gui.Tooltip
         public float freedomRange = 16.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float tracerSpeed = 0.65f;
+        @ConfigEntry.Gui.Tooltip
+        public int tracerHorizonRange = 4;
+        @ConfigEntry.Gui.Tooltip
+        public int tracerVerticalRange = 2;
+        @ConfigEntry.Gui.Tooltip
+        public float followSpeed = 1.0f;
         @ConfigEntry.Gui.Tooltip
         public float followStartDistance = 6.0f;
         @ConfigEntry.Gui.Tooltip
         public float followEndDistance = 5.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float sprintSpeed = 1.2f;
         @ConfigEntry.Gui.Tooltip
         public float sprintStartDistance = 8.0f;
         @ConfigEntry.Gui.Tooltip
@@ -119,6 +137,15 @@ public class LMRBConfig implements ConfigData {
         public float ownerForwardRange = 4.0f;
         @ConfigEntry.Gui.Tooltip
         public int maxTryTeleportCount = 10;
+        @ConfigEntry.Gui.Tooltip
+        public float pickupItemSpeed = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float pickupItemRange = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public int pickupItemFrequency = 40;
+        @ConfigEntry.Gui.RequiresRestart
+        @ConfigEntry.Gui.Tooltip
+        public float escapeSpeed = 1.2f;
     }
 
     @ConfigEntry.Category("work")
@@ -141,6 +168,8 @@ public class LMRBConfig implements ConfigData {
         public float archerShootVelocityFactor = 1.0f;
         @ConfigEntry.Gui.Tooltip
         public int torcherLightLevelThreshold = 7;
+        @ConfigEntry.Gui.Tooltip
+        public float searchContainerRange = 8.0f;
     }
 
     @ConfigEntry.Category("contract")
@@ -182,9 +211,29 @@ public class LMRBConfig implements ConfigData {
 
     public static class Misc {
         @ConfigEntry.Gui.Tooltip
+        public boolean canPickupItem = true;
+        @ConfigEntry.Gui.Tooltip
+        public boolean canPickupExperienceOrb = true;
+        @ConfigEntry.Gui.Tooltip
         public boolean canPickupItemByNoOwner = false;
         @ConfigEntry.Gui.Tooltip
         public boolean canMilking = false;
+        @ConfigEntry.Gui.Tooltip
+        public int playSoundInterval = 5;
+        @ConfigEntry.Gui.Tooltip
+        public float followAtHeldSalaryRange = 1.5f;
+        @ConfigEntry.Gui.Tooltip
+        public float followAtHeldEmployItemRange = 1.5f;
+        @ConfigEntry.Gui.Tooltip
+        public float stareAtSalaryRange = 4.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float stareAtEmployItemRange = 4.0f;
+        @ConfigEntry.Gui.Tooltip
+        public int maxAccelerationStack = 8;
+        @ConfigEntry.Gui.Tooltip
+        public int accelerationTicksPerStack = 80;
+        @ConfigEntry.Gui.Tooltip
+        public int accelerationMultiple = 2;
     }
 
     @ConfigEntry.Category("client")
