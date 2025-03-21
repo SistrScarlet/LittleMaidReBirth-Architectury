@@ -27,7 +27,6 @@ import net.sistr.littlemaidrebirth.network.C2SSetBloodSuckPacket;
 import net.sistr.littlemaidrebirth.network.C2SSetMovingStatePacket;
 import net.sistr.littlemaidrebirth.network.C2SSetWorkItemSlotSizePacket;
 import net.sistr.littlemaidrebirth.network.OpenIFFScreenPacket;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Supplier;

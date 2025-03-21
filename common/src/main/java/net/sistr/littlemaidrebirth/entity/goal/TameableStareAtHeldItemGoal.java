@@ -16,6 +16,6 @@ public class TameableStareAtHeldItemGoal<T extends TameableEntity> extends Stare
 
     @Override
     public boolean canStart() {
-        return TameableUtil.getTameOwnerUuid(mob).isPresent() == isTamed && super.canStart();
+        return TameableUtil.hasTameOwner(this.mob) == isTamed && super.canStart();
     }
 }

@@ -12,7 +12,7 @@ import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 public class LMHasInventory implements HasInventory {
     private final Inventory inventory;
-    private int workItemSlotSize = LMRBMod.getConfig().getDefaultWorkItemSlotSize();
+    private int workItemSlotSize = LMRBMod.getConfig().work.defaultWorkItemSlotSize;
 
     public LMHasInventory() {
         this.inventory = new SimpleInventory(18);

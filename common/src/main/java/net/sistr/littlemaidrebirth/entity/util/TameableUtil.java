@@ -33,8 +33,12 @@ public class TameableUtil {
         return Optional.ofNullable(tameable.getOwnerUuid());
     }
 
+    /**
+     * テイムしたご主人が居るならtrueを返す
+     * ご主人がワールドに居るかどうかは関係ない
+     */
     public static boolean hasTameOwner(Tameable tameable) {
-        return TameableUtil.getTameOwner(tameable).isPresent();
+        return getTameOwnerUuid(tameable).isPresent();
     }
 
     /**
@@ -60,8 +64,8 @@ public class TameableUtil {
      * ご主人を持っていない場合はfalse
      */
     public static boolean equalTameOwner(Tameable a, Tameable b) {
-        var aOwner = TameableUtil.getTameOwner(a);
-        var bOwner = TameableUtil.getTameOwner(b);
+        var aOwner = getTameOwner(a);
+        var bOwner = getTameOwner(b);
         if (aOwner.isEmpty() || bOwner.isEmpty()) {
             return false;
         }

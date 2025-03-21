@@ -12,7 +12,7 @@ public interface ItemMatcher {
      * アイテムマッチの優先順位。
      * 重複のおそれがあるものは低く、おそれがないものは高く設定する。
      * バニラのクラスを指定する場合などはLOW、もしくはLOWERを推奨する。
-     * */
+     */
     interface Priority {
         Priority LOWER = of(0);
         Priority LOW = of(100);

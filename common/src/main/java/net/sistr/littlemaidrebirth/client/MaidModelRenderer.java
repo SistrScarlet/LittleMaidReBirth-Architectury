@@ -16,7 +16,6 @@ import net.sistr.littlemaidmodelloader.client.renderer.MultiModelArmorLayer;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModelHeldItemLayer;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModelLightLayer;
 import net.sistr.littlemaidmodelloader.entity.compound.IHasMultiModel;
-import net.sistr.littlemaidmodelloader.maidmodel.IModelCaps;
 import net.sistr.littlemaidmodelloader.maidmodel.ModelMultiBase;
 import net.sistr.littlemaidmodelloader.multimodel.layer.MMMatrixStack;
 import net.sistr.littlemaidrebirth.LMRBMod;
@@ -104,11 +103,13 @@ public class MaidModelRenderer extends MobEntityRenderer<LittleMaidEntity, LMMul
         model.setCapsValue(caps_entityIdFactor, 0F);
         model.setCapsValue(caps_ticksExisted, entity.age);
 
-        model.setCapsValue(IModelCaps.caps_aimedBow, entity.isAimingBow());
-        model.setCapsValue(IModelCaps.caps_isWait, TameableUtil.isWait(entity));
-        model.setCapsValue(IModelCaps.caps_isContract, entity.isContract());
-        model.setCapsValue(IModelCaps.caps_isBloodsuck, entity.isBloodSuck());
-        model.setCapsValue(IModelCaps.caps_isClock, entity.getMainHandStack().getItem() == Items.CLOCK
+        model.setCapsValue(caps_aimedBow, entity.isAimingBow());
+        model.setCapsValue(caps_isWait, TameableUtil.isWait(entity)
+                && (LMRBMod.getConfig().client.enableWaitPoseOnMoving
+                || entity.getVelocity().lengthSquared() < 0.01));
+        model.setCapsValue(caps_isContract, entity.isContract());
+        model.setCapsValue(caps_isBloodsuck, entity.isBloodSuck());
+        model.setCapsValue(caps_isClock, entity.getMainHandStack().getItem() == Items.CLOCK
                 || entity.getOffHandStack().getItem() == Items.CLOCK);
     }
 

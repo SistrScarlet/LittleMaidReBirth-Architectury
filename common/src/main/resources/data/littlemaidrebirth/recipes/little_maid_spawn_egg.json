@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "pattern": [
     "SGS",
     "CEC",
@@ -21,5 +22,6 @@
   },
   "result": {
     "item": "littlemaidrebirth:little_maid_spawn_egg"
-  }
+  },
+  "show_notification": true
 }

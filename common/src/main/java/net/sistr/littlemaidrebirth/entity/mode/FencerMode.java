@@ -3,9 +3,7 @@ package net.sistr.littlemaidrebirth.entity.mode;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
-import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
@@ -34,14 +32,14 @@ public class FencerMode extends Mode {
             @Override
             protected double getSquaredMaxAttackDistance(LivingEntity entity) {
                 return ReachAttributeUtil.getAttackRangeSq(mob)
-                        * LMRBMod.getConfig().getFencerRangeFactor();
+                        * LMRBMod.getConfig().work.fencerAttackDistanceFactor;
             }
 
             @Override
             protected void resetCooldown() {
                 double attackSpeed = this.mob.getAttributeValue(EntityAttributes.GENERIC_ATTACK_SPEED);
                 int cool = MathHelper.ceil(1 / attackSpeed * 20
-                        / LMRBMod.getConfig().getFencerAttackRateFactor());
+                        / LMRBMod.getConfig().work.fencerAttackRateFactor);
                 ((MeleeAttackGoalAccessor) melee).setCooldown(cool);
             }
         };

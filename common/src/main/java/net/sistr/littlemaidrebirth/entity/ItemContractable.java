@@ -7,27 +7,24 @@ import net.minecraft.nbt.NbtCompound;
 import net.sistr.littlemaidrebirth.entity.util.Contractable;
 import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 //クライアント側では概ね役に立たない
 public class ItemContractable<T extends LivingEntity & HasInventory> implements Contractable {
-    private final T mob;
-    private final int maxConsumeInterval;
-    private final int maxUnpaidTimes;
-    private final Predicate<ItemStack> salaryItems;
-    private final Consumer<T> strikeCallback;
-    private int consumeInterval;
-    private int unpaidTimes;
-    private boolean contract;
-    private boolean strike;
+    protected final T mob;
+    protected final int maxConsumeInterval;
+    protected final int maxUnpaidTimes;
+    protected final Predicate<ItemStack> salaryItems;
+    protected int consumeInterval;
+    protected int unpaidTimes;
+    protected boolean contract;
+    protected boolean strike;
 
-    public ItemContractable(T mob, int maxConsumeInterval, int maxUnpaidTimes, Predicate<ItemStack> salaryItems, Consumer<T> strikeCallback) {
+    public ItemContractable(T mob, int maxConsumeInterval, int maxUnpaidTimes, Predicate<ItemStack> salaryItems) {
         this.mob = mob;
         this.maxConsumeInterval = maxConsumeInterval;
         this.maxUnpaidTimes = maxUnpaidTimes;
         this.salaryItems = salaryItems;
-        this.strikeCallback = strikeCallback;
     }
 
     public void tick() {
@@ -39,6 +36,10 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
             return;
         }
 
+        intervalTick();
+    }
+
+    protected void intervalTick() {
         if (this.maxConsumeInterval < this.consumeInterval) {
             this.consumeInterval = 0;
             this.unpaidTimes++;
@@ -48,31 +49,50 @@ public class ItemContractable<T extends LivingEntity & HasInventory> implements 
             return;
         }
 
+        nonStrikeIntervalTick();
+    }
+
+    protected void nonStrikeIntervalTick() {
         if (0 < unpaidTimes) {
             receiveSalary(mob.getInventory());
             if (maxUnpaidTimes < unpaidTimes) {
                 this.strike = true;
-                this.strikeCallback.accept(this.mob);
+                onStrike();
             }
         }
     }
 
+    protected void onStrike() {
+    }
+
     public boolean isSalary(ItemStack stack) {
-        return this.salaryItems.test(stack);
+        return !stack.isEmpty() && this.salaryItems.test(stack);
     }
 
     public void receiveSalary(Inventory inventory) {
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack stack = inventory.getStack(i);
-            if (stack.isEmpty()) {
-                continue;
-            }
-            while (!stack.isEmpty() && 0 < this.unpaidTimes && this.salaryItems.test(stack)) {
+            while (0 < this.unpaidTimes && isSalary(stack)) {
                 this.unpaidTimes--;
                 stack.decrement(1);
                 postReceive();
+                if (stack.isEmpty()) {
+                    inventory.removeStack(i);
+                }
             }
         }
+    }
+
+    public int checkSalarySlots() {
+        int count = 0;
+        var inv = mob.getInventory();
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack stack = inv.getStack(i);
+            if (isSalary(stack)) {
+                count++;
+            }
+        }
+        return count;
     }
 
     protected void postReceive() {

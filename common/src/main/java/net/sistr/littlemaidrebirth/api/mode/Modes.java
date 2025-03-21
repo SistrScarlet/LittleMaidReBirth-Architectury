@@ -64,8 +64,7 @@ public class Modes {
     public static ModeType.Builder<TorcherMode> buildTorcherMode() {
         return ModeType.<TorcherMode>builder((type, maid) ->
                         new TorcherMode(type, "Torcher", maid, 12F))
-                .addItemMatcher(stack ->
-                        stack.getItem() instanceof BlockItem
+                .addItemMatcher(stack -> stack.getItem() instanceof BlockItem
                                 && 9 < ((BlockItem) stack.getItem()).getBlock().getDefaultState().getLuminance(),
                         ItemMatcher.Priority.LOWER)
                 .addItemMatcher(ItemMatchers.tag(LMTags.Items.TORCHER_MODE), ItemMatcher.Priority.HIGHER);

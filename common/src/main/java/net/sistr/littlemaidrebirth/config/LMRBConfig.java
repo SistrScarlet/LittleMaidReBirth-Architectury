@@ -14,311 +14,186 @@ import java.util.List;
 /**
  * LMRBのコンフィグ
  */
-//todo コンフィグの取り扱いを再考
 @Config(name = LMRBMod.MODID)
 public class LMRBConfig implements ConfigData {
 
-    //spawn
-
     @ConfigEntry.Category("spawn")
-    @ConfigEntry.Gui.RequiresRestart
-    private boolean canSpawn = true;
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Gui.TransitiveObject
+    public Spawn spawn = new Spawn();
 
-    @ConfigEntry.Category("spawn")
-    private boolean canDespawn;
+    public static class Spawn {
+        @ConfigEntry.Gui.RequiresRestart
+        @ConfigEntry.Gui.Tooltip
+        public boolean canNaturalSpawn = true;
+        @ConfigEntry.Gui.Tooltip
+        public boolean canDespawn = false;
+        @ConfigEntry.Gui.RequiresRestart
+        @ConfigEntry.Gui.Tooltip
+        public List<String> maidSpawnBiomeTags = Lists.newArrayList(
+                LMTags.Biomes.MAID_SPAWN_BIOME.id().toString(),
+                BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE.id().toString(),
+                BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE.id().toString(),
+                BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE.id().toString(),
+                BiomeTags.VILLAGE_SNOWY_HAS_STRUCTURE.id().toString(),
+                BiomeTags.VILLAGE_TAIGA_HAS_STRUCTURE.id().toString()
+        );
+        @ConfigEntry.Gui.RequiresRestart
+        @ConfigEntry.Gui.Tooltip
+        public List<String> maidSpawnExcludeBiomeTags = Lists.newArrayList(
+                LMTags.Biomes.MAID_SPAWN_EXCLUDE_BIOME.id().toString()
+        );
+        @ConfigEntry.Gui.Tooltip
+        public int spawnWeight = 5;
+        @ConfigEntry.Gui.Tooltip
+        public int minSpawnGroupSize = 1;
+        @ConfigEntry.Gui.Tooltip
+        public int maxSpawnGroupSize = 3;
+        @ConfigEntry.Gui.Tooltip
+        public boolean silentDefaultVoice = false;
+        @ConfigEntry.Gui.Tooltip
+        public String defaultSoundPackName = "";
+    }
 
-    @ConfigEntry.Category("spawn")
-    @ConfigEntry.Gui.RequiresRestart
-    private List<String> maidSpawnBiomeTags = Lists.newArrayList(
-            LMTags.Biomes.MAID_SPAWN_BIOME.id().toString(),
-            BiomeTags.VILLAGE_DESERT_HAS_STRUCTURE.id().toString(),
-            BiomeTags.VILLAGE_PLAINS_HAS_STRUCTURE.id().toString(),
-            BiomeTags.VILLAGE_SAVANNA_HAS_STRUCTURE.id().toString(),
-            BiomeTags.VILLAGE_SNOWY_HAS_STRUCTURE.id().toString(),
-            BiomeTags.VILLAGE_TAIGA_HAS_STRUCTURE.id().toString()
-    );
+    @ConfigEntry.Category("health")
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Gui.TransitiveObject
+    public Health health = new Health();
 
-    @ConfigEntry.Category("spawn")
-    @ConfigEntry.Gui.RequiresRestart
-    private List<String> maidSpawnExcludeBiomeTags = Lists.newArrayList(
-            LMTags.Biomes.MAID_SPAWN_EXCLUDE_BIOME.id().toString()
-    );
+    public static class Health {
+        @ConfigEntry.Gui.Tooltip
+        public int healInterval = 2;
+        @ConfigEntry.Gui.Tooltip
+        public int healAmount = 1;
+        @ConfigEntry.Gui.Tooltip
+        public boolean disableMaidDeath = false;
+        @ConfigEntry.Gui.Tooltip
+        public float generalMaidDamageFactor = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float battleModeMaidDamageFactor = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float nonBattleModeMaidDamageFactor = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float emergencyMaidHealthThreshold = 0.5f;
+        @ConfigEntry.Gui.Tooltip
+        public boolean enableWorkInEmergency = false;
+        @ConfigEntry.Gui.Tooltip
+        public boolean enableFriendlyFire = false;
+        @ConfigEntry.Gui.Tooltip
+        public boolean enableSafeMove = true;
+        @ConfigEntry.Gui.Tooltip
+        public boolean immortal = false;
+        @ConfigEntry.Gui.Tooltip
+        public boolean fallImmunity = false;
+        @ConfigEntry.Gui.Tooltip
+        public boolean nonMobDamageImmunity = false;
+    }
 
-    @ConfigEntry.Category("spawn")
-    private int spawnWeight = 5;
+    @ConfigEntry.Category("movement")
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Gui.TransitiveObject
+    public Movement movement = new Movement();
 
-    @ConfigEntry.Category("spawn")
-    private int minSpawnGroupSize = 1;
+    public static class Movement {
+        @ConfigEntry.Gui.Tooltip
+        public float freedomRange = 16.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float followStartDistance = 6.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float followEndDistance = 5.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float sprintStartDistance = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float sprintEndDistance = 6.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float teleportStartDistance = 16.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float emergencyTeleportStartDistance = 6.0f;
+        @ConfigEntry.Gui.Tooltip
+        public int teleportWidth = 3;
+        @ConfigEntry.Gui.Tooltip
+        public int teleportHeight = 1;
+        @ConfigEntry.Gui.Tooltip
+        public boolean canTeleportOwnerForwards = false;
+        @ConfigEntry.Gui.Tooltip
+        public float ownerForwardRange = 4.0f;
+        @ConfigEntry.Gui.Tooltip
+        public int maxTryTeleportCount = 10;
+    }
 
-    @ConfigEntry.Category("spawn")
-    private int maxSpawnGroupSize = 3;
+    @ConfigEntry.Category("work")
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Gui.TransitiveObject
+    public Work work = new Work();
 
-    @ConfigEntry.Category("spawn")
-    private boolean silentDefaultVoice;
-
-    @ConfigEntry.Category("spawn")
-    private String defaultSoundPackName = "";
-
-    //maid
-
-    @ConfigEntry.Category("maid")
-    private float generalMaidDamageFactor = 1.0f;
-
-    @ConfigEntry.Category("maid")
-    private float battleModeMaidDamageFactor = 1.0f;
-
-    @ConfigEntry.Category("maid")
-    private float nonBattleModeMaidDamageFactor = 0.0f;
-
-    @ConfigEntry.Category("maid")
-    private boolean disableMaidDeath = true;
-
-    @ConfigEntry.Category("maid")
-    private float emergencyMaidHealthThreshold = 0.5f;
-
-    @ConfigEntry.Category("maid")
-    private boolean enableWorkInEmergency = false;
-
-    @ConfigEntry.Category("maid")
-    private int healInterval = 2;
-
-    @ConfigEntry.Category("maid")
-    private int healAmount = 1;
-
-    @ConfigEntry.Category("maid")
-    private float freedomRange = 16.0f;
-
-    @ConfigEntry.Category("maid")
-    private float followStartRange = 6.0f;
-
-    @ConfigEntry.Category("maid")
-    private float followEndRange = 5.0f;
-
-    @ConfigEntry.Category("maid")
-    private float sprintStartRange = 8.0f;
-
-    @ConfigEntry.Category("maid")
-    private float sprintEndRange = 6.0f;
-
-    @ConfigEntry.Category("maid")
-    private float teleportStartRange = 16.0f;
-
-    @ConfigEntry.Category("maid")
-    private float emergencyTeleportStartRange = 6.0f;
-
-    @ConfigEntry.Category("maid")
-    private boolean friendlyFire = false;
-
-    @ConfigEntry.Category("maid")
-    private boolean canMoveToDanger = false;
-
-    @ConfigEntry.Category("maid")
-    private boolean immortal = false;
-
-    @ConfigEntry.Category("maid")
-    private boolean fallImmunity = false;
-
-    @ConfigEntry.Category("maid")
-    private boolean nonMobDamageImmunity = false;
-
-    @ConfigEntry.Category("maid")
-    private int defaultWorkItemSlotSize = 9;
-
-    //mode
-
-    @ConfigEntry.Category("mode")
-    private float fencerRangeFactor = 1.0f;
-
-    @ConfigEntry.Category("mode")
-    private float fencerAttackRateFactor = 0.75f;
-
-    @ConfigEntry.Category("mode")
-    private float archerRangeFactor = 1.0f;
-
-    @ConfigEntry.Category("mode")
-    private float archerShootRateFactor = 1.0f;
-
-    @ConfigEntry.Category("mode")
-    private float archerShootVelocityFactor = 1.0f;
-
-    @ConfigEntry.Category("mode")
-    private int torcherLightLevelThreshold = 4;
-
-    //contract
+    public static class Work {
+        @ConfigEntry.Gui.Tooltip
+        public int defaultWorkItemSlotSize = 9;
+        @ConfigEntry.Gui.Tooltip
+        public float fencerAttackDistanceFactor = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float fencerAttackRateFactor = 0.75f;
+        @ConfigEntry.Gui.Tooltip
+        public float archerShootDistanceFactor = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float archerShootRateFactor = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float archerShootVelocityFactor = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public int torcherLightLevelThreshold = 7;
+    }
 
     @ConfigEntry.Category("contract")
-    private int consumeSalaryInterval = 24000;
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Gui.TransitiveObject
+    public Contract contract = new Contract();
 
-    @ConfigEntry.Category("contract")
-    private int unpaidCountLimit = 7;
+    public static class Contract {
+        @ConfigEntry.Gui.Tooltip
+        public int consumeSalaryInterval = 24000;
+        @ConfigEntry.Gui.Tooltip
+        public int unpaidDaysLimit = 7;
+        @ConfigEntry.Gui.Tooltip
+        public int maxAutoSalaryReceiptSlotSize = 3;
+        @ConfigEntry.Gui.Tooltip
+        public int startAutoSalaryReceiptSlotThreshold = 1;
+        @ConfigEntry.Gui.Tooltip
+        public int maxMemorySalaryBoxPos = 4;
+        @ConfigEntry.Gui.Tooltip
+        public float memorySalaryBoxDistance = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public int memorySalaryBoxInterval = 20;
+        @ConfigEntry.Gui.Tooltip
+        public float searchSalaryBoxDistance = 16.0f;
+        @ConfigEntry.Gui.Tooltip
+        public int startIntervalOfAutoSalaryReceipt = 60;
+        @ConfigEntry.Gui.Tooltip
+        public int findPathIntervalOfAutoSalaryReceipt = 10;
+        @ConfigEntry.Gui.Tooltip
+        public int maxMoveTimeOnAutoSalaryReceipt = 200;
+        @ConfigEntry.Gui.Tooltip
+        public int maxMoveTimeAfterAutoSalaryReceipt = 400;
+    }
 
-    //misc
-
-    //todo デフォtrue
     @ConfigEntry.Category("misc")
-    private boolean canPickupItemByNoOwner;
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Gui.TransitiveObject
+    public Misc misc = new Misc();
 
-    @ConfigEntry.Category("misc")
-    private boolean canMilking;
-
-
-    public boolean isCanSpawn() {
-        return canSpawn;
+    public static class Misc {
+        @ConfigEntry.Gui.Tooltip
+        public boolean canPickupItemByNoOwner = false;
+        @ConfigEntry.Gui.Tooltip
+        public boolean canMilking = false;
     }
 
-    public boolean isCanDespawn() {
-        return canDespawn;
-    }
+    @ConfigEntry.Category("client")
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Gui.TransitiveObject
+    public Client client = new Client();
 
-    public List<String> getMaidSpawnBiomeTags() {
-        return Lists.newArrayList(maidSpawnBiomeTags);
-    }
-
-    public List<String> getMaidSpawnExcludeBiomeTags() {
-        return maidSpawnExcludeBiomeTags;
-    }
-
-    public int getSpawnWeight() {
-        return spawnWeight;
-    }
-
-    public int getMinSpawnGroupSize() {
-        return minSpawnGroupSize;
-    }
-
-    public int getMaxSpawnGroupSize() {
-        return maxSpawnGroupSize;
-    }
-
-    public boolean isCanPickupItemByNoOwner() {
-        return canPickupItemByNoOwner;
-    }
-
-    public boolean isCanMilking() {
-        return canMilking;
-    }
-
-    public float getFencerRangeFactor() {
-        return fencerRangeFactor;
-    }
-
-    public float getFencerAttackRateFactor() {
-        return fencerAttackRateFactor;
-    }
-
-    public float getArcherRangeFactor() {
-        return archerRangeFactor;
-    }
-
-    public float getArcherShootRateFactor() {
-        return archerShootRateFactor;
-    }
-
-    public float getArcherShootVelocityFactor() {
-        return archerShootVelocityFactor;
-    }
-
-    public int getConsumeSalaryInterval() {
-        return consumeSalaryInterval;
-    }
-
-    public int getUnpaidCountLimit() {
-        return unpaidCountLimit;
-    }
-
-    public float getFollowStartRange() {
-        return followStartRange;
-    }
-
-    public float getFollowEndRange() {
-        return followEndRange;
-    }
-
-    public float getSprintStartRange() {
-        return sprintStartRange;
-    }
-
-    public float getSprintEndRange() {
-        return sprintEndRange;
-    }
-
-    public float getTeleportStartRange() {
-        return teleportStartRange;
-    }
-
-    public float getEmergencyTeleportStartRange() {
-        return emergencyTeleportStartRange;
-    }
-
-    public float getFreedomRange() {
-        return freedomRange;
-    }
-
-    public float getGeneralMaidDamageFactor() {
-        return generalMaidDamageFactor;
-    }
-
-    public float getBattleModeMaidDamageFactor() {
-        return battleModeMaidDamageFactor;
-    }
-
-    public float getNonBattleModeMaidDamageFactor() {
-        return nonBattleModeMaidDamageFactor;
-    }
-
-    public boolean isDisableMaidDeath() {
-        return disableMaidDeath;
-    }
-
-    public float getEmergencyMaidHealthThreshold() {
-        return emergencyMaidHealthThreshold;
-    }
-
-    public boolean isEnableWorkInEmergency() {
-        return enableWorkInEmergency;
-    }
-
-    public int getHealInterval() {
-        return healInterval;
-    }
-
-    public int getHealAmount() {
-        return healAmount;
-    }
-
-    public boolean isFriendlyFire() {
-        return friendlyFire;
-    }
-
-    public boolean isCanMoveToDanger() {
-        return canMoveToDanger;
-    }
-
-    public boolean isImmortal() {
-        return immortal;
-    }
-
-    public boolean isFallImmunity() {
-        return fallImmunity;
-    }
-
-    public boolean isNonMobDamageImmunity() {
-        return nonMobDamageImmunity;
-    }
-
-    public int getDefaultWorkItemSlotSize() {
-        return defaultWorkItemSlotSize;
-    }
-
-    public boolean isSilentDefaultVoice() {
-        return silentDefaultVoice;
-    }
-
-    public String getDefaultSoundPackName() {
-        return defaultSoundPackName;
-    }
-
-    public int getTorcherLightLevelThreshold() {
-        return torcherLightLevelThreshold;
+    public static class Client {
+        @ConfigEntry.Gui.Tooltip
+        public boolean enableWaitPoseOnMoving = false;
     }
 }

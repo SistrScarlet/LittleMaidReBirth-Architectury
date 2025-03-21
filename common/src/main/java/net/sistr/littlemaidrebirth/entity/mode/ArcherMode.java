@@ -94,14 +94,14 @@ public class ArcherMode extends RangedAttackBaseMode {
     protected int getInterval(ItemStack itemStack) {
         return MathHelper.ceil((itemStack.getItem() instanceof IRangedWeapon rangedWeapon
                 ? rangedWeapon.getInterval_LMRB(itemStack, this.mob)
-                : 20) / LMRBMod.getConfig().getArcherShootRateFactor());
+                : 20) / LMRBMod.getConfig().work.archerShootRateFactor);
     }
 
     @Override
     protected float getMaxRange(ItemStack itemStack) {
         return (itemStack.getItem() instanceof IRangedWeapon rangedWeapon
                 ? rangedWeapon.getMaxRange_LMRB(itemStack, this.mob) : 16F)
-                * LMRBMod.getConfig().getArcherRangeFactor();
+                * LMRBMod.getConfig().work.archerShootDistanceFactor;
     }
 
     @Override

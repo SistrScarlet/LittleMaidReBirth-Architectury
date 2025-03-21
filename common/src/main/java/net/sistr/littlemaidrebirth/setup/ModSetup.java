@@ -22,7 +22,7 @@ public class ModSetup {
     public static void init() {
         Networking.INSTANCE.init();
 
-        if (LMRBMod.getConfig().isCanSpawn()) {
+        if (LMRBMod.getConfig().spawn.canNaturalSpawn) {
             registerSpawnSettingLM();
         }
 
@@ -43,13 +43,13 @@ public class ModSetup {
 
     private static void registerSpawnSettingLM() {
         //todo メイドさんのスポーン設定容易化
-        var spawnBiomeTags = LMRBMod.getConfig().getMaidSpawnBiomeTags()
+        var spawnBiomeTags = LMRBMod.getConfig().spawn.maidSpawnBiomeTags
                 .stream()
                 .filter(Identifier::isValid)
                 .map(Identifier::new)
                 .map(id -> TagKey.of(RegistryKeys.BIOME, id))
                 .toList();
-        var spawnExcludeBiomeTags = LMRBMod.getConfig().getMaidSpawnExcludeBiomeTags()
+        var spawnExcludeBiomeTags = LMRBMod.getConfig().spawn.maidSpawnExcludeBiomeTags
                 .stream()
                 .filter(Identifier::isValid)
                 .map(Identifier::new)
@@ -59,9 +59,9 @@ public class ModSetup {
                 (context, mutable) -> mutable.getSpawnProperties()
                         .addSpawn(Registration.LITTLE_MAID_MOB.get().getSpawnGroup(),
                                 new SpawnSettings.SpawnEntry(Registration.LITTLE_MAID_MOB.get(),
-                                        LMRBMod.getConfig().getSpawnWeight(),
-                                        LMRBMod.getConfig().getMinSpawnGroupSize(),
-                                        LMRBMod.getConfig().getMaxSpawnGroupSize())));
+                                        LMRBMod.getConfig().spawn.spawnWeight,
+                                        LMRBMod.getConfig().spawn.minSpawnGroupSize,
+                                        LMRBMod.getConfig().spawn.maxSpawnGroupSize)));
     }
 
     private static boolean canSpawnBiome(BiomeModifications.BiomeContext context,

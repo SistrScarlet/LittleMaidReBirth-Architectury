@@ -5,6 +5,7 @@ import dev.architectury.registry.level.entity.EntityAttributeRegistry;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
+import me.shedaniel.autoconfig.serializer.Toml4jConfigSerializer;
 import net.sistr.littlemaidrebirth.advancement.criterion.LMRBCriteria;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
@@ -19,7 +20,7 @@ public class LMRBMod {
 
     public static void init() {
         //todo コンフィグ周りの扱いの改善
-        AutoConfig.register(LMRBConfig.class, GsonConfigSerializer::new);
+        AutoConfig.register(LMRBConfig.class, Toml4jConfigSerializer::new);
         CONFIG_HOLDER = AutoConfig.getConfigHolder(LMRBConfig.class);
 
         Registration.init();

@@ -78,7 +78,7 @@ public class TorcherMode extends Mode {
     }
 
     public boolean isDark(BlockPos pos) {
-        return mob.getWorld().getLightLevel(pos) <= LMRBMod.getConfig().getTorcherLightLevelThreshold();
+        return mob.getWorld().getLightLevel(pos) <= LMRBMod.getConfig().work.torcherLightLevelThreshold;
     }
 
     public boolean isPlaceable(BlockPos pos) {
@@ -107,7 +107,7 @@ public class TorcherMode extends Mode {
         }
         //一定時間経過しても置けない、または明るい地点を無視
         if (60 < ++this.failPlaceTimer
-                || LMRBMod.getConfig().getTorcherLightLevelThreshold()
+                || LMRBMod.getConfig().work.torcherLightLevelThreshold
                 < mob.getWorld().getLightLevel(placePos)) {
             this.placePos = null;
             this.failPlaceTimer = 0;

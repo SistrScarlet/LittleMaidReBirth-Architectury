@@ -1,0 +1,43 @@
+{
+  "parent": "minecraft:recipes/root",
+  "rewards": {
+    "recipes": [
+      "littlemaidrebirth:salary_box"
+    ]
+  },
+  "criteria": {
+    "sugar": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "tag": "minecraft:sugar"
+          }
+        ]
+      }
+    },
+    "barrel": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "item": "minecraft:barrel"
+          }
+        ]
+      }
+    },
+    "has_the_recipe": {
+      "trigger": "minecraft:recipe_unlocked",
+      "conditions": {
+        "recipe": "littlemaidrebirth:salary_box"
+      }
+    }
+  },
+  "requirements": [
+    [
+      "sugar",
+      "barrel",
+      "has_the_recipe"
+    ]
+  ]
+}

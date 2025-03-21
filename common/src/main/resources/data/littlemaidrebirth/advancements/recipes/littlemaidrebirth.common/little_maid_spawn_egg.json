@@ -11,7 +11,7 @@
       "conditions": {
         "items": [
           {
-            "item": "minecraft:sugar"
+            "tag": "littlemaidrebirth:maids_salary"
           }
         ]
       }
@@ -21,7 +21,7 @@
       "conditions": {
         "items": [
           {
-            "item": "minecraft:cake"
+            "tag": "littlemaidrebirth:maids_employable"
           }
         ]
       }
