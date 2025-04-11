@@ -32,6 +32,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 //todo モード名表示/移動状態をアイコンで表記
+//todo ストライキ時の表示改善
 @Environment(EnvType.CLIENT)
 public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final Identifier GUI =
@@ -83,6 +84,9 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, FEATHER,
                 Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.change_moving_mode"),
                 button -> {
+                    if (this.owner.isStrike()) {
+                        return;
+                    }
                     switch (movingMode) {
                         case ESCORT -> movingMode = MovingMode.FREEDOM;
                         case FREEDOM -> movingMode = MovingMode.TRACER;

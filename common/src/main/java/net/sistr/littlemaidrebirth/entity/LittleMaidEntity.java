@@ -1805,6 +1805,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void readContractable(NbtCompound nbt) {
         itemContractable.readContractable(nbt);
+        if (itemContractable.isStrike()) {
+            this.setStrike(true);
+        }
     }
 
     public int getUnpaidDays() {
