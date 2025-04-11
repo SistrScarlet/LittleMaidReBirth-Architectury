@@ -357,10 +357,14 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     }
                 });
 
-        this.goalSelector.add(++priority, new LMFollowAtHeldItemGoal<>(this,
+        this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this,
                 () -> config.misc.stareAtSalaryRange,
                 stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
                 () -> config.misc.followAtHeldSalaryRange,
+                true));
+        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal<>(this,
+                () -> config.misc.stareAtSalaryRange,
+                stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
                 true));
 
         //todo 頭の装飾品を仕舞わないようにする
@@ -430,11 +434,16 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                         && super.canStart();
             }
         });
-        this.goalSelector.add(++priority, new LMFollowAtHeldItemGoal<>(this,
+        this.goalSelector.add(++priority, new FollowAtHeldItemGoal<>(this,
                 () -> config.misc.stareAtEmployItemRange,
                 stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE),
                 () -> config.misc.followAtHeldEmployItemRange,
                 false));
+        this.goalSelector.add(++priority, new LMStareAtHeldItemGoal<>(this,
+                () -> config.misc.stareAtEmployItemRange,
+                stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE),
+                false));
+
         this.goalSelector.add(++priority, new WanderAroundFarGoal(this, config.movement.freedomSpeed) {
             @Override
             public boolean canStart() {
@@ -2044,12 +2053,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return LMRBMod.getConfig();
     }
 
-    public static class LMFollowAtHeldItemGoal<T extends LittleMaidEntity> extends FollowAtHeldItemGoal<T> {
+    // MOVEとLOOKでGoalを分離
+    public static class LMStareAtHeldItemGoal<T extends LittleMaidEntity> extends TameableStareAtHeldItemGoal<T> {
         private final LittleMaidEntity maid;
 
-        public LMFollowAtHeldItemGoal(T maid, Supplier<Float> stareAtRange, Predicate<ItemStack> targetItem, Supplier<Float> followRange, boolean isTamed) {
-            super(maid, stareAtRange, targetItem, followRange, isTamed);
-            this.maid = maid;
+        public LMStareAtHeldItemGoal(T mob, Supplier<Float> stareAtRange, Predicate<ItemStack> targetItem, boolean isTamed) {
+            super(mob, stareAtRange, targetItem, isTamed);
+            this.maid = mob;
         }
 
         @Override
@@ -2064,6 +2074,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             super.stop();
             this.maid.setBegging(false);
         }
+
     }
 
     //todo このクラス置く場所ここで正しい？
