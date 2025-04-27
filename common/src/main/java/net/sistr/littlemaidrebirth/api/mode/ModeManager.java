@@ -22,14 +22,24 @@ public class ModeManager {
     }
 
     public Optional<Identifier> getId(Mode mode) {
-        return Optional.ofNullable(MODE_TYPES.inverse().get(mode.getModeType()));
+        return getId(mode.getModeType());
+    }
+
+    public Optional<Identifier> getId(ModeType<?> modeType) {
+        return Optional.ofNullable(MODE_TYPES.inverse().get(modeType));
+    }
+
+    public Optional<ModeType<? extends Mode>> getType(Identifier id) {
+        return Optional.ofNullable(MODE_TYPES.get(id));
     }
 
     /**
      * メイドのモードを新規作成
      */
     public Collection<Mode> createModes(LittleMaidEntity maid) {
-        return MODE_TYPES.values().stream().map(type -> type.create(maid)).collect(Collectors.toList());
+        return MODE_TYPES.values().stream()
+                .map(type -> type.create(maid))
+                .collect(Collectors.toList());
     }
 
 }
