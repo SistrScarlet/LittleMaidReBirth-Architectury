@@ -100,7 +100,11 @@ public class HasModeImpl implements HasMode {
             // 手持ちアイテムに現在のモードで適用できるかチェック
             var index = getNowModeItemIndex();
             if (index == -1) {
-                // モード続行不可なら新たなモードに切り替える
+                // モード続行不可
+                nowMode.resetTask();
+                nowMode.endModeTask();
+                nowMode = null;
+                // 新たなモードに切り替え
                 getNewMode().ifPresent(this::changeNewMode);
             } else {
                 // モードアイテムがあるならメインハンドと入れ替え
