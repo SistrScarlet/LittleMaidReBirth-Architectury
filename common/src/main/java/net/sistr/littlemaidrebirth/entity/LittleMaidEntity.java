@@ -620,7 +620,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public void saveAdditionalSpawnData(PacketByteBuf buf) {
         //モデル
         buf.writeEnumConstant(getColorMM());
-        buf.writeBoolean(isContract());
+        buf.writeBoolean(isContractMM());
         buf.writeString(getTextureHolder(Layer.SKIN, Part.HEAD).getTextureName());
         for (Part part : Part.values()) {
             buf.writeString(getTextureHolder(Layer.INNER, part).getTextureName());
