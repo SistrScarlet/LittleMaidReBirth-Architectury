@@ -145,6 +145,8 @@
   "text.autoconfig.littlemaidrebirth.category.work": "お仕事",
   "text.autoconfig.littlemaidrebirth.option.work.defaultWorkItemSlotSize": "デフォルトのお仕事アイテムスロット数",
   "text.autoconfig.littlemaidrebirth.option.work.defaultWorkItemSlotSize.@Tooltip": "デフォルトのお仕事アイテムスロットの数です。\n個人設定はメイドインベントリからできます。",
+  "text.autoconfig.littlemaidrebirth.option.work.maxTargetRange": "最大ターゲット範囲",
+  "text.autoconfig.littlemaidrebirth.option.work.maxTargetRange.@Tooltip": "敵をターゲットできる最大の距離です。",
   "text.autoconfig.littlemaidrebirth.option.work.fencerAttackDistanceFactor": "剣士の攻撃距離係数",
   "text.autoconfig.littlemaidrebirth.option.work.fencerAttackDistanceFactor.@Tooltip": "剣士の攻撃距離にこの係数が掛けられます。",
   "text.autoconfig.littlemaidrebirth.option.work.fencerAttackRateFactor": "剣士の攻撃頻度係数",

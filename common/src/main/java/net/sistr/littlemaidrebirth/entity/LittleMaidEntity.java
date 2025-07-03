@@ -9,6 +9,7 @@ import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
+import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
@@ -457,13 +458,31 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(priority, new LookAroundGoal(this));
 
         //ターゲット系
+        Predicate<Entity> isInTargetRange = (entity) -> {
+            // ラムダ内部に置かないとホットリロードに対応できない
+            float maxTargetRange = config.work.maxTargetRange;
+            return this.squaredDistanceTo(entity) <= maxTargetRange * maxTargetRange;
+        };
         priority = -1;
-        this.targetSelector.add(++priority, new PredicateRevengeGoal(this, entity -> !isFriend(entity)));
-        this.targetSelector.add(++priority, new TrackOwnerAttackerGoal(this));
-        this.targetSelector.add(++priority, new AttackWithOwnerGoal(this));
+        this.targetSelector.add(++priority, new PredicateRevengeGoal(this, entity ->
+                isInTargetRange.test(entity)
+                        && !isFriend(entity)));
+        this.targetSelector.add(++priority, new TrackOwnerAttackerGoal(this) {
+            @Override
+            protected boolean canTrack(LivingEntity target, TargetPredicate targetPredicate) {
+                return isInTargetRange.test(target) && super.canTrack(target, targetPredicate);
+            }
+        });
+        this.targetSelector.add(++priority, new AttackWithOwnerGoal(this) {
+            @Override
+            protected boolean canTrack(LivingEntity target, TargetPredicate targetPredicate) {
+                return isInTargetRange.test(target) && super.canTrack(target, targetPredicate);
+            }
+        });
         this.targetSelector.add(++priority, new ActiveTargetGoal<>(
                 this, LivingEntity.class, 5, true, false,
-                this::isEnemy));
+                entity -> isInTargetRange.test(entity)
+                        && isEnemy(entity)));
     }
 
     @Override

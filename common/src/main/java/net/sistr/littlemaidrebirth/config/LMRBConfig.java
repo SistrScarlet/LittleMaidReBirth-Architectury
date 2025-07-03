@@ -157,6 +157,8 @@ public class LMRBConfig implements ConfigData {
         @ConfigEntry.Gui.Tooltip
         public int defaultWorkItemSlotSize = 9;
         @ConfigEntry.Gui.Tooltip
+        public float maxTargetRange = 16f;
+        @ConfigEntry.Gui.Tooltip
         public float fencerAttackDistanceFactor = 1.0f;
         @ConfigEntry.Gui.Tooltip
         public float fencerAttackRateFactor = 0.75f;
