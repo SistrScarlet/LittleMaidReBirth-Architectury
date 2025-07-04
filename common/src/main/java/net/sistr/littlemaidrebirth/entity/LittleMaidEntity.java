@@ -9,7 +9,6 @@ import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
-import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
@@ -458,7 +457,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(priority, new LookAroundGoal(this));
 
         //ターゲット系
-        Predicate<Entity> isInTargetRange = (entity) -> {
+        /*Predicate<Entity> isInTargetRange = (entity) -> {
             // ラムダ内部に置かないとホットリロードに対応できない
             float maxTargetRange = config.work.maxTargetRange;
             return this.squaredDistanceTo(entity) <= maxTargetRange * maxTargetRange;
@@ -482,7 +481,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.targetSelector.add(++priority, new ActiveTargetGoal<>(
                 this, LivingEntity.class, 5, true, false,
                 entity -> isInTargetRange.test(entity)
-                        && isEnemy(entity)));
+                        && isEnemy(entity)));*/
+        this.targetSelector.add(0, new LMTargetGoal(this));
     }
 
     @Override

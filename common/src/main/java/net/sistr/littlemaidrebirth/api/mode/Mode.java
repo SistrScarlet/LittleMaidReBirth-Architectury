@@ -88,7 +88,17 @@ public abstract class Mode {
     }
 
     public boolean isBattleMode() {
-        return false;
+        return getBattleModeType() != BattleModeType.NONE;
+    }
+
+    public BattleModeType getBattleModeType() {
+        return BattleModeType.NONE;
+    }
+
+    public enum BattleModeType {
+        NONE,
+        SWORD,
+        BOW
     }
 
 }
