@@ -17,13 +17,7 @@ public class ReachAttributeUtilImpl {
     }
 
     public static double getAttackRange(LivingEntity entity) {
-        double base;
-        if (entity instanceof PlayerEntity) {
-            base = ((PlayerEntity) entity).isCreative() ? 5 : 4.5;
-        } else {
-            base = 4.5;
-        }
-        return base;// + entity.getAttributeValue(ReachEntityAttributes.ATTACK_RANGE);
+        return 3;// + entity.getAttributeValue(ReachEntityAttributes.ATTACK_RANGE);
     }
 
     public static double getRangeSq(LivingEntity entity) {

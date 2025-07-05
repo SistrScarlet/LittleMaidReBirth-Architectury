@@ -5,6 +5,7 @@ import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
@@ -14,7 +15,9 @@ import net.sistr.littlemaidrebirth.api.mode.IRangedWeapon;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
-public class ArcherMode extends RangedAttackBaseMode {
+import java.util.Optional;
+
+public class ArcherMode extends AbstractArcherMode<Item> {
     protected int cool;
 
     public ArcherMode(ModeType<? extends ArcherMode> modeType, String name,
@@ -115,12 +118,8 @@ public class ArcherMode extends RangedAttackBaseMode {
     }
 
     @Override
-    public boolean isBattleMode() {
-        return true;
-    }
-
-    @Override
-    public BattleModeType getBattleModeType() {
-        return BattleModeType.BOW;
+    protected Optional<Item> getWeaponInstance(ItemStack stack) {
+        var item = stack.getItem();
+        return Optional.of(item);
     }
 }

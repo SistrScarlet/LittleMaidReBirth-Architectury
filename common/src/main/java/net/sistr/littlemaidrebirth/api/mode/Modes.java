@@ -35,7 +35,7 @@ public class Modes {
 
     public static ModeType.Builder<FencerMode> buildFencerMode() {
         return ModeType.<FencerMode>builder((type, maid) ->
-                        new FencerMode(type, "Fencer", maid, 1D, true))
+                        new FencerMode(type, "Fencer", maid, 1.0f))
                 .addItemMatcher(ItemMatchers.clazz(SwordItem.class), ItemMatcher.Priority.LOWER)
                 .addItemMatcher(ItemMatchers.clazz(AxeItem.class), ItemMatcher.Priority.LOWER)
                 .addItemMatcher(ItemMatchers.tag(LMTags.Items.FENCER_MODE), ItemMatcher.Priority.HIGHER);

@@ -8,23 +8,22 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
-import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 import java.util.Optional;
 import java.util.function.Predicate;
 
-public abstract class RangedAttackBaseMode extends Mode {
+public abstract class AbstractArcherMode<T> extends AbstractBattleMode<T> {
     protected final LittleMaidEntity mob;
     protected int seeTime;
     protected boolean strafingClockwise;
     protected boolean strafingBackwards;
     protected int strafingTime = -1;
 
-    public RangedAttackBaseMode(ModeType<? extends RangedAttackBaseMode> modeType,
-                                String name, LittleMaidEntity mob) {
-        super(modeType, name);
+    public AbstractArcherMode(ModeType<? extends AbstractArcherMode> modeType,
+                              String name, LittleMaidEntity mob) {
+        super(mob, modeType, name);
         this.mob = mob;
     }
 
@@ -114,5 +113,10 @@ public abstract class RangedAttackBaseMode extends Mode {
         this.mob.setAttacking(false);
         this.mob.setAimingBow(false);
         this.seeTime = 0;
+    }
+
+    @Override
+    public BattleModeType getBattleModeType() {
+        return BattleModeType.BOW;
     }
 }
