@@ -24,6 +24,7 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -158,6 +159,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     private final LMScreenHandlerFactory screenFactory = new LMScreenHandlerFactory(this);
     private final IModelCaps caps = new LittleMaidModelCaps(this);
 
+    private final Map<MobEntity, Predicate<MobEntity>> fleeEntities = new HashMap<>();  // todo クラス化検討
     @Nullable
     private BlockPos freedomPos;
     //首傾げのやつ
@@ -321,6 +323,25 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
         this.goalSelector.add(++priority, new LMTeleportTameOwnerGoal(this,
                 () -> config.movement.teleportStartDistance));
+
+        // 危険な敵からの逃避
+        this.goalSelector.add(++priority, new FleeEntityGoal<>(this, MobEntity.class,
+                config.target.dangerCloseRangeThreshold,
+                config.movement.followSpeed, config.movement.sprintSpeed,
+                entity -> fleeEntities.containsKey(entity)) {
+            @Override
+            public void tick() {
+                fleeEntities.entrySet()
+                        .removeIf(entry -> entry.getValue().test(entry.getKey()));
+                super.tick();
+            }
+
+            @Override
+            public void stop() {
+                super.stop();
+                this.mob.getNavigation().stop();
+            }
+        });
 
         this.goalSelector.add(++priority, new ModeWrapperGoal<>(this) {
             @Override
@@ -1534,6 +1555,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void setMovingMode(MovingMode movingMode) {
         this.dataTracker.set(MOVING_MODE, (byte) movingMode.getId());
+    }
+
+    // Flee
+
+    public void addFleeEntity(MobEntity entity, Predicate<MobEntity> removePredicate) {
+        this.fleeEntities.put(entity, removePredicate);
     }
 
     //インベントリ関連

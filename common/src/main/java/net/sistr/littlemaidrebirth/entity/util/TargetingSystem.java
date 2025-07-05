@@ -452,19 +452,26 @@ public class TargetingSystem {
      */
     public static boolean needsEvacuation(Maid maid, List<Mob> enemies) {
         return enemies.stream()
-                .anyMatch(mob -> mob.isDangerous() && mob.isTargeting(maid));
+                .anyMatch(mob -> mob.isDangerous()
+                        && (mob.isTargeting(maid)
+                        || mob.getPosition().distanceTo(maid.getPosition())
+                        <= TargetingConfig.getDangerCloseRangeThreshold())
+                );
     }
 
     /**
-     * 最も危険な敵（避難対象）を取得（危険敵からの避難のみ）
+     * 危険な敵（避難対象）を取得
      *
      * @param maid    判断するメイドさん
      * @param enemies 周囲の敵リスト
-     * @return 最も危険な敵のOptional（避難不要の場合はempty）
+     * @return 最も危険な敵のリスト
      */
-    public static Optional<Mob> getMostDangerousEnemy(Maid maid, List<Mob> enemies) {
+    public static List<Mob> getDangerousEnemies(Maid maid, List<Mob> enemies) {
         return enemies.stream()
-                .filter(mob -> mob.isDangerous() && mob.isTargeting(maid))
-                .min(Comparator.comparingDouble(e -> e.getPosition().distanceTo(maid.getPosition()))); // 最も近い危険敵を優先
+                .filter(mob -> mob.isDangerous() && (mob.isTargeting(maid)
+                        || mob.getPosition().distanceTo(maid.getPosition())
+                        <= TargetingConfig.getDangerCloseRangeThreshold())
+                ).sorted(Comparator.comparingDouble(e -> e.getPosition().distanceTo(maid.getPosition())))
+                .toList(); // 最も近い危険敵を優先
     }
 }

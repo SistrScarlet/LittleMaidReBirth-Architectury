@@ -50,21 +50,25 @@ public class LMTargetGoal extends Goal {
                 .map(Map.Entry::getKey)
                 .orElse(null);
 
+        // 避難する
+        var enemies = new ArrayList<>(priorities.keySet());
+        var maidWrapper = new TargetingSystem.Maid(this.maid);
+        if (TargetingSystem.needsEvacuation(maidWrapper, enemies)) {
+            TargetingSystem.getDangerousEnemies(maidWrapper, enemies)
+                    .forEach(mob -> this.maid.addFleeEntity(mob.getMob(), e ->
+                            !e.isAlive()
+                                    || this.maid.squaredDistanceTo(e) > (TargetingConfig.getDangerCloseRangeThreshold() + 4)
+                                    * (TargetingConfig.getDangerCloseRangeThreshold() + 4))
+                    );
+        }
+
+        // 最高優先度のモブをターゲットにする
         if (highestPriorityMob != null) {
             this.target = highestPriorityMob.getMob();
             this.maid.setTarget(highestPriorityMob.getMob());
             return true;
         }
 
-        // 避難が必要な場合も考慮する
-        var enemies = new ArrayList<>(priorities.keySet());
-        var maidWrapper = new TargetingSystem.Maid(this.maid);
-        if (TargetingSystem.needsEvacuation(maidWrapper, enemies)) {
-            TargetingSystem.getMostDangerousEnemy(maidWrapper, enemies)
-                    .ifPresent(mob -> {
-                        //todo 逃走対象をセットする
-                    });
-        }
 
         return false;
     }
