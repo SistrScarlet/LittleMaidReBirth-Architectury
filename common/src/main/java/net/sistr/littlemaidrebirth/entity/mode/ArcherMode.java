@@ -118,4 +118,9 @@ public class ArcherMode extends RangedAttackBaseMode {
     public boolean isBattleMode() {
         return true;
     }
+
+    @Override
+    public BattleModeType getBattleModeType() {
+        return BattleModeType.BOW;
+    }
 }

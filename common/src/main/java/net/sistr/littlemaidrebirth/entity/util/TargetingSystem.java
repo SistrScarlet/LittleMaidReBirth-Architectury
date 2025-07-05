@@ -1,13 +1,9 @@
 package net.sistr.littlemaidrebirth.entity.util;
 
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.boss.dragon.EnderDragonEntity;
-import net.minecraft.entity.mob.EndermanEntity;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.RavagerEntity;
-import net.minecraft.entity.mob.WardenEntity;
+import net.minecraft.entity.mob.*;
 import net.minecraft.util.math.Vec3d;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
@@ -69,9 +65,9 @@ public class TargetingSystem {
      * 基本エンティティクラス
      */
     public static class EntityWrapper {
-        private final Entity entity;
+        private final LivingEntity entity;
 
-        public EntityWrapper(Entity entity) {
+        public EntityWrapper(LivingEntity entity) {
             this.entity = entity;
         }
 
@@ -83,6 +79,19 @@ public class TargetingSystem {
                 return mobEntity.getTarget() == target.entity;
             }
             return false;
+        }
+
+        /**
+         * 指定されたエンティティから攻撃を受けているかチェック
+         */
+        public boolean isAttackedBy(EntityWrapper attacker) {
+            // 攻撃を受けて60tick以内かつアタッカーが一致
+            return entity.age - 60 < entity.getLastAttackedTime()
+                    && entity.getAttacker() == attacker.entity;
+        }
+
+        public boolean isInjured() {
+            return this.entity.getHealth() / this.entity.getMaxHealth() < TargetingConfig.getInjuredHealthThreshold();
         }
 
         public Vec3d getPosition() {
@@ -112,11 +121,11 @@ public class TargetingSystem {
     /**
      * メイドさんクラス
      */
-    public static class Maid extends EntityWrapper {
+    public static class Maid extends Mob {
         private final LittleMaidEntity maid;
 
         public Maid(LittleMaidEntity maid) {
-            super(maid);
+            super(maid, false);
             this.maid = maid;
         }
 
@@ -128,10 +137,6 @@ public class TargetingSystem {
                     return CombatType.SWORD;
                 }
             }).orElse(CombatType.SWORD);
-        }
-
-        public float getHealthPercent() {
-            return maid.getHealth() / maid.getMaxHealth();
         }
     }
 
@@ -157,7 +162,9 @@ public class TargetingSystem {
             return this.mob instanceof EnderDragonEntity
                     || this.mob instanceof WitherEntity
                     || this.mob instanceof WardenEntity
-                    || this.mob instanceof RavagerEntity;
+                    || this.mob instanceof RavagerEntity
+                    || this.mob instanceof CreeperEntity
+                    || this.mob instanceof EvokerEntity;
         }
 
         public boolean isEnemy() {
@@ -177,9 +184,15 @@ public class TargetingSystem {
         public Master(LivingEntity master) {
             super(master);
         }
+
+        @Override
+        public boolean isTargeting(EntityWrapper target) {
+            return target.isAttackedBy(this);
+        }
     }
 
     public enum CombatType {
+        NONE,
         SWORD,
         BOW
     }
@@ -194,15 +207,15 @@ public class TargetingSystem {
      * @param settings   戦闘設定（オプション、デフォルトは護衛モード）
      * @return {enemy: priority_score} のマップ
      */
-    public static Map<Mob, Double> calculateEnemyPriorities(
+    public static Map<Mob, Float> calculateEnemyPriorities(
             Maid maid, List<Mob> enemies, @Nullable Master master, List<Maid> otherMaids,
             @Nullable CombatSettings settings) {
 
         CombatSettings combatSettings = settings != null ? settings : new CombatSettings();  // デフォルトは護衛モード
-        Map<Mob, Double> priorities = new HashMap<>();
+        Map<Mob, Float> priorities = new HashMap<>();
 
         for (Mob mob : enemies) {
-            double basePriority = calculateBasePriority(mob, maid, master, otherMaids);
+            float basePriority = calculateBasePriority(mob, maid, master, otherMaids);
 
             // ベースが0以下なら敵対しない
             if (basePriority <= 0) {
@@ -210,13 +223,13 @@ public class TargetingSystem {
                 continue;
             }
 
-            double score = basePriority;
+            float score = basePriority;
             score += calculateDistanceModifier(mob, maid, master);
             score += calculateWeaponCompatibility(mob, maid);
-            score += calculateDangerModifier(mob, maid, master);
+            score += calculateDangerModifier(mob, maid, master, otherMaids);
             score += calculateDistributionModifier(mob, otherMaids);
-            score += calculateAssignmentModifier(mob, otherMaids, combatSettings);
             score += calculateMasterStanceModifier(mob, master, combatSettings);
+            score += calculateInjuredAllyAttackerModifier(mob, maid, master, otherMaids);
 
             priorities.put(mob, score);
         }
@@ -227,96 +240,103 @@ public class TargetingSystem {
     /**
      * 基本優先度を階層化に基づいて算出
      */
-    public static double calculateBasePriority(Mob mob, Maid maid, Master master, List<Maid> otherMaids) {
-        double distanceToMaid = mob.getPosition().distanceTo(maid.getPosition());
+    public static float calculateBasePriority(Mob mob, Maid maid, Master master, List<Maid> otherMaids) {
+        float distanceToMaid = (float) mob.getPosition().distanceTo(maid.getPosition());
 
         // 特別優先度: 危険敵からの避難
-        if (mob.isDangerous() && mob.isTargeting(maid)) {
+        if (mob.isDangerous() && (mob.isTargeting(maid) || maid.isAttackedBy(mob))) {
             return TargetingConfig.getPriorityEvacuation();  // 避難優先（負の値で戦闘回避）
         }
 
         // 優先度1: 攻撃してきた相手
-        if (mob.isTargeting(maid)) {
+        if (maid.isAttackedBy(mob)) {
             return TargetingConfig.getPrioritySelfAttacker();
         }
 
         // 優先度2: ご主人を攻撃した相手
-        if (master != null && mob.isTargeting(master)) {
+        if (master != null && master.isAttackedBy(mob)) {
             return TargetingConfig.getPriorityMasterAttacker();
         }
 
-        // 優先度3: 他メイドさんを攻撃した相手
+        // 優先度4: 他メイドさんを攻撃した相手
         for (Maid otherMaid : otherMaids) {
-            if (mob.isTargeting(otherMaid)) {
+            if (otherMaid.isAttackedBy(mob)) {
                 return TargetingConfig.getPriorityMaidAttacker();
             }
         }
 
-        // 優先度4: ご主人が攻撃した相手
-        if (master != null && master.isTargeting(mob)) {
+        // 優先度5: ご主人が攻撃した相手
+        if (master != null && (master.isTargeting(mob) || mob.isAttackedBy(master))) {
             return TargetingConfig.getPriorityMasterTarget();
         }
 
-        // 優先度5: 負傷メイドさんの支援・カバー
+        // 優先度6: 他メイドさんがターゲットしている相手
         for (Maid otherMaid : otherMaids) {
-            if (otherMaid.getHealthPercent() < TargetingConfig.getInjuredHealthThreshold() && otherMaid.getCurrentTarget().isPresent() &&
-                    otherMaid.getCurrentTarget().get().equals(mob)) {
-                return TargetingConfig.getPriorityInjuredSupport();
+            if (otherMaid.isTargeting(mob)) {
+                return TargetingConfig.getPriorityMaidTarget();
             }
         }
 
-        // 優先度6: 周囲のMob（危険敵は先制攻撃しない）
+        // 優先度7: 周囲のMob
         if (mob.isDangerous()) {
-            return 0;  // 先制攻撃しない
+            return 0;  // 危険な敵には先制攻撃しない
+        }
+        // 先制攻撃距離制限（メイドさんとご主人両方からの距離を考慮）
+        boolean withinPreemptiveRange = distanceToMaid <= TargetingConfig.getMaxPreemptiveDistance();
+        if (master != null) {
+            float distanceToMaster = (float) mob.getPosition().distanceTo(master.getPosition());
+            withinPreemptiveRange = withinPreemptiveRange && distanceToMaster <= TargetingConfig.getMaxPreemptiveDistance();
+        }
+        if (!withinPreemptiveRange) {
+            return 0;  // 先制攻撃範囲外
+        }
+
+        // 敵対モブは常にターゲット対象
+        if (mob.isEnemy()) {
+            return TargetingConfig.getPriorityNormalEnemy();
         } else {
-            // 先制攻撃距離制限
-            if (distanceToMaid > TargetingConfig.getMaxPreemptiveDistance()) {
-                return 0;  // 先制攻撃範囲外
-            }
-
-            // 敵対モブは常にターゲット対象
-            if (mob.isEnemy()) {
-                return TargetingConfig.getPriorityNormalEnemy();
-            }
-
-            // 中立モブは戦闘状態の場合のみターゲット対象
-            if (isNeutralMobTargetable(mob, maid, otherMaids, master)) {
-                return TargetingConfig.getPriorityNormalEnemy();
-            }
-
-            return 0; // 中立モブで条件を満たさない場合はターゲット対象外
+            return 0;  // 中立モブはターゲット対象外
         }
     }
 
     /**
      * 距離に基づく優先度修正
      */
-    public static double calculateDistanceModifier(Mob mob, Maid maid, @Nullable Master master) {
-        double distanceToMaid = mob.getPosition().distanceTo(maid.getPosition());
+    public static float calculateDistanceModifier(Mob mob, Maid maid, @Nullable Master master) {
+        float distanceToMaid = (float) mob.getPosition().distanceTo(maid.getPosition());
 
-        // 最大ターゲット距離チェック
-        if (distanceToMaid > TargetingConfig.getMaxTargetDistance()) {
+        // 最大ターゲット距離チェック（メイドさんとご主人両方からの距離を考慮）
+        boolean withinTargetRange = distanceToMaid <= TargetingConfig.getMaxTargetDistance();
+        if (master != null) {
+            float distanceToMaster = (float) mob.getPosition().distanceTo(master.getPosition());
+            withinTargetRange = withinTargetRange && distanceToMaster <= TargetingConfig.getMaxTargetDistance();
+        }
+        if (!withinTargetRange) {
             return TargetingConfig.getDistanceLimitPenalty();  // 距離が遠すぎる場合は大幅減点
         }
 
-        // 近距離ボーナス（メイドさんに近いほど高優先度）
-        double distanceBonus = Math.max(0, (TargetingConfig.getDistanceBonusBaseDistance() - distanceToMaid) * TargetingConfig.getDistanceBonusMultiplier());
+        // メイドさんからの距離ペナルティ（メイドさんから遠いほど低優先度）
+        float maidDistancePenalty = Math.max(0,
+                (distanceToMaid - TargetingConfig.getMaidDistancePenaltyBaseDistance())
+                        * TargetingConfig.getMaidDistancePenaltyMultiplier());
 
-        // ご主人との距離考慮（ご主人から離れすぎた敵は減点）
-        double masterDistancePenalty = 0;
+        // ご主人との距離ボーナス（ご主人に近いほど高優先度）
+        float masterDistanceBonus = 0;
         if (master != null) {
-            double distanceToMaster = mob.getPosition().distanceTo(master.getPosition());
-            masterDistancePenalty = Math.max(0, (distanceToMaster - TargetingConfig.getMasterDistancePenaltyBaseDistance()) * TargetingConfig.getMasterDistancePenaltyMultiplier());
+            float distanceToMaster = (float) mob.getPosition().distanceTo(master.getPosition());
+            masterDistanceBonus = Math.max(0,
+                    (TargetingConfig.getMasterDistanceBonusBaseDistance() - distanceToMaster)
+                            * TargetingConfig.getMasterDistanceBonusMultiplier());
         }
 
-        return distanceBonus - masterDistancePenalty;
+        return masterDistanceBonus - maidDistancePenalty;
     }
 
     /**
      * 武器とターゲットの相性による修正
      */
-    public static double calculateWeaponCompatibility(Mob mob, Maid maid) {
-        double distanceToEnemy = mob.getPosition().distanceTo(maid.getPosition());
+    public static float calculateWeaponCompatibility(Mob mob, Maid maid) {
+        float distanceToEnemy = (float) mob.getPosition().distanceTo(maid.getPosition());
 
         if (maid.getCombatType() == CombatType.BOW) {
             // 弓の場合
@@ -329,12 +349,12 @@ public class TargetingSystem {
             }
         } else if (maid.getCombatType() == CombatType.SWORD) {
             // 剣の場合
-            if (distanceToEnemy <= TargetingConfig.getSwordCloseRangeThreshold()) {  // 近距離ボーナス
-                // 危険敵への近接リスク
-                if (mob.isDangerous()) {
-                    return TargetingConfig.getSwordDangerPenalty();  // 危険敵に近づくリスクペナルティ
-                }
-                return TargetingConfig.getSwordCloseRangeBonus();
+            // 危険敵への近接リスク
+            if (mob.isDangerous()) {
+                return TargetingConfig.getSwordDangerPenalty();  // 危険敵と戦うリスクペナルティ
+            }
+            if (distanceToEnemy <= TargetingConfig.getSwordCloseRangeThreshold()) {
+                return TargetingConfig.getSwordCloseRangeBonus();  // 近距離ボーナス
             } else {
                 return TargetingConfig.getSwordLongRangePenalty();  // 遠距離ペナルティ
             }
@@ -346,24 +366,19 @@ public class TargetingSystem {
     /**
      * 危険な敵に対する特殊修正
      */
-    public static double calculateDangerModifier(Mob mob, Maid maid, @Nullable Master master) {
+    public static float calculateDangerModifier(Mob mob, Maid maid, @Nullable Master master, List<Maid> otherMaids) {
         if (!mob.isDangerous()) {
             return 0;
         }
 
-        double distanceToEnemy = mob.getPosition().distanceTo(maid.getPosition());
+        float distanceToEnemy = (float) mob.getPosition().distanceTo(maid.getPosition());
 
         // 危険敵への基本ペナルティ
-        double dangerPenalty = TargetingConfig.getDangerBasePenalty();
+        float dangerPenalty = TargetingConfig.getDangerBasePenalty();
 
-        // 近距離武器での危険敵は更にペナルティ
-        if (maid.getCombatType() == CombatType.SWORD && distanceToEnemy < TargetingConfig.getDangerCloseRangeThreshold()) {
-            dangerPenalty += TargetingConfig.getSwordDangerClosePenalty();
-        }
-
-        // 攻撃されている場合は例外的に対応
-        if (mob.isTargeting(maid) || (master != null && mob.isTargeting(master))) {
-            dangerPenalty += TargetingConfig.getDangerTargetExceptionBonus();  // ペナルティ軽減
+        // 近距離での危険敵は更にペナルティ
+        if (distanceToEnemy < TargetingConfig.getDangerCloseRangeThreshold()) {
+            dangerPenalty += TargetingConfig.getDangerClosePenalty();
         }
 
         return dangerPenalty;
@@ -372,66 +387,24 @@ public class TargetingSystem {
     /**
      * 他メイドさんとの分散攻撃を考慮した修正
      */
-    public static double calculateDistributionModifier(Mob mob, List<Maid> otherMaids) {
+    public static float calculateDistributionModifier(Mob mob, List<Maid> otherMaids) {
         // 同じ敵をターゲットしている他メイドさんの数
         long targetingCount = otherMaids.stream()
-                .filter(maid -> maid.getCurrentTarget().isPresent()
-                        && maid.getCurrentTarget().get().equals(mob))
+                .filter(maid -> maid.isTargeting(mob))
+                .filter(maid -> maid.getCombatType() != CombatType.NONE)  //非戦闘メイドさんのターゲットは省く
+                .filter(maid -> !maid.isInjured())  // 負傷メイドさんのターゲットは省く
                 .count();
 
-        // 負傷メイドさん支援の詳細チェック
-        List<Maid> injuredMaidsTargeting = otherMaids.stream()
-                .filter(maid -> maid.getHealthPercent() < TargetingConfig.getInjuredHealthThreshold()
-                        && maid.getCurrentTarget().isPresent() &&
-                        maid.getCurrentTarget().get().equals(mob))
-                .toList();
-
-        List<Maid> healthyMaidsTargeting = otherMaids.stream()
-                .filter(maid -> maid.getHealthPercent() >= TargetingConfig.getInjuredHealthThreshold()
-                        && maid.getCurrentTarget().isPresent() &&
-                        maid.getCurrentTarget().get().equals(mob))
-                .toList();
-
-        if (!injuredMaidsTargeting.isEmpty()) {
-            // 負傷メイドさんがいる場合：健康なメイドさん1体のみ支援を許可
-            if (healthyMaidsTargeting.isEmpty()) {
-                return 0;  // 支援なし：ペナルティなし
-            } else if (healthyMaidsTargeting.size() == 1) {
-                return TargetingConfig.getInjuredSupportLightPenalty();  // 支援1体：軽いペナルティ
-            } else {
-                return TargetingConfig.getInjuredSupportHeavyPenalty();  // 過剰支援：重いペナルティ（強化）
-            }
-        }
-
-        // 通常の集中攻撃回避（強化）
-        double distributionPenalty = targetingCount * TargetingConfig.getDistributionPenaltyMultiplier();  // 50 -> 80に強化
+        // 集中攻撃回避
+        float distributionPenalty = targetingCount * TargetingConfig.getDistributionPenaltyMultiplier();
 
         return -distributionPenalty;
     }
 
     /**
-     * 敵1体への対応人数制御による修正
-     */
-    public static double calculateAssignmentModifier(Mob mob, List<Maid> otherMaids, CombatSettings settings) {
-        // 同じ敵をターゲットしている他メイドさんの数
-        long targetingCount = otherMaids.stream()
-                .filter(maid -> maid.getCurrentTarget().isPresent() && maid.getCurrentTarget().get().equals(mob))
-                .count();
-
-        // 対応人数上限チェック
-        if (targetingCount >= settings.getMaxMaidsPerEnemy()) {
-            // 上限到達時は大幅ペナルティ
-            long excessCount = targetingCount - settings.getMaxMaidsPerEnemy() + 1;
-            return -excessCount * TargetingConfig.getAssignmentExcessPenalty();
-        }
-
-        return 0;  // 上限内は修正なし
-    }
-
-    /**
      * ご主人のスタンスに基づく優先度修正
      */
-    public static double calculateMasterStanceModifier(Mob mob, @Nullable Master master, CombatSettings settings) {
+    public static float calculateMasterStanceModifier(Mob mob, @Nullable Master master, CombatSettings settings) {
         if (master == null || settings.getMasterStance() == MasterStance.GUARD) {
             // 主人不在または護衛モード：現状維持（修正なし）
             return 0;
@@ -450,22 +423,24 @@ public class TargetingSystem {
     }
 
     /**
-     * 中立モブがターゲット対象となるかチェック
-     * 条件：他の味方が攻撃している場合
-     *
-     * @param mob        判断対象のモブ
-     * @param maid       判断するメイドさん
-     * @param otherMaids 他のメイドさんのリスト
-     * @param master     ご主人の情報
-     * @return ターゲット対象の場合true
+     * 負傷している身内の攻撃者に対する優先度ボーナス
      */
-    private static boolean isNeutralMobTargetable(Mob mob, Maid maid, List<Maid> otherMaids, @Nullable Master master) {
-        // 他のメイドが攻撃している場合
-        boolean otherMaidTargeting = otherMaids.stream().anyMatch(otherMaid ->
-                otherMaid.getCurrentTarget().isPresent() &&
-                        otherMaid.getCurrentTarget().get().equals(mob));
+    public static float calculateInjuredAllyAttackerModifier(Mob mob, Maid maid, @Nullable Master master, List<Maid> otherMaids) {
+        float injuredAllyAttackerBonus = 0;
 
-        return otherMaidTargeting;
+        // ご主人が負傷している場合
+        if (master != null && master.isInjured() && master.isAttackedBy(mob)) {
+            injuredAllyAttackerBonus += TargetingConfig.getInjuredMasterAttackerBonus();
+        }
+
+        // 他のメイドさんが負傷している場合
+        for (Maid otherMaid : otherMaids) {
+            if (otherMaid.isInjured() && otherMaid.isAttackedBy(mob)) {
+                injuredAllyAttackerBonus += TargetingConfig.getInjuredMaidAttackerBonus();
+            }
+        }
+
+        return injuredAllyAttackerBonus;
     }
 
     /**

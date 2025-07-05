@@ -26,7 +26,7 @@ public class LMTargetGoal extends Goal {
     @Override
     public boolean canStart() {
         int chance = 10; //todo コンフィグ化検討
-        if (this.maid.getRandom().nextInt(chance) != 0) {
+        if (this.maid.getRandom().nextInt(getTickCount(chance)) != 0) {
             return false;
         }
 
@@ -35,11 +35,11 @@ public class LMTargetGoal extends Goal {
 
     private boolean targeting() {
         // 範囲内に敵がいるかチェック
-        var aroundMobs = getAroundMobs(TargetingConfig.getMaxTargetDistance());
+        var aroundMobs = getAroundMobs();
         if (aroundMobs.isEmpty()) {
             return false;
         }
-        var aroundMaids = getAroundMaids(TargetingConfig.getMaxTargetDistance());
+        var aroundMaids = getAroundMaids();
         // 各敵の優先度をチェック
         var priorities = calculateEnemyPriorities(aroundMobs, aroundMaids);
 
@@ -76,9 +76,10 @@ public class LMTargetGoal extends Goal {
             // ターゲットが居なくなったら再計算
             return targeting();
         }
+        // 再計算カウンター
         recalc = Math.max(0, recalc - 1);
         if (recalc > 0) {
-            recalc = 10;
+            recalc = getTickCount(10);
             return true;
         }
         // 状況の変化により優先度を再計算する
@@ -89,7 +90,7 @@ public class LMTargetGoal extends Goal {
     public void start() {
         super.start();
         // ターゲット確定時の初期設定
-        recalc = 10;
+        recalc = getTickCount(10);
     }
 
     @Override
@@ -100,10 +101,11 @@ public class LMTargetGoal extends Goal {
         this.target = null;
     }
 
-    private List<MobEntity> getAroundMobs(float distance) {
+    private List<MobEntity> getAroundMobs() {
+        float distance = TargetingConfig.getMaxTargetDistance();
         return this.maid.getWorld().getEntitiesByClass(
                 MobEntity.class,
-                this.maid.getBoundingBox().expand(distance, distance, distance).expand(1),
+                this.maid.getBoundingBox().expand(distance, distance / 2f, distance).expand(1),
                 mob -> mob != this.maid
                         && isTargetable(mob, distance)
                         && this.maid.getVisibilityCache().canSee(mob));
@@ -112,12 +114,10 @@ public class LMTargetGoal extends Goal {
     private boolean isTargetable(MobEntity mob, float distance) {
         return this.maid.squaredDistanceTo(mob) <= distance * distance
                 && maid.canTarget(mob) // isFriend()とcanTakeDamage()判定込み
-                && (maid.isBloodSuck() // ブラッドサッカーか、相手がENEMYならtrue
-                || maid.identify(mob).map(tag -> tag == IFFTag.ENEMY).orElse(false))
                 && mob.isAlive();
     }
 
-    private Map<TargetingSystem.Mob, Double> calculateEnemyPriorities(
+    private Map<TargetingSystem.Mob, Float> calculateEnemyPriorities(
             List<MobEntity> aroundEntities, List<LittleMaidEntity> aroundMaids) {
         return TargetingSystem.calculateEnemyPriorities(
                 new TargetingSystem.Maid(this.maid),
@@ -139,10 +139,12 @@ public class LMTargetGoal extends Goal {
                 new TargetingSystem.CombatSettings(TargetingSystem.MasterStance.GUARD, 2));
     }
 
-    private List<LittleMaidEntity> getAroundMaids(float distance) {
+    private List<LittleMaidEntity> getAroundMaids() {
+        float distance = TargetingConfig.getMaxTargetDistance();
         return this.maid.getWorld().getEntitiesByClass(
                 LittleMaidEntity.class,
-                this.maid.getBoundingBox().expand(distance, distance, distance).expand(1),
+                this.maid.getBoundingBox()
+                        .expand(distance, distance / 2f, distance).expand(1),
                 maid -> maid != this.maid);
     }
 }

@@ -238,6 +238,84 @@ public class LMRBConfig implements ConfigData {
         public int accelerationMultiple = 2;
     }
 
+    @ConfigEntry.Category("target")
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Gui.TransitiveObject
+    public Target target = new Target();
+
+    public static class Target {
+        @ConfigEntry.Gui.Tooltip
+        public int maxPreemptiveDistance = 16;
+        @ConfigEntry.Gui.Tooltip
+        public int maxTargetDistance = 24;
+        @ConfigEntry.Gui.Tooltip
+        public float maidDistancePenaltyBaseDistance = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float masterDistanceBonusBaseDistance = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float maidDistancePenaltyMultiplier = 5.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float masterDistanceBonusMultiplier = 20.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float dangerCloseRangeThreshold = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public int bowLongRangeThreshold = 8;
+        @ConfigEntry.Gui.Tooltip
+        public int swordCloseRangeThreshold = 8;
+        @ConfigEntry.Gui.Tooltip
+        public float injuredHealthThreshold = 0.5f;
+        @ConfigEntry.Gui.Tooltip
+        public float distributionPenaltyMultiplier = 600.0f;
+    }
+
+    @ConfigEntry.Category("advanced_target")
+    @ConfigEntry.Gui.CollapsibleObject
+    @ConfigEntry.Gui.TransitiveObject
+    public AdvancedTarget advancedTarget = new AdvancedTarget();
+
+    public static class AdvancedTarget {
+        @ConfigEntry.Gui.Tooltip
+        public int priorityEvacuation = -1000;
+        @ConfigEntry.Gui.Tooltip
+        public int prioritySelfAttacker = 1500;
+        @ConfigEntry.Gui.Tooltip
+        public int priorityMasterAttacker = 1050;
+        @ConfigEntry.Gui.Tooltip
+        public int priorityMaidAttacker = 1050;
+        @ConfigEntry.Gui.Tooltip
+        public int priorityMasterTarget = 1000;
+        @ConfigEntry.Gui.Tooltip
+        public int priorityMaidTarget = 1000;
+        @ConfigEntry.Gui.Tooltip
+        public int priorityNormalEnemy = 800;
+        @ConfigEntry.Gui.Tooltip
+        public int bowLongRangeBonus = 100;
+        @ConfigEntry.Gui.Tooltip
+        public int bowCloseRangePenalty = 0;
+        @ConfigEntry.Gui.Tooltip
+        public int swordCloseRangeBonus = 0;
+        @ConfigEntry.Gui.Tooltip
+        public int swordLongRangePenalty = 0;
+        @ConfigEntry.Gui.Tooltip
+        public int swordDangerPenalty = -1000;
+        @ConfigEntry.Gui.Tooltip
+        public int dangerBasePenalty = -500;
+        @ConfigEntry.Gui.Tooltip
+        public int dangerClosePenalty = -500;
+        @ConfigEntry.Gui.Tooltip
+        public int supportModeMasterTargetPenalty = -1100;
+        @ConfigEntry.Gui.Tooltip
+        public int supportModeOtherEnemyBonus = 0;
+        @ConfigEntry.Gui.Tooltip
+        public int distanceLimitPenalty = -2000;
+        @ConfigEntry.Gui.Tooltip
+        public int nonProjectileHitPenalty = -2000;
+        @ConfigEntry.Gui.Tooltip
+        public int injuredMasterAttackerBonus = 500;
+        @ConfigEntry.Gui.Tooltip
+        public int injuredMaidAttackerBonus = 300;
+    }
+
     @ConfigEntry.Category("client")
     @ConfigEntry.Gui.CollapsibleObject
     @ConfigEntry.Gui.TransitiveObject

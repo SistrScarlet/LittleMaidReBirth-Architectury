@@ -76,4 +76,9 @@ public class FencerMode extends Mode {
     public boolean isBattleMode() {
         return true;
     }
+
+    @Override
+    public BattleModeType getBattleModeType() {
+        return BattleModeType.SWORD;
+    }
 }
