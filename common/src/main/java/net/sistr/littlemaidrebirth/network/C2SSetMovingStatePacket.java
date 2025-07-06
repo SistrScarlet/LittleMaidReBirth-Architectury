@@ -51,6 +51,7 @@ public class C2SSetMovingStatePacket {
             return;
         }
         maid.setMovingMode(movingMode);
+        maid.getNavigation().stop();
         if (movingMode == MovingMode.FREEDOM) {
             maid.setFreedomPos(entity.getBlockPos());
         }

@@ -75,6 +75,10 @@ public class LMTargetGoal extends Goal {
 
     @Override
     public boolean shouldContinue() {
+        // 攻撃を受けたら再計算(tick順の関係で実行されないことを防ぐため、ageに-1する)
+        if (getTickCount(this.maid.getLastAttackedTime()) == getTickCount(this.maid.age - 1)) {
+            return targeting();
+        }
         // 現在のターゲットがまだ有効かチェック
         if (!isTargetable(this.target, TargetingConfig.getMaxTargetDistance())) {
             // ターゲットが居なくなったら再計算
@@ -103,6 +107,7 @@ public class LMTargetGoal extends Goal {
         // ターゲットのクリア
         recalc = 0;
         this.target = null;
+        this.maid.setTarget(null);
     }
 
     private List<MobEntity> getAroundMobs() {
@@ -140,7 +145,7 @@ public class LMTargetGoal extends Goal {
                         )).toList(),
                 TameableUtil.getTameOwner(this.maid).map(TargetingSystem.Master::new).orElse(null),
                 aroundMaids.stream().map(TargetingSystem.Maid::new).toList(),
-                new TargetingSystem.CombatSettings(TargetingSystem.MasterStance.GUARD, 2));
+                new TargetingSystem.CombatSettings(this.maid.getMasterStance()));
     }
 
     private List<LittleMaidEntity> getAroundMaids() {

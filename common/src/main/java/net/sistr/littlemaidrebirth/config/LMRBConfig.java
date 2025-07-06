@@ -249,23 +249,35 @@ public class LMRBConfig implements ConfigData {
         @ConfigEntry.Gui.Tooltip
         public int maxTargetDistance = 24;
         @ConfigEntry.Gui.Tooltip
-        public float maidDistancePenaltyBaseDistance = 8.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float masterDistanceBonusBaseDistance = 8.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float maidDistancePenaltyMultiplier = 5.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float masterDistanceBonusMultiplier = 20.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float dangerCloseRangeThreshold = 8.0f;
-        @ConfigEntry.Gui.Tooltip
         public int bowLongRangeThreshold = 8;
         @ConfigEntry.Gui.Tooltip
         public int swordCloseRangeThreshold = 8;
         @ConfigEntry.Gui.Tooltip
+        public float dangerCloseRangeThreshold = 8.0f;
+        @ConfigEntry.Gui.Tooltip
         public float injuredHealthThreshold = 0.5f;
         @ConfigEntry.Gui.Tooltip
-        public float distributionPenaltyMultiplier = 600.0f;
+        public float distributionPenaltyMultiplier = 900.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float distributionPenaltyMultiplierDifferentWeapon = 400.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float masterDistanceBonusBaseDistance = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float masterDistanceBonusMultiplier = 10.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float masterDistancePenaltyBaseDistance = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float masterDistancePenaltyMultiplier = 5.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float maidDistancePenaltyBaseDistance = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float maidDistancePenaltyMultiplier = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float maidDistanceBonusBaseDistance = 8.0f;
+        @ConfigEntry.Gui.Tooltip
+        public float maidDistanceBonusMultiplier = 1.0f;
+        @ConfigEntry.Gui.Tooltip
+        public int attackedByValidTicks = 100;
     }
 
     @ConfigEntry.Category("advanced_target")
@@ -279,9 +291,9 @@ public class LMRBConfig implements ConfigData {
         @ConfigEntry.Gui.Tooltip
         public int prioritySelfAttacker = 1500;
         @ConfigEntry.Gui.Tooltip
-        public int priorityMasterAttacker = 1050;
+        public int priorityMasterAttacker = 1200;
         @ConfigEntry.Gui.Tooltip
-        public int priorityMaidAttacker = 1050;
+        public int priorityMaidAttacker = 1000;
         @ConfigEntry.Gui.Tooltip
         public int priorityMasterTarget = 1000;
         @ConfigEntry.Gui.Tooltip
@@ -303,17 +315,17 @@ public class LMRBConfig implements ConfigData {
         @ConfigEntry.Gui.Tooltip
         public int dangerClosePenalty = -500;
         @ConfigEntry.Gui.Tooltip
-        public int supportModeMasterTargetPenalty = -1100;
+        public int injuredMasterAttackerBonus = 500;
+        @ConfigEntry.Gui.Tooltip
+        public int injuredMaidAttackerBonus = 300;
+        @ConfigEntry.Gui.Tooltip
+        public int supportModeMasterTargetPenalty = -1300;
         @ConfigEntry.Gui.Tooltip
         public int supportModeOtherEnemyBonus = 0;
         @ConfigEntry.Gui.Tooltip
         public int distanceLimitPenalty = -2000;
         @ConfigEntry.Gui.Tooltip
         public int nonProjectileHitPenalty = -2000;
-        @ConfigEntry.Gui.Tooltip
-        public int injuredMasterAttackerBonus = 500;
-        @ConfigEntry.Gui.Tooltip
-        public int injuredMaidAttackerBonus = 300;
     }
 
     @ConfigEntry.Category("client")

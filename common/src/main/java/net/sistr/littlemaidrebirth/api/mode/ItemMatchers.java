@@ -5,13 +5,21 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.tag.TagKey;
 
+import java.util.function.Supplier;
+
 /**
  * よく使うItemMatcherをまとめたクラス
  */
 public class ItemMatchers {
 
+    @Deprecated
     public static ItemMatcher item(Item item) {
         return new ItemInstance(item);
+    }
+
+    // Mod読み込み順の問題でエラーが発生する場合があるため、Modアイテムにはこちらを使用すること
+    public static ItemMatcher item(Supplier<Item> item) {
+        return (stack) -> stack.getItem() == item.get();
     }
 
     public static ItemMatcher name(String name) {

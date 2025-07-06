@@ -160,6 +160,13 @@ public class TargetingConfig {
     }
 
     /**
+     * 異なる武器種での分散攻撃ペナルティの倍率
+     */
+    public static float getDistributionPenaltyMultiplierDifferentWeapon() {
+        return LMRBMod.getConfig().target.distributionPenaltyMultiplierDifferentWeapon;
+    }
+
+    /**
      * 援護モード時のご主人ターゲットペナルティ
      */
     public static int getSupportModeMasterTargetPenalty() {
@@ -204,6 +211,34 @@ public class TargetingConfig {
     }
 
     /**
+     * 主人との距離ペナルティ計算の基準距離
+     */
+    public static float getMasterDistancePenaltyBaseDistance() {
+        return LMRBMod.getConfig().target.masterDistancePenaltyBaseDistance;
+    }
+
+    /**
+     * メイドさんとの距離ボーナス計算の基準距離
+     */
+    public static float getMaidDistanceBonusBaseDistance() {
+        return LMRBMod.getConfig().target.maidDistanceBonusBaseDistance;
+    }
+
+    /**
+     * ご主人距離ペナルティの倍率
+     */
+    public static float getMasterDistancePenaltyMultiplier() {
+        return LMRBMod.getConfig().target.masterDistancePenaltyMultiplier;
+    }
+
+    /**
+     * メイドさん距離ボーナスの倍率
+     */
+    public static float getMaidDistanceBonusMultiplier() {
+        return LMRBMod.getConfig().target.maidDistanceBonusMultiplier;
+    }
+
+    /**
      * 危険敵への近接判定距離
      */
     public static float getDangerCloseRangeThreshold() {
@@ -231,6 +266,13 @@ public class TargetingConfig {
      */
     public static int getInjuredMaidAttackerBonus() {
         return LMRBMod.getConfig().advancedTarget.injuredMaidAttackerBonus;
+    }
+
+    /**
+     * 攻撃判定の有効tick数
+     */
+    public static int getAttackedByValidTicks() {
+        return LMRBMod.getConfig().target.attackedByValidTicks;
     }
 
 }

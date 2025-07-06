@@ -143,6 +143,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> ACCELERATE =
             DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Byte> MASTER_STANCE =
+            DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
     //エンチャントの瓶はランダムな経験値を排出するため、その平均値を作成コストとする
     private static final int EXPERIENCE_BOTTLE_COST = 7;
 
@@ -172,7 +174,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public int experiencePickUpDelay;
     // クライアント側のこの値は信用ならない
     private int accelerationTicks;
-
+    private TargetingSystem.MasterStance masterStance = TargetingSystem.MasterStance.GUARD;
 
     //コンストラクタ
     public LittleMaidEntity(EntityType<LittleMaidEntity> type, World worldIn) {
@@ -514,6 +516,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.dataTracker.startTracking(MODE_NAME, "");
         this.dataTracker.startTracking(CHARGING, false);
         this.dataTracker.startTracking(ACCELERATE, false);
+        this.dataTracker.startTracking(MASTER_STANCE, (byte) 0);
     }
 
     public void addDefaultModes(LittleMaidEntity maid) {
@@ -532,6 +535,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (TameableUtil.getTameOwnerUuid(this).isPresent()) {
             nbt.putBoolean("Wait", TameableUtil.isWait(this));
             nbt.putByte("MovingMode", (byte) this.getMovingMode().getId());
+            nbt.putByte("MasterStance", (byte) (this.getMasterStance() == TargetingSystem.MasterStance.GUARD ? 0 : 1));
             writeContractable(nbt);
             writeIFF(nbt);
             writeModeData(nbt);
@@ -589,6 +593,9 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (TameableUtil.hasTameOwner(this)) {
             TameableUtil.setWait(this, nbt.getBoolean("Wait"));
             setMovingMode(MovingMode.fromId(nbt.getByte("MovingMode")));
+            setMasterStance(nbt.getByte("MasterStance") == 0
+                    ? TargetingSystem.MasterStance.GUARD
+                    : TargetingSystem.MasterStance.SUPPORT);
             readContractable(nbt);
             readIFF(nbt);
             readModeData(nbt);
@@ -1555,6 +1562,18 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     @Override
     public void setMovingMode(MovingMode movingMode) {
         this.dataTracker.set(MOVING_MODE, (byte) movingMode.getId());
+    }
+
+    // 戦闘
+
+    public TargetingSystem.MasterStance getMasterStance() {
+        return this.dataTracker.get(MASTER_STANCE) == 0
+                ? TargetingSystem.MasterStance.GUARD
+                : TargetingSystem.MasterStance.SUPPORT;
+    }
+
+    public void setMasterStance(TargetingSystem.MasterStance masterStance) {
+        this.dataTracker.set(MASTER_STANCE, masterStance == TargetingSystem.MasterStance.GUARD ? (byte) 0 : (byte) 1);
     }
 
     // Flee

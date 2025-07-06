@@ -27,6 +27,7 @@ public class Networking {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, OpenIFFScreenPacket.ID, OpenIFFScreenPacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetIFFPacket.ID, C2SSetIFFPacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetBloodSuckPacket.ID, C2SSetBloodSuckPacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetMasterStancePacket.ID, C2SSetMasterStancePacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetWorkItemSlotSizePacket.ID, C2SSetWorkItemSlotSizePacket::receiveC2SPacket);
     }
 

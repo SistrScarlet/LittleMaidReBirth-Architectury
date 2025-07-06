@@ -27,14 +27,6 @@ public abstract class AbstractArcherMode<T> extends AbstractBattleMode<T> {
         this.mob = mob;
     }
 
-    public boolean shouldExecute() {
-        return this.mob.getTarget() != null && this.mob.getTarget().isAlive();
-    }
-
-    public boolean shouldContinueExecuting() {
-        return this.shouldExecute();
-    }
-
     public void startExecuting() {
         this.mob.setAttacking(true);
         this.mob.setAimingBow(true);
@@ -91,6 +83,7 @@ public abstract class AbstractArcherMode<T> extends AbstractBattleMode<T> {
 
         this.mob.getMoveControl().strafeTo(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
         this.mob.lookAtEntity(target, 30.0F, 30.0F);
+        this.mob.getLookControl().lookAt(target, 30f, 30f);
 
         tickRangedAttack(target, itemStack, canSee, distanceSq, maxRange);
     }
