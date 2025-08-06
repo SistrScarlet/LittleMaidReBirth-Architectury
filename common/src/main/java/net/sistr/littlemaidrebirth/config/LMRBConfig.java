@@ -244,88 +244,30 @@ public class LMRBConfig implements ConfigData {
     public Target target = new Target();
 
     public static class Target {
+        /**
+         * 3段階優先度ターゲティングシステムの設定
+         * CRITICAL: 自分の身を守る > HIGH: ご主人の身を守る > NORMAL: 味方・周囲の敵
+         */
+        
+        // 距離関連設定
         @ConfigEntry.Gui.Tooltip
-        public int maxPreemptiveDistance = 16;
+        public int alertRange = 16;              // 警戒範囲（敵検出・先制攻撃範囲）
         @ConfigEntry.Gui.Tooltip
-        public int maxTargetDistance = 24;
+        public int combatRange = 8;              // 戦闘範囲（実際の戦闘行動範囲）
         @ConfigEntry.Gui.Tooltip
-        public int bowLongRangeThreshold = 8;
-        @ConfigEntry.Gui.Tooltip
-        public int swordCloseRangeThreshold = 8;
-        @ConfigEntry.Gui.Tooltip
-        public float dangerCloseRangeThreshold = 8.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float injuredHealthThreshold = 0.5f;
-        @ConfigEntry.Gui.Tooltip
-        public float distributionPenaltyMultiplier = 900.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float distributionPenaltyMultiplierDifferentWeapon = 400.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float masterDistanceBonusBaseDistance = 8.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float masterDistanceBonusMultiplier = 10.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float masterDistancePenaltyBaseDistance = 8.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float masterDistancePenaltyMultiplier = 5.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float maidDistancePenaltyBaseDistance = 8.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float maidDistancePenaltyMultiplier = 1.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float maidDistanceBonusBaseDistance = 8.0f;
-        @ConfigEntry.Gui.Tooltip
-        public float maidDistanceBonusMultiplier = 1.0f;
-        @ConfigEntry.Gui.Tooltip
-        public int attackedByValidTicks = 100;
-    }
+        public int dangerousAvoidDistance = 8;   // 危険敵回避距離（クリーパー等から距離を取る）
 
-    @ConfigEntry.Category("advanced_target")
-    @ConfigEntry.Gui.CollapsibleObject
-    @ConfigEntry.Gui.TransitiveObject
-    public AdvancedTarget advancedTarget = new AdvancedTarget();
-
-    public static class AdvancedTarget {
+        // 分散ターゲティング設定（集中攻撃を防ぐ）
         @ConfigEntry.Gui.Tooltip
-        public int priorityEvacuation = -1000;
+        public double distributionRatio = 0.5;  // 分散比率（メイドさん数の50%が同じ敵を攻撃）
         @ConfigEntry.Gui.Tooltip
-        public int prioritySelfAttacker = 1500;
+        public int maxAttackersPerEnemy = 2;    // 1体あたり最大攻撃者数（集中攻撃防止）
+        
+        // 体力関連設定
         @ConfigEntry.Gui.Tooltip
-        public int priorityMasterAttacker = 1200;
+        public float injuredThreshold = 0.5f;   // 負傷判定闾値（体力50%以下で負傷扱い）
         @ConfigEntry.Gui.Tooltip
-        public int priorityMaidAttacker = 1000;
-        @ConfigEntry.Gui.Tooltip
-        public int priorityMasterTarget = 1000;
-        @ConfigEntry.Gui.Tooltip
-        public int priorityMaidTarget = 1000;
-        @ConfigEntry.Gui.Tooltip
-        public int priorityNormalEnemy = 800;
-        @ConfigEntry.Gui.Tooltip
-        public int bowLongRangeBonus = 100;
-        @ConfigEntry.Gui.Tooltip
-        public int bowCloseRangePenalty = 0;
-        @ConfigEntry.Gui.Tooltip
-        public int swordCloseRangeBonus = 0;
-        @ConfigEntry.Gui.Tooltip
-        public int swordLongRangePenalty = 0;
-        @ConfigEntry.Gui.Tooltip
-        public int swordDangerPenalty = -1000;
-        @ConfigEntry.Gui.Tooltip
-        public int dangerBasePenalty = -500;
-        @ConfigEntry.Gui.Tooltip
-        public int dangerClosePenalty = -500;
-        @ConfigEntry.Gui.Tooltip
-        public int injuredMasterAttackerBonus = 500;
-        @ConfigEntry.Gui.Tooltip
-        public int injuredMaidAttackerBonus = 300;
-        @ConfigEntry.Gui.Tooltip
-        public int supportModeMasterTargetPenalty = -1300;
-        @ConfigEntry.Gui.Tooltip
-        public int supportModeOtherEnemyBonus = 0;
-        @ConfigEntry.Gui.Tooltip
-        public int distanceLimitPenalty = -2000;
-        @ConfigEntry.Gui.Tooltip
-        public int nonProjectileHitPenalty = -2000;
+        public int attackedByValidTicks = 100;  // 攻撃判定有効時間（5秒間、100tick）
     }
 
     @ConfigEntry.Category("client")

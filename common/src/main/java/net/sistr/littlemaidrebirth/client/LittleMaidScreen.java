@@ -23,7 +23,6 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
-import net.sistr.littlemaidrebirth.entity.util.TargetingSystem;
 import net.sistr.littlemaidrebirth.network.*;
 
 import java.util.Optional;
@@ -115,35 +114,6 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 super.renderButton(context, mouseX, mouseY, delta);
 
                 setTooltip(Tooltip.of(LittleMaidScreen.this.owner.isBloodSuck() ? isBloodSuck : toBloodSuck));
-            }
-        });
-        this.addDrawableChild(new IconButtonWidget(left - size * 2, top + size * layer, FEATHER,
-                Text.empty(),
-                button -> C2SSetMasterStancePacket.sendC2SPacket(this.owner,
-                        this.owner.getMasterStance() == TargetingSystem.MasterStance.GUARD
-                                ? TargetingSystem.MasterStance.SUPPORT
-                                : TargetingSystem.MasterStance.GUARD
-                )
-        ) {
-            private static final Text changeMasterStance
-                    = Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.change_master_stance");
-            private static final Text isGuard
-                    = changeMasterStance.copy().append(Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.change_master_stance.to_support"));
-            private static final Text isSupport
-                    = changeMasterStance.copy().append(Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.change_master_stance.is_guard"));
-
-            @Override
-            protected ItemStack getIconItem() {
-                return LittleMaidScreen.this.owner.getMasterStance() == TargetingSystem.MasterStance.GUARD
-                        ? SHIELD : SUPPORT;
-            }
-
-            @Override
-            protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-                super.renderButton(context, mouseX, mouseY, delta);
-
-                setTooltip(Tooltip.of(LittleMaidScreen.this.owner.getMasterStance() == TargetingSystem.MasterStance.GUARD
-                        ? isSupport : isGuard));
             }
         });
         this.addDrawableChild(new IconButtonWidget(right, top + 75, CHEST,

@@ -8,11 +8,18 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import net.sistr.littlemaidrebirth.entity.util.TargetingConfig;
 import net.sistr.littlemaidrebirth.entity.util.TargetingSystem;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * メイドさんのターゲット選択ゴール
+ * 3段階優先度システムで敵を選択し、危険な敵からの避難も処理する
+ * 
+ * 優先度階層:
+ * - CRITICAL: 自分を攻撃した敵
+ * - HIGH: ご主人を攻撃した敵、ご主人が攻撃した敵
+ * - NORMAL: 他のメイドさんを攻撃した敵、周囲の敵対モブ
+ */
 public class LMTargetGoal extends Goal {
     private final LittleMaidEntity maid;
     private MobEntity target;
@@ -37,39 +44,53 @@ public class LMTargetGoal extends Goal {
         // 範囲内に敵がいるかチェック
         var aroundMobs = getAroundMobs();
         if (aroundMobs.isEmpty()) {
+            this.maid.setTarget(null);
             return false;
         }
         var aroundMaids = getAroundMaids();
-        // 各敵の優先度をチェック
-        var priorities = calculateEnemyPriorities(aroundMobs, aroundMaids);
 
-        // ターゲットできるなら実行
-        var highestPriorityMob = priorities.entrySet().stream()
-                .filter(entry -> entry.getValue() > 0)
-                .max(Map.Entry.comparingByValue())
-                .map(Map.Entry::getKey)
-                .orElse(null);
+        // 3段階優先度システムでターゲット選択、分散ターゲティングも考慮
+        var target = TargetingSystem.selectTarget(
+                new TargetingSystem.Maid(this.maid),
+                aroundMobs.stream()
+                        .map(mob -> new TargetingSystem.Mob(
+                                mob,
+                                this.maid.identify(mob)
+                                        .map(tag -> {
+                                            if (this.maid.isBloodSuck()) {
+                                                return true;
+                                            } else {
+                                                return tag == IFFTag.ENEMY;
+                                            }
+                                        })
+                                        .orElse(this.maid.isBloodSuck())
+                        )).toList(),
+                TameableUtil.getTameOwner(this.maid).map(TargetingSystem.Master::new).orElse(null),
+                aroundMaids.stream().map(TargetingSystem.Maid::new).toList()
+        );
 
-        // 避難する
-        var enemies = new ArrayList<>(priorities.keySet());
+        // 危険敵からの避難処理（クリーパー等から距離を取る）
+        var enemies = aroundMobs.stream()
+                .map(mob -> new TargetingSystem.Mob(mob, this.maid.identify(mob).map(tag -> tag == IFFTag.ENEMY).orElse(false)))
+                .toList();
         var maidWrapper = new TargetingSystem.Maid(this.maid);
         if (TargetingSystem.needsEvacuation(maidWrapper, enemies)) {
             TargetingSystem.getDangerousEnemies(maidWrapper, enemies)
                     .forEach(mob -> this.maid.addFleeEntity(mob.getMob(), e ->
                             !e.isAlive()
-                                    || this.maid.squaredDistanceTo(e) > (TargetingConfig.getDangerCloseRangeThreshold() + 4)
-                                    * (TargetingConfig.getDangerCloseRangeThreshold() + 4))
+                                    || this.maid.squaredDistanceTo(e) > (TargetingConfig.getDangerousAvoidDistance() + 4)
+                                    * (TargetingConfig.getDangerousAvoidDistance() + 4))
                     );
         }
 
-        // 最高優先度のモブをターゲットにする
-        if (highestPriorityMob != null) {
-            this.target = highestPriorityMob.getMob();
-            this.maid.setTarget(highestPriorityMob.getMob());
+        // ターゲット設定
+        if (target.isPresent()) {
+            this.target = target.get();
+            this.maid.setTarget(target.get());
             return true;
         }
 
-
+        this.maid.setTarget(null);
         return false;
     }
 
@@ -80,7 +101,7 @@ public class LMTargetGoal extends Goal {
             return targeting();
         }
         // 現在のターゲットがまだ有効かチェック
-        if (!isTargetable(this.target, TargetingConfig.getMaxTargetDistance())) {
+        if (!isTargetable(this.target, TargetingConfig.getAlertRange())) {
             // ターゲットが居なくなったら再計算
             return targeting();
         }
@@ -111,7 +132,7 @@ public class LMTargetGoal extends Goal {
     }
 
     private List<MobEntity> getAroundMobs() {
-        float distance = TargetingConfig.getMaxTargetDistance();
+        float distance = TargetingConfig.getAlertRange();
         return this.maid.getWorld().getEntitiesByClass(
                 MobEntity.class,
                 this.maid.getBoundingBox().expand(distance, distance / 2f, distance).expand(1),
@@ -126,30 +147,9 @@ public class LMTargetGoal extends Goal {
                 && mob.isAlive();
     }
 
-    private Map<TargetingSystem.Mob, Float> calculateEnemyPriorities(
-            List<MobEntity> aroundEntities, List<LittleMaidEntity> aroundMaids) {
-        return TargetingSystem.calculateEnemyPriorities(
-                new TargetingSystem.Maid(this.maid),
-                aroundEntities.stream()
-                        .map(mob -> new TargetingSystem.Mob(
-                                mob,
-                                this.maid.identify(mob)
-                                        .map(tag -> {
-                                            if (this.maid.isBloodSuck()) {
-                                                return true;
-                                            } else {
-                                                return tag == IFFTag.ENEMY;
-                                            }
-                                        })
-                                        .orElse(this.maid.isBloodSuck())
-                        )).toList(),
-                TameableUtil.getTameOwner(this.maid).map(TargetingSystem.Master::new).orElse(null),
-                aroundMaids.stream().map(TargetingSystem.Maid::new).toList(),
-                new TargetingSystem.CombatSettings(this.maid.getMasterStance()));
-    }
 
     private List<LittleMaidEntity> getAroundMaids() {
-        float distance = TargetingConfig.getMaxTargetDistance();
+        float distance = TargetingConfig.getAlertRange();
         return this.maid.getWorld().getEntitiesByClass(
                 LittleMaidEntity.class,
                 this.maid.getBoundingBox()
