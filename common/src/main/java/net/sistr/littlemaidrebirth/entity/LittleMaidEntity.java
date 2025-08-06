@@ -28,6 +28,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
@@ -1131,11 +1132,16 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         var stack = this.getMainHandStack();
         //弾が無い場合は実行されないはずだが、念のためチェック
         var arrowStack = this.getProjectileType(stack);
-        if (arrowStack.isEmpty() && EnchantmentHelper.getLevel(Enchantments.INFINITY, stack) == 0) {
+        boolean isInfinite = EnchantmentHelper.getLevel(Enchantments.INFINITY, stack) >= 1;
+        if (arrowStack.isEmpty() && !isInfinite) {
             return;
         }
         if (stack.getItem() instanceof BowItem bowItem) {
             var arrow = ProjectileUtil.createArrowProjectile(this, arrowStack, pullProgress);
+            if (arrowStack.getItem() instanceof ArrowItem
+            && !isInfinite) {
+                arrow.pickupType = PersistentProjectileEntity.PickupPermission.ALLOWED;
+            }
             arrow = EPEntityUtil.arrowCustomHook(bowItem, arrow);
             double xDiff = target.getX() - this.getX();
             double yDiff = target.getEyeY() - arrow.getY();
