@@ -9,50 +9,41 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
-import net.sistr.littlemaidrebirth.client.IFFScreen;
-import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
-import net.sistr.littlemaidrebirth.entity.iff.IFF;
-import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
+import net.sistr.littlemaidrebirth.client.TargetTagScreen;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetIdentifier;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
-/**
- * 対象エンティティのIFFを設定する画面を開くパケット
- * C2Sは開く要求
- * S2Cは開く命令
- */
-public class OpenIFFScreenPacket {
+public class OpenTargetTagScreenPacket {
     public static final Identifier ID =
-            new Identifier(LMRBMod.MODID, "open_iff_screen");
+            new Identifier(LMRBMod.MODID, "open_target_tag_screen");
 
-    public static void sendS2CPacket(Entity entity, List<IFF> iffs, PlayerEntity player) {
-        PacketByteBuf buf = createS2CPacket(entity, iffs, player);
+    public static <T extends Entity & TargetTagManager> void sendS2CPacket(T entity, PlayerEntity player) {
+        PacketByteBuf buf = createS2CPacket(entity, player);
         NetworkManager.sendToPlayer((ServerPlayerEntity) player, ID, buf);
     }
 
-    public static PacketByteBuf createS2CPacket(Entity entity, List<IFF> iffs, PlayerEntity player) {
+    public static <T extends Entity & TargetTagManager> PacketByteBuf createS2CPacket(T entity, PlayerEntity player) {
+        NbtCompound nbt = new NbtCompound();
+        entity.writeTargetTags(nbt);
+
         PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
         buf.writeVarInt(entity.getId());
-        NbtCompound nbt = new NbtCompound();
-        NbtList list = new NbtList();
-        nbt.put("IFFs", list);
-        iffs.forEach(iff -> list.add(iff.writeTag()));
         buf.writeNbt(nbt);
         return buf;
     }
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity) {
-        if (!(entity instanceof HasIFF)) {
-            return;
-        }
         PacketByteBuf buf = createC2SPacket(entity);
         NetworkManager.sendToServer(ID, buf);
     }
@@ -69,39 +60,34 @@ public class OpenIFFScreenPacket {
         if (player == null) return;
         int id = buf.readVarInt();
         NbtCompound nbt = buf.readNbt();
-        context.queue(() -> openIFFScreen(id, nbt, player));
+        context.queue(() -> openScreen(id, nbt, player));
     }
 
     @Environment(EnvType.CLIENT)
-    private static void openIFFScreen(int id, NbtCompound nbt, PlayerEntity player) {
+    private static void openScreen(int id, NbtCompound nbt, PlayerEntity player) {
         Entity entity = player.getWorld().getEntityById(id);
-        if (!(entity instanceof HasIFF)) {
+        if (!(entity instanceof TargetTagManager targetTagManager)) {
             return;
         }
-        NbtList list = nbt.getList("IFFs", 10);
-        List<IFF> iffs = list.stream()
-                .map(t -> (NbtCompound) t)
-                .map(t -> IFFTypeManager.getINSTANCE().loadIFF(t))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+        Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> targetTagMap = new HashMap<>();
+        TargetTagManagerImpl.read(targetTagMap, nbt);
 
-        MinecraftClient.getInstance().setScreen(new IFFScreen(entity, iffs));
+        MinecraftClient.getInstance().setScreen(new TargetTagScreen(entity, targetTagMap));
     }
 
     public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
         int id = buf.readVarInt();
-        context.queue(() -> openIFFScreen(id, context.getPlayer()));
+        context.queue(() -> openScreen(id, context.getPlayer()));
     }
 
-    private static void openIFFScreen(int id, PlayerEntity player) {
+    private static <T extends Entity & TargetTagManager> void openScreen(int id, PlayerEntity player) {
         Entity entity = player.getWorld().getEntityById(id);
-        if (!(entity instanceof HasIFF)
+        if (!(entity instanceof TargetTagManager)
                 || (entity instanceof TameableEntity
                 && !player.getUuid().equals(((TameableEntity) entity).getOwnerUuid()))) {
             return;
         }
-        sendS2CPacket(entity, ((HasIFF) entity).getIFFs(), player);
+        //noinspection unchecked
+        sendS2CPacket((T) entity, player);
     }
-
 }

@@ -1,33 +1,32 @@
-# ターゲティングシステム詳細仕様
+# ターゲティングシステム詳細仕様（TargetTagシステム）
 
 ## 📋 概要
 
-Little Maid Rebirth のターゲティングシステムは、メイドさんの戦闘判断を司るシンプルで効率的なAIシステムです。複雑な多段階システムから3段階の優先度システムに改修され、理解しやすく操作しやすい戦術的思考能力を提供します。
+Little Maid Rebirth のターゲティングシステムは、メイドさんの戦闘判断を司るシンプルで効率的なAIシステムです。従来のIFFシステムから、より細かい制御が可能なTargetTagシステムに完全移行しました。プレイヤーがエンティティごとに詳細なターゲティング設定を行えるようになっています。
 
 ---
 
 ## 🏗️ システム構成
 
-### シンプルターゲティングアーキテクチャ
+### TargetTagアーキテクチャ
 
 ```
 ターゲティングシステム
 ├── TargetingSystem.java          - 3段階優先度計算エンジン
 │   ├── selectTarget()           - メイン選択ロジック
 │   ├── determinePriority()      - 優先度判定
-│   ├── isOverTargeted()         - 分散ターゲティング
-│   └── 敵タグ判定メソッド群      - 特殊敵対応
+│   ├── TargetPriority enum      - 3段階優先度定義
+│   └── TargetTag enum           - 5種類のターゲットタグ
 ├── LMTargetGoal.java            - AI行動への統合
 ├── TargetingConfig.java         - シンプル設定管理
-├── IFFシステム                   - 敵味方識別（既存システム流用）
-│   ├── IFF.java                 - 基本識別クラス
-│   ├── IFFImpl.java             - 実装クラス
-│   └── IFFTypeManager.java      - タイプ管理
-└── 敵タグシステム                - 特殊な敵への対応
-    ├── 攻撃禁止敵 (Wither等)
-    ├── 接近禁止敵 (Creeper等)
-    ├── 近距離攻撃禁止敵
-    └── 遠距離攻撃禁止敵 (Enderman等)
+├── TargetTagシステム             - エンティティごとの細かい制御
+│   ├── TargetTagManager.java    - タグ管理インターフェース
+│   ├── TargetTagManagerImpl.java - 実装クラス
+│   └── TargetIdentifier.java    - エンティティ識別子
+├── UIシステム                    - プレイヤー設定画面
+│   └── TargetTagScreen.java     - フィルタリング可能な設定画面
+└── ネットワーク                  - サーバー同期
+    └── C2SSetTargetTagsPacket.java - タグ情報同期
 ```
 
 ---
@@ -42,390 +41,222 @@ Little Maid Rebirth のターゲティングシステムは、メイドさんの
 public enum TargetPriority {
     CRITICAL,  // 自分の身を守る
     HIGH,      // ご主人の身を守る  
-    NORMAL     // 味方の身を守る・周囲の敵
-}
-```
-
-### メインアルゴリズム
-
-**場所**: `TargetingSystem.java:155-172`
-
-```java
-public static Optional<MobEntity> selectTarget(
-    Maid maid, List<Mob> enemies, @Nullable Master master, List<Maid> otherMaids) {
-    
-    int maxAttackers = calculateMaxAttackers(otherMaids);
-    
-    // Stream処理による効率的なターゲット選択
-    Optional<Mob> bestTarget = enemies.stream()
-        .filter(enemy -> !shouldAvoidDangerous(enemy, maid))           // 1. 危険敵回避判定
-        .filter(enemy -> !isOverTargeted(enemy, otherMaids, maxAttackers)) // 2. 分散ターゲティング
-        .map(enemy -> new TargetCandidate(enemy, determinePriority(enemy, maid, master, otherMaids))) // 3. 優先度判定
-        .filter(candidate -> candidate.priority != null)              // 4. 攻撃可能敵のみ
-        .min(Comparator                                              // 5. 優先度→距離順ソート
-            .comparing((TargetCandidate c) -> c.priority)
-            .thenComparingDouble(c -> c.enemy.getPosition().distanceTo(maid.getPosition())))
-        .map(candidate -> candidate.enemy);
-        
-    return bestTarget.map(Mob::getMob);
+    NORMAL     // 味方の身を守る・周囲の対象
 }
 ```
 
 ---
 
-## 🔢 各段階の詳細実装
+## 🏷️ TargetTagシステム
 
-### 1. CRITICAL: 自分の身を守る
+### 5種類のTargetTag
 
-**場所**: `TargetingSystem.java:187-190`
-
-最優先で自分を攻撃した敵をターゲットします：
+**場所**: `TargetingSystem.java:34-40`
 
 ```java
-// CRITICAL: 自分の身を守る
-if (maid.isAttackedBy(enemy)) {
-    return TargetPriority.CRITICAL;
+public enum TargetTag {
+    APPROACH_PROHIBITED,         // 接近禁止
+    ATTACK_PROHIBITED,           // 攻撃禁止
+    PREEMPTIVE_ATTACK_PROHIBITED, // 先制攻撃禁止（反撃は可能）
+    MELEE_WEAPON_PROHIBITED,     // 近距離攻撃禁止
+    RANGED_WEAPON_PROHIBITED    // 遠距離攻撃禁止
 }
 ```
 
-### 2. HIGH: ご主人の身を守る
+### TargetTag詳細説明
 
-**場所**: `TargetingSystem.java:192-195`
+1. **APPROACH_PROHIBITED** - 接近禁止
+   - 対象：Creeper、TNTなど爆発系エンティティ
+   - 効果：一定距離を保って遠距離攻撃のみ実行
 
-ご主人を攻撃した敵、またはご主人が攻撃した敵を優先します：
+2. **ATTACK_PROHIBITED** - 攻撃禁止
+   - 対象：Wither、Ender Dragon、Wardenなど危険エンティティ
+   - 効果：一切攻撃せず、近づいたら避難行動を取る
+
+3. **PREEMPTIVE_ATTACK_PROHIBITED** - 先制攻撃禁止
+   - 対象：友好的だが反撃する可能性があるエンティティ
+   - 効果：攻撃を受けた場合のみ反撃可能
+
+4. **MELEE_WEAPON_PROHIBITED** - 近距離攻撃禁止
+   - 対象：WitherSkeleton、Ravagerなど強力な近接攻撃持ち
+   - 効果：弓やクロスボウによる遠距離攻撃のみ
+
+5. **RANGED_WEAPON_PROHIBITED** - 遠距離攻撃禁止
+   - 対象：Endermanなど投射物で挑発されるエンティティ
+   - 効果：剣などの近接武器による攻撃のみ
+
+---
+
+## 💾 TargetTagManager
+
+### エンティティ別タグ管理
+
+**場所**: `TargetTagManagerImpl.java`
 
 ```java
-// HIGH: ご主人の身を守る
-if (master != null && (master.isAttackedBy(enemy) || master.isTargeting(enemy) || enemy.isAttackedBy(master))) {
-    return TargetPriority.HIGH;
+public interface TargetTagManager {
+    Set<TargetingSystem.TargetTag> getTargetTags(TargetIdentifier identifier);
+    void setTargetTags(TargetIdentifier identifier, Set<TargetingSystem.TargetTag> tags);
+    Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> getAllTargetTags();
 }
 ```
 
-### 3. NORMAL: 味方の身を守る・周囲の敵
+### TargetIdentifier
 
-**場所**: `TargetingSystem.java:197-215`
-
-他のメイドさんを攻撃した敵、または警戒範囲内の敵対モブを対象とします：
+エンティティタイプとオプションの識別情報でターゲットを一意に識別：
 
 ```java
-// NORMAL: 味方の身を守る・周囲の敵
-for (Maid otherMaid : otherMaids) {
-    if (otherMaid.isAttackedBy(enemy) || otherMaid.isTargeting(enemy)) {
-        return TargetPriority.NORMAL;
-    }
-}
-
-// 先制攻撃対象（距離内の敵対モブ、攻撃禁止敵以外）
-if (enemy.isEnemy()) {
-    // 攻撃禁止敵は攻撃対象外
-    if (hasAttackProhibitedTag(enemy)) {
-        return null;
-    }
+public class TargetIdentifier {
+    private final EntityType<?> entityType;
+    private final Optional<String> identifier;
     
-    float distanceToMaid = (float) enemy.getPosition().distanceTo(maid.getPosition());
-    if (distanceToMaid <= TargetingConfig.getAlertRange()) {
-        return TargetPriority.NORMAL;
-    }
+    // エンティティタイプ + 特定の識別子（必要に応じて）
 }
 ```
 
 ---
 
-## 🏷️ 敵タグシステム
+## 🖥️ TargetTagScreen - プレイヤー設定UI
 
-### 4種類の敵タグ
+### フィルタリング可能な設定画面
 
-**場所**: `TargetingSystem.java:34-39`
+**場所**: `TargetTagScreen.java`
+
+新しいTargetTagScreenは、FilterableListGUIを使用してプレイヤーが直感的にエンティティごとのターゲットタグを設定できます：
 
 ```java
-public enum EnemyTag {
-    ATTACK_PROHIBITED,       // 攻撃禁止（一切攻撃しない）
-    APPROACH_PROHIBITED,     // 接近禁止（弓なら遠距離攻撃可能）
-    MELEE_ATTACK_PROHIBITED, // 近距離攻撃禁止（剣では攻撃不可）
-    RANGED_ATTACK_PROHIBITED // 遠距離攻撃禁止（弓では攻撃不可）
+public class TargetTagScreen extends Screen {
+    private final Entity entity;
+    private final Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> targetTags;
+    private FilterableListGUI<TargetTagGUIElement> targetTagGui;
 }
 ```
 
-### 敵タグ判定実装
+### 主要機能
 
-```java
-// 攻撃禁止敵（Wither、Ender Dragon、Warden等）
-private static boolean hasAttackProhibitedTag(Mob enemy) {
-    EntityType<?> type = enemy.getMob().getType();
-    return type == EntityType.WITHER ||
-           type == EntityType.ENDER_DRAGON ||
-           type == EntityType.WARDEN;
-}
+1. **リアルタイム検索**: エンティティ名で即座にフィルタリング
+2. **直感的な設定**: アイコンボタンでタグのオン/オフ切り替え
+3. **状態可視化**: 各ターゲットタグの現在の設定を一目で確認
+4. **自動同期**: 画面を閉じると自動的にサーバーと同期
 
-// 接近禁止敵（Creeper等）
-private static boolean hasApproachProhibitedTag(Mob enemy) {
-    EntityType<?> type = enemy.getMob().getType();
-    return type == EntityType.CREEPER;
-}
+### GUIレイアウト
 
-// 近距離攻撃禁止敵（WitherSkeleton、Ravager等）
-private static boolean hasMeleeAttackProhibitedTag(Mob enemy) {
-    EntityType<?> type = enemy.getMob().getType();
-    return type == EntityType.WITHER_SKELETON ||
-           type == EntityType.RAVAGER;
-}
-
-// 遠距離攻撃禁止敵（Enderman等）
-private static boolean hasRangedAttackProhibitedTag(Mob enemy) {
-    return enemy.getMob().getType() == EntityType.ENDERMAN;
-}
+```
+TargetTagScreen
+├── 検索入力欄 (上部)
+├── エンティティリスト (中央)
+│   ├── エンティティ名表示
+│   ├── 攻撃制御ボタン (禁止/制限/許可)
+│   ├── 武器制御ボタン (近接/遠距離制限)
+│   └── 接近制御ボタン (許可/禁止)
+└── スクロールバー (右端)
 ```
 
 ---
 
-## 🎯 分散ターゲティングシステム
+## 📡 ネットワーク同期
 
-### 集中攻撃防止ロジック
+### C2SSetTargetTagsPacket
 
-**場所**: `TargetingSystem.java:229-237`
+**場所**: `C2SSetTargetTagsPacket.java`
 
-```java
-private static boolean isOverTargeted(Mob enemy, List<Maid> otherMaids, int maxAttackers) {
-    long currentAttackers = otherMaids.stream()
-        .filter(maid -> maid.isTargeting(enemy))
-        .filter(maid -> maid.getCombatType() != Mode.BattleModeType.NONE)
-        .filter(maid -> !maid.isInjured())
-        .count();
-        
-    return currentAttackers >= maxAttackers;
-}
-```
-
-### 最大攻撃者数計算
-
-**場所**: `TargetingSystem.java:284-288`
+プレイヤーの設定をサーバーに送信：
 
 ```java
-private static int calculateMaxAttackers(List<Maid> otherMaids) {
-    int totalMaids = otherMaids.size() + 1; // 自分も含める
-    int distributedCount = (int) Math.ceil(totalMaids * TargetingConfig.getDistributionRatio());
-    return Math.min(TargetingConfig.getMaxAttackersPerEnemy(), distributedCount);
-}
-```
-
----
-
-## 🚨 避難システム
-
-### 危険敵からの自動避難
-
-**場所**: `TargetingSystem.java:335-342` / `LMTargetGoal.java:77-84`
-
-```java
-// 避難が必要かの判定
-public static boolean needsEvacuation(Maid maid, List<Mob> enemies) {
-    return enemies.stream()
-        .anyMatch(enemy -> {
-            double distance = maid.getPosition().distanceTo(enemy.getPosition());
-            return (hasAttackProhibitedTag(enemy) || hasApproachProhibitedTag(enemy))
-                && distance < TargetingConfig.getDangerousAvoidDistance();
-        });
-}
-
-// 実際の避難処理（LMTargetGoal.java内）
-if (TargetingSystem.needsEvacuation(maidWrapper, enemies)) {
-    TargetingSystem.getDangerousEnemies(maidWrapper, enemies)
-        .forEach(mob -> this.maid.addFleeEntity(mob.getMob(), e ->
-            !e.isAlive()
-            || this.maid.squaredDistanceTo(e) > (TargetingConfig.getDangerousAvoidDistance() + 4)
-               * (TargetingConfig.getDangerousAvoidDistance() + 4))
-        );
-}
-```
-
----
-
-## ⚔️ LMTargetGoal - AI行動統合
-
-### シンプルなターゲット選択実装
-
-**場所**: `/entity/goal/LMTargetGoal.java:43-95`
-
-```java
-private boolean targeting() {
-    // 範囲内に敵がいるかチェック
-    var aroundMobs = getAroundMobs();
-    if (aroundMobs.isEmpty()) {
-        this.maid.setTarget(null);
-        return false;
+public class C2SSetTargetTagsPacket {
+    public static <T extends Entity & TargetTagManager> void sendC2SPacket(
+        T entity, Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> targetTags) {
+        // パケット送信処理
     }
-    var aroundMaids = getAroundMaids();
-    
-    // 3段階優先度システムでターゲット選択
-    var target = TargetingSystem.selectTarget(
-        new TargetingSystem.Maid(this.maid),
-        aroundMobs.stream()
-            .map(mob -> new TargetingSystem.Mob(
-                mob,
-                this.maid.identify(mob)
-                    .map(tag -> {
-                        if (this.maid.isBloodSuck()) {
-                            return true;
-                        } else {
-                            return tag == IFFTag.ENEMY;
-                        }
-                    })
-                    .orElse(this.maid.isBloodSuck())
-            )).toList(),
-        TameableUtil.getTameOwner(this.maid).map(TargetingSystem.Master::new).orElse(null),
-        aroundMaids.stream().map(TargetingSystem.Maid::new).toList()
-    );
-    
-    // 危険敵からの避難処理
-    var enemies = aroundMobs.stream()
-        .map(mob -> new TargetingSystem.Mob(mob, this.maid.identify(mob).map(tag -> tag == IFFTag.ENEMY).orElse(false)))
-        .toList();
-    var maidWrapper = new TargetingSystem.Maid(this.maid);
-    if (TargetingSystem.needsEvacuation(maidWrapper, enemies)) {
-        TargetingSystem.getDangerousEnemies(maidWrapper, enemies)
-            .forEach(mob -> this.maid.addFleeEntity(mob.getMob(), e ->
-                !e.isAlive()
-                || this.maid.squaredDistanceTo(e) > (TargetingConfig.getDangerousAvoidDistance() + 4)
-                   * (TargetingConfig.getDangerousAvoidDistance() + 4))
-            );
-    }
-    
-    // ターゲット設定
-    if (target.isPresent()) {
-        this.target = target.get();
-        this.maid.setTarget(target.get());
-        return true;
-    }
-    
-    this.maid.setTarget(null);
-    return false;
 }
 ```
 
+### 同期タイミング
+
+1. **TargetTagScreen終了時**: 設定変更を自動送信
+2. **ログイン時**: サーバーから現在の設定を受信
+3. **設定変更時**: リアルタイムでサーバーと同期
+
 ---
 
-## ⚙️ TargetingConfig - シンプル設定システム
+## ⚙️ TargetingConfig - 設定システム
 
 ### 設定項目一覧
 
-**場所**: `/util/TargetingConfig.java` / `/config/LMRBConfig.java:Target`
+**場所**: `TargetingConfig.java` / `LMRBConfig.java:Target`
 
 ```java
 public static class Target {
-    // 距離関連設定 (3個)
+    // 距離関連設定
     public int alertRange = 16;              // 警戒範囲（敵検出・先制攻撃範囲）
     public int combatRange = 8;              // 戦闘範囲（実際の戦闘行動範囲）
     public int dangerousAvoidDistance = 8;   // 危険敵回避距離
     
-    // 分散ターゲティング設定 (2個)
+    // 分散ターゲティング設定
     public double distributionRatio = 0.5;   // 分散比率（メイドさん数の50%）
     public int maxAttackersPerEnemy = 2;     // 1体あたり最大攻撃者数
     
-    // 体力関連設定 (2個)
+    // 体力関連設定
     public float injuredThreshold = 0.5f;    // 負傷判定閾値（体力50%以下）
     public int attackedByValidTicks = 100;   // 攻撃判定有効時間（5秒間）
 }
 ```
 
-**合計7個の設定項目**により、シンプルで理解しやすい設定システムを実現しています。
-
 ---
 
-## 📈 改修による改善効果
+## 📈 TargetTagシステムによる改善効果
 
-### コード構造の改善
+### IFFシステムからの進歩
 
-- **ファイル構成**: TargetingSystem.java (358行、11メソッド)
-- **メソッド構成**: 明確な責任分離による11個の専門メソッド
-- **設定項目**: 7個の直感的な設定項目
-- **計算複雑度**: O(n×m) - n:敵数、m:メイドさん数
+**移行前（IFFシステム）**:
+- 3段階の固定的な敵味方識別（FRIEND/ENEMY/UNKNOWN）
+- エンティティタイプ単位での粗い制御
+- プレイヤーが設定変更できない固定ルール
 
-### メンテナンス性の向上
-
-- **バグの原因特定が容易**: シンプルな3段階判定とStream処理
-- **新機能追加が簡単**: 明確な責任分離とフィルタリング設計
-- **テストが書きやすい**: 個別機能の独立性と純粋関数的設計
-- **設定変更の影響が予測しやすい**: 少ない設定項目と明確な役割
+**移行後（TargetTagシステム）**:
+- 5種類の柔軟なターゲットタグで細かい制御
+- エンティティごとの個別設定が可能
+- プレイヤーがリアルタイムで設定変更可能
 
 ### プレイヤー体験の向上
 
-- **メイドさんの行動が予測しやすい**: 明確な優先度階層（自分→ご主人→味方→周囲）
-- **設定項目が理解しやすい**: 直感的な設定名称と単位
-- **意図した行動を実現しやすい**: シンプルな制御システム
+1. **細かい制御**: エンティティごとに攻撃・接近・武器使用を個別設定
+2. **直感的UI**: TargetTagScreenで視覚的にタグを設定
+3. **検索機能**: 大量のエンティティから素早く対象を見つけられる
+4. **状態可視化**: 現在の設定を一目で確認可能
 
----
+### 開発効率の向上
 
-## 📊 計算複雑度詳細
-
-### selectTarget()メソッドの分析
-
-```java
-enemies.stream()  // n個の敵に対して
-    .filter(enemy -> !shouldAvoidDangerous(enemy, maid))           // O(1) per enemy
-    .filter(enemy -> !isOverTargeted(enemy, otherMaids, maxAttackers))  // O(m) per enemy
-    .map(enemy -> new TargetCandidate(enemy, determinePriority(enemy, maid, master, otherMaids))) // O(m) per enemy
-    .filter(candidate -> candidate.priority != null)              // O(1) per enemy
-    .min(...)  // O(n) for finding minimum
-```
-
-**全体の計算複雑度: O(n × m)**
-- n: 周囲の敵の数（通常5-20体程度）
-- m: 周囲のメイドさんの数（通常1-10体程度）
-
-実際のゲーム環境では非常に効率的に動作します。
-
----
-
-## 🔧 拡張性
-
-### 敵タグシステムの拡張
-
-現在は個別メソッドでハードコード実装していますが、将来的には以下の拡張が可能です：
-
-```java
-// TODO: 以下のような拡張を検討
-// 1. IFFシステムとの統合
-// 2. 設定ファイルでの敵タグ定義
-// 3. データパックでの敵タグ拡張
-```
-
-### 新しい優先度階層の追加
-
-```java
-public enum TargetPriority {
-    EMERGENCY,   // 新しい最高優先度（例：爆発直前のクリーパー）
-    CRITICAL,    // 自分の身を守る
-    HIGH,        // ご主人の身を守る
-    NORMAL       // 味方の身を守る・周囲の敵
-}
-```
+1. **拡張性**: 新しいTargetTagを簡単に追加可能
+2. **保守性**: 設定とロジックの分離でバグを減少
+3. **テスト性**: タグベースの明確な動作仕様
+4. **再利用性**: 他のMODでも応用可能な汎用設計
 
 ---
 
 ## 📋 まとめ
 
-ターゲティングシステムは複雑な多段階システムから理解しやすい3段階システムに改修されました：
+### ✅ TargetTagシステムの実装済み機能
 
-### ✅ 実装済み機能
+- **5種類のTargetTag**: 攻撃禁止、接近禁止、先制攻撃禁止、近接攻撃禁止、遠距離攻撃禁止
+- **TargetTagManager**: エンティティごとのタグ管理システム
+- **TargetTagScreen**: フィルタリング可能な設定画面
+- **リアルタイム同期**: ネットワークパケットによる即座の設定反映
+- **3段階優先度システム**: CRITICAL > HIGH > NORMAL（従来から継承）
 
-- **3段階優先度システム**: CRITICAL > HIGH > NORMAL
-- **敵タグシステム**: 4種類の特殊対応（攻撃禁止、接近禁止、等）
-- **分散ターゲティング**: 集中攻撃防止機能
-- **避難システム**: 危険敵からの自動回避
-- **シンプル設定**: 7個の直感的な設定項目
+### 🎯 システム設計の優秀性
 
-### 🎯 戦術的価値
+- **柔軟性**: エンティティごとの個別制御
+- **直感性**: プレイヤーが理解しやすいタグシステム
+- **拡張性**: 新しいタグやルールを簡単に追加
+- **パフォーマンス**: 効率的なタグベース判定
+- **保守性**: 設定とロジックの明確な分離
 
-- **明確な優先度**: 自分→ご主人→味方→周囲の敵
-- **武器種別対応**: 弓/剣に応じた敵タグ判定
-- **協調戦闘**: 分散ターゲティングによる効率的戦力配分
-- **安全性重視**: 危険敵からの自動避難
+### 🚀 技術的革新
 
-### 🚀 技術的優秀性
+- **FilterableListGUI統合**: 検索・フィルタリング機能付きUI
+- **Builder パターン**: 宣言的で読みやすい設定記述
+- **状態復元システム**: 画面開閉時の設定状態保持
+- **型安全性**: 強い型付けによるバグ防止
 
-- **パフォーマンス**: O(n×m)の効率的な計算
-- **可読性**: Stream処理による理解しやすいコード構造
-- **テスト性**: 純粋関数的な独立機能単位
-- **拡張性**: 将来的な機能追加に対応した設計
-
-このシンプルなターゲティングシステムは、プレイヤーが理解しやすく、開発者がメンテナンスしやすい、実用的で効率的な設計となっています。
+**TargetTagシステムは、プレイヤーの戦術的自由度を大幅に向上させ、MODの拡張性と保守性を両立した、次世代のターゲティングシステムです。**

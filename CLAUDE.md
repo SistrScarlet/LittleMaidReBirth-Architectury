@@ -20,3 +20,4 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 ## Implementation Constraints
 
 - Minecraftの詳細な仕様を把握できないため、具体的な実装はユーザーに任せること
+- gradlewコマンドは使用禁止

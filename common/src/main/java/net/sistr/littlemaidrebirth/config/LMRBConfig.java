@@ -244,11 +244,6 @@ public class LMRBConfig implements ConfigData {
     public Target target = new Target();
 
     public static class Target {
-        /**
-         * 3段階優先度ターゲティングシステムの設定
-         * CRITICAL: 自分の身を守る > HIGH: ご主人の身を守る > NORMAL: 味方・周囲の敵
-         */
-        
         // 距離関連設定
         @ConfigEntry.Gui.Tooltip
         public int alertRange = 16;              // 警戒範囲（敵検出・先制攻撃範囲）
@@ -261,13 +256,13 @@ public class LMRBConfig implements ConfigData {
         @ConfigEntry.Gui.Tooltip
         public double distributionRatio = 0.5;  // 分散比率（メイドさん数の50%が同じ敵を攻撃）
         @ConfigEntry.Gui.Tooltip
-        public int maxAttackersPerEnemy = 2;    // 1体あたり最大攻撃者数（集中攻撃防止）
+        public int maxAttackersPerTarget = 2;    // 1体あたり最大攻撃者数（集中攻撃防止）
         
         // 体力関連設定
         @ConfigEntry.Gui.Tooltip
         public float injuredThreshold = 0.5f;   // 負傷判定闾値（体力50%以下で負傷扱い）
         @ConfigEntry.Gui.Tooltip
-        public int attackedByValidTicks = 100;  // 攻撃判定有効時間（5秒間、100tick）
+        public int attackedByValidTicks = 200;  // 攻撃判定有効時間（10秒間、200tick）
     }
 
     @ConfigEntry.Category("client")

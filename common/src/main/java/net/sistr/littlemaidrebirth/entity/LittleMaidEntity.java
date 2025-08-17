@@ -80,12 +80,13 @@ import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.goal.*;
-import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
-import net.sistr.littlemaidrebirth.entity.iff.IFF;
-import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
 import net.sistr.littlemaidrebirth.entity.mode.HasMode;
 import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
 import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetIdentifier;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 import net.sistr.littlemaidrebirth.entity.util.*;
 import net.sistr.littlemaidrebirth.mixin.CrossbowItemInvoker;
 import net.sistr.littlemaidrebirth.network.SpawnLittleMaidPacket;
@@ -124,8 +125,8 @@ import java.util.stream.Collectors;
 //todo おさわり厳禁：他人のメイドに触ると殴られる
 //todo 他人のメイドに視線を合わせた時、ご主人の名札を浮かべる
 public class LittleMaidEntity extends TameableEntity implements EntitySpawnExtension, HasInventory,
-        Contractable, HasMode, HasIFF, AimingPoseable, IHasMultiModel, SoundPlayable, HasMovingMode,
-        CrossbowUser, SalaryBoxPosListener {
+        Contractable, HasMode, AimingPoseable, IHasMultiModel, SoundPlayable, HasMovingMode,
+        CrossbowUser, SalaryBoxPosListener, TargetTagManager {
     //LMM_FLAGSのindex
     //todo enumにまとめる
     private static final int WAIT_INDEX = 0;
@@ -161,6 +162,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public final SoundPlayableCompound soundPlayer;
     private final LMScreenHandlerFactory screenFactory = new LMScreenHandlerFactory(this);
     private final IModelCaps caps = new LittleMaidModelCaps(this);
+    private final TargetTagManager targetTagManager;
 
     private final Map<MobEntity, Predicate<MobEntity>> fleeEntities = new HashMap<>();  // todo クラス化検討
     @Nullable
@@ -192,6 +194,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         initIdFactor();
         setRandomTexture();
         setRandomVoice();
+        this.targetTagManager = new TargetTagManagerImpl(worldIn);
     }
 
     //基本使わない
@@ -480,31 +483,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         this.goalSelector.add(priority, new LookAroundGoal(this));
 
         //ターゲット系
-        /*Predicate<Entity> isInTargetRange = (entity) -> {
-            // ラムダ内部に置かないとホットリロードに対応できない
-            float maxTargetRange = config.work.maxTargetRange;
-            return this.squaredDistanceTo(entity) <= maxTargetRange * maxTargetRange;
-        };
-        priority = -1;
-        this.targetSelector.add(++priority, new PredicateRevengeGoal(this, entity ->
-                isInTargetRange.test(entity)
-                        && !isFriend(entity)));
-        this.targetSelector.add(++priority, new TrackOwnerAttackerGoal(this) {
-            @Override
-            protected boolean canTrack(LivingEntity target, TargetPredicate targetPredicate) {
-                return isInTargetRange.test(target) && super.canTrack(target, targetPredicate);
-            }
-        });
-        this.targetSelector.add(++priority, new AttackWithOwnerGoal(this) {
-            @Override
-            protected boolean canTrack(LivingEntity target, TargetPredicate targetPredicate) {
-                return isInTargetRange.test(target) && super.canTrack(target, targetPredicate);
-            }
-        });
-        this.targetSelector.add(++priority, new ActiveTargetGoal<>(
-                this, LivingEntity.class, 5, true, false,
-                entity -> isInTargetRange.test(entity)
-                        && isEnemy(entity)));*/
         this.targetSelector.add(0, new LMTargetGoal(this));
     }
 
@@ -536,13 +514,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             nbt.putBoolean("Wait", TameableUtil.isWait(this));
             nbt.putByte("MovingMode", (byte) this.getMovingMode().getId());
             writeContractable(nbt);
-            writeIFF(nbt);
             writeModeData(nbt);
             nbt.putBoolean("isBloodSuck", isBloodSuck());
             if (this.getMovingMode() == MovingMode.FREEDOM
                     && freedomPos != null) {
                 nbt.put("FreedomPos", NbtHelper.fromBlockPos(freedomPos));
             }
+            writeTargetTags(nbt);
         }
         this.multiModel.writeToNbt(nbt);
         nbt.putString("SoundConfigName", getConfigHolder().getName());
@@ -593,13 +571,13 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
             TameableUtil.setWait(this, nbt.getBoolean("Wait"));
             setMovingMode(MovingMode.fromId(nbt.getByte("MovingMode")));
             readContractable(nbt);
-            readIFF(nbt);
             readModeData(nbt);
             setBloodSuck(nbt.getBoolean("isBloodSuck"));
             if (this.getMovingMode() == MovingMode.FREEDOM
                     && nbt.contains("FreedomPos")) {
                 freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
             }
+            readTargetTags(nbt);
         }
         this.multiModel.readFromNbt(nbt);
         this.calculateDimensions();
@@ -1134,7 +1112,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         if (stack.getItem() instanceof BowItem bowItem) {
             var arrow = ProjectileUtil.createArrowProjectile(this, arrowStack, pullProgress);
             if (arrowStack.getItem() instanceof ArrowItem
-            && !isInfinite) {
+                    && !isInfinite) {
                 arrow.pickupType = PersistentProjectileEntity.PickupPermission.ALLOWED;
             }
             arrow = EPEntityUtil.arrowCustomHook(bowItem, arrow);
@@ -1923,43 +1901,37 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         return Optional.of(modeName);
     }
 
-    //IFF
+    // TargetTag
 
     @Override
-    public Optional<IFFTag> identify(LivingEntity target) {
-        UUID ownerId = this.getOwnerUuid();
-        if (ownerId != null) {
-            //主はフレンド
-            if (ownerId.equals(target.getUuid())) {
-                return Optional.of(IFFTag.FRIEND);
-            }
-            //同じ主を持つ者はフレンド
-            if (target instanceof Tameable tameableTarget
-                    && TameableUtil.equalTameOwner(this, tameableTarget)) {
-                return Optional.of(IFFTag.FRIEND);
-            }
-        }
+    public Set<TargetingSystem.TargetTag> getTargetTag(TargetIdentifier id) {
         return TameableUtil.getTameOwner(this)
-                .filter(owner -> owner instanceof HasIFF)
-                .map(owner -> (HasIFF) owner)
-                .flatMap(t -> t.identify(target));
+                .map(l -> l instanceof TargetTagManager ? (TargetTagManager) l : null)
+                .map(t -> {
+                    var otherSync = t.getTargetTagsSync();
+                    var thisSync = this.getTargetTagsSync();
+                    if (otherSync.hash() != thisSync.hash()) {
+                        thisSync.syncFrom(otherSync);
+                    }
+                    return t;
+                })
+                .orElse(this.targetTagManager)
+                .getTargetTag(id);
     }
 
     @Override
-    public void setIFFs(List<IFF> iffs) {
+    public void writeTargetTags(NbtCompound nbt) {
+        this.targetTagManager.writeTargetTags(nbt);
     }
 
     @Override
-    public List<IFF> getIFFs() {
-        return Lists.newArrayList();
+    public void readTargetTags(NbtCompound nbt) {
+        this.targetTagManager.readTargetTags(nbt);
     }
 
     @Override
-    public void writeIFF(NbtCompound nbt) {
-    }
-
-    @Override
-    public void readIFF(NbtCompound nbt) {
+    public Sync getTargetTagsSync() {
+        return this.targetTagManager.getTargetTagsSync();
     }
 
     @Override
@@ -1968,14 +1940,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     public boolean isFriend(LivingEntity entity) {
-        return identify(entity).orElse(null) == IFFTag.FRIEND;
-    }
-
-    public boolean isEnemy(LivingEntity entity) {
-        if (!TameableUtil.hasTameOwner(this)) {
-            return false;
+        if (TameableUtil.isTameOwner(this, entity)
+                || (entity instanceof Tameable tameable
+                && TameableUtil.equalTameOwner(this, tameable))) {
+            return true;
         }
-        return isBloodSuck() ? !isFriend(entity) : identify(entity).orElse(null) == IFFTag.ENEMY;
+        return getTargetTag(new TargetIdentifier(entity)).contains(TargetingSystem.TargetTag.ATTACK_PROHIBITED);
     }
 
     //構え

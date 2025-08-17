@@ -72,4 +72,8 @@ public class TameableUtil {
         return aOwner.get().equals(bOwner.get());
     }
 
+    public static boolean isTameOwner(Tameable tameable, LivingEntity entity) {
+        return entity.getUuid().equals(tameable.getOwnerUuid());
+    }
+
 }

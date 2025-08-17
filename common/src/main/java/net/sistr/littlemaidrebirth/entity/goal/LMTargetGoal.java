@@ -3,10 +3,10 @@ package net.sistr.littlemaidrebirth.entity.goal;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.mob.MobEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetingConfig;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
-import net.sistr.littlemaidrebirth.entity.util.TargetingConfig;
-import net.sistr.littlemaidrebirth.entity.util.TargetingSystem;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * メイドさんのターゲット選択ゴール
  * 3段階優先度システムで敵を選択し、危険な敵からの避難も処理する
- * 
+ * <p>
  * 優先度階層:
  * - CRITICAL: 自分を攻撃した敵
  * - HIGH: ご主人を攻撃した敵、ご主人が攻撃した敵
@@ -48,34 +48,26 @@ public class LMTargetGoal extends Goal {
             return false;
         }
         var aroundMaids = getAroundMaids();
+        TargetTagManager targetTagManager = this.maid;
 
         // 3段階優先度システムでターゲット選択、分散ターゲティングも考慮
         var target = TargetingSystem.selectTarget(
                 new TargetingSystem.Maid(this.maid),
                 aroundMobs.stream()
-                        .map(mob -> new TargetingSystem.Mob(
-                                mob,
-                                this.maid.identify(mob)
-                                        .map(tag -> {
-                                            if (this.maid.isBloodSuck()) {
-                                                return true;
-                                            } else {
-                                                return tag == IFFTag.ENEMY;
-                                            }
-                                        })
-                                        .orElse(this.maid.isBloodSuck())
-                        )).toList(),
+                        .map(mob -> new TargetingSystem.Mob(mob)).toList(),
                 TameableUtil.getTameOwner(this.maid).map(TargetingSystem.Master::new).orElse(null),
-                aroundMaids.stream().map(TargetingSystem.Maid::new).toList()
+                aroundMaids.stream().map(TargetingSystem.Maid::new).toList(),
+                this.maid.isBloodSuck(),
+                targetTagManager
         );
 
         // 危険敵からの避難処理（クリーパー等から距離を取る）
         var enemies = aroundMobs.stream()
-                .map(mob -> new TargetingSystem.Mob(mob, this.maid.identify(mob).map(tag -> tag == IFFTag.ENEMY).orElse(false)))
+                .map(mob -> new TargetingSystem.Mob(mob))
                 .toList();
         var maidWrapper = new TargetingSystem.Maid(this.maid);
-        if (TargetingSystem.needsEvacuation(maidWrapper, enemies)) {
-            TargetingSystem.getDangerousEnemies(maidWrapper, enemies)
+        if (TargetingSystem.needsEvacuation(maidWrapper, enemies, targetTagManager)) {
+            TargetingSystem.getDangerousEnemies(maidWrapper, enemies, targetTagManager)
                     .forEach(mob -> this.maid.addFleeEntity(mob.getMob(), e ->
                             !e.isAlive()
                                     || this.maid.squaredDistanceTo(e) > (TargetingConfig.getDangerousAvoidDistance() + 4)

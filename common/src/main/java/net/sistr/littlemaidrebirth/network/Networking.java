@@ -17,17 +17,17 @@ public class Networking {
     @Environment(EnvType.CLIENT)
     private void clientInit() {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncSoundConfigPacket.ID, SyncSoundConfigPacket::receiveS2CPacket);
-        NetworkManager.registerReceiver(NetworkManager.Side.S2C, OpenIFFScreenPacket.ID, OpenIFFScreenPacket::receiveS2CPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SpawnLittleMaidPacket.ID, SpawnLittleMaidPacket::receiveS2CPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, OpenTargetTagScreenPacket.ID, OpenTargetTagScreenPacket::receiveS2CPacket);
     }
 
     private void serverInit() {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetMovingStatePacket.ID, C2SSetMovingStatePacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, SyncSoundConfigPacket.ID, SyncSoundConfigPacket::receiveC2SPacket);
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, OpenIFFScreenPacket.ID, OpenIFFScreenPacket::receiveC2SPacket);
-        NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetIFFPacket.ID, C2SSetIFFPacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetBloodSuckPacket.ID, C2SSetBloodSuckPacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetWorkItemSlotSizePacket.ID, C2SSetWorkItemSlotSizePacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetTargetTagsPacket.ID, C2SSetTargetTagsPacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, OpenTargetTagScreenPacket.ID, OpenTargetTagScreenPacket::receiveC2SPacket);
     }
 
 }

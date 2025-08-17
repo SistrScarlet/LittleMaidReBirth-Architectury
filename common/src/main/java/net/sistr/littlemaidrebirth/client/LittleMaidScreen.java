@@ -72,8 +72,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int size = 20;
         int layer = -1;
         this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, BOOK,
-                Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.open_iff_setting"),
-                button -> TameableUtil.getTameOwner(owner).ifPresent(OpenIFFScreenPacket::sendC2SPacket)));
+                Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.open_target_tag_setting"),
+                button -> TameableUtil.getTameOwner(owner).ifPresent(OpenTargetTagScreenPacket::sendC2SPacket)));
         this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, NOTE,
                 Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.open_sound_pack_select"),
                 button -> client.setScreen(new SoundPackSelectScreen<>(title, owner))));
@@ -105,7 +105,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                     = changeBloodSuck.copy().append(Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.is_blood_suck"));
 
             @Override
-            protected ItemStack getIconItem() {
+            public ItemStack getIconItem() {
                 return LittleMaidScreen.this.owner.isBloodSuck() ? IRON_AXE : IRON_SWORD;
             }
 
@@ -316,7 +316,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
 
     public static class IconButtonWidget extends ButtonWidget {
         public static final int DEFAULT_SIZE = 20;
-        private final ItemStack iconItem;
+        private ItemStack iconItem;
 
         public IconButtonWidget(int x, int y, ItemStack iconItem, Text tooltip, PressAction onPress) {
             this(x, y, DEFAULT_SIZE, DEFAULT_SIZE, Text.empty(), onPress, Supplier::get, iconItem);
@@ -329,8 +329,12 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             this.iconItem = iconItem;
         }
 
-        protected ItemStack getIconItem() {
+        public ItemStack getIconItem() {
             return iconItem;
+        }
+
+        public void setIconItem(ItemStack stack) {
+            this.iconItem = stack;
         }
 
         @Override

@@ -1,8 +1,6 @@
 package net.sistr.littlemaidrebirth.setup;
 
 import dev.architectury.registry.level.biome.BiomeModifications;
-import net.minecraft.entity.EntityType;
-import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
@@ -10,9 +8,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.SpawnSettings;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Modes;
-import net.sistr.littlemaidrebirth.entity.iff.IFFTag;
-import net.sistr.littlemaidrebirth.entity.iff.IFFType;
-import net.sistr.littlemaidrebirth.entity.iff.IFFTypeManager;
 import net.sistr.littlemaidrebirth.network.Networking;
 
 import java.util.List;
@@ -25,18 +20,6 @@ public class ModSetup {
         if (LMRBMod.getConfig().spawn.canNaturalSpawn) {
             registerSpawnSettingLM();
         }
-
-        //todo IFFの初期化に関する仕様を再考
-        IFFTypeManager iffTypeManager = IFFTypeManager.getINSTANCE();
-        Registries.ENTITY_TYPE.stream()
-                .filter(EntityType::isSummonable)
-                //ファッキン仕様変更によりゴーレム/村人のSpawnGroupがMISCになったため無効
-                //IFFのsetup時に非生物系を除外するよう変更
-                //.filter(type -> type.getSpawnGroup() != SpawnGroup.MISC)
-                .forEach(entityType ->
-                        iffTypeManager.register(EntityType.getId(entityType),
-                                new IFFType(IFFTag.UNKNOWN, entityType)));
-        iffTypeManager.register(EntityType.getId(EntityType.PLAYER), new IFFType(IFFTag.UNKNOWN, EntityType.PLAYER));
 
         Modes.init();
     }

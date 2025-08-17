@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.entity.util;
+package net.sistr.littlemaidrebirth.entity.targeting;
 
 import net.sistr.littlemaidrebirth.LMRBMod;
 
@@ -25,7 +25,7 @@ public class TargetingConfig {
     }
 
     /**
-     * 危険敵回避距離
+     * 危険対象回避距離
      */
     public static int getDangerousAvoidDistance() {
         return LMRBMod.getConfig().target.dangerousAvoidDistance;
@@ -43,8 +43,8 @@ public class TargetingConfig {
     /**
      * 一体あたりの最大攻撃者数
      */
-    public static int getMaxAttackersPerEnemy() {
-        return LMRBMod.getConfig().target.maxAttackersPerEnemy;
+    public static int getMaxAttackersPerTarget() {
+        return LMRBMod.getConfig().target.maxAttackersPerTarget;
     }
 
     // ========== 体力関連設定 ==========

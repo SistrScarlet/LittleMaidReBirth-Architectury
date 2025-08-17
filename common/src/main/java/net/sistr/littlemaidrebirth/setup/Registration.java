@@ -77,8 +77,6 @@ public class Registration {
     //アイテム
     public static final RegistrySupplier<Item> LITTLE_MAID_SPAWN_EGG_ITEM =
             ITEMS.register("little_maid_spawn_egg", LittleMaidSpawnEggItem::new);
-    /*public static final RegistrySupplier<Item> IFF_COPY_BOOK_ITEM =
-            ITEMS.register("iff_copy_book", IFFCopyBookItem::new);*/
 
     //ブロックアイテム
     public static final RegistrySupplier<Item> SALARY_BOX_BLOCK_ITEM =

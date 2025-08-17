@@ -11,19 +11,25 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.entity.iff.*;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetIdentifier;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Mixin(PlayerEntity.class)
-public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
-    private final HasIFF iff = new IFFImpl();
+public abstract class MixinPlayerEntity extends LivingEntity implements TargetTagManager {
+    @Unique
+    private TargetTagManager targetTagManager;
 
     protected MixinPlayerEntity(EntityType<? extends LivingEntity> entityType, World world) {
         super(entityType, world);
@@ -31,43 +37,37 @@ public abstract class MixinPlayerEntity extends LivingEntity implements HasIFF {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     public void onInit(World world, BlockPos pos, float yaw, GameProfile gameProfile, CallbackInfo ci) {
-        this.setIFFs(IFFTypeManager.getINSTANCE().getIFFTypes(world).stream()
-                .map(IFFType::createIFF).collect(Collectors.toList()));
+        this.targetTagManager = new TargetTagManagerImpl(world);
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("RETURN"))
     public void onRead(NbtCompound nbt, CallbackInfo ci) {
-        this.readIFF(nbt);
+        this.readTargetTags(nbt);
     }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("RETURN"))
     public void onWrite(NbtCompound nbt, CallbackInfo ci) {
-        this.writeIFF(nbt);
+        this.writeTargetTags(nbt);
     }
 
     @Override
-    public Optional<IFFTag> identify(LivingEntity target) {
-        return iff.identify(target);
+    public Set<TargetingSystem.TargetTag> getTargetTag(TargetIdentifier id) {
+        return this.targetTagManager.getTargetTag(id);
     }
 
     @Override
-    public void setIFFs(List<IFF> iffs) {
-        iff.setIFFs(iffs);
+    public void readTargetTags(NbtCompound nbt) {
+        this.targetTagManager.readTargetTags(nbt);
     }
 
     @Override
-    public List<IFF> getIFFs() {
-        return iff.getIFFs();
+    public void writeTargetTags(NbtCompound nbt) {
+        this.targetTagManager.writeTargetTags(nbt);
     }
 
     @Override
-    public void writeIFF(NbtCompound nbt) {
-        iff.writeIFF(nbt);
-    }
-
-    @Override
-    public void readIFF(NbtCompound nbt) {
-        iff.readIFF(nbt);
+    public Sync getTargetTagsSync() {
+        return this.targetTagManager.getTargetTagsSync();
     }
 
     @Override

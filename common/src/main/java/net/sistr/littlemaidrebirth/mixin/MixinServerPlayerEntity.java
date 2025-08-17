@@ -12,7 +12,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
-import net.sistr.littlemaidrebirth.entity.iff.HasIFF;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,7 +31,9 @@ public abstract class MixinServerPlayerEntity extends MixinPlayerEntity {
 
     @Inject(method = "copyFrom", at = @At("RETURN"))
     public void onCopy(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
-        this.setIFFs(((HasIFF) oldPlayer).getIFFs());
+        var thisSync = this.getTargetTagsSync();
+        var oldSync = ((TargetTagManager) oldPlayer).getTargetTagsSync();
+        thisSync.syncFrom(oldSync);
     }
 
     @Inject(method = "trySleep", at = @At("RETURN"))
