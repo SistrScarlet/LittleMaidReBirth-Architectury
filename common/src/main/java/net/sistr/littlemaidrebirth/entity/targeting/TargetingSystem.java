@@ -5,6 +5,7 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.Vec3d;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
@@ -230,6 +231,7 @@ public class TargetingSystem {
      */
     private static boolean isOverTargeted(Mob target, List<Maid> otherMaids, int maxAttackers) {
         long currentAttackers = otherMaids.stream()
+                .filter(maid -> !TameableUtil.isWait(maid.maid))
                 .filter(maid -> maid.isTargeting(target))
                 .filter(maid -> maid.getCombatType() != Mode.BattleModeType.NONE)
                 .filter(maid -> !maid.isInjured())
