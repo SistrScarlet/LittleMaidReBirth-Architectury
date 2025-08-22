@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.client;
+package net.sistr.littlemaidrebirth.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.fabricmc.api.EnvType;
@@ -22,7 +22,6 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.LittleMaidScreenHandler;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
-import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import net.sistr.littlemaidrebirth.network.*;
 
 import java.util.Optional;
@@ -42,8 +41,6 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final ItemStack IRON_SWORD = Items.IRON_SWORD.getDefaultStack();
     private static final ItemStack IRON_AXE = Items.IRON_AXE.getDefaultStack();
     private static final ItemStack CHEST = Items.CHEST.getDefaultStack();
-    private static final ItemStack SHIELD = Items.SHIELD.getDefaultStack();
-    private static final ItemStack SUPPORT = Items.CHEST.getDefaultStack();
     private final LittleMaidEntity owner;
     private Text stateText;
     private final MovingMode prevMovingMode;
@@ -73,7 +70,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         int layer = -1;
         this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, BOOK,
                 Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.open_target_tag_setting"),
-                button -> TameableUtil.getTameOwner(owner).ifPresent(OpenTargetTagScreenPacket::sendC2SPacket)));
+                button -> OpenTargetTagScreenPacket.sendC2SPacket(this.client.player)));
         this.addDrawableChild(new IconButtonWidget(left - size, top + size * ++layer, NOTE,
                 Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.open_sound_pack_select"),
                 button -> client.setScreen(new SoundPackSelectScreen<>(title, owner))));
@@ -116,6 +113,11 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 setTooltip(Tooltip.of(LittleMaidScreen.this.owner.isBloodSuck() ? isBloodSuck : toBloodSuck));
             }
         });
+        layer = -1;
+        this.addDrawableChild(new IconButtonWidget(right, top + size * ++layer, BOOK,
+                Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.open_maid_manager"),
+                button -> OpenMaidManagerScreenPacket.sendC2SPacket()));
+
         this.addDrawableChild(new IconButtonWidget(right, top + 75, CHEST,
                 Text.translatable("gui.littlemaidrebirth.littlemaid.tooltip.setting_work_item_slot"),
                 button -> isSettingWISS = true

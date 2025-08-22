@@ -1,0 +1,29 @@
+{
+  "parent": "littlemaidrebirth:husbandry/contract_maid",
+  "display": {
+    "icon": {
+      "item": "minecraft:cake"
+    },
+    "title": {
+      "translate": "advancements.husbandry.resurrect_maid.title"
+    },
+    "description": {
+      "translate": "advancements.husbandry.resurrect_maid.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "resurrected_maid": {
+      "trigger": "littlemaidrebirth:resurrect_maid",
+      "conditions": {}
+    }
+  },
+  "requirements": [
+    [
+      "resurrected_maid"
+    ]
+  ]
+}

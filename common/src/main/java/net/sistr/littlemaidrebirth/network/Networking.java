@@ -19,6 +19,7 @@ public class Networking {
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SyncSoundConfigPacket.ID, SyncSoundConfigPacket::receiveS2CPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, SpawnLittleMaidPacket.ID, SpawnLittleMaidPacket::receiveS2CPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.S2C, OpenTargetTagScreenPacket.ID, OpenTargetTagScreenPacket::receiveS2CPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.S2C, OpenMaidManagerScreenPacket.ID, OpenMaidManagerScreenPacket::receiveS2CPacket);
     }
 
     private void serverInit() {
@@ -28,6 +29,9 @@ public class Networking {
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetWorkItemSlotSizePacket.ID, C2SSetWorkItemSlotSizePacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SSetTargetTagsPacket.ID, C2SSetTargetTagsPacket::receiveC2SPacket);
         NetworkManager.registerReceiver(NetworkManager.Side.C2S, OpenTargetTagScreenPacket.ID, OpenTargetTagScreenPacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, OpenMaidManagerScreenPacket.ID, OpenMaidManagerScreenPacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SOpenInventoryPacket.ID, C2SOpenInventoryPacket::receiveC2SPacket);
+        NetworkManager.registerReceiver(NetworkManager.Side.C2S, C2SCallWaitPacket.ID, C2SCallWaitPacket::receiveC2SPacket);
     }
 
 }

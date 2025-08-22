@@ -1,6 +1,7 @@
 {
   "entity.littlemaidrebirth.little_maid_mob": "LittleMaid",
   "entity.littlemaidrebirth.little_maid_mob.InsideSkirt": "InsideSkirt",
+  "entity.littlemaidrebirth.maid_soul": "Maid Soul",
 
   "state.littlemaidrebirth.None": "None",
   "state.littlemaidrebirth.Wait": "Wait",
@@ -23,6 +24,11 @@
 
   "advancements.husbandry.contract_maid.title": "Realization",
   "advancements.husbandry.contract_maid.description": "Employ a LittleMaid",
+  "advancements.husbandry.resurrect_maid.title": "LittleMaid Never Dies",
+  "advancements.husbandry.resurrect_maid.description": "Lighting a candle cake surrounded by sugarcane",
+
+  "key.categories.littlemaidrebirth": "LittleMaid ReBirth",
+  "key.littlemaidrebirth.open_maid_manager_screen": "Open Maid Manager Screen",
 
   "gui.littlemaidrebirth.littlemaid.tooltip.open_target_tag_setting": "Target Tag Setting",
   "gui.littlemaidrebirth.littlemaid.tooltip.open_sound_pack_select": "Sound Pack Selection",
@@ -31,9 +37,7 @@
   "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck": "Change target of combat",
   "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.to_blood_suck": " - Currently the maid is calm and only hunts ENEMY mobs",
   "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.is_blood_suck": " - Currently the maid is bloodthirsty and even hunt UNKNOWN mobs",
-  "gui.littlemaidrebirth.littlemaid.tooltip.change_master_stance": "Change master_stance",
-  "gui.littlemaidrebirth.littlemaid.tooltip.change_master_stance.to_support": " - ",
-  "gui.littlemaidrebirth.littlemaid.tooltip.change_master_stance.is_guard": " - ",
+  "gui.littlemaidrebirth.littlemaid.tooltip.open_maid_manager": "Maid Manager",
   "gui.littlemaidrebirth.littlemaid.tooltip.setting_work_item_slot": "Work item slot setting - the maid does not store \"items in this slot\" in the chest.",
 
   "gui.littlemaidrebirth.target_tag.tags.attack_prohibited": "Attack Prohibited",
@@ -44,6 +48,8 @@
   "gui.littlemaidrebirth.target_tag.tags.ranged_weapon_prohibited": "Ranged Weapon Prohibited",
   "gui.littlemaidrebirth.target_tag.tags.approach_allowed": "Approach Allowed",
   "gui.littlemaidrebirth.target_tag.tags.approach_prohibited": "Approach Prohibited",
+
+  "gui.littlemaidrebirth.maidmanager.open_inventory": "Inventory",
 
   "container.littlemaidrebirth.salary_box": "Maid Salary Box",
 

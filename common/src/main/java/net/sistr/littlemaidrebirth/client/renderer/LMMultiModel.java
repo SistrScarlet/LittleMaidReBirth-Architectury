@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.client;
+package net.sistr.littlemaidrebirth.client.renderer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

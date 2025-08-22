@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.client;
+package net.sistr.littlemaidrebirth.client.screen;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -14,7 +14,7 @@ import net.minecraft.item.Items;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
-import net.sistr.littlemaidmodelloader.client.screen.*;
+import net.sistr.littlemaidmodelloader.client.screen.component.*;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetIdentifier;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
@@ -336,7 +336,7 @@ public class TargetTagScreen extends Screen {
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             // ボタンのクリック処理を先にチェック
             for (ButtonWidget buttonWidget : this.buttons) {
-                if (buttonWidget.mouseClicked(mouseX + this.x, mouseY + this.y, button)) {
+                if (buttonWidget.mouseClicked(mouseX, mouseY, button)) {
                     return true;
                 }
             }
@@ -351,7 +351,7 @@ public class TargetTagScreen extends Screen {
         public boolean mouseReleased(double mouseX, double mouseY, int button) {
             // ボタンのクリック処理を先にチェック
             for (ButtonWidget buttonWidget : this.buttons) {
-                if (buttonWidget.mouseReleased(mouseX + this.x, mouseY + this.y, button)) {
+                if (buttonWidget.mouseReleased(mouseX, mouseY, button)) {
                     return true;
                 }
             }

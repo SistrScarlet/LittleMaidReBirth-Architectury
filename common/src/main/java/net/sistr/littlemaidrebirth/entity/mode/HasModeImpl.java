@@ -14,6 +14,7 @@ import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.entity.util.HasInventory;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * HasModeの移譲用クラス
@@ -23,11 +24,13 @@ public class HasModeImpl implements HasMode {
     private final HasInventory hasInventory;
     private final Set<Mode> modes = Sets.newHashSet();
     private final List<Tuple<ItemMatcher, Mode>> itemMatchers = new ObjectArrayList<>();
+    private final Consumer<Mode> onModeChange;
     private Mode nowMode;
 
-    public HasModeImpl(LivingEntity owner, HasInventory hasInventory, Set<Mode> modes) {
+    public HasModeImpl(LivingEntity owner, HasInventory hasInventory, Set<Mode> modes, Consumer<Mode> onModeChange) {
         this.owner = owner;
         this.hasInventory = hasInventory;
+        this.onModeChange = onModeChange;
         this.modes.addAll(modes);
         updateMatchList();
     }
@@ -85,6 +88,7 @@ public class HasModeImpl implements HasMode {
                         .ifPresent(mode -> {
                             mode.readModeData(modeData);
                             nowMode = mode;
+                            onModeChange.accept(mode);
                         });
             }
         }
@@ -104,6 +108,7 @@ public class HasModeImpl implements HasMode {
                 nowMode.resetTask();
                 nowMode.endModeTask();
                 nowMode = null;
+                onModeChange.accept(null);
                 // 新たなモードに切り替え
                 getNewMode().ifPresent(this::changeNewMode);
             } else {
@@ -153,6 +158,7 @@ public class HasModeImpl implements HasMode {
         }
         mode.startModeTask();
         nowMode = mode;
+        onModeChange.accept(mode);
     }
 
     // 現在メインハンドにあるアイテムが有効にするモードを返す

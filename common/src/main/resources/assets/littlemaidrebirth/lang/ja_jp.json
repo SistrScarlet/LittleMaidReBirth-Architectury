@@ -1,6 +1,7 @@
 {
   "entity.littlemaidrebirth.little_maid_mob": "リトルメイド",
   "entity.littlemaidrebirth.little_maid_mob.InsideSkirt": "InsideSkirt",
+  "entity.littlemaidrebirth.maid_soul": "メイドソウル",
 
   "state.littlemaidrebirth.None": "からっぽ",
   "state.littlemaidrebirth.Wait": "待機",
@@ -23,6 +24,11 @@
 
   "advancements.husbandry.contract_maid.title": "悟り。",
   "advancements.husbandry.contract_maid.description": "リトルメイドを雇用する",
+  "advancements.husbandry.resurrect_maid.title": "不滅のメイドソウル",
+  "advancements.husbandry.resurrect_maid.description": "サトウキビに囲まれたロウソク付きケーキに火を灯す",
+
+  "key.categories.littlemaidrebirth": "LittleMaid ReBirth",
+  "key.littlemaidrebirth.open_maid_manager_screen": "メイドさん管理画面を開く",
 
   "gui.littlemaidrebirth.littlemaid.tooltip.open_target_tag_setting": "敵対対象タグ設定",
   "gui.littlemaidrebirth.littlemaid.tooltip.open_sound_pack_select": "サウンドパック選択",
@@ -31,9 +37,7 @@
   "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck": "戦闘対象変更",
   "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.to_blood_suck": "―現在メイドさんは冷静で、ENEMYのモブだけ狩る",
   "gui.littlemaidrebirth.littlemaid.tooltip.change_blood_suck.is_blood_suck": "―現在メイドさんは血に飢え、UNKNOWNのモブまで狩る",
-  "gui.littlemaidrebirth.littlemaid.tooltip.change_master_stance": "ご主人のスタンス変更",
-  "gui.littlemaidrebirth.littlemaid.tooltip.change_master_stance.to_support": "―護衛：現在メイドさんはご主人を守るよう戦う",
-  "gui.littlemaidrebirth.littlemaid.tooltip.change_master_stance.is_guard": "―援護：現在メイドさんはご主人の戦闘を邪魔しないよう戦う",
+  "gui.littlemaidrebirth.littlemaid.tooltip.open_maid_manager": "メイドさん管理画面",
   "gui.littlemaidrebirth.littlemaid.tooltip.setting_work_item_slot": "お仕事アイテムスロット設定―メイドさんは\"このスロットのアイテム\"をチェストに仕舞わない",
 
   "gui.littlemaidrebirth.target_tag.tags.attack_prohibited": "攻撃禁止",
@@ -44,6 +48,8 @@
   "gui.littlemaidrebirth.target_tag.tags.ranged_weapon_prohibited": "遠距離武器禁止",
   "gui.littlemaidrebirth.target_tag.tags.approach_allowed": "接近許可",
   "gui.littlemaidrebirth.target_tag.tags.approach_prohibited": "接近禁止",
+
+  "gui.littlemaidrebirth.maidmanager.open_inventory": "インベントリ",
 
   "container.littlemaidrebirth.salary_box": "メイドさんのお給料箱",
 

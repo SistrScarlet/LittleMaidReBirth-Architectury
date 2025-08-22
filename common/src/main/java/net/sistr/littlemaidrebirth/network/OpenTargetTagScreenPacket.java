@@ -13,7 +13,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.LMRBMod;
-import net.sistr.littlemaidrebirth.client.TargetTagScreen;
+import net.sistr.littlemaidrebirth.client.screen.TargetTagScreen;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetIdentifier;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;

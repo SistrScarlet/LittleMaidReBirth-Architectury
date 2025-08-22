@@ -57,7 +57,7 @@ public class WorldMaidSoulState extends PersistentState {
             var nbtMaidSouls = ((NbtCompound) nbtEntry).getList("maidSouls", NbtElement.COMPOUND_TYPE);
             List<LittleMaidEntity.MaidSoul> maidSouls = Lists.newArrayList();
             for (NbtElement nbtMaidSoul : nbtMaidSouls) {
-                maidSouls.add(new LittleMaidEntity.MaidSoul((NbtCompound) nbtMaidSoul));
+                maidSouls.add(LittleMaidEntity.MaidSoul.fromNbt((NbtCompound) nbtMaidSoul));
             }
             worldMaidSoulState.maidSoulsMap.put(id, maidSouls);
         }

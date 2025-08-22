@@ -94,7 +94,6 @@ import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LMCollidable;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
-import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
@@ -157,7 +156,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                     () -> getConfig().contract.consumeSalaryInterval,
                     () -> getConfig().contract.unpaidDaysLimit,
                     (ItemStack stack) -> stack.isIn(LMTags.Items.MAIDS_SALARY));
-    public final HasModeImpl hasModeImpl = new HasModeImpl(this, this, new HashSet<>());
+    public final HasModeImpl hasModeImpl = new HasModeImpl(this, this, new HashSet<>(),
+            mode -> {
+                setModeName(mode != null ? mode.getName() : "");
+            });
     public final MultiModelCompound multiModel;
     public final SoundPlayableCompound soundPlayer;
     private final LMScreenHandlerFactory screenFactory = new LMScreenHandlerFactory(this);
@@ -177,6 +179,7 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     public int experiencePickUpDelay;
     // クライアント側のこの値は信用ならない
     private int accelerationTicks;
+    private boolean maidManagerRegistered;
 
     //コンストラクタ
     public LittleMaidEntity(EntityType<LittleMaidEntity> type, World worldIn) {
@@ -222,12 +225,10 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 && world.getBaseLightLevel(pos, 0) > 8;
     }
 
-    public static void resurrectionMaid(ServerWorld world, BlockPos pos, PlayerEntity player) {
-        var worldMaidSoulState = WorldMaidSoulState.getWorldMaidSoulState(world);
-        var maidSouls = worldMaidSoulState.get(player.getUuid());
+    public static boolean resurrectionMaid(ServerWorld world, BlockPos pos, PlayerEntity player) {
+        var maidSouls = ((MaidManager) player).getMaidSouls();
         if (maidSouls.isEmpty()) {
-            //todo なんか報酬
-            return;
+            return false;
         }
         for (LittleMaidEntity.MaidSoul maidSoul : maidSouls) {
             var maid = Registration.LITTLE_MAID_MOB.get().create(world);
@@ -244,10 +245,12 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 maid.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 100, 10));
 
                 world.spawnEntity(maid);
+
+                LMRBCriteria.RESURRECT_MAID.trigger((ServerPlayerEntity) player, maid);
             }
         }
-        worldMaidSoulState.remove(player.getUuid());
-        worldMaidSoulState.markDirty();
+        ((MaidManager) player).clearMaidSouls();
+
         world.removeBlock(pos, false);
         world.playSound(null, pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5,
                 SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS, 1.0f, 2.0f);
@@ -292,6 +295,8 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
                 ParticleTypes.HEART,
                 pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
                 count, delta, delta, delta, 0);
+
+        return true;
     }
 
     //登録メソッドたち
@@ -744,6 +749,14 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
 
     @Override
     public void tick() {
+        if (!this.getWorld().isClient() && !this.maidManagerRegistered) {
+            TameableUtil.getTameOwner(this)
+                    .filter(owner -> owner instanceof MaidManager)
+                    .ifPresent(owner -> {
+                        ((MaidManager) owner).registerMaid(this);
+                        this.maidManagerRegistered = true;
+                    });
+        }
         int tickMultiple = getTickMultiple();
         for (int i = 0; i < tickMultiple; i++) {
             inTickMultiplePre();
@@ -963,13 +976,20 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         //死亡ボイスは必ず聞かせる
         this.playSoundCool = 0;
         play(LMSounds.DEATH);
-        if (this.getWorld() instanceof ServerWorld serverWorld)
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        super.remove(reason);
+        if (this.getWorld() instanceof ServerWorld serverWorld
+                && reason.shouldDestroy()) {
             TameableUtil.getTameOwnerUuid(this).ifPresent(id -> {
-                var maidSoulEntity = new MaidSoulEntity(serverWorld, new MaidSoul(this.writeNbt(new NbtCompound())));
+                var maidSoulEntity = new MaidSoulEntity(serverWorld, new MaidSoul(this));
                 maidSoulEntity.setPosition(this.getX(), this.getY(), this.getZ());
                 maidSoulEntity.setVelocity(new Vec3d(random.nextGaussian() * 0.02, 0.2, random.nextGaussian() * 0.02));
                 serverWorld.spawnEntity(maidSoulEntity);
             });
+        }
     }
 
     public void installMaidSoul(MaidSoul maidSoul) {
@@ -1506,7 +1526,6 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
         }
         setAttacker(null);
         getNavigation().stop();
-        setModeName(getMode().map(Mode::getName).orElse(""));
         MenuRegistry.openExtendedMenu((ServerPlayerEntity) player, screenFactory);
     }
 
@@ -2104,17 +2123,41 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     //todo このクラス置く場所ここで正しい？
     public static class MaidSoul {
         private final NbtCompound nbt;
+        private final UUID uuid;
+        private final String name;
 
-        public MaidSoul(NbtCompound nbt) {
+        public MaidSoul(LittleMaidEntity maid) {
+            this.nbt = new NbtCompound();
+            maid.writeNbt(this.nbt);
+            this.nbt.putString("Name", maid.getName().getString());
+            this.name = maid.getName().getString();
+            this.uuid = maid.getUuid();
+        }
+
+        private MaidSoul(NbtCompound nbt, UUID uuid, String name) {
             this.nbt = nbt;
+            this.uuid = uuid;
+            this.name = name;
+        }
+
+        public static MaidSoul fromNbt(NbtCompound nbt) {
+            return new MaidSoul(nbt, nbt.getUuid("UUID"), nbt.getString("Name"));
         }
 
         public NbtCompound getNbt() {
             return nbt;
         }
 
+        public UUID getUuid() {
+            return this.uuid;
+        }
+
         public Optional<UUID> getOwnerUUID() {
             return Optional.ofNullable(nbt.getUuid("Owner"));
+        }
+
+        public String getName() {
+            return this.name;
         }
     }
 }

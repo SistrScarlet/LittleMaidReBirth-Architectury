@@ -13,33 +13,42 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.sistr.littlemaidrebirth.entity.util.MaidManager;
 import net.sistr.littlemaidrebirth.setup.Registration;
-import net.sistr.littlemaidrebirth.world.WorldMaidSoulState;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
-
-import java.util.Optional;
-import java.util.UUID;
 
 //メイドソウル
 //体重21g！
 public class MaidSoulEntity extends Entity {
     @Nullable
-    private LittleMaidEntity.MaidSoul maidSoul;
+    private LittleMaidEntity.MaidSoul maidSoul; // メイドソウルはクライアント側はnull
     private int waveProgress;
+    private boolean maidManagerRegistered;
 
     public MaidSoulEntity(EntityType<?> type, World world) {
         super(type, world);
         this.noClip = true;
     }
 
-    public MaidSoulEntity(World world, @Nullable LittleMaidEntity.MaidSoul maidSoul) {
+    public MaidSoulEntity(World world, LittleMaidEntity.MaidSoul maidSoul) {
         this(Registration.MAID_SOUL_ENTITY.get(), world);
         this.maidSoul = maidSoul;
     }
 
     @Override
     public void tick() {
+        if (!this.getWorld().isClient()
+                && !this.maidManagerRegistered
+                && this.maidSoul != null) {
+            this.maidSoul.getOwnerUUID()
+                    .map(id -> ((ServerWorld) this.getWorld()).getEntity(id))
+                    .filter(owner -> owner instanceof MaidManager)
+                    .ifPresent(owner -> {
+                        ((MaidManager) owner).registerMaid(this);
+                        this.maidManagerRegistered = true;
+                    });
+        }
         int loop = 20 * 4;
         //上端下端のときrange = 0
         //waveProgressが0/半分/最後のときが上端下端
@@ -89,7 +98,8 @@ public class MaidSoulEntity extends Entity {
         this.waveProgress++;
 
         if (world instanceof ServerWorld serverWorld
-                && maidSoul != null && maidSoul.getOwnerUUID().isPresent()) {
+                && this.maidSoul != null
+                && maidSoul.getOwnerUUID().isPresent()) {
             var owner = serverWorld.getEntity(maidSoul.getOwnerUUID().get());
             if (owner != null) {
                 var toOwnerVec = owner.getPos().subtract(this.getPos()).normalize();
@@ -134,41 +144,40 @@ public class MaidSoulEntity extends Entity {
     @Override
     public void onPlayerCollision(PlayerEntity player) {
         super.onPlayerCollision(player);
-        if (this.maidSoul == null) {
-            this.discard();
+        if (maidSoul == null) {
             return;
         }
-        Optional<UUID> optional;
-        if ((optional = this.maidSoul.getOwnerUUID()).isPresent()
-                && optional.get().equals(player.getUuid())) {
-            player.sendPickup(this, 1);
-            if (this.getWorld() instanceof ServerWorld serverWorld) {
-                var maidSoulState = WorldMaidSoulState.getWorldMaidSoulState(serverWorld);
-                maidSoulState.add(player.getUuid(), this.maidSoul);
-                maidSoulState.markDirty();
-                serverWorld.playSound(null, this.getX(), this.getY(), this.getZ(),
-                        SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS,
-                        1.0f, 1.0f);
-                float size = 0.5f;
-                int count = 20;
-                double delta = 1.0;
-                //todo エフェクト調整
-                serverWorld.spawnParticles(
-                        new DustParticleEffect(new Vector3f(1.0f, 0.0f, 0.0f), size),
-                        this.getX(), this.getY(), this.getZ(),
-                        count, delta, delta, delta, 0);
-                serverWorld.spawnParticles(
-                        new DustParticleEffect(new Vector3f(0.0f, 1.0f, 0.0f), size),
-                        this.getX(), this.getY(), this.getZ(),
-                        count, delta, delta, delta, 0);
-                serverWorld.spawnParticles(
-                        new DustParticleEffect(new Vector3f(0.0f, 0.0f, 1.0f), size),
-                        this.getX(), this.getY(), this.getZ(),
-                        count, delta, delta, delta, 0);
-                //todo 憑依ステータス効果
-            }
-            this.discard();
+        maidSoul.getOwnerUUID()
+                .filter(id -> id.equals(player.getUuid()))
+                .ifPresent(id -> pickupSoul(player));
+    }
+
+    protected void pickupSoul(PlayerEntity player) {
+        player.sendPickup(this, 1);
+        if (this.getWorld() instanceof ServerWorld serverWorld) {
+            ((MaidManager) player).registerMaid(this.maidSoul);
+            serverWorld.playSound(null, this.getX(), this.getY(), this.getZ(),
+                    SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE, SoundCategory.PLAYERS,
+                    1.0f, 1.0f);
+            float size = 0.5f;
+            int count = 20;
+            double delta = 1.0;
+            //todo エフェクト調整
+            serverWorld.spawnParticles(
+                    new DustParticleEffect(new Vector3f(1.0f, 0.0f, 0.0f), size),
+                    this.getX(), this.getY(), this.getZ(),
+                    count, delta, delta, delta, 0);
+            serverWorld.spawnParticles(
+                    new DustParticleEffect(new Vector3f(0.0f, 1.0f, 0.0f), size),
+                    this.getX(), this.getY(), this.getZ(),
+                    count, delta, delta, delta, 0);
+            serverWorld.spawnParticles(
+                    new DustParticleEffect(new Vector3f(0.0f, 0.0f, 1.0f), size),
+                    this.getX(), this.getY(), this.getZ(),
+                    count, delta, delta, delta, 0);
+            //todo 憑依ステータス効果
         }
+        this.discard();
     }
 
     @Override
@@ -179,7 +188,7 @@ public class MaidSoulEntity extends Entity {
     @Override
     protected void readCustomDataFromNbt(NbtCompound nbt) {
         if (nbt.contains("maidSoul")) {
-            this.maidSoul = new LittleMaidEntity.MaidSoul(nbt.getCompound("maidSoul"));
+            this.maidSoul = LittleMaidEntity.MaidSoul.fromNbt(nbt.getCompound("maidSoul"));
         }
     }
 
@@ -217,5 +226,9 @@ public class MaidSoulEntity extends Entity {
 
     public int getWaveProgress() {
         return waveProgress;
+    }
+
+    public LittleMaidEntity.MaidSoul getSoul() {
+        return this.maidSoul;
     }
 }

@@ -1,7 +1,7 @@
 /*
  * Decompiled with CFR 0.1.1 (FabricMC 57d88659).
  */
-package net.sistr.littlemaidrebirth.client;
+package net.sistr.littlemaidrebirth.client.renderer;
 
 import com.mojang.authlib.GameProfile;
 import net.fabricmc.api.EnvType;

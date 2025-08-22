@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.client;
+package net.sistr.littlemaidrebirth.client.renderer;
 
 import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.EntityRenderer;

@@ -1,4 +1,4 @@
-package net.sistr.littlemaidrebirth.client;
+package net.sistr.littlemaidrebirth.client.renderer;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;

@@ -3,8 +3,9 @@ package net.sistr.littlemaidrebirth.mixin;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.CandleCakeBlock;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.FireChargeItem;
+import net.minecraft.item.FlintAndSteelItem;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.ActionResult;
@@ -29,14 +30,15 @@ public abstract class MixinCandleCakeBlock {
         ItemStack itemStack = player.getStackInHand(hand);
         //着火するときを取得できなさそうだったので、手動で判定
         //クライアントでは動かない
-        if ((itemStack.isOf(Items.FLINT_AND_STEEL)
-                || itemStack.isOf(Items.FIRE_CHARGE)
+        if ((itemStack.getItem() instanceof FlintAndSteelItem
+                || itemStack.getItem() instanceof FireChargeItem
                 || itemStack.isIn(ItemTags.CREEPER_IGNITERS))
                 && CandleCakeBlock.canBeLit(state)
                 && LMRB$getAroundAlterComponentBlocks(world, pos) >= 4
                 && world instanceof ServerWorld serverWorld) {
-            LittleMaidEntity.resurrectionMaid(serverWorld, pos, player);
-            cir.setReturnValue(ActionResult.SUCCESS);
+            if (LittleMaidEntity.resurrectionMaid(serverWorld, pos, player)) {
+                cir.setReturnValue(ActionResult.SUCCESS);
+            }
         }
     }
 
