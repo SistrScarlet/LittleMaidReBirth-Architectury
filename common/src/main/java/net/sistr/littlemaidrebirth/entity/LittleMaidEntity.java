@@ -1959,6 +1959,11 @@ public class LittleMaidEntity extends TameableEntity implements EntitySpawnExten
     }
 
     public boolean isFriend(LivingEntity entity) {
+        // todo 暫定でテイム済みのモブは攻撃対象から外す
+        if (entity instanceof Tameable tameable
+                && TameableUtil.hasTameOwner(tameable)) {
+            return true;
+        }
         if (TameableUtil.isTameOwner(this, entity)
                 || (entity instanceof Tameable tameable
                 && TameableUtil.equalTameOwner(this, tameable))) {
