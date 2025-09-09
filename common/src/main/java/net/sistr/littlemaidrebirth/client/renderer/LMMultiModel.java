@@ -54,6 +54,9 @@ public class LMMultiModel<T extends LittleMaidEntity> extends MultiModel<T> impl
 
     @Override
     public ModelPart getHead() {
+        if (this.entity == null) {
+            return this.modelPart;
+        }
         this.entity.getModel(IHasMultiModel.Layer.SKIN, IHasMultiModel.Part.HEAD)
                 .filter(model -> model instanceof ModelLittleMaidBase)
                 .map(model -> (ModelLittleMaidBase) model)
