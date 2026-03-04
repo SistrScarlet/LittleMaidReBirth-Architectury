@@ -17,10 +17,10 @@ PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
 echo "[SpotBugs] コミット前にバグチェックを実行中..."
 cd "$PROJECT_ROOT"
-JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew spotbugsMain 2>&1 | tail -10
+./gradlew spotbugsMain 2>&1 | tail -10
 
 echo "[Test] ユニットテストを実行中..."
-JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :common:test 2>&1 | tail -10
+./gradlew :common:test 2>&1 | tail -10
 
 echo "[Check] チェック完了"
 exit 0
