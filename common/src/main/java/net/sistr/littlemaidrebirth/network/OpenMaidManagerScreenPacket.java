@@ -62,11 +62,11 @@ public class OpenMaidManagerScreenPacket {
     MinecraftClient.getInstance().setScreen(new MaidManagerScreen(lmInfos));
   }
 
-  public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
-    context.queue(() -> openScreen(context.getPlayer()));
-  }
-
   private static <T extends Entity & TargetTagManager> void openScreen(PlayerEntity player) {
     sendS2CPacket(player);
+  }
+
+  public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+    context.queue(() -> openScreen(context.getPlayer()));
   }
 }

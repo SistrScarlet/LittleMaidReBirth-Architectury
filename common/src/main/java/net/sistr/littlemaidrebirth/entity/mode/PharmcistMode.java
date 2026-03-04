@@ -2,7 +2,6 @@ package net.sistr.littlemaidrebirth.entity.mode;
 
 import java.util.Arrays;
 import java.util.Optional;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BrewingStandBlockEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
@@ -50,17 +49,6 @@ public class PharmcistMode extends Mode {
     return getBrewingStand(pos).filter(this::isNotUsedBrewingStand).isPresent();
   }
 
-  public Optional<BrewingStandBlockEntity> getBrewingStand(BlockPos pos) {
-    if (pos == null) {
-      return Optional.empty();
-    }
-    BlockEntity tile = mob.getWorld().getBlockEntity(pos);
-    if (tile instanceof BrewingStandBlockEntity) {
-      return Optional.of((BrewingStandBlockEntity) tile);
-    }
-    return Optional.empty();
-  }
-
   public boolean isNotUsedBrewingStand(BrewingStandBlockEntity tile) {
     for (int slot : tile.getAvailableSlots(Direction.UP)) {
       ItemStack stack = tile.getStack(slot);
@@ -69,6 +57,17 @@ public class PharmcistMode extends Mode {
       }
     }
     return true;
+  }
+
+  public Optional<BrewingStandBlockEntity> getBrewingStand(BlockPos pos) {
+    if (pos == null) {
+      return Optional.empty();
+    }
+    net.minecraft.block.entity.BlockEntity tile = mob.getWorld().getBlockEntity(pos);
+    if (tile instanceof BrewingStandBlockEntity) {
+      return Optional.of((BrewingStandBlockEntity) tile);
+    }
+    return Optional.empty();
   }
 
   public boolean canUseBrewingStand(BrewingStandBlockEntity tile) {

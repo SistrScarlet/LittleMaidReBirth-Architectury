@@ -7,7 +7,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
 public class Networking {
-  public static Networking INSTANCE = new Networking();
+  public static final Networking INSTANCE = new Networking();
 
   public void init() {
     if (Platform.getEnvironment() == Env.CLIENT) clientInit();

@@ -405,7 +405,8 @@ public class CookingMode extends Mode {
 
   @Override
   public void readModeData(NbtCompound nbt) {
-    if (nbt.contains("FurnacePos"))
+    if (nbt.contains("FurnacePos")) {
       furnacePos = NbtHelper.toBlockPos(nbt.getCompound("FurnacePos"));
+    }
   }
 }

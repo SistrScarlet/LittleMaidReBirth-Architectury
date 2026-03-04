@@ -128,30 +128,6 @@ public class SalaryBoxBlockEntity extends LootableContainerBlockEntity {
     }
   }
 
-  void setOpen(BlockState state, boolean open) {
-    this.world.setBlockState(this.getPos(), state.with(BarrelBlock.OPEN, open), Block.NOTIFY_ALL);
-  }
-
-  void playSound(BlockState state, SoundEvent soundEvent) {
-    Vec3i vec3i = state.get(BarrelBlock.FACING).getVector();
-    double d = this.pos.getX() + 0.5 + vec3i.getX() / 2.0;
-    double e = this.pos.getY() + 0.5 + vec3i.getY() / 2.0;
-    double f = this.pos.getZ() + 0.5 + vec3i.getZ() / 2.0;
-    this.world.playSound(
-        null,
-        d,
-        e,
-        f,
-        soundEvent,
-        SoundCategory.BLOCKS,
-        0.5f,
-        this.world.random.nextFloat() * 0.1f + 0.9f);
-  }
-
-  public static boolean isinNotifyRange(Vec3i boxPos, Vec3d entityPos) {
-    return boxPos.getSquaredDistance(entityPos) < getConfigNotifyRange() * getConfigNotifyRange();
-  }
-
   public static void tick(
       World world, BlockPos pos, BlockState state, SalaryBoxBlockEntity blockEntity) {
     if (!blockEntity.hasSalary()) {
@@ -179,6 +155,36 @@ public class SalaryBoxBlockEntity extends LootableContainerBlockEntity {
     for (Entity entity : entityList) {
       ((SalaryBoxPosListener) entity).listenSalaryBoxPos(pos);
     }
+  }
+
+  void setOpen(BlockState state, boolean open) {
+    if (this.world == null) {
+      return;
+    }
+    this.world.setBlockState(this.getPos(), state.with(BarrelBlock.OPEN, open), Block.NOTIFY_ALL);
+  }
+
+  void playSound(BlockState state, SoundEvent soundEvent) {
+    if (this.world == null) {
+      return;
+    }
+    Vec3i vec3i = state.get(BarrelBlock.FACING).getVector();
+    double d = this.pos.getX() + 0.5 + vec3i.getX() / 2.0;
+    double e = this.pos.getY() + 0.5 + vec3i.getY() / 2.0;
+    double f = this.pos.getZ() + 0.5 + vec3i.getZ() / 2.0;
+    this.world.playSound(
+        null,
+        d,
+        e,
+        f,
+        soundEvent,
+        SoundCategory.BLOCKS,
+        0.5f,
+        this.world.random.nextFloat() * 0.1f + 0.9f);
+  }
+
+  public static boolean isinNotifyRange(Vec3i boxPos, Vec3d entityPos) {
+    return boxPos.getSquaredDistance(entityPos) < getConfigNotifyRange() * getConfigNotifyRange();
   }
 
   @Override

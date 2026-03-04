@@ -53,14 +53,16 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     this.backgroundHeight = 208;
     owner = screenContainer.getGuiEntity();
     workItemSlotSize = screenContainer.getWorkItemSlotSize();
-    prevMovingMode = movingMode = owner.getMovingMode();
+    prevMovingMode = movingMode = owner != null ? owner.getMovingMode() : MovingMode.ESCORT;
   }
 
   @Override
   protected void init() {
     super.init();
     if (owner == null) {
-      client.setScreen(null);
+      if (client != null) {
+        client.setScreen(null);
+      }
       return;
     }
     int left = (int) ((this.width - backgroundWidth) / 2F) - 5;
@@ -103,6 +105,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 case ESCORT -> movingMode = MovingMode.FREEDOM;
                 case FREEDOM -> movingMode = MovingMode.TRACER;
                 case TRACER -> movingMode = MovingMode.ESCORT;
+                default -> {}
               }
               stateText = getStateText();
             }));
@@ -284,14 +287,14 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     RenderSystem.setShaderTexture(0, GUI);
   }
 
+  protected void drawHealth(DrawContext context, int x, int y, float health, int rowHeart) {
+    drawIcon(context, x, y, health, rowHeart, 16, 0, 52, 0, 61, 0);
+  }
+
   protected void drawArmor(DrawContext context) {
     float armor = owner.getArmor();
     drawArmor(context, 98, 7, MathHelper.clamp(armor - 10, 0, 10), 5);
     drawArmor(context, 98, 16, MathHelper.clamp(armor, 0, 10), 5);
-  }
-
-  protected void drawHealth(DrawContext context, int x, int y, float health, int rowHeart) {
-    drawIcon(context, x, y, health, rowHeart, 16, 0, 52, 0, 61, 0);
   }
 
   protected void drawArmor(DrawContext context, int x, int y, float health, int rowHeart) {

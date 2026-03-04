@@ -420,6 +420,7 @@ public class TargetTagScreen extends Screen {
         case PREEMPTIVE_ATTACK_ALLOWED -> {
           // 先制攻撃許可の場合、何も追加しない
         }
+        default -> {}
       }
 
       // 武器状態から対応するタグを追加
@@ -430,6 +431,7 @@ public class TargetTagScreen extends Screen {
         case NO_WEAPON_RESTRICTION -> {
           // 武器制限なしの場合、何も追加しない
         }
+        default -> {}
       }
 
       // 接近状態から対応するタグを追加
@@ -438,6 +440,7 @@ public class TargetTagScreen extends Screen {
         case APPROACH_ALLOWED -> {
           // 接近許可の場合、何も追加しない
         }
+        default -> {}
       }
 
       return tags;

@@ -66,18 +66,13 @@ public class OpenTargetTagScreenPacket {
   @Environment(EnvType.CLIENT)
   private static void openScreen(int id, NbtCompound nbt, PlayerEntity player) {
     Entity entity = player.getWorld().getEntityById(id);
-    if (!(entity instanceof TargetTagManager targetTagManager)) {
+    if (!(entity instanceof TargetTagManager)) {
       return;
     }
     Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> targetTagMap = new HashMap<>();
     TargetTagManagerImpl.read(targetTagMap, nbt);
 
     MinecraftClient.getInstance().setScreen(new TargetTagScreen(entity, targetTagMap));
-  }
-
-  public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
-    int id = buf.readVarInt();
-    context.queue(() -> openScreen(id, context.getPlayer()));
   }
 
   private static <T extends Entity & TargetTagManager> void openScreen(
@@ -90,5 +85,10 @@ public class OpenTargetTagScreenPacket {
     }
     //noinspection unchecked
     sendS2CPacket((T) entity, player);
+  }
+
+  public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+    int id = buf.readVarInt();
+    context.queue(() -> openScreen(id, context.getPlayer()));
   }
 }

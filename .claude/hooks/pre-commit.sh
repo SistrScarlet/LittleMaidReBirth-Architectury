@@ -19,5 +19,8 @@ echo "[SpotBugs] コミット前にバグチェックを実行中..."
 cd "$PROJECT_ROOT"
 JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew spotbugsMain 2>&1 | tail -10
 
-echo "[SpotBugs] チェック完了"
+echo "[Test] ユニットテストを実行中..."
+JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew :common:test 2>&1 | tail -10
+
+echo "[Check] チェック完了"
 exit 0

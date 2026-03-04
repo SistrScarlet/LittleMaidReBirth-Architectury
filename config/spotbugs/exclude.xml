@@ -23,6 +23,19 @@
     <Bug pattern="SE_NO_SERIALVERSIONID"/>
   </Match>
 
+  <!-- Minecraft mod では内部オブジェクト参照の公開が一般的パターン -->
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP"/>
+  </Match>
+  <Match>
+    <Bug pattern="EI_EXPOSE_REP2"/>
+  </Match>
+
+  <!-- Minecraft の ScreenHandler 等でコンストラクタ例外は避けられない -->
+  <Match>
+    <Bug pattern="CT_CONSTRUCTOR_THROW"/>
+  </Match>
+
   <!-- 自動生成コード -->
   <Match>
     <Source name="~.*\.generated\..*"/>

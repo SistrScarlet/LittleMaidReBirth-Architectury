@@ -53,7 +53,8 @@ public abstract class CollectItemFromContainerGoal<T extends MobEntity> extends 
 
   @Override
   public void tick() {
-    if (targetContainerPos == null) {
+    BlockPos cachedPos = targetContainerPos;
+    if (cachedPos == null) {
       return;
     }
 
@@ -62,7 +63,7 @@ public abstract class CollectItemFromContainerGoal<T extends MobEntity> extends 
       return;
     }
 
-    if (!isInCollectRange(targetContainerPos, this.mob.getBlockPos())) {
+    if (!isInCollectRange(cachedPos, this.mob.getBlockPos())) {
       if (moveToContainerTime++ > getConfigMaxMoveToContainerTime()) {
         this.targetContainerPos = null;
         return;

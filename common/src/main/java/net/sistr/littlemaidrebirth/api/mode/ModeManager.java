@@ -10,7 +10,7 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 /** モードタイプを管理するクラス メイド専用 */
 public class ModeManager {
-  public static ModeManager INSTANCE = new ModeManager();
+  public static final ModeManager INSTANCE = new ModeManager();
   private final BiMap<Identifier, ModeType<? extends Mode>> MODE_TYPES = HashBiMap.create();
 
   public void register(Identifier id, ModeType<? extends Mode> type) {

@@ -1082,9 +1082,11 @@ public class LittleMaidEntity extends TameableEntity
       } else if (age % 4 == 1 && this.getWorld().isRaining()) {
         var pos = getBlockPos();
         Biome biome = this.getWorld().getBiome(pos).value();
-        if (biome.getPrecipitation(pos) == Biome.Precipitation.RAIN) play(LMSounds.LIVING_RAIN);
-        else if (biome.getPrecipitation(pos) == Biome.Precipitation.SNOW)
+        if (biome.getPrecipitation(pos) == Biome.Precipitation.RAIN) {
+          play(LMSounds.LIVING_RAIN);
+        } else if (biome.getPrecipitation(pos) == Biome.Precipitation.SNOW) {
           play(LMSounds.LIVING_SNOW);
+        }
       } else {
         if (this.getMainHandStack().getItem() == Items.CLOCK
             || this.getOffHandStack().getItem() == Items.CLOCK) {
@@ -1902,7 +1904,7 @@ public class LittleMaidEntity extends TameableEntity
   }
 
   public void initIdFactor() {
-    this.idFactor = Math.abs(this.getUuid().hashCode());
+    this.idFactor = this.getUuid().hashCode() & 0x7fffffff;
   }
 
   public int getIdFactor() {

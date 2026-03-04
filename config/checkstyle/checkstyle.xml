@@ -19,8 +19,7 @@
   <module name="NewlineAtEndOfFile"/>
 
   <module name="TreeWalker">
-    <!-- インポート -->
-    <module name="AvoidStarImport"/>
+    <!-- インポート (AvoidStarImport は Spotless の removeUnusedImports() で管理) -->
     <module name="RedundantImport"/>
     <module name="UnusedImports"/>
 
@@ -58,6 +57,20 @@
     <module name="MethodName">
       <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
       <property name="severity" value="info"/>
+    </module>
+
+    <!-- Mixin/Accessor の MethodName チェックを抑制 -->
+    <module name="SuppressionXpathSingleFilter">
+      <property name="files" value=".*[/\\]mixin[/\\].*\.java$"/>
+      <property name="checks" value="MethodName"/>
+    </module>
+    <module name="SuppressionXpathSingleFilter">
+      <property name="files" value=".*Accessor\.java$"/>
+      <property name="checks" value="MethodName"/>
+    </module>
+    <module name="SuppressionXpathSingleFilter">
+      <property name="files" value=".*Invoker\.java$"/>
+      <property name="checks" value="MethodName"/>
     </module>
 
     <!-- その他 -->

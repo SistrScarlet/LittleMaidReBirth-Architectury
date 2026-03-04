@@ -51,16 +51,16 @@ public class SightUtil {
   // z軸方向はチェックしない
   public static SightChecker getSightChecker(
       Vec3d viewPos, Vec3d lookFor, float yaw, float yawFov, float pitchFov) {
-    lookFor = lookFor.normalize();
+    Vec3d normalizedLookFor = lookFor.normalize();
     // x軸をy軸に回して視線方向Pitch軸
     // 視線方向と視線方向Pitch軸の外積から視線方向Yaw軸が得られる
     // 視線方向から視線方向Pitch軸にΘ - 90度回すと上面の法線(内向き)が得られる
     var lookForPitchAxis = rotate(new Vec3d(1, 0, 0), new Vec3d(0, 1, 0), -yaw);
-    var lookForYawAxis = lookFor.crossProduct(lookForPitchAxis);
-    var upNorm = rotate(lookFor, lookForPitchAxis, pitchFov - 90f);
-    var downNorm = rotate(lookFor, lookForPitchAxis, -pitchFov + 90f);
-    var rightNorm = rotate(lookFor, lookForYawAxis, yawFov - 90f);
-    var leftNorm = rotate(lookFor, lookForYawAxis, -yawFov + 90f);
+    var lookForYawAxis = normalizedLookFor.crossProduct(lookForPitchAxis);
+    var upNorm = rotate(normalizedLookFor, lookForPitchAxis, pitchFov - 90f);
+    var downNorm = rotate(normalizedLookFor, lookForPitchAxis, -pitchFov + 90f);
+    var rightNorm = rotate(normalizedLookFor, lookForYawAxis, yawFov - 90f);
+    var leftNorm = rotate(normalizedLookFor, lookForYawAxis, -yawFov + 90f);
     return new SightChecker() {
       @Override
       public boolean check(Vec3d targetPos) {

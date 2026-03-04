@@ -52,7 +52,7 @@ allprojects {
     tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
         reports {
             html.required = true
-            xml.required = false
+            xml.required = true
         }
     }
 
