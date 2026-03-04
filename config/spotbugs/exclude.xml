@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!-- Mixin クラスはバイトコード操作のため通常のパターンに従わない -->
+  <Match>
+    <Package name="~.*\.mixin.*"/>
+  </Match>
+
+  <!-- Minecraft の既存クラスを継承するコードでの未使用パラメータ警告を除外 -->
+  <Match>
+    <Bug pattern="URF_UNREAD_FIELD"/>
+    <Or>
+      <Class name="~.*Entity"/>
+      <Class name="~.*Screen"/>
+      <Class name="~.*Renderer"/>
+    </Or>
+  </Match>
+
+  <!-- シリアライズ関連 (Minecraft のNBT保存で不要) -->
+  <Match>
+    <Bug pattern="SE_BAD_FIELD"/>
+  </Match>
+  <Match>
+    <Bug pattern="SE_NO_SERIALVERSIONID"/>
+  </Match>
+
+  <!-- 自動生成コード -->
+  <Match>
+    <Source name="~.*\.generated\..*"/>
+  </Match>
+</FindBugsFilter>

@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<!--
+    google_checks.xml ベース、Minecraft mod開発向けに緩和した設定。
+    google-java-format で自動整形済みの前提なので、フォーマット系チェックは最小限。
+-->
+<module name="Checker">
+  <property name="charset" value="UTF-8"/>
+  <property name="severity" value="warning"/>
+
+  <!-- ファイルレベルのチェック -->
+  <module name="FileLength">
+    <property name="max" value="2000"/>
+  </module>
+  <module name="FileTabCharacter"/>
+  <module name="NewlineAtEndOfFile"/>
+
+  <module name="TreeWalker">
+    <!-- インポート -->
+    <module name="AvoidStarImport"/>
+    <module name="RedundantImport"/>
+    <module name="UnusedImports"/>
+
+    <!-- コーディング -->
+    <module name="EmptyStatement"/>
+    <module name="EqualsHashCode"/>
+    <module name="SimplifyBooleanExpression"/>
+    <module name="SimplifyBooleanReturn"/>
+    <module name="StringLiteralEquality"/>
+    <module name="DefaultComesLast"/>
+    <module name="FallThrough"/>
+    <module name="MissingSwitchDefault">
+      <property name="severity" value="info"/>
+    </module>
+    <module name="ModifiedControlVariable"/>
+    <module name="OneStatementPerLine"/>
+
+    <!-- クラス設計 -->
+    <module name="OneTopLevelClass"/>
+    <module name="OverloadMethodsDeclarationOrder"/>
+
+    <!-- ブロック -->
+    <module name="EmptyBlock">
+      <property name="option" value="TEXT"/>
+    </module>
+    <module name="NeedBraces">
+      <property name="allowSingleLineStatement" value="true"/>
+    </module>
+
+    <!-- 命名規則 (google-java-format が整形しない部分) -->
+    <module name="PackageName">
+      <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+    </module>
+    <module name="TypeName"/>
+    <module name="MethodName">
+      <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+      <property name="severity" value="info"/>
+    </module>
+
+    <!-- その他 -->
+    <module name="ArrayTypeStyle"/>
+    <module name="UpperEll"/>
+    <module name="IllegalTokenText">
+      <property name="tokens" value="STRING_LITERAL, CHAR_LITERAL"/>
+      <property name="format"
+          value="\\u00(09|0(a|A)|0(c|C)|0(d|D)|22|27|5(C|c))|\\(0(10|11|12|14|15|42|47)|134)"/>
+      <property name="message"
+          value="Consider using special escape sequence instead of octal value or Unicode escape."/>
+    </module>
+
+    <!-- Mixin等のMinecraft特有パターン向けに抑制アノテーション対応 -->
+    <module name="SuppressWarningsHolder"/>
+  </module>
+
+  <module name="SuppressWarningsFilter"/>
+</module>

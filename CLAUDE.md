@@ -15,6 +15,15 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 ## Environment
 
 - Minecraft 1.20.1, Gradle 7.4, Architectury API
+- Gradle実行には Java 17 が必要: `JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64 ./gradlew <task>`
+
+## Build & Test
+
+- `./gradlew spotlessApply` - コード整形 (google-java-format)
+- `./gradlew spotlessCheck` - 整形チェック
+- `./gradlew checkstyleMain` - Checkstyle スタイルチェック
+- `./gradlew spotbugsMain` - SpotBugs バグ検出
+- `./gradlew :common:test` - ユニットテスト (JUnit 5)
 
 ## Localization and Communication Guidelines
 

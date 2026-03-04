@@ -2,6 +2,7 @@ plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
     id "dev.architectury.loom" version "1.1-SNAPSHOT" apply false
     id "com.diffplug.spotless" version "6.25.0" apply false
+    id "com.github.spotbugs" version "6.1.7" apply false
 }
 
 architectury {
@@ -29,6 +30,31 @@ allprojects {
     apply plugin: "architectury-plugin"
     apply plugin: "maven-publish"
     apply plugin: "com.diffplug.spotless"
+    apply plugin: "checkstyle"
+    apply plugin: "com.github.spotbugs"
+
+    checkstyle {
+        toolVersion = "10.21.4"
+        configFile = rootProject.file("config/checkstyle/checkstyle.xml")
+        // 違反があってもビルドを止めない
+        ignoreFailures = true
+        // テストコードもチェック
+        sourceSets = [project.sourceSets.main]
+    }
+
+    spotbugs {
+        ignoreFailures = true
+        effort = com.github.spotbugs.snom.Effort.valueOf("DEFAULT")
+        reportLevel = com.github.spotbugs.snom.Confidence.valueOf("MEDIUM")
+        excludeFilter = rootProject.file("config/spotbugs/exclude.xml")
+    }
+
+    tasks.withType(com.github.spotbugs.snom.SpotBugsTask) {
+        reports {
+            html.required = true
+            xml.required = false
+        }
+    }
 
     spotless {
         java {

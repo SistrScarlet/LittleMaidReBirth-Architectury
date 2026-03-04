@@ -103,4 +103,5 @@ Thumbs.db
 uv.lock
 /.claude/settings.local.json
 /.claude/agent-memory-local/
+/.claude/tools/
 .factorypath
