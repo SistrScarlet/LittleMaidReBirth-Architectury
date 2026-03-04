@@ -64,7 +64,9 @@ public class MaidModelRenderer
     entity
         .getModel(IHasMultiModel.Layer.SKIN, IHasMultiModel.Part.HEAD)
         .filter(model -> model instanceof ModelMultiBase)
-        .map(model -> (float) ((ModelMultiBase) model).getCapsValue(caps_ScaleFactor))
+        .map(
+            model ->
+                ((Number) ((ModelMultiBase) model).getCapsValue(caps_ScaleFactor)).floatValue())
         .ifPresent(scale -> matrices.scale(scale, scale, scale));
   }
 

@@ -42,7 +42,9 @@ public class MaidManagerScreen extends Screen {
 
   @Override
   protected void init() {
-    assert this.client != null;
+    if (this.client == null || this.client.world == null) {
+      return;
+    }
 
     int searchInputHeight = 20;
     int elementWidth = textRenderer.fontHeight * 18;

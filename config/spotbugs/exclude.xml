@@ -36,6 +36,26 @@
     <Bug pattern="CT_CONSTRUCTOR_THROW"/>
   </Match>
 
+  <!-- 戻り値 null の可能性: 短絡評価や意味的保証で安全なケースが大半 -->
+  <Match>
+    <Bug pattern="NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE"/>
+  </Match>
+
+  <!-- Minecraft mod では型保証済みキャストが頻出 (Mixin 注入、パケット処理等) -->
+  <Match>
+    <Bug pattern="BC_UNCONFIRMED_CAST"/>
+  </Match>
+
+  <!-- Config フィールドやサブクラス向け protected フィールドの未読警告 -->
+  <Match>
+    <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
+  </Match>
+
+  <!-- Minecraft mod では public フィールドが一般的パターン -->
+  <Match>
+    <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE"/>
+  </Match>
+
   <!-- 自動生成コード -->
   <Match>
     <Source name="~.*\.generated\..*"/>

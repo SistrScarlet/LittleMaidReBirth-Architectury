@@ -6,9 +6,6 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.ModelWithHead;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModel;
 import net.sistr.littlemaidmodelloader.entity.compound.IHasMultiModel;
@@ -85,13 +82,7 @@ public class LMMultiModel<T extends LittleMaidEntity> extends MultiModel<T>
               modelPart.roll = 0;
               modelPart.yaw = 0;
               modelPart.pitch = 0;
-              ModelRenderer modelRenderer;
-              ItemStack stack = this.entity.getEquippedStack(EquipmentSlot.HEAD);
-              if (MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.HEAD) {
-                modelRenderer = model.bipedHead;
-              } else {
-                modelRenderer = model.bipedHead;
-              }
+              ModelRenderer modelRenderer = model.bipedHead;
               while (modelRenderer != null) {
                 modelPart.pivotX +=
                     (modelRenderer.rotationPointX + modelRenderer.offsetX * 16.0f) * 0.9375F;

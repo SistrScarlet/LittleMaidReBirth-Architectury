@@ -17,9 +17,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class PlaySnowGoal extends Goal {
   private final LittleMaidEntity mob;
-  private final int maxCraftSnowballTime = 60;
-  private final int maxLookTargetTime = 30;
-  private final int maxWaitNextTime = 30;
+  private static final int MAX_CRAFT_SNOWBALL_TIME = 60;
+  private static final int MAX_LOOK_TARGET_TIME = 30;
+  private static final int MAX_WAIT_NEXT_TIME = 30;
   private int state;
   private int timer;
   @Nullable private LivingEntity target;
@@ -89,7 +89,7 @@ public class PlaySnowGoal extends Goal {
       this.mob.getLookControl().lookAt(lookAt);
 
       timer++;
-      if (timer >= maxCraftSnowballTime) {
+      if (timer >= MAX_CRAFT_SNOWBALL_TIME) {
         state = 1;
         timer = 0;
       }
@@ -123,7 +123,7 @@ public class PlaySnowGoal extends Goal {
         }
       }
 
-      if (timer >= maxLookTargetTime) {
+      if (timer >= MAX_LOOK_TARGET_TIME) {
         state = 2;
         timer = 0;
       }
@@ -146,7 +146,7 @@ public class PlaySnowGoal extends Goal {
       }
 
       timer++;
-      if (timer >= maxWaitNextTime) {
+      if (timer >= MAX_WAIT_NEXT_TIME) {
         state = 0;
         timer = 0;
         target = null;
