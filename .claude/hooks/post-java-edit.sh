@@ -5,8 +5,9 @@
 
 set -euo pipefail
 
-# tool_input から file_path を取得
-FILE_PATH=$(echo "$TOOL_INPUT" | jq -r '.file_path // empty')
+# stdin から JSON を読み取り、tool_input.file_path を取得
+INPUT=$(cat)
+FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 
 # .java ファイルでなければスキップ
 if [[ -z "$FILE_PATH" || "$FILE_PATH" != *.java ]]; then

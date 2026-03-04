@@ -4,7 +4,9 @@
 
 set -euo pipefail
 
-COMMAND=$(echo "$TOOL_INPUT" | jq -r '.command // empty')
+# stdin から JSON を読み取り、tool_input.command を取得
+INPUT=$(cat)
+COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 
 # git commit コマンドでなければスキップ
 if ! echo "$COMMAND" | grep -qE '(^|\s|&&|\|)git\s+commit'; then
