@@ -8,27 +8,27 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 
 public class LMScreenHandlerFactory implements ExtendedMenuProvider {
-    private final LittleMaidEntity maid;
+  private final LittleMaidEntity maid;
 
-    public LMScreenHandlerFactory(LittleMaidEntity maid) {
-        this.maid = maid;
-    }
+  public LMScreenHandlerFactory(LittleMaidEntity maid) {
+    this.maid = maid;
+  }
 
-    @Override
-    public void saveExtraData(PacketByteBuf buf) {
-        buf.writeVarInt(maid.getId());
-        buf.writeByte(maid.getUnpaidDays());
-        buf.writeByte(maid.getWorkItemSlotSize());
-    }
+  @Override
+  public void saveExtraData(PacketByteBuf buf) {
+    buf.writeVarInt(maid.getId());
+    buf.writeByte(maid.getUnpaidDays());
+    buf.writeByte(maid.getWorkItemSlotSize());
+  }
 
-    @Override
-    public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
-        return new LittleMaidScreenHandler(syncId, inv, maid.getId(), maid.getUnpaidDays(), maid.getWorkItemSlotSize());
-    }
+  @Override
+  public ScreenHandler createMenu(int syncId, PlayerInventory inv, PlayerEntity player) {
+    return new LittleMaidScreenHandler(
+        syncId, inv, maid.getId(), maid.getUnpaidDays(), maid.getWorkItemSlotSize());
+  }
 
-    @Override
-    public Text getDisplayName() {
-        return maid.getDisplayName();
-    }
-
+  @Override
+  public Text getDisplayName() {
+    return maid.getDisplayName();
+  }
 }

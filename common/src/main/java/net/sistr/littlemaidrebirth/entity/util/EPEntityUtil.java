@@ -8,14 +8,14 @@ import net.minecraft.item.ItemStack;
 
 public class EPEntityUtil {
 
-    @ExpectPlatform
-    public static PersistentProjectileEntity arrowCustomHook(BowItem bowItem, PersistentProjectileEntity arrow) {
-        throw new AssertionError();
-    }
+  @ExpectPlatform
+  public static PersistentProjectileEntity arrowCustomHook(
+      BowItem bowItem, PersistentProjectileEntity arrow) {
+    throw new AssertionError();
+  }
 
-    @ExpectPlatform
-    public static ItemStack arrowCustomHook(LivingEntity user, ItemStack weapon, ItemStack arrow) {
-        throw new AssertionError();
-    }
-
+  @ExpectPlatform
+  public static ItemStack arrowCustomHook(LivingEntity user, ItemStack weapon, ItemStack arrow) {
+    throw new AssertionError();
+  }
 }

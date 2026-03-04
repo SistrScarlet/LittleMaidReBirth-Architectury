@@ -8,7 +8,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(ProjectileEntity.class)
 public interface ProjectileEntityAccessor {
 
-    @Invoker("isOwner")
-    boolean invokeIsOwner(Entity entity);
-
+  @Invoker("isOwner")
+  boolean invokeIsOwner(Entity entity);
 }

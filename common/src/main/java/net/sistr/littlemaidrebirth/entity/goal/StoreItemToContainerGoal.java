@@ -1,6 +1,9 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
 import com.google.common.collect.ImmutableList;
+import java.util.EnumSet;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 import net.minecraft.block.BarrelBlock;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ChestBlock;
@@ -12,93 +15,87 @@ import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.util.BlockFinderPD;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.EnumSet;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-
 public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extends Goal {
-    protected final T mob;
-    protected final Predicate<ItemStack> exceptItems;
-    protected final Supplier<Float> searchRangeSq;
-    @Nullable
-    protected BlockPos containerPos;
-    @Nullable
-    protected BlockFinderPD blockFinder;
-    protected int count;
+  protected final T mob;
+  protected final Predicate<ItemStack> exceptItems;
+  protected final Supplier<Float> searchRangeSq;
+  @Nullable protected BlockPos containerPos;
+  @Nullable protected BlockFinderPD blockFinder;
+  protected int count;
 
-    public StoreItemToContainerGoal(T mob, Predicate<ItemStack> exceptItems, Supplier<Float> searchRange) {
-        this.mob = mob;
-        this.exceptItems = exceptItems;
-        this.searchRangeSq = () -> searchRange.get() * searchRange.get();
-        this.setControls(EnumSet.of(Control.MOVE));
-    }
+  public StoreItemToContainerGoal(
+      T mob, Predicate<ItemStack> exceptItems, Supplier<Float> searchRange) {
+    this.mob = mob;
+    this.exceptItems = exceptItems;
+    this.searchRangeSq = () -> searchRange.get() * searchRange.get();
+    this.setControls(EnumSet.of(Control.MOVE));
+  }
 
-    @Override
-    public boolean canStart() {
-        boolean runningBF = blockFinder != null
-                && !blockFinder.isEnd()
-                && count++ < 1000;
-        // BF実行中なら
-        if (runningBF) {
-            blockFinder.tick();
+  @Override
+  public boolean canStart() {
+    boolean runningBF = blockFinder != null && !blockFinder.isEnd() && count++ < 1000;
+    // BF実行中なら
+    if (runningBF) {
+      blockFinder.tick();
 
-            var result = blockFinder.getResult();
+      var result = blockFinder.getResult();
 
-            // BFの結果が得られて、かつ仕舞うアイテムがあるなら
-            if (result.isPresent() && hasStoreItems()) {
-                containerPos = result.get();
-                return true;
-            }
-
-            return false;
-        }
-
-        // shouldStoreItemの毎tickチェックを避ける
-        if (this.mob.getRandom().nextInt(20) == 0
-                && hasStoreItems()) {
-            bootBF();
-        }
-        return false;
-    }
-
-    public void bootBF() {
-        this.count = 0;
-        float searchRangeSq = this.searchRangeSq.get();
-        blockFinder = new BlockFinderPD(ImmutableList.of(this.mob.getBlockPos().up()),
-                this::isContainer,
-                pos -> mob.getWorld().isAir(pos)
-                        && Math.abs(pos.getY() - mob.getY()) < 2
-                        && pos.getSquaredDistance(this.mob.getPos()) < searchRangeSq,
-                MathHelper.ceil(searchRangeSq));
-    }
-
-    @Override
-    public boolean shouldContinue() {
-        return false;
-    }
-
-    protected boolean isContainer(BlockPos pos) {
-        BlockState state = mob.getWorld().getBlockState(pos);
-        return state.getBlock() instanceof ChestBlock
-                || state.getBlock() instanceof BarrelBlock;
-    }
-
-    protected abstract boolean hasStoreItems();
-
-    protected abstract void storeItems();
-
-    @Override
-    public void start() {
-        storeItems();
-    }
-
-    @Override
-    public void stop() {
-        containerPos = null;
-    }
-
-    @Override
-    public boolean shouldRunEveryTick() {
+      // BFの結果が得られて、かつ仕舞うアイテムがあるなら
+      if (result.isPresent() && hasStoreItems()) {
+        containerPos = result.get();
         return true;
+      }
+
+      return false;
     }
+
+    // shouldStoreItemの毎tickチェックを避ける
+    if (this.mob.getRandom().nextInt(20) == 0 && hasStoreItems()) {
+      bootBF();
+    }
+    return false;
+  }
+
+  public void bootBF() {
+    this.count = 0;
+    float searchRangeSq = this.searchRangeSq.get();
+    blockFinder =
+        new BlockFinderPD(
+            ImmutableList.of(this.mob.getBlockPos().up()),
+            this::isContainer,
+            pos ->
+                mob.getWorld().isAir(pos)
+                    && Math.abs(pos.getY() - mob.getY()) < 2
+                    && pos.getSquaredDistance(this.mob.getPos()) < searchRangeSq,
+            MathHelper.ceil(searchRangeSq));
+  }
+
+  @Override
+  public boolean shouldContinue() {
+    return false;
+  }
+
+  protected boolean isContainer(BlockPos pos) {
+    BlockState state = mob.getWorld().getBlockState(pos);
+    return state.getBlock() instanceof ChestBlock || state.getBlock() instanceof BarrelBlock;
+  }
+
+  protected abstract boolean hasStoreItems();
+
+  protected abstract void storeItems();
+
+  @Override
+  public void start() {
+    storeItems();
+  }
+
+  @Override
+  public void stop() {
+    containerPos = null;
+  }
+
+  @Override
+  public boolean shouldRunEveryTick() {
+    return true;
+  }
 }

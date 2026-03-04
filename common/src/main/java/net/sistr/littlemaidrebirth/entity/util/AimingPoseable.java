@@ -1,11 +1,9 @@
 package net.sistr.littlemaidrebirth.entity.util;
 
-/**
- * エイムしているかを返すインターフェイス
- */
+/** エイムしているかを返すインターフェイス */
 public interface AimingPoseable {
 
-    boolean isAimingBow();
+  boolean isAimingBow();
 
-    void setAimingBow(boolean aiming);
+  void setAimingBow(boolean aiming);
 }
