@@ -62,10 +62,8 @@ public class TorcherMode extends Mode {
         basePos = mob.getBlockPos();
       }
       SearchCondition condition =
-          SearchCondition.forPosition(basePos, mob.getWorld())
-              .maxYDiff(3)
+          SearchCondition.forPosition(basePos, mob.getWorld(), mob.getHeight())
               .maxDistance(distance)
-              .passable(pos -> isPlaceable(pos) || isPlaceable(pos.down()))
               .build();
       int maxCount = MathHelper.floor(distance * distance * 7);
       blockSearch =

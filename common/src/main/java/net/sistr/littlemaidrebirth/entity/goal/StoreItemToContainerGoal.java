@@ -60,12 +60,7 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
     this.count = 0;
     float searchRangeSq = this.searchRangeSq.get();
     double searchRange = Math.sqrt(searchRangeSq);
-    SearchCondition condition =
-        SearchCondition.forMob(mob)
-            .maxYDiff(2)
-            .maxDistance(searchRange)
-            .passable(pos -> mob.getWorld().isAir(pos))
-            .build();
+    SearchCondition condition = SearchCondition.forMob(mob).maxDistance(searchRange).build();
     blockSearch =
         new BlockSearch(
             this.mob.getBlockPos().up(),

@@ -216,7 +216,7 @@ public final class BlockWorkMode extends Mode {
   }
 
   private Optional<BlockPos> findTargetPos() {
-    SearchCondition condition = SearchCondition.forMob(mob).maxYDiff(2).maxDistance(6).build();
+    SearchCondition condition = SearchCondition.forMob(mob).maxDistance(6).build();
     BlockSearch search = new BlockSearch(mob.getBlockPos(), this::isTargetBlock, condition, 128);
     return search.tick(128);
   }
