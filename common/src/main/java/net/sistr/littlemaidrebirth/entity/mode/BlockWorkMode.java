@@ -130,7 +130,7 @@ public final class BlockWorkMode extends Mode {
       }
 
       // 新規作業を開始するときの判定
-      if (!strategy.hasRequiredItems(mob.getInventory())) {
+      if (!strategy.hasRequiredItems(mob.getInventory(), world)) {
         return false;
       }
 

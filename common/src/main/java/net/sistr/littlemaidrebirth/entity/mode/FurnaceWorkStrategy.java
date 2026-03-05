@@ -29,8 +29,8 @@ public class FurnaceWorkStrategy implements WorkStrategy<AbstractFurnaceBlockEnt
   }
 
   @Override
-  public boolean hasRequiredItems(Inventory inventory) {
-    return getFuelSlot(inventory).isPresent();
+  public boolean hasRequiredItems(Inventory inventory, World world) {
+    return getFuelSlot(inventory, world).isPresent();
   }
 
   @Override
@@ -63,7 +63,7 @@ public class FurnaceWorkStrategy implements WorkStrategy<AbstractFurnaceBlockEnt
     }
 
     var recipeType = ((AbstractFurnaceAccessor) furnace).getRecipeType_LM();
-    return (burning || getFuelSlot(inventory).isPresent())
+    return (burning || getFuelSlot(inventory, world).isPresent())
         && getAnyCookableItem(inventory, world, recipeType, i -> true).isPresent();
   }
 
@@ -76,7 +76,7 @@ public class FurnaceWorkStrategy implements WorkStrategy<AbstractFurnaceBlockEnt
     getCookableSlot(inventory, world, recipeType)
         .ifPresent(cookableIdx -> tryInsertCookable(furnace, inventory, cookableIdx, actions));
     // 燃料があれば突っ込む
-    getFuelSlot(inventory)
+    getFuelSlot(inventory, world)
         .ifPresent(fuelIdx -> tryInsertFuel(furnace, inventory, fuelIdx, actions));
     // 焼けてたら取り出す
     tryExtractResult(furnace, inventory, actions);
@@ -123,14 +123,20 @@ public class FurnaceWorkStrategy implements WorkStrategy<AbstractFurnaceBlockEnt
     return false;
   }
 
-  private OptionalInt getFuelSlot(Inventory inventory) {
+  private OptionalInt getFuelSlot(Inventory inventory, World world) {
     for (int i = 0; i < inventory.size(); ++i) {
       ItemStack stack = inventory.getStack(i);
-      if (AbstractFurnaceBlockEntity.canUseAsFuel(stack)) {
+      if (AbstractFurnaceBlockEntity.canUseAsFuel(stack) && !isCookableInAnyFurnace(world, stack)) {
         return OptionalInt.of(i);
       }
     }
     return OptionalInt.empty();
+  }
+
+  private boolean isCookableInAnyFurnace(World world, ItemStack stack) {
+    return getRecipe(world, stack, RecipeType.SMELTING).isPresent()
+        || getRecipe(world, stack, RecipeType.BLASTING).isPresent()
+        || getRecipe(world, stack, RecipeType.SMOKING).isPresent();
   }
 
   private Optional<ItemStack> getAnyCookableItem(

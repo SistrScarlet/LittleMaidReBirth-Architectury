@@ -10,7 +10,7 @@ public interface WorkStrategy<T extends BlockEntity> {
 
   Optional<T> getBlockEntity(World world, BlockPos pos);
 
-  boolean hasRequiredItems(Inventory inventory);
+  boolean hasRequiredItems(Inventory inventory, World world);
 
   boolean isUsableTarget(T blockEntity, Inventory inventory, World world);
 

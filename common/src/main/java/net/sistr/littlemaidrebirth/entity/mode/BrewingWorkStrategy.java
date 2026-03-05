@@ -29,7 +29,7 @@ public class BrewingWorkStrategy implements WorkStrategy<BrewingStandBlockEntity
   }
 
   @Override
-  public boolean hasRequiredItems(Inventory inventory) {
+  public boolean hasRequiredItems(Inventory inventory, World world) {
     return getIngredientSlot(inventory).isPresent() && getPotionBottleSlot(inventory).isPresent();
   }
 
