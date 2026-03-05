@@ -1,12 +1,9 @@
 package net.sistr.littlemaidrebirth.util;
 
 import java.util.function.Predicate;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DoorBlock;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
-import net.minecraft.entity.ai.pathing.NavigationType;
+import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
+import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -24,28 +21,24 @@ public class SearchCondition implements Predicate<BlockPos> {
     return predicate.test(pos);
   }
 
-  public static Builder forMob(LivingEntity mob) {
-    return new Builder(mob, null, mob.getWorld());
+  /** 距離をメイドさんの現在位置から測定する */
+  public static Builder forMob(MobEntity mob) {
+    return new Builder(mob, null);
   }
 
-  public static Builder forPosition(BlockPos center, World world, float entityHeight) {
-    return new Builder(null, center.toImmutable(), world).entityHeight(entityHeight);
+  /** 距離を指定位置から測定する（パスファインディングはメイドさん基準） */
+  public static Builder forMob(MobEntity mob, BlockPos center) {
+    return new Builder(mob, center.toImmutable());
   }
 
   public static class Builder {
-    @Nullable private final LivingEntity mob;
+    private final MobEntity mob;
     @Nullable private final BlockPos center;
-    private final World world;
     private double maxDistance = 6;
-    private float entityHeight = 1.35f;
 
-    private Builder(@Nullable LivingEntity mob, @Nullable BlockPos center, World world) {
+    private Builder(MobEntity mob, @Nullable BlockPos center) {
       this.mob = mob;
       this.center = center;
-      this.world = world;
-      if (mob != null) {
-        this.entityHeight = mob.getHeight();
-      }
     }
 
     public Builder maxDistance(double maxDistance) {
@@ -53,45 +46,41 @@ public class SearchCondition implements Predicate<BlockPos> {
       return this;
     }
 
-    Builder entityHeight(float entityHeight) {
-      this.entityHeight = entityHeight;
-      return this;
-    }
-
     public SearchCondition build() {
       Predicate<BlockPos> distance = buildDistance();
-      World w = world;
-      int heightBlocks = MathHelper.ceil(entityHeight);
+      MobEntity m = mob;
+      World w = m.getWorld();
+      PathNodeMaker nodeMaker = m.getNavigation().getNodeMaker();
+      int heightBlocks = MathHelper.ceil(m.getHeight());
       Predicate<BlockPos> reachable =
-          pos -> isPassable(w, pos) && isNearWalkableFloor(w, pos, heightBlocks);
+          pos ->
+              isPassable(nodeMaker, w, pos) && isNearWalkableFloor(nodeMaker, w, pos, heightBlocks);
       return new SearchCondition(distance.and(reachable));
     }
 
     private Predicate<BlockPos> buildDistance() {
-      if (mob != null) {
-        LivingEntity m = mob;
-        double dist = maxDistance;
-        return pos -> pos.isWithinDistance(m.getPos(), dist);
-      } else {
+      double dist = maxDistance;
+      if (center != null) {
         BlockPos c = center;
-        double dist = maxDistance;
         return pos -> pos.isWithinDistance(c, dist);
+      } else {
+        MobEntity m = mob;
+        return pos -> pos.isWithinDistance(m.getPos(), dist);
       }
     }
 
-    private static boolean isPassable(World world, BlockPos pos) {
-      BlockState state = world.getBlockState(pos);
-      return state.isAir()
-          || state.canPathfindThrough(world, pos, NavigationType.LAND)
-          || (state.getBlock() instanceof DoorBlock
-              && ((DoorBlock) state.getBlock()).getBlockSetType().canOpenByHand());
+    private static boolean isPassable(PathNodeMaker nodeMaker, World world, BlockPos pos) {
+      PathNodeType type = nodeMaker.getDefaultNodeType(world, pos.getX(), pos.getY(), pos.getZ());
+      return type != PathNodeType.BLOCKED;
     }
 
-    private static boolean isNearWalkableFloor(World world, BlockPos pos, int heightBlocks) {
+    private static boolean isNearWalkableFloor(
+        PathNodeMaker nodeMaker, World world, BlockPos pos, int heightBlocks) {
       for (int dy = 0; dy < heightBlocks; dy++) {
         BlockPos floorPos = pos.down(dy);
-        PathNodeType nodeType = LandPathNodeMaker.getLandNodeType(world, floorPos.mutableCopy());
-        if (nodeType == PathNodeType.WALKABLE) {
+        PathNodeType type =
+            nodeMaker.getDefaultNodeType(world, floorPos.getX(), floorPos.getY(), floorPos.getZ());
+        if (type == PathNodeType.WALKABLE) {
           return true;
         }
       }
