@@ -262,7 +262,6 @@ public class BrewingWorkStrategy implements WorkStrategy<BrewingStandBlockEntity
     stand.setStack(INGREDIENT_SLOT, toInsert);
     stand.markDirty();
     actions.pickupAction();
-    actions.playSoundIfReady(LMSounds.COOKING_START);
   }
 
   private void tryExtractUnusableIngredient(
