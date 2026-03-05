@@ -11,6 +11,10 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 - ターゲティング: `entity/targeting/`
 - クライアント: `client/` (renderer, screen, key)
 - Mixin: `mixin/`
+- モード登録: `api/mode/Modes.java` でModeType定義・ItemMatcher登録・init()で一括登録
+- モード判定: ItemMatcherのPriority降順で最初にマッチしたモードが採用される（同Priority時は登録順）
+- lang: `assets/littlemaidrebirth/lang/{en_us,ja_jp,zh_cn}.json` — モード名キーは `mode.littlemaidrebirth.{Name}`
+- タグ: `data/littlemaidrebirth/tags/items/` — モード用タグは `{mode_name}_mode.json`
 
 ## Environment
 
@@ -47,7 +51,15 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 
 ## Development Guidelines
 
+## Cross-Environment Workflow
+
+- WSL2 から Windows リポジトリへローカルremote経由で転送可能
+- `git remote add local /mnt/v/Develop/Minecraft/LMRB`
+- Windows側でチェックアウト中のブランチにはpush不可。別ブランチ名にpush: `git push local 1.20.1:wsl/{branch-name}`
+
 ### Code Editing Guidelines
 - 返り値にOptionalを使用し、フィールドや引数には@Nullableを使用する
 - org.jetbrains.annotations.Nullableを使用する
+- @Nullable フィールドはローカル変数にキャッシュしてから使用する（SpotBugs NP_NULL_PARAM_DEREF 対策）
+- Mixin Accessor は `util/` に配置し、メソッド名に `_LM` サフィックスを付ける（例: `getBrewTime_LM()`）
 
