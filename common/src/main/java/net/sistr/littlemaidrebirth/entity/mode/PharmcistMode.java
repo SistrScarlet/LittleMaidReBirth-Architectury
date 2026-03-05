@@ -82,7 +82,7 @@ public class PharmcistMode extends Mode {
     }
 
     // 醸造台が無いか、使えない場合は再探索
-    if (brewingStandPos == null || !canBrewWith(brewingStand)) {
+    if (brewingStandPos == null || !hasBrewableRecipeInInventory()) {
       brewingStandPos = findBrewingStandPos().orElse(null);
       if (brewingStandPos == null) {
         return false;
@@ -139,10 +139,8 @@ public class PharmcistMode extends Mode {
     if (isUsingByOtherMaid(pos)) {
       return false;
     }
-    return getBrewingStandBlockEntity(pos)
-        .filter(this::isBrewingStandEmpty)
-        .filter(this::canBrewWith)
-        .isPresent();
+    return getBrewingStandBlockEntity(pos).filter(this::isBrewingStandEmpty).isPresent()
+        && hasBrewableRecipeInInventory();
   }
 
   public Optional<BrewingStandBlockEntity> getBrewingStandBlockEntity(BlockPos pos) {
@@ -165,31 +163,22 @@ public class PharmcistMode extends Mode {
     return true;
   }
 
-  /** 手持ちのアイテムで醸造可能な醸造台かどうか */
-  private boolean canBrewWith(@Nullable BrewingStandBlockEntity stand) {
-    if (stand == null) {
-      return false;
-    }
+  /** インベントリ内のアイテムで醸造可能な組み合わせがあるか */
+  private boolean hasBrewableRecipeInInventory() {
     Inventory inventory = this.mob.getInventory();
-    // 材料を探す
-    ItemStack ingredient = ItemStack.EMPTY;
+    // 全材料 × 全ポーション瓶の組み合わせをチェック
     for (int i = 0; i < inventory.size(); ++i) {
-      ItemStack stack = inventory.getStack(i);
-      if (!stack.isEmpty() && BrewingRecipeRegistry.isValidIngredient(stack)) {
-        ingredient = stack;
-        break;
+      ItemStack ingredient = inventory.getStack(i);
+      if (ingredient.isEmpty() || !BrewingRecipeRegistry.isValidIngredient(ingredient)) {
+        continue;
       }
-    }
-    if (ingredient.isEmpty()) {
-      return false;
-    }
-    // ポーション瓶と材料の組み合わせで醸造可能か確認
-    for (int i = 0; i < inventory.size(); ++i) {
-      ItemStack stack = inventory.getStack(i);
-      if (!stack.isEmpty()
-          && isPotionItem(stack)
-          && BrewingRecipeRegistry.hasRecipe(stack, ingredient)) {
-        return true;
+      for (int j = 0; j < inventory.size(); ++j) {
+        ItemStack potion = inventory.getStack(j);
+        if (!potion.isEmpty()
+            && isPotionItem(potion)
+            && BrewingRecipeRegistry.hasRecipe(potion, ingredient)) {
+          return true;
+        }
       }
     }
     return false;
@@ -258,8 +247,8 @@ public class PharmcistMode extends Mode {
       return true;
     }
 
-    // まだ醸造可能な材料とポーション瓶があればtrue
-    return getIngredient().isPresent() && getPotionBottle().isPresent();
+    // インベントリ内で醸造可能な組み合わせがあればtrue
+    return hasBrewableRecipeInInventory();
   }
 
   @Override
