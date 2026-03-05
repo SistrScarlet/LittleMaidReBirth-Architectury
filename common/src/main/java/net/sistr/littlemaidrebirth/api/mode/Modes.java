@@ -8,7 +8,6 @@ import net.minecraft.item.ShearsItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
-import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.entity.mode.*;
 import net.sistr.littlemaidrebirth.tags.LMTags;
@@ -73,14 +72,20 @@ public class Modes {
     return ModeType.<HealerMode>builder((type, maid) -> new HealerMode(type, "Healer", maid))
         .addItemMatcher(stack -> stack.getItem().isFood(), ItemMatcher.Priority.LOWER)
         .addItemMatcher(
-            stack -> PotionUtil.getPotion(stack) != Potions.EMPTY, ItemMatcher.Priority.LOWER)
+            stack -> !PotionUtil.getPotion(stack).getEffects().isEmpty(),
+            ItemMatcher.Priority.LOWER)
         .addItemMatcher(ItemMatchers.tag(LMTags.Items.HEALER_MODE), ItemMatcher.Priority.HIGHER);
   }
 
   public static ModeType.Builder<PharmcistMode> buildPharmacistMode() {
     return ModeType.<PharmcistMode>builder(
             (type, maid) -> new PharmcistMode(type, "Pharmacist", maid))
-        .addItemMatcher(BrewingRecipeRegistry::isValidIngredient, ItemMatcher.Priority.LOWER)
+        .addItemMatcher(
+            stack -> {
+              var potion = PotionUtil.getPotion(stack);
+              return potion != Potions.EMPTY && potion.getEffects().isEmpty();
+            },
+            ItemMatcher.Priority.LOWER)
         .addItemMatcher(
             ItemMatchers.tag(LMTags.Items.PHARMACIST_MODE), ItemMatcher.Priority.HIGHER);
   }

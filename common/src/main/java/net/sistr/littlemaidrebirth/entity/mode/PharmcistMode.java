@@ -82,7 +82,7 @@ public class PharmcistMode extends Mode {
     }
 
     // 醸造台が無いか、使えない場合は再探索
-    if (brewingStandPos == null || brewingStand == null || !canBrewWith(brewingStand)) {
+    if (brewingStandPos == null || !canBrewWith(brewingStand)) {
       brewingStandPos = findBrewingStandPos().orElse(null);
       if (brewingStandPos == null) {
         return false;
@@ -231,7 +231,7 @@ public class PharmcistMode extends Mode {
 
   @Override
   public boolean shouldContinueExecuting() {
-    if (brewingStandPos == null) {
+    if (brewingStandPos == null || brewingStand == null) {
       return false;
     }
     // 醸造台が変わっていたら終了
