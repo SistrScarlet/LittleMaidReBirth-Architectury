@@ -3,6 +3,7 @@
 ## 高
 
 - [ ] LittleMaidEntity.java の分割リファクタ（2000行超、Checkstyle FileLength 違反）
+- [ ] 醸造モード（BrewingMode）の実装 — メイドさんが醸造台でポーション醸造を行うモード
 
 ## 中
 

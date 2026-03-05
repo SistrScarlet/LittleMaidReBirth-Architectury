@@ -22,6 +22,7 @@ public class LMTags {
     public static final TagKey<Item> RIPPER_MODE = register("ripper_mode");
     public static final TagKey<Item> TORCHER_MODE = register("torcher_mode");
     public static final TagKey<Item> HEALER_MODE = register("healer_mode");
+    public static final TagKey<Item> PHARMACIST_MODE = register("pharmacist_mode");
 
     private static TagKey<Item> register(String id) {
       return TagKey.of(RegistryKeys.ITEM, new Identifier(LMRBMod.MODID, id));

@@ -8,6 +8,7 @@ import net.minecraft.item.ShearsItem;
 import net.minecraft.item.SwordItem;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
+import net.minecraft.recipe.BrewingRecipeRegistry;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.entity.mode.*;
 import net.sistr.littlemaidrebirth.tags.LMTags;
@@ -20,6 +21,7 @@ public class Modes {
   public static final ModeType<RipperMode> RIPPER_MODE_TYPE;
   public static final ModeType<TorcherMode> TORCHER_MODE_TYPE;
   public static final ModeType<HealerMode> HEALER_MODE_TYPE;
+  public static final ModeType<PharmcistMode> PHARMACIST_MODE_TYPE;
 
   static {
     FENCER_MODE_TYPE = buildFencerMode().build();
@@ -28,6 +30,7 @@ public class Modes {
     RIPPER_MODE_TYPE = buildRipperMode().build();
     TORCHER_MODE_TYPE = buildTorcherMode().build();
     HEALER_MODE_TYPE = buildHealerMode().build();
+    PHARMACIST_MODE_TYPE = buildPharmacistMode().build();
   }
 
   public static ModeType.Builder<FencerMode> buildFencerMode() {
@@ -74,6 +77,14 @@ public class Modes {
         .addItemMatcher(ItemMatchers.tag(LMTags.Items.HEALER_MODE), ItemMatcher.Priority.HIGHER);
   }
 
+  public static ModeType.Builder<PharmcistMode> buildPharmacistMode() {
+    return ModeType.<PharmcistMode>builder(
+            (type, maid) -> new PharmcistMode(type, "Pharmacist", maid))
+        .addItemMatcher(BrewingRecipeRegistry::isValidIngredient, ItemMatcher.Priority.LOWER)
+        .addItemMatcher(
+            ItemMatchers.tag(LMTags.Items.PHARMACIST_MODE), ItemMatcher.Priority.HIGHER);
+  }
+
   public static void init() {
     register("fencer", FENCER_MODE_TYPE);
     register("archer", ARCHER_MODE_TYPE);
@@ -81,6 +92,7 @@ public class Modes {
     register("ripper", RIPPER_MODE_TYPE);
     register("torcher", TORCHER_MODE_TYPE);
     register("healer", HEALER_MODE_TYPE);
+    register("pharmacist", PHARMACIST_MODE_TYPE);
   }
 
   private static void register(String id, ModeType<?> modeType) {

@@ -8,6 +8,7 @@
     "ItemEntityAccessor",
     "MeleeAttackGoalAccessor",
     "MixinAbstractFurnaceBlockEntity",
+    "MixinBrewingStandBlockEntity",
     "MixinCandleCakeBlock",
     "MixinCrossBowItem",
     "MixinExperienceOrbEntity",
