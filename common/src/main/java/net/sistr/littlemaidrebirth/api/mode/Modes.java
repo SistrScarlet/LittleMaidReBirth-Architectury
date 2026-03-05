@@ -9,18 +9,26 @@ import net.minecraft.item.SwordItem;
 import net.minecraft.potion.PotionUtil;
 import net.minecraft.potion.Potions;
 import net.minecraft.util.Identifier;
-import net.sistr.littlemaidrebirth.entity.mode.*;
+import net.sistr.littlemaidrebirth.entity.mode.ArcherMode;
+import net.sistr.littlemaidrebirth.entity.mode.BlockReservationManager;
+import net.sistr.littlemaidrebirth.entity.mode.BlockWorkMode;
+import net.sistr.littlemaidrebirth.entity.mode.BrewingWorkStrategy;
+import net.sistr.littlemaidrebirth.entity.mode.FencerMode;
+import net.sistr.littlemaidrebirth.entity.mode.FurnaceWorkStrategy;
+import net.sistr.littlemaidrebirth.entity.mode.HealerMode;
+import net.sistr.littlemaidrebirth.entity.mode.RipperMode;
+import net.sistr.littlemaidrebirth.entity.mode.TorcherMode;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 
 /** デフォルトのモードを追加するクラス メイド専用 */
 public class Modes {
   public static final ModeType<FencerMode> FENCER_MODE_TYPE;
   public static final ModeType<ArcherMode> ARCHER_MODE_TYPE;
-  public static final ModeType<CookingMode> COOKING_MODE_TYPE;
+  public static final ModeType<BlockWorkMode> COOKING_MODE_TYPE;
   public static final ModeType<RipperMode> RIPPER_MODE_TYPE;
   public static final ModeType<TorcherMode> TORCHER_MODE_TYPE;
   public static final ModeType<HealerMode> HEALER_MODE_TYPE;
-  public static final ModeType<PharmcistMode> PHARMACIST_MODE_TYPE;
+  public static final ModeType<BlockWorkMode> PHARMACIST_MODE_TYPE;
 
   static {
     FENCER_MODE_TYPE = buildFencerMode().build();
@@ -45,8 +53,15 @@ public class Modes {
         .addItemMatcher(ItemMatchers.tag(LMTags.Items.ARCHER_MODE), ItemMatcher.Priority.HIGHER);
   }
 
-  public static ModeType.Builder<CookingMode> buildCookingMode() {
-    return ModeType.<CookingMode>builder((type, maid) -> new CookingMode(type, "Cooking", maid))
+  public static ModeType.Builder<BlockWorkMode> buildCookingMode() {
+    return ModeType.<BlockWorkMode>builder(
+            (type, maid) ->
+                new BlockWorkMode(
+                    type,
+                    "Cooking",
+                    maid,
+                    BlockReservationManager.INSTANCE,
+                    new FurnaceWorkStrategy()))
         .addItemMatcher(ItemMatchers.tag(LMTags.Items.COOKING_MODE), ItemMatcher.Priority.HIGHER);
   }
 
@@ -77,9 +92,15 @@ public class Modes {
         .addItemMatcher(ItemMatchers.tag(LMTags.Items.HEALER_MODE), ItemMatcher.Priority.HIGHER);
   }
 
-  public static ModeType.Builder<PharmcistMode> buildPharmacistMode() {
-    return ModeType.<PharmcistMode>builder(
-            (type, maid) -> new PharmcistMode(type, "Pharmacist", maid))
+  public static ModeType.Builder<BlockWorkMode> buildPharmacistMode() {
+    return ModeType.<BlockWorkMode>builder(
+            (type, maid) ->
+                new BlockWorkMode(
+                    type,
+                    "Pharmacist",
+                    maid,
+                    BlockReservationManager.INSTANCE,
+                    new BrewingWorkStrategy()))
         .addItemMatcher(
             stack -> {
               var potion = PotionUtil.getPotion(stack);
