@@ -1,6 +1,9 @@
 package net.sistr.littlemaidrebirth.util;
 
 import java.util.function.Predicate;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.DoorBlock;
+import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.entity.ai.pathing.PathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.mob.MobEntity;
@@ -70,8 +73,11 @@ public class SearchCondition implements Predicate<BlockPos> {
     }
 
     private static boolean isPassable(PathNodeMaker nodeMaker, World world, BlockPos pos) {
-      PathNodeType type = nodeMaker.getDefaultNodeType(world, pos.getX(), pos.getY(), pos.getZ());
-      return type != PathNodeType.BLOCKED;
+      BlockState state = world.getBlockState(pos);
+      if (state.isAir() || state.canPathfindThrough(world, pos, NavigationType.LAND)) {
+        return true;
+      }
+      return state.getBlock() instanceof DoorBlock && nodeMaker.canOpenDoors();
     }
 
     private static boolean isNearWalkableFloor(
