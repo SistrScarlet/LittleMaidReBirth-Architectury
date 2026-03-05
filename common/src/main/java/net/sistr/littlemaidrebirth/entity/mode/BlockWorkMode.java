@@ -1,23 +1,19 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
-import java.util.Arrays;
 import java.util.Optional;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.DoorBlock;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.entity.ai.pathing.NavigationType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.util.BlockFinder;
+import net.sistr.littlemaidrebirth.util.BlockSearch;
+import net.sistr.littlemaidrebirth.util.SearchCondition;
 import org.jetbrains.annotations.Nullable;
 
 public final class BlockWorkMode extends Mode {
@@ -220,12 +216,9 @@ public final class BlockWorkMode extends Mode {
   }
 
   private Optional<BlockPos> findTargetPos() {
-    return BlockFinder.searchTargetBlock(
-        mob.getBlockPos(),
-        this::isTargetBlock,
-        this::isSearchable,
-        Arrays.asList(Direction.values()),
-        128);
+    SearchCondition condition = SearchCondition.forMob(mob).maxYDiff(2).maxDistance(6).build();
+    BlockSearch search = new BlockSearch(mob.getBlockPos(), this::isTargetBlock, condition, 128);
+    return search.tick(128);
   }
 
   private boolean isTargetBlock(BlockPos pos) {
@@ -236,15 +229,5 @@ public final class BlockWorkMode extends Mode {
     return s.getBlockEntity(mob.getWorld(), pos)
         .filter(be -> s.isUsableTarget(be, mob.getInventory(), mob.getWorld()))
         .isPresent();
-  }
-
-  private boolean isSearchable(BlockPos pos) {
-    BlockState state;
-    return Math.abs(pos.getY() - mob.getY()) < 2
-        && pos.isWithinDistance(mob.getPos(), 6)
-        && ((state = mob.getWorld().getBlockState(pos))
-                .canPathfindThrough(mob.getWorld(), pos, NavigationType.LAND)
-            || (state.getBlock() instanceof DoorBlock
-                && ((DoorBlock) state.getBlock()).getBlockSetType().canOpenByHand()));
   }
 }

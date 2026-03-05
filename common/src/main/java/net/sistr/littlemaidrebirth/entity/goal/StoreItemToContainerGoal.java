@@ -1,6 +1,5 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
-import com.google.common.collect.ImmutableList;
 import java.util.EnumSet;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -12,7 +11,8 @@ import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.sistr.littlemaidrebirth.util.BlockFinderPD;
+import net.sistr.littlemaidrebirth.util.BlockSearch;
+import net.sistr.littlemaidrebirth.util.SearchCondition;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extends Goal {
@@ -20,7 +20,7 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
   protected final Predicate<ItemStack> exceptItems;
   protected final Supplier<Float> searchRangeSq;
   @Nullable protected BlockPos containerPos;
-  @Nullable protected BlockFinderPD blockFinder;
+  @Nullable protected BlockSearch blockSearch;
   protected int count;
 
   public StoreItemToContainerGoal(
@@ -33,14 +33,14 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
 
   @Override
   public boolean canStart() {
-    boolean runningBF = blockFinder != null && !blockFinder.isEnd() && count++ < 1000;
-    // BF実行中なら
-    if (runningBF) {
-      blockFinder.tick();
+    boolean searching = blockSearch != null && !blockSearch.isFinished() && count++ < 1000;
+    // 探索中なら
+    if (searching) {
+      blockSearch.tick(1);
 
-      var result = blockFinder.getResult();
+      var result = blockSearch.getResult();
 
-      // BFの結果が得られて、かつ仕舞うアイテムがあるなら
+      // 結果が得られて、かつ仕舞うアイテムがあるなら
       if (result.isPresent() && hasStoreItems()) {
         containerPos = result.get();
         return true;
@@ -59,14 +59,18 @@ public abstract class StoreItemToContainerGoal<T extends PathAwareEntity> extend
   public void bootBF() {
     this.count = 0;
     float searchRangeSq = this.searchRangeSq.get();
-    blockFinder =
-        new BlockFinderPD(
-            ImmutableList.of(this.mob.getBlockPos().up()),
+    double searchRange = Math.sqrt(searchRangeSq);
+    SearchCondition condition =
+        SearchCondition.forMob(mob)
+            .maxYDiff(2)
+            .maxDistance(searchRange)
+            .passable(pos -> mob.getWorld().isAir(pos))
+            .build();
+    blockSearch =
+        new BlockSearch(
+            this.mob.getBlockPos().up(),
             this::isContainer,
-            pos ->
-                mob.getWorld().isAir(pos)
-                    && Math.abs(pos.getY() - mob.getY()) < 2
-                    && pos.getSquaredDistance(this.mob.getPos()) < searchRangeSq,
+            condition,
             MathHelper.ceil(searchRangeSq));
   }
 

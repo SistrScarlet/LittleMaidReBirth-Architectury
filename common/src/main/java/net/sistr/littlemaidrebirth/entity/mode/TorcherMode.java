@@ -1,6 +1,5 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
-import com.google.common.collect.ImmutableList;
 import net.minecraft.block.TorchBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.pathing.Path;
@@ -20,7 +19,8 @@ import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
-import net.sistr.littlemaidrebirth.util.BlockFinderPD;
+import net.sistr.littlemaidrebirth.util.BlockSearch;
+import net.sistr.littlemaidrebirth.util.SearchCondition;
 import org.jetbrains.annotations.Nullable;
 
 // 暗所発見->移動->設置
@@ -33,7 +33,7 @@ public class TorcherMode extends Mode {
   protected int recalcPathTimer;
   protected int failPlaceTimer;
   protected int count;
-  @Nullable protected BlockFinderPD blockFinder;
+  @Nullable protected BlockSearch blockSearch;
 
   public TorcherMode(
       ModeType<? extends Mode> modeType, String name, LittleMaidEntity mob, float distance) {
@@ -49,8 +49,7 @@ public class TorcherMode extends Mode {
     if (!(item instanceof BlockItem)) {
       return false;
     }
-    // todo blockFinderを使いまわす
-    if (blockFinder == null || blockFinder.isEnd() || count++ > 100) {
+    if (blockSearch == null || blockSearch.isFinished() || count++ > 100) {
       this.count = 0;
       BlockPos basePos;
       if (this.mob.getMovingMode() == MovingMode.ESCORT) {
@@ -62,21 +61,19 @@ public class TorcherMode extends Mode {
       } else {
         basePos = mob.getBlockPos();
       }
-      blockFinder =
-          new BlockFinderPD(
-              ImmutableList.of(basePos),
-              pos -> isDark(pos) && isPlaceable(pos),
-              pos ->
-                  Math.abs(basePos.getY() - pos.getY()) < 3
-                      && (isPlaceable(pos) || isPlaceable(pos.down()))
-                      && pos.isWithinDistance(basePos, distance),
-              MathHelper.floor(distance * distance * 7));
-      // 探索済みブロック数の実測値に合わせてexpectedを指定
-      // 半径12 seed数874
+      SearchCondition condition =
+          SearchCondition.forPosition(basePos, mob.getWorld())
+              .maxYDiff(3)
+              .maxDistance(distance)
+              .passable(pos -> isPlaceable(pos) || isPlaceable(pos.down()))
+              .build();
+      int maxCount = MathHelper.floor(distance * distance * 7);
+      blockSearch =
+          new BlockSearch(basePos, pos -> isDark(pos) && isPlaceable(pos), condition, maxCount);
     }
-    // 毎tick nブロック探索
-    blockFinder.tick(10);
-    placePos = blockFinder.getResult().orElse(null);
+    // 毎tick 10ブロック探索
+    blockSearch.tick(10);
+    placePos = blockSearch.getResult().orElse(null);
     return placePos != null;
   }
 
