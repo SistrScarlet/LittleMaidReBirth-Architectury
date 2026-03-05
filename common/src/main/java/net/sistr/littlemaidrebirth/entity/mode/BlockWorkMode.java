@@ -1,6 +1,5 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
-import java.util.Optional;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtHelper;
@@ -17,11 +16,16 @@ import net.sistr.littlemaidrebirth.util.SearchCondition;
 import org.jetbrains.annotations.Nullable;
 
 public final class BlockWorkMode extends Mode {
+  private static final int SEARCH_BUDGET_PER_TICK = 10;
+  private static final int SEARCH_MAX_COUNT = 128;
+  private static final double SEARCH_DISTANCE = 6;
+
   private final LittleMaidEntity mob;
   private final BlockReservationManager reservationManager;
   private final WorkStrategy<?> strategy;
   @Nullable private BlockPos targetPos;
   @Nullable private BlockEntity targetBlockEntity;
+  @Nullable private BlockSearch activeSearch;
   private int findCooldown;
   private int pathRecalcCooldown;
   private int soundCooldown;
@@ -64,6 +68,11 @@ public final class BlockWorkMode extends Mode {
 
   @Override
   public boolean shouldExecute() {
+    // 非同期探索が進行中なら継続する
+    if (activeSearch != null) {
+      return tickSearch();
+    }
+
     if (0 < --findCooldown) {
       return false;
     }
@@ -76,7 +85,7 @@ public final class BlockWorkMode extends Mode {
 
     // モードが中断されたあと、再開するときの判定
     if (pos != null
-        && pos.isWithinDistance(mob.getPos(), 6)
+        && pos.isWithinDistance(mob.getPos(), SEARCH_DISTANCE)
         && !reservationManager.isReservedByOther(world, pos, mob)) {
       BlockEntity be = s.getBlockEntity(world, pos).orElse(null);
       if (be != null && s.hasRemainingWork(be)) {
@@ -102,14 +111,39 @@ public final class BlockWorkMode extends Mode {
       }
     }
 
-    // 新しいターゲットを探索
-    pos = findTargetPos().orElse(null);
-    if (pos == null) {
+    // 非同期探索を開始
+    startSearch();
+    return false;
+  }
+
+  private void startSearch() {
+    SearchCondition condition = SearchCondition.forMob(mob).maxDistance(SEARCH_DISTANCE).build();
+    activeSearch =
+        new BlockSearch(mob.getBlockPos(), this::isTargetBlock, condition, SEARCH_MAX_COUNT);
+  }
+
+  private boolean tickSearch() {
+    BlockSearch search = activeSearch;
+    if (search == null) {
       return false;
     }
-    targetPos = pos;
-    targetBlockEntity = s.getBlockEntity(world, pos).orElseThrow();
-    return true;
+
+    search.tick(SEARCH_BUDGET_PER_TICK);
+
+    var result = search.getResult();
+    if (result.isPresent()) {
+      activeSearch = null;
+      BlockPos pos = result.get();
+      targetPos = pos;
+      WorkStrategy<BlockEntity> s = typedStrategy();
+      targetBlockEntity = s.getBlockEntity(mob.getWorld(), pos).orElse(null);
+      return targetBlockEntity != null;
+    }
+
+    if (search.isFinished()) {
+      activeSearch = null;
+    }
+    return false;
   }
 
   @Override
@@ -185,6 +219,7 @@ public final class BlockWorkMode extends Mode {
   @Override
   public void resetTask() {
     soundCooldown = 0;
+    activeSearch = null;
     mob.setSneaking(false);
     BlockPos pos = targetPos;
     if (pos != null) {
@@ -213,12 +248,6 @@ public final class BlockWorkMode extends Mode {
     if (nbt.contains(key)) {
       targetPos = NbtHelper.toBlockPos(nbt.getCompound(key));
     }
-  }
-
-  private Optional<BlockPos> findTargetPos() {
-    SearchCondition condition = SearchCondition.forMob(mob).maxDistance(6).build();
-    BlockSearch search = new BlockSearch(mob.getBlockPos(), this::isTargetBlock, condition, 128);
-    return search.tick(128);
   }
 
   private boolean isTargetBlock(BlockPos pos) {
