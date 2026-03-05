@@ -309,20 +309,44 @@ public class PharmcistMode extends Mode {
 
     Inventory inventory = this.mob.getInventory();
 
-    // 完成品を取り出す
-    tryExtractPotions(stand, inventory);
+    boolean hasPotionInStand = hasPotionsInStand(stand);
 
-    // 材料スロットに残ったガラス瓶を取り出す
-    tryExtractIngredientSlot(stand, inventory);
+    if (hasPotionInStand) {
+      // 醸造台にポーションがある: 連続醸造または回収
 
-    // 燃料が不足していればブレイズパウダーを挿入
-    tryInsertFuel(stand, inventory);
+      // 不要な材料を回収
+      tryExtractUnusableIngredient(stand, inventory);
 
-    // ポーション瓶を挿入
-    tryInsertPotionBottles(stand, inventory);
+      // 次の材料を挿入できるなら挿入
+      if (stand.getStack(INGREDIENT_SLOT).isEmpty()) {
+        OptionalInt nextIngredient = getMatchingIngredient(stand, inventory);
+        if (nextIngredient.isPresent()) {
+          // 燃料を補充してから材料を投入
+          tryInsertFuel(stand, inventory);
+          tryInsertIngredient(stand, inventory, nextIngredient.getAsInt());
+        } else {
+          // もう醸造できる材料がない → ポーションを回収
+          tryExtractAllPotions(stand, inventory);
+        }
+      }
+    } else {
+      // 醸造台が空: 新規バッチ開始
 
-    // 材料を挿入
-    getIngredient().ifPresent(idx -> tryInsertIngredient(stand, inventory, idx));
+      // 材料スロットに残ったガラス瓶を取り出す
+      tryExtractIngredientSlot(stand, inventory);
+
+      // 燃料を補充
+      tryInsertFuel(stand, inventory);
+
+      // ポーション瓶を挿入
+      tryInsertPotionBottles(stand, inventory);
+
+      // 材料を挿入（ポーション瓶とレシピが合う材料のみ）
+      if (hasPotionsInStand(stand)) {
+        OptionalInt matchingIngredient = getMatchingIngredient(stand, inventory);
+        matchingIngredient.ifPresent(idx -> tryInsertIngredient(stand, inventory, idx));
+      }
+    }
   }
 
   private void tryInsertFuel(BrewingStandBlockEntity stand, Inventory inventory) {
@@ -351,21 +375,43 @@ public class PharmcistMode extends Mode {
     }
   }
 
-  private void tryInsertPotionBottles(BrewingStandBlockEntity stand, Inventory inventory) {
-    // 材料を先に確認（材料とのレシピがあるポーション瓶のみ入れる）
-    ItemStack ingredient = ItemStack.EMPTY;
-    // 醸造台の材料スロットにすでにある場合はそれを使う
-    ItemStack standIngredient = stand.getStack(INGREDIENT_SLOT);
-    if (!standIngredient.isEmpty() && BrewingRecipeRegistry.isValidIngredient(standIngredient)) {
-      ingredient = standIngredient;
-    } else {
-      // インベントリから材料を探す
-      for (int i = 0; i < inventory.size(); ++i) {
-        ItemStack stack = inventory.getStack(i);
-        if (!stack.isEmpty() && BrewingRecipeRegistry.isValidIngredient(stack)) {
-          ingredient = stack;
-          break;
+  /** 醸造台のポーション瓶スロットにアイテムがあるか */
+  private boolean hasPotionsInStand(BrewingStandBlockEntity stand) {
+    for (int i = POTION_SLOT_START; i <= POTION_SLOT_END; i++) {
+      if (!stand.getStack(i).isEmpty()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** 醸造台のポーションに合う材料をインベントリから探す */
+  private OptionalInt getMatchingIngredient(BrewingStandBlockEntity stand, Inventory inventory) {
+    for (int i = 0; i < inventory.size(); ++i) {
+      ItemStack invStack = inventory.getStack(i);
+      if (invStack.isEmpty() || !BrewingRecipeRegistry.isValidIngredient(invStack)) {
+        continue;
+      }
+      // この材料で醸造台のポーションのいずれかを醸造できるか
+      for (int slot = POTION_SLOT_START; slot <= POTION_SLOT_END; slot++) {
+        ItemStack potionStack = stand.getStack(slot);
+        if (!potionStack.isEmpty() && BrewingRecipeRegistry.hasRecipe(potionStack, invStack)) {
+          return OptionalInt.of(i);
         }
+      }
+    }
+    return OptionalInt.empty();
+  }
+
+  /** 醸造台が空のとき、ポーション瓶を挿入する */
+  private void tryInsertPotionBottles(BrewingStandBlockEntity stand, Inventory inventory) {
+    // インベントリから最初の醸造材料を探す（挿入するポーション瓶のレシピ判定用）
+    ItemStack ingredient = ItemStack.EMPTY;
+    for (int i = 0; i < inventory.size(); ++i) {
+      ItemStack stack = inventory.getStack(i);
+      if (!stack.isEmpty() && BrewingRecipeRegistry.isValidIngredient(stack)) {
+        ingredient = stack;
+        break;
       }
     }
     if (ingredient.isEmpty()) {
@@ -385,7 +431,6 @@ public class PharmcistMode extends Mode {
         if (!BrewingRecipeRegistry.hasRecipe(potionStack, ingredient)) {
           continue;
         }
-        // 1つだけ挿入
         ItemStack toInsert = potionStack.split(1);
         stand.setStack(slot, toInsert);
         stand.markDirty();
@@ -395,24 +440,12 @@ public class PharmcistMode extends Mode {
     }
   }
 
+  /** 材料を醸造台に挿入する */
   private void tryInsertIngredient(
       BrewingStandBlockEntity stand, Inventory inventory, int ingredientIndex) {
-    // 材料スロットが空の場合のみ挿入
     if (!stand.getStack(INGREDIENT_SLOT).isEmpty()) {
       return;
     }
-    // ポーション瓶スロットにアイテムがない場合は挿入しない
-    boolean hasPotionInStand = false;
-    for (int i = POTION_SLOT_START; i <= POTION_SLOT_END; i++) {
-      if (!stand.getStack(i).isEmpty()) {
-        hasPotionInStand = true;
-        break;
-      }
-    }
-    if (!hasPotionInStand) {
-      return;
-    }
-
     ItemStack ingredientStack = inventory.getStack(ingredientIndex);
     ItemStack toInsert = ingredientStack.split(1);
     stand.setStack(INGREDIENT_SLOT, toInsert);
@@ -424,35 +457,34 @@ public class PharmcistMode extends Mode {
     }
   }
 
-  private void tryExtractPotions(BrewingStandBlockEntity stand, Inventory inventory) {
+  /** 醸造台のポーションとレシピが合わない材料を回収する */
+  private void tryExtractUnusableIngredient(BrewingStandBlockEntity stand, Inventory inventory) {
+    ItemStack ingredient = stand.getStack(INGREDIENT_SLOT);
+    if (ingredient.isEmpty()) {
+      return;
+    }
+    // ガラス瓶は常に回収
+    if (ingredient.isOf(Items.GLASS_BOTTLE)) {
+      tryTransferToInventory(stand, INGREDIENT_SLOT, inventory);
+      return;
+    }
+    // 醸造台のポーションとレシピが合うか確認
     for (int slot = POTION_SLOT_START; slot <= POTION_SLOT_END; slot++) {
       ItemStack potionStack = stand.getStack(slot);
-      if (potionStack.isEmpty()) {
-        continue;
+      if (!potionStack.isEmpty() && BrewingRecipeRegistry.hasRecipe(potionStack, ingredient)) {
+        return; // レシピが合うので回収しない
       }
-      // まだ同じ材料で醸造できる場合は取り出さない
-      ItemStack ingredient = stand.getStack(INGREDIENT_SLOT);
-      if (!ingredient.isEmpty() && BrewingRecipeRegistry.hasRecipe(potionStack, ingredient)) {
-        continue;
-      }
-      // インベントリにも材料がある場合は確認
-      boolean canBrewMore = false;
-      if (ingredient.isEmpty()) {
-        for (int i = 0; i < inventory.size(); ++i) {
-          ItemStack invStack = inventory.getStack(i);
-          if (!invStack.isEmpty()
-              && BrewingRecipeRegistry.isValidIngredient(invStack)
-              && BrewingRecipeRegistry.hasRecipe(potionStack, invStack)) {
-            canBrewMore = true;
-            break;
-          }
-        }
-      }
-      if (canBrewMore) {
-        continue;
-      }
+    }
+    // レシピが合わない材料を回収
+    tryTransferToInventory(stand, INGREDIENT_SLOT, inventory);
+  }
 
-      // 取り出す
+  /** 醸造台のポーションをすべて回収する */
+  private void tryExtractAllPotions(BrewingStandBlockEntity stand, Inventory inventory) {
+    for (int slot = POTION_SLOT_START; slot <= POTION_SLOT_END; slot++) {
+      if (stand.getStack(slot).isEmpty()) {
+        continue;
+      }
       if (tryTransferToInventory(stand, slot, inventory)) {
         if (playSoundCool < 0) {
           playSoundCool = 20;
