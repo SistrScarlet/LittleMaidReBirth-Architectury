@@ -83,6 +83,7 @@ public class MyModForgeGameTests {
 |----|--------|------|--------------------|--------------------|
 | `small_floor` | 8x4x8 石床 | デフォルト（ほとんどのテスト） | `"littlemaidrebirth:small_floor"` | `"small_floor"` |
 | `floor` | 21x4x21 石床 | 広い空間が必要（追従・テレポート） | `"littlemaidrebirth:floor"` | `"floor"` |
+| `archer_arena` | 8x4x8 石床+ガラス壁+フェンス仕切り | 射撃テスト | `"littlemaidrebirth:archer_arena"` | `"archer_arena"` |
 
 各テストクラスで `SMALL_FLOOR` / `FLOOR` として定数定義済み。
 
@@ -229,6 +230,9 @@ context.addInstantFinalTask(() -> {
 
 ## 既知の注意事項
 
+- テストログ: `fabric/build/gametest/logs/latest.log` で失敗詳細を確認
+- AI動作テスト（モード作業・格納等）: エンティティ・ブロックは y=2 に配置（y=1 は SMALL_FLOOR の床と同じ高さ）
+- AI依存の flaky テスト: `@GameTest(maxAttempts = 3)` を指定
 - Forge の `runGameTestServer` はテスト完了後にサーバーが停止しない問題がある（1.20.1 確認）
 - テスト名は小文字に正規化される
 - Forge は `.nbt`（GZip 圧縮バイナリ）のみ読み込む。`.snbt`（テキスト）は読み込まれない
