@@ -1,8 +1,10 @@
 package net.sistr.littlemaidrebirth.gametest;
 
 import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.test.TestContext;
 import net.minecraft.util.Hand;
@@ -320,6 +322,34 @@ public final class LMRBCommonTests {
     context.complete();
   }
 
+  // ===== P2: FakePlayer ワールド登録検証 =====
+
+  private static ServerPlayerEntity createWorldPlayer(TestContext context, String name) {
+    var player = createPlayer(context, name);
+    GameTestHelper.registerPlayerInWorld(context.getWorld(), player);
+    return player;
+  }
+
+  public static void fakePlayerInWorldPlayers(TestContext context) {
+    var player = createWorldPlayer(context, "test-world-player");
+
+    boolean found =
+        context.getWorld().getPlayers().stream()
+            .anyMatch(p -> p.getUuid().equals(player.getUuid()));
+    context.assertTrue(found, "FakePlayerがworld.getPlayers()に含まれること");
+    context.complete();
+  }
+
+  public static void getTameOwnerReturnsPlayer(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+
+    var owner = TameableUtil.getTameOwner(maid);
+    context.assertTrue(owner.isPresent(), "getTameOwnerがオーナーを返すこと");
+    context.assertTrue(owner.get().getUuid().equals(player.getUuid()), "返されたオーナーのUUIDが一致すること");
+    context.complete();
+  }
+
   // ===== D: damage フレンド/ATTACK_PROHIBITED チェック =====
 
   public static void friendDamageBlockedByDefault(TestContext context) {
@@ -350,6 +380,274 @@ public final class LMRBCommonTests {
     } finally {
       config.health.enableFriendlyFire = original;
     }
+    context.complete();
+  }
+
+  // ===== FEN: Fencer モード =====
+
+  public static void swordActivatesFencerMode(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_SWORD));
+    maid.hasModeImpl.tick();
+
+    var mode = maid.getMode();
+    context.assertTrue(mode.isPresent(), "モードが存在すること");
+    context.assertTrue(mode.get().getName().equals("Fencer"), "Fencerモードであること");
+    context.complete();
+  }
+
+  public static void axeActivatesFencerMode(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_AXE));
+    maid.hasModeImpl.tick();
+
+    var mode = maid.getMode();
+    context.assertTrue(mode.isPresent(), "モードが存在すること");
+    context.assertTrue(mode.get().getName().equals("Fencer"), "斧でFencerモードであること");
+    context.complete();
+  }
+
+  public static void bowDoesNotActivateFencer(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+    maid.hasModeImpl.tick();
+
+    var mode = maid.getMode();
+    context.assertTrue(
+        mode.isEmpty() || !mode.get().getName().equals("Fencer"), "弓ではFencerモードにならないこと");
+    context.complete();
+  }
+
+  public static void fencerTryAttackDamagesTarget(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_SWORD));
+    var zombie = context.spawnEntity(EntityType.ZOMBIE, new BlockPos(3, 1, 1));
+    float healthBefore = zombie.getHealth();
+
+    maid.tryAttack(zombie);
+
+    context.assertTrue(zombie.getHealth() < healthBefore, "tryAttackでターゲットにダメージを与えること");
+    context.complete();
+  }
+
+  // ===== DMG: ダメージ処理 =====
+
+  public static void normalDamageFromMob(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    var zombie = context.spawnEntity(EntityType.ZOMBIE, new BlockPos(3, 1, 1));
+    float healthBefore = maid.getHealth();
+
+    maid.damage(zombie.getDamageSources().mobAttack(zombie), 5.0f);
+
+    context.assertTrue(maid.getHealth() < healthBefore, "モブからの通常ダメージを受けること");
+    context.complete();
+  }
+
+  public static void immortalBlocksDamage(TestContext context) {
+    var config = LMRBMod.getConfig();
+    boolean original = config.health.immortal;
+    try {
+      config.health.immortal = true;
+
+      var maid = spawnMaid(context);
+      var zombie = context.spawnEntity(EntityType.ZOMBIE, new BlockPos(3, 1, 1));
+      float healthBefore = maid.getHealth();
+
+      maid.damage(zombie.getDamageSources().mobAttack(zombie), 5.0f);
+
+      context.assertTrue(maid.getHealth() == healthBefore, "immortal=trueでダメージを受けないこと");
+    } finally {
+      config.health.immortal = original;
+    }
+    context.complete();
+  }
+
+  public static void fallImmunityBlocksFallDamage(TestContext context) {
+    var config = LMRBMod.getConfig();
+    boolean original = config.health.fallImmunity;
+    try {
+      config.health.fallImmunity = true;
+
+      var maid = spawnMaid(context);
+      float healthBefore = maid.getHealth();
+
+      maid.damage(maid.getDamageSources().fall(), 10.0f);
+
+      context.assertTrue(maid.getHealth() == healthBefore, "fallImmunity=trueで落下ダメージを受けないこと");
+    } finally {
+      config.health.fallImmunity = original;
+    }
+    context.complete();
+  }
+
+  public static void nonMobDamageImmunityBlocksNonMobDamage(TestContext context) {
+    var config = LMRBMod.getConfig();
+    boolean original = config.health.nonMobDamageImmunity;
+    try {
+      config.health.nonMobDamageImmunity = true;
+
+      var maid = spawnMaid(context);
+      float healthBefore = maid.getHealth();
+
+      maid.damage(maid.getDamageSources().fall(), 10.0f);
+
+      context.assertTrue(
+          maid.getHealth() == healthBefore, "nonMobDamageImmunity=trueでモブ以外のダメージを受けないこと");
+    } finally {
+      config.health.nonMobDamageImmunity = original;
+    }
+    context.complete();
+  }
+
+  public static void damageWhileWaitingCancelsWait(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    TameableUtil.setWait(maid, true);
+    var zombie = context.spawnEntity(EntityType.ZOMBIE, new BlockPos(3, 1, 1));
+
+    maid.damage(zombie.getDamageSources().mobAttack(zombie), 5.0f);
+
+    context.assertFalse(maid.isSitting(), "待機中にダメージを受けるとWaitが解除されること");
+    context.complete();
+  }
+
+  // ===== SOUL: 死亡・魂生成 =====
+
+  public static void tamedMaidDeathCreatesSoul(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+
+    maid.damage(maid.getDamageSources().outOfWorld(), Float.MAX_VALUE);
+
+    context.addInstantFinalTask(
+        () -> {
+          var souls =
+              context.getWorld().getEntitiesByType(Registration.MAID_SOUL_ENTITY.get(), e -> true);
+          context.assertTrue(!souls.isEmpty(), "MaidSoulEntityが生成されていること");
+        });
+  }
+
+  public static void wildMaidDeathDoesNotCreateSoul(TestContext context) {
+    var maid = spawnMaid(context);
+
+    maid.damage(maid.getDamageSources().outOfWorld(), Float.MAX_VALUE);
+
+    context.waitAndRun(
+        5,
+        () -> {
+          var souls =
+              context.getWorld().getEntitiesByType(Registration.MAID_SOUL_ENTITY.get(), e -> true);
+          context.assertTrue(souls.isEmpty(), "野良メイドさん死亡で魂が生成されないこと");
+          context.complete();
+        });
+  }
+
+  // ===== NBT: 読み書き =====
+
+  public static void nbtPreservesTameState(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    var nbt = new NbtCompound();
+    maid.writeNbt(nbt);
+
+    var maid2 = spawnMaid(context);
+    maid2.readNbt(nbt);
+
+    context.assertTrue(maid2.isTamed(), "テイム状態が復元されること");
+    context.assertTrue(
+        TameableUtil.getTameOwnerUuid(maid2).map(id -> id.equals(player.getUuid())).orElse(false),
+        "オーナーUUIDが復元されること");
+    context.complete();
+  }
+
+  public static void nbtPreservesWaitState(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    TameableUtil.setWait(maid, true);
+    var nbt = new NbtCompound();
+    maid.writeNbt(nbt);
+
+    var maid2 = spawnMaid(context);
+    maid2.readNbt(nbt);
+
+    context.assertTrue(maid2.isSitting(), "待機状態が復元されること");
+    context.complete();
+  }
+
+  public static void nbtPreservesMovingMode(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.setMovingMode(MovingMode.FREEDOM);
+    var nbt = new NbtCompound();
+    maid.writeNbt(nbt);
+
+    var maid2 = spawnMaid(context);
+    maid2.readNbt(nbt);
+
+    context.assertTrue(maid2.getMovingMode() == MovingMode.FREEDOM, "移動モードFREEDOMが復元されること");
+    context.complete();
+  }
+
+  public static void nbtPreservesStrike(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.setStrike(true);
+    var nbt = new NbtCompound();
+    maid.writeNbt(nbt);
+
+    var maid2 = spawnMaid(context);
+    maid2.readNbt(nbt);
+
+    context.assertTrue(maid2.isStrike(), "ストライキ状態が復元されること");
+    context.complete();
+  }
+
+  public static void nbtPreservesBloodSuck(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.setBloodSuck(true);
+    var nbt = new NbtCompound();
+    maid.writeNbt(nbt);
+
+    var maid2 = spawnMaid(context);
+    maid2.readNbt(nbt);
+
+    context.assertTrue(maid2.isBloodSuck(), "吸血モードが復元されること");
+    context.complete();
+  }
+
+  public static void nbtPreservesInventory(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_SWORD));
+    var nbt = new NbtCompound();
+    maid.writeNbt(nbt);
+
+    var maid2 = spawnMaid(context);
+    maid2.readNbt(nbt);
+
+    context.assertTrue(
+        maid2.getEquippedStack(EquipmentSlot.MAINHAND).isOf(Items.DIAMOND_SWORD),
+        "メインハンドの装備が復元されること");
+    context.complete();
+  }
+
+  public static void nbtPreservesExperience(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.addExperience(100);
+    var nbt = new NbtCompound();
+    maid.writeNbt(nbt);
+
+    var maid2 = spawnMaid(context);
+    maid2.readNbt(nbt);
+
+    context.assertTrue(maid2.getXpToDrop() == 100, "経験値が復元されること");
     context.complete();
   }
 }

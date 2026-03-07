@@ -149,6 +149,18 @@ public class LMRBGameTests implements FabricGameTest {
     LMRBCommonTests.canTargetWildHostileMob(context);
   }
 
+  // ===== P2: FakePlayer ワールド登録検証 =====
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void fakePlayerInWorldPlayers(TestContext context) {
+    LMRBCommonTests.fakePlayerInWorldPlayers(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void getTameOwnerReturnsPlayer(TestContext context) {
+    LMRBCommonTests.getTameOwnerReturnsPlayer(context);
+  }
+
   // ===== D: damage チェック =====
 
   @GameTest(templateName = EMPTY_STRUCTURE)
@@ -159,5 +171,103 @@ public class LMRBGameTests implements FabricGameTest {
   @GameTest(templateName = EMPTY_STRUCTURE)
   public void friendDamageAllowedWithConfig(TestContext context) {
     LMRBCommonTests.friendDamageAllowedWithConfig(context);
+  }
+
+  // ===== FEN: Fencer モード =====
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void swordActivatesFencerMode(TestContext context) {
+    LMRBCommonTests.swordActivatesFencerMode(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void axeActivatesFencerMode(TestContext context) {
+    LMRBCommonTests.axeActivatesFencerMode(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void bowDoesNotActivateFencer(TestContext context) {
+    LMRBCommonTests.bowDoesNotActivateFencer(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void fencerTryAttackDamagesTarget(TestContext context) {
+    LMRBCommonTests.fencerTryAttackDamagesTarget(context);
+  }
+
+  // ===== DMG: ダメージ処理 =====
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void normalDamageFromMob(TestContext context) {
+    LMRBCommonTests.normalDamageFromMob(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void immortalBlocksDamage(TestContext context) {
+    LMRBCommonTests.immortalBlocksDamage(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void fallImmunityBlocksFallDamage(TestContext context) {
+    LMRBCommonTests.fallImmunityBlocksFallDamage(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void nonMobDamageImmunityBlocksNonMobDamage(TestContext context) {
+    LMRBCommonTests.nonMobDamageImmunityBlocksNonMobDamage(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void damageWhileWaitingCancelsWait(TestContext context) {
+    LMRBCommonTests.damageWhileWaitingCancelsWait(context);
+  }
+
+  // ===== SOUL: 死亡・魂生成 =====
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void tamedMaidDeathCreatesSoul(TestContext context) {
+    LMRBCommonTests.tamedMaidDeathCreatesSoul(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void wildMaidDeathDoesNotCreateSoul(TestContext context) {
+    LMRBCommonTests.wildMaidDeathDoesNotCreateSoul(context);
+  }
+
+  // ===== NBT: 読み書き =====
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void nbtPreservesTameState(TestContext context) {
+    LMRBCommonTests.nbtPreservesTameState(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void nbtPreservesWaitState(TestContext context) {
+    LMRBCommonTests.nbtPreservesWaitState(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void nbtPreservesMovingMode(TestContext context) {
+    LMRBCommonTests.nbtPreservesMovingMode(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void nbtPreservesStrike(TestContext context) {
+    LMRBCommonTests.nbtPreservesStrike(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void nbtPreservesBloodSuck(TestContext context) {
+    LMRBCommonTests.nbtPreservesBloodSuck(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void nbtPreservesInventory(TestContext context) {
+    LMRBCommonTests.nbtPreservesInventory(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void nbtPreservesExperience(TestContext context) {
+    LMRBCommonTests.nbtPreservesExperience(context);
   }
 }

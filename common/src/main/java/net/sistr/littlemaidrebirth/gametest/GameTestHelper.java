@@ -10,4 +10,9 @@ public class GameTestHelper {
   public static ServerPlayerEntity createFakePlayer(ServerWorld world, String name) {
     throw new AssertionError();
   }
+
+  /** FakePlayer をワールドの players リストに登録する。getTameOwner() 等で検索可能になる。 */
+  public static void registerPlayerInWorld(ServerWorld world, ServerPlayerEntity player) {
+    world.onPlayerConnected(player);
+  }
 }
