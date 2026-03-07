@@ -25,31 +25,50 @@ You research Minecraft, Architectury API, and prerequisite mod APIs by reading d
 
 Decompiled Minecraft sources (Yarn mappings, 1.20.1) are stored in source jars. Use `unzip` commands via Bash to access them without extracting.
 
-### Finding source jars
+### jar-search.sh（必須）
 
-Minecraft source jars are located under `.gradle/loom-cache/minecraftMaven/`. Find them with:
+`.claude/scripts/jar-search.sh` で全ソース jar を一括検索できる。**クラス検索は必ずこのスクリプトを最初に使うこと。**
+
 ```bash
-find .gradle/loom-cache/minecraftMaven/ -name "*-sources.jar" -type f
+S=.claude/scripts/jar-search.sh
+
+# クラスの場所を検索（全 jar を横断、現在の MC バージョンのみ）
+$S find FakePlayer
+
+# Minecraft 本体 jar のみに絞り込み
+$S find TestContext --dir minecraftMaven
+
+# バージョンフィルタを解除して全 jar を検索
+$S find SomeClass --all
+
+# 特定 jar 内をキーワード grep（jar は部分一致で指定、ファイル名+行番号付き）
+$S grep fabric-events-interaction "class FakePlayer"
+$S grep minecraft-merged-@common "getWorld" 10
+
+# 特定 jar からファイルを読む（一意に1つの jar にマッチする必要あり）
+$S read fabric-events-interaction net/fabricmc/fabric/api/entity/FakePlayer.java
+
+# 利用可能なソース jar 一覧
+$S list
+$S list fabric
+$S list --all
 ```
 
-### Prerequisite mod jars
+典型的なワークフロー: `find` でクラスの jar とパスを特定 → `read` でソースを読む → 必要なら `grep` で詳細を調べる
 
-Prerequisite mod jars are in `common/mods/`. These can also be searched with `unzip`:
+### バージョンフィルタについて
+
+gradle.properties の `minecraft_version` を読み、パスに MC バージョン文字列を含む jar のみを対象にする。
+バックポート等で loom-cache に複数バージョンの jar が混在する場合に古い jar を除外する仕組み。
+命名規則の変動で期待通りフィルタされない場合は `--all` で解除すること。
+
+### 個別アクセス（jar-search.sh で見つからない場合のフォールバック）
+
+Prerequisite mod jars（jar-search.sh のスコープ外）: `common/mods/`
+
 ```bash
-ls common/mods/
 unzip -l common/mods/<mod>.jar | grep -i "<ClassName>.java"
-```
-
-### How to search and read
-```bash
-# Find a class in the jar
-unzip -l <sources.jar> | grep -i "PlayerEntity.java"
-
-# Read a specific file from the jar (no extraction needed)
-unzip -p <sources.jar> net/minecraft/entity/player/PlayerEntity.java
-
-# Search for a keyword across all files in the jar
-unzip -p <sources.jar> "*.java" | grep -n "inventory"
+unzip -p common/mods/<mod>.jar <path/to/Class.java>
 ```
 
 ## Research Methodology
