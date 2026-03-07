@@ -6,7 +6,9 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 
 - Architectury Loom multi-module: `common/`, `fabric/`, `forge/`
 - 共通コードは `common/src/main/java/net/sistr/littlemaidrebirth/`
-- エンティティ: `entity/LittleMaidEntity.java` が中心
+- エンティティ: `entity/LittleMaidEntity.java` が中心。分割先:
+  - `LMGoalInitializer` (AI Goal登録), `LMSafeMovement` (安全移動), `LMInteractionHandler` (操作ハンドリング)
+  - `MaidResurrection` (復活演出), `MaidSoul` (魂データ)
 - AI行動: `entity/goal/` (Goal系), `entity/mode/` (Mode系)
 - ターゲティング: `entity/targeting/`
 - クライアント: `client/` (renderer, screen, key)
@@ -60,6 +62,7 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 - org.jetbrains.annotations.Nullableを使用する
 - @Nullable フィールドはローカル変数にキャッシュしてから使用する（SpotBugs NP_NULL_PARAM_DEREF 対策）
 - Mixin Accessor は `util/` に配置し、メソッド名に `_LM` サフィックスを付ける（例: `getBrewTime_LM()`）
+- protected フィールド/メソッドへの外部アクセスが必要な場合、同パッケージ内ならパッケージプライベートゲッターを追加する（Mixin Accessor より簡潔）
 
 ### Architecture Notes
 - ブロック操作モード（料理・醸造）: `BlockWorkMode` + `WorkStrategy<T>` (Strategy パターン、委譲)
@@ -67,4 +70,9 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 - ブロック排他制御: `BlockReservationManager` (GlobalPos でディメンション対応)
 - `LMSounds` 定数は `String` 型。`mob.play(LMSounds.COOKING_START)` のように使用
 - `getNavigation()` は `MobEntity` に定義（`LivingEntity` ではない）
+
+### Design Review Guidelines
+- レビュー観点: SOLID原則, Effective Java, Law of Demeter / Tell Don't Ask, OOPアンチパターン
+- `super` 呼び出しを含む override メソッドは外部クラスに委譲できない — 本体に残す
+- 状態を持たないオーケストレーション/ファクトリは static ユーティリティクラスで可（過度なオブジェクト化を避ける）
 
