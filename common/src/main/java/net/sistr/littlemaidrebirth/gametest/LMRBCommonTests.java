@@ -1173,4 +1173,141 @@ public final class LMRBCommonTests {
     }
     context.complete();
   }
+
+  // ===== COOK: Cooking モード判定 =====
+
+  public static void bowlActivatesCookingMode(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.BOWL));
+    maid.hasModeImpl.tick();
+
+    var mode = maid.getMode();
+    context.assertTrue(mode.isPresent(), "モードが存在すること");
+    context.assertTrue(mode.get().getName().equals("Cooking"), "ボウルでCookingモードであること");
+    context.complete();
+  }
+
+  // ===== PHARM: Pharmacist モード判定 =====
+
+  public static void waterBottleActivatesPharmacistMode(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    var waterBottle = new ItemStack(Items.POTION);
+    net.minecraft.potion.PotionUtil.setPotion(waterBottle, net.minecraft.potion.Potions.WATER);
+    maid.equipStack(EquipmentSlot.MAINHAND, waterBottle);
+    maid.hasModeImpl.tick();
+
+    var mode = maid.getMode();
+    context.assertTrue(mode.isPresent(), "モードが存在すること");
+    context.assertTrue(mode.get().getName().equals("Pharmacist"), "水入り瓶でPharmacistモードであること");
+    context.complete();
+  }
+
+  // ===== TORCH: Torcher モード判定 =====
+
+  public static void torchActivatesTorcherMode(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.TORCH));
+    maid.hasModeImpl.tick();
+
+    var mode = maid.getMode();
+    context.assertTrue(mode.isPresent(), "モードが存在すること");
+    context.assertTrue(mode.get().getName().equals("Torcher"), "松明でTorcherモードであること");
+    context.complete();
+  }
+
+  // ===== ARCH: Archer モード判定 =====
+
+  public static void bowActivatesArcherMode(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+    maid.hasModeImpl.tick();
+
+    var mode = maid.getMode();
+    context.assertTrue(mode.isPresent(), "モードが存在すること");
+    context.assertTrue(mode.get().getName().equals("Archer"), "弓でArcherモードであること");
+    context.complete();
+  }
+
+  // ===== INT: インタラクション各種 =====
+
+  public static void saddleStartsRiding(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    player.refreshPositionAndAngles(context.getAbsolutePos(MAID_POS), 0, 0);
+    holdItem(player, new ItemStack(Items.SADDLE));
+
+    maid.interactMob(player, Hand.MAIN_HAND);
+
+    context.assertTrue(maid.getVehicle() == player, "メイドさんがプレイヤーに騎乗すること");
+    cleanupWorldPlayers(player);
+    context.complete();
+  }
+
+  public static void glassBottleConvertsToExpBottle(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.addExperience(10);
+    holdItem(player, new ItemStack(Items.GLASS_BOTTLE));
+
+    maid.interactMob(player, Hand.MAIN_HAND);
+
+    context.assertTrue(
+        player.getMainHandStack().isOf(Items.EXPERIENCE_BOTTLE), "ガラス瓶がエンチャントの瓶に変換されること");
+    // getExperiencePoints() はパッケージプライベートなので getXpToDrop() で代替検証
+    context.assertTrue(maid.getXpToDrop() == 3, "経験値が7消費されること(10-7=3)");
+    context.complete();
+  }
+
+  public static void gunpowderSetsAcceleration(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    holdItem(player, new ItemStack(Items.GUNPOWDER, 3));
+
+    maid.interactMob(player, Hand.MAIN_HAND);
+
+    context.assertTrue(maid.getAccelerationTicks() > 0, "加速ティックが設定されること");
+    context.complete();
+  }
+
+  public static void bucketConvertedToMilk(TestContext context) {
+    var config = LMRBMod.getConfig();
+    boolean original = config.misc.canMilking;
+    try {
+      config.misc.canMilking = true;
+
+      var player = createPlayer(context, "test-owner");
+      var maid = spawnTamedMaid(context, player);
+      holdItem(player, new ItemStack(Items.BUCKET));
+
+      maid.interactMob(player, Hand.MAIN_HAND);
+
+      context.assertTrue(player.getMainHandStack().isOf(Items.MILK_BUCKET), "バケツがミルクバケツに変換されること");
+    } finally {
+      config.misc.canMilking = original;
+    }
+    context.complete();
+  }
+
+  // ===== MISC: その他 =====
+
+  public static void deathDropsInventory(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_SWORD));
+    var maidPos = maid.getPos();
+
+    maid.kill();
+
+    context.addInstantFinalTask(
+        () -> {
+          var box = new net.minecraft.util.math.Box(maidPos, maidPos).expand(3);
+          var items = context.getWorld().getEntitiesByType(EntityType.ITEM, box, e -> true);
+          boolean found = items.stream().anyMatch(e -> e.getStack().isOf(Items.DIAMOND_SWORD));
+          context.assertTrue(found, "死亡時に装備がドロップすること");
+        });
+  }
 }

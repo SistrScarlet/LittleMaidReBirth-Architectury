@@ -437,4 +437,61 @@ public class LMRBForgeGameTests {
   public static void strikeOnExceedingUnpaidLimit(TestContext context) {
     LMRBCommonTests.strikeOnExceedingUnpaidLimit(context);
   }
+
+  // ===== COOK: Cooking モード判定 =====
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void bowlActivatesCookingMode(TestContext context) {
+    LMRBCommonTests.bowlActivatesCookingMode(context);
+  }
+
+  // ===== PHARM: Pharmacist モード判定 =====
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void waterBottleActivatesPharmacistMode(TestContext context) {
+    LMRBCommonTests.waterBottleActivatesPharmacistMode(context);
+  }
+
+  // ===== TORCH: Torcher モード判定 =====
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void torchActivatesTorcherMode(TestContext context) {
+    LMRBCommonTests.torchActivatesTorcherMode(context);
+  }
+
+  // ===== ARCH: Archer モード判定 =====
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void bowActivatesArcherMode(TestContext context) {
+    LMRBCommonTests.bowActivatesArcherMode(context);
+  }
+
+  // ===== INT: インタラクション各種 =====
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void saddleStartsRiding(TestContext context) {
+    LMRBCommonTests.saddleStartsRiding(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void glassBottleConvertsToExpBottle(TestContext context) {
+    LMRBCommonTests.glassBottleConvertsToExpBottle(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void gunpowderSetsAcceleration(TestContext context) {
+    LMRBCommonTests.gunpowderSetsAcceleration(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void bucketConvertedToMilk(TestContext context) {
+    LMRBCommonTests.bucketConvertedToMilk(context);
+  }
+
+  // ===== MISC: その他 =====
+
+  @GameTest(templateName = SMALL_FLOOR, tickLimit = 200)
+  public static void deathDropsInventory(TestContext context) {
+    LMRBCommonTests.deathDropsInventory(context);
+  }
 }
