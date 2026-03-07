@@ -12,7 +12,7 @@ import net.sistr.littlemaidrebirth.setup.Registration;
 @PrefixGameTestTemplate(false)
 public class LMRBForgeGameTests {
 
-  @GameTest(templateName = "littlemaidrebirth:empty")
+  @GameTest(templateName = "empty")
   public static void maidSpawn(TestContext context) {
     var maidType = Registration.LITTLE_MAID_MOB.get();
     var pos = new BlockPos(1, 1, 1);
