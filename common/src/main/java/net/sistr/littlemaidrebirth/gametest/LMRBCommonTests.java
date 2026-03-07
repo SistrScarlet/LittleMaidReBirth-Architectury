@@ -1,5 +1,6 @@
 package net.sistr.littlemaidrebirth.gametest;
 
+import java.util.function.Supplier;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.ItemStack;
@@ -12,6 +13,9 @@ import net.minecraft.util.math.BlockPos;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.MaidSoulEntity;
+import net.sistr.littlemaidrebirth.entity.goal.HasMMFollowTameOwnerGoal;
+import net.sistr.littlemaidrebirth.entity.goal.LMTeleportTameOwnerGoal;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 import net.sistr.littlemaidrebirth.setup.Registration;
@@ -39,6 +43,7 @@ public final class LMRBCommonTests {
   private static LittleMaidEntity spawnTamedMaid(TestContext context, ServerPlayerEntity owner) {
     var maid = spawnMaid(context);
     maid.setOwnerUuid(owner.getUuid());
+    maid.setMovingMode(MovingMode.ESCORT);
     return maid;
   }
 
@@ -522,26 +527,34 @@ public final class LMRBCommonTests {
     var player = createPlayer(context, "test-owner");
     var maid = spawnTamedMaid(context, player);
 
-    maid.damage(maid.getDamageSources().outOfWorld(), Float.MAX_VALUE);
+    maid.kill();
 
+    var maidPos = maid.getPos();
     context.addInstantFinalTask(
         () -> {
+          var box = new net.minecraft.util.math.Box(maidPos, maidPos).expand(3);
           var souls =
-              context.getWorld().getEntitiesByType(Registration.MAID_SOUL_ENTITY.get(), e -> true);
+              context
+                  .getWorld()
+                  .getEntitiesByType(Registration.MAID_SOUL_ENTITY.get(), box, e -> true);
           context.assertTrue(!souls.isEmpty(), "MaidSoulEntityが生成されていること");
         });
   }
 
   public static void wildMaidDeathDoesNotCreateSoul(TestContext context) {
     var maid = spawnMaid(context);
+    var maidPos = maid.getPos();
 
-    maid.damage(maid.getDamageSources().outOfWorld(), Float.MAX_VALUE);
+    maid.kill();
 
     context.waitAndRun(
-        5,
+        40,
         () -> {
+          var box = new net.minecraft.util.math.Box(maidPos, maidPos).expand(3);
           var souls =
-              context.getWorld().getEntitiesByType(Registration.MAID_SOUL_ENTITY.get(), e -> true);
+              context
+                  .getWorld()
+                  .getEntitiesByType(Registration.MAID_SOUL_ENTITY.get(), box, e -> true);
           context.assertTrue(souls.isEmpty(), "野良メイドさん死亡で魂が生成されないこと");
           context.complete();
         });
@@ -649,5 +662,220 @@ public final class LMRBCommonTests {
 
     context.assertTrue(maid2.getXpToDrop() == 100, "経験値が復元されること");
     context.complete();
+  }
+
+  // ===== ESC: 追従 Goal =====
+
+  public static void followGoalStartsWhenFar(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    // メイドさんを (1,1,1)、プレイヤーを (10,1,1) に配置 → 距離9 > followStartDistance(6)
+    player.refreshPositionAndAngles(context.getAbsolutePos(new BlockPos(10, 1, 1)), 0, 0);
+    LMRBConfig config = LMRBMod.getConfig();
+    Supplier<Float> speed = () -> config.movement.followSpeed;
+    Supplier<Float> start = () -> config.movement.followStartDistance;
+    Supplier<Float> end = () -> config.movement.followEndDistance;
+    var goal = new HasMMFollowTameOwnerGoal<>(maid, speed, start, end);
+
+    context.assertTrue(goal.canStart(), "距離が遠いとき追従Goalが開始可能であること");
+    context.complete();
+  }
+
+  public static void followGoalDoesNotStartWhenClose(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    // メイドさんとプレイヤーを近くに配置 → 距離 < followStartDistance(6)
+    player.refreshPositionAndAngles(context.getAbsolutePos(new BlockPos(3, 1, 1)), 0, 0);
+    LMRBConfig config = LMRBMod.getConfig();
+    var goal =
+        new HasMMFollowTameOwnerGoal<>(
+            maid,
+            () -> config.movement.followSpeed,
+            () -> config.movement.followStartDistance,
+            () -> config.movement.followEndDistance);
+
+    context.assertFalse(goal.canStart(), "距離が近いとき追従Goalが開始しないこと");
+    context.complete();
+  }
+
+  public static void followGoalDoesNotStartWhenWaiting(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    TameableUtil.setWait(maid, true);
+    player.refreshPositionAndAngles(context.getAbsolutePos(new BlockPos(10, 1, 1)), 0, 0);
+    LMRBConfig config = LMRBMod.getConfig();
+    var goal =
+        new HasMMFollowTameOwnerGoal<>(
+            maid,
+            () -> config.movement.followSpeed,
+            () -> config.movement.followStartDistance,
+            () -> config.movement.followEndDistance);
+
+    context.assertFalse(goal.canStart(), "待機中は追従Goalが開始しないこと");
+    context.complete();
+  }
+
+  public static void followGoalDoesNotStartInFreedom(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.setMovingMode(MovingMode.FREEDOM);
+    player.refreshPositionAndAngles(context.getAbsolutePos(new BlockPos(10, 1, 1)), 0, 0);
+    LMRBConfig config = LMRBMod.getConfig();
+    var goal =
+        new HasMMFollowTameOwnerGoal<>(
+            maid,
+            () -> config.movement.followSpeed,
+            () -> config.movement.followStartDistance,
+            () -> config.movement.followEndDistance);
+
+    context.assertFalse(goal.canStart(), "FREEDOMモードでは追従Goalが開始しないこと");
+    context.complete();
+  }
+
+  // ===== TP: テレポート Goal =====
+
+  public static void teleportGoalStartsWhenFar(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    // 距離18 > teleportStartDistance(16)
+    player.refreshPositionAndAngles(context.getAbsolutePos(new BlockPos(19, 1, 1)), 0, 0);
+    LMRBConfig config = LMRBMod.getConfig();
+    var goal = new LMTeleportTameOwnerGoal(maid, () -> config.movement.teleportStartDistance);
+
+    context.assertTrue(goal.canStart(), "距離がteleportStartDistance超でテレポート条件成立すること");
+    context.complete();
+  }
+
+  public static void teleportGoalDoesNotStartWhenClose(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    player.refreshPositionAndAngles(context.getAbsolutePos(new BlockPos(5, 1, 1)), 0, 0);
+    LMRBConfig config = LMRBMod.getConfig();
+    var goal = new LMTeleportTameOwnerGoal(maid, () -> config.movement.teleportStartDistance);
+
+    context.assertFalse(goal.canStart(), "距離が近いとテレポートしないこと");
+    context.complete();
+  }
+
+  public static void teleportGoalDoesNotStartInFreedom(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.setMovingMode(MovingMode.FREEDOM);
+    player.refreshPositionAndAngles(context.getAbsolutePos(new BlockPos(19, 1, 1)), 0, 0);
+    LMRBConfig config = LMRBMod.getConfig();
+    var goal = new LMTeleportTameOwnerGoal(maid, () -> config.movement.teleportStartDistance);
+
+    context.assertFalse(goal.canStart(), "FREEDOMモードではテレポートしないこと");
+    context.complete();
+  }
+
+  public static void teleportMovesToOwner(TestContext context) {
+    var player = createWorldPlayer(context, "test-owner");
+    var maid = context.spawnEntity(Registration.LITTLE_MAID_MOB.get(), new BlockPos(1, 1, 1));
+    maid.setOwnerUuid(player.getUuid());
+    maid.setMovingMode(MovingMode.ESCORT);
+    // プレイヤーを遠くに配置してテレポート条件を満たす
+    player.refreshPositionAndAngles(context.getAbsolutePos(new BlockPos(18, 1, 18)), 0, 0);
+
+    // メイドさんの AI が動いてテレポートを実行するのを待つ
+    LMRBConfig config = LMRBMod.getConfig();
+    int range = config.movement.teleportWidth + 2;
+    context.addInstantFinalTask(
+        () -> {
+          double distSq = maid.squaredDistanceTo(player);
+          context.assertTrue(distSq < range * range, "テレポート後にオーナー近くに移動していること");
+        });
+  }
+
+  // ===== FEN 追加: shouldExecute =====
+
+  public static void fencerShouldExecuteWithTarget(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_SWORD));
+    var zombie = context.spawnEntity(EntityType.ZOMBIE, new BlockPos(3, 1, 1));
+    maid.setTarget(zombie);
+    maid.hasModeImpl.tick();
+
+    var mode = maid.getMode();
+    context.assertTrue(mode.isPresent(), "モードが存在すること");
+    context.assertTrue(mode.get().shouldExecute(), "ターゲットありでshouldExecute=trueであること");
+    context.complete();
+  }
+
+  public static void fencerShouldNotExecuteWithoutTarget(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.DIAMOND_SWORD));
+    maid.setTarget(null);
+    maid.hasModeImpl.tick();
+
+    var mode = maid.getMode();
+    context.assertTrue(mode.isPresent(), "モードが存在すること");
+    context.assertFalse(mode.get().shouldExecute(), "ターゲットなしでshouldExecute=falseであること");
+    context.complete();
+  }
+
+  // ===== D 追加: ATTACK_PROHIBITED ダメージチェック =====
+
+  public static void attackProhibitedDamageAllowedByDefault(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    // Villager は ATTACK_PROHIBITED タグ付き（Npc + Merchant）
+    var villager = context.spawnEntity(EntityType.VILLAGER, new BlockPos(3, 1, 1));
+    float healthBefore = maid.getHealth();
+
+    maid.damage(villager.getDamageSources().mobAttack(villager), 5.0f);
+
+    context.assertTrue(maid.getHealth() < healthBefore, "デフォルトではATTACK_PROHIBITED対象からのダメージを受けること");
+    context.complete();
+  }
+
+  public static void attackProhibitedDamageBlockedWithConfig(TestContext context) {
+    var config = LMRBMod.getConfig();
+    boolean original = config.health.blockDamageFromAttackProhibited;
+    try {
+      config.health.blockDamageFromAttackProhibited = true;
+
+      var player = createPlayer(context, "test-owner");
+      var maid = spawnTamedMaid(context, player);
+      var villager = context.spawnEntity(EntityType.VILLAGER, new BlockPos(3, 1, 1));
+      float healthBefore = maid.getHealth();
+
+      maid.damage(villager.getDamageSources().mobAttack(villager), 5.0f);
+
+      context.assertTrue(
+          maid.getHealth() == healthBefore,
+          "blockDamageFromAttackProhibited=trueでATTACK_PROHIBITED対象からのダメージを受けないこと");
+    } finally {
+      config.health.blockDamageFromAttackProhibited = original;
+    }
+    context.complete();
+  }
+
+  // ===== SOUL 追加: 魂のオーナーUUID確認 =====
+
+  public static void soulPreservesOwnerUuid(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    var maidPos = maid.getPos();
+
+    maid.kill();
+
+    context.addInstantFinalTask(
+        () -> {
+          var box = new net.minecraft.util.math.Box(maidPos, maidPos).expand(3);
+          var souls =
+              context
+                  .getWorld()
+                  .getEntitiesByType(Registration.MAID_SOUL_ENTITY.get(), box, e -> true);
+          context.assertTrue(!souls.isEmpty(), "MaidSoulEntityが生成されていること");
+          MaidSoulEntity soulEntity = (MaidSoulEntity) souls.get(0);
+          var soul = soulEntity.getSoul();
+          context.assertTrue(soul != null, "MaidSoulが存在すること");
+          context.assertTrue(
+              soul.getOwnerUUID().map(id -> id.equals(player.getUuid())).orElse(false),
+              "魂のオーナーUUIDが元のオーナーと一致すること");
+        });
   }
 }

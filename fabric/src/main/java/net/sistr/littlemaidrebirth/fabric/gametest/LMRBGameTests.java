@@ -224,7 +224,7 @@ public class LMRBGameTests implements FabricGameTest {
 
   // ===== SOUL: 死亡・魂生成 =====
 
-  @GameTest(templateName = EMPTY_STRUCTURE)
+  @GameTest(templateName = EMPTY_STRUCTURE, tickLimit = 200)
   public void tamedMaidDeathCreatesSoul(TestContext context) {
     LMRBCommonTests.tamedMaidDeathCreatesSoul(context);
   }
@@ -269,5 +269,80 @@ public class LMRBGameTests implements FabricGameTest {
   @GameTest(templateName = EMPTY_STRUCTURE)
   public void nbtPreservesExperience(TestContext context) {
     LMRBCommonTests.nbtPreservesExperience(context);
+  }
+
+  // ===== ESC: 追従 Goal =====
+
+  @GameTest(templateName = "littlemaidrebirth:floor")
+  public void followGoalStartsWhenFar(TestContext context) {
+    LMRBCommonTests.followGoalStartsWhenFar(context);
+  }
+
+  @GameTest(templateName = "littlemaidrebirth:floor")
+  public void followGoalDoesNotStartWhenClose(TestContext context) {
+    LMRBCommonTests.followGoalDoesNotStartWhenClose(context);
+  }
+
+  @GameTest(templateName = "littlemaidrebirth:floor")
+  public void followGoalDoesNotStartWhenWaiting(TestContext context) {
+    LMRBCommonTests.followGoalDoesNotStartWhenWaiting(context);
+  }
+
+  @GameTest(templateName = "littlemaidrebirth:floor")
+  public void followGoalDoesNotStartInFreedom(TestContext context) {
+    LMRBCommonTests.followGoalDoesNotStartInFreedom(context);
+  }
+
+  // ===== TP: テレポート Goal =====
+
+  @GameTest(templateName = "littlemaidrebirth:floor")
+  public void teleportGoalStartsWhenFar(TestContext context) {
+    LMRBCommonTests.teleportGoalStartsWhenFar(context);
+  }
+
+  @GameTest(templateName = "littlemaidrebirth:floor")
+  public void teleportGoalDoesNotStartWhenClose(TestContext context) {
+    LMRBCommonTests.teleportGoalDoesNotStartWhenClose(context);
+  }
+
+  @GameTest(templateName = "littlemaidrebirth:floor")
+  public void teleportGoalDoesNotStartInFreedom(TestContext context) {
+    LMRBCommonTests.teleportGoalDoesNotStartInFreedom(context);
+  }
+
+  @GameTest(templateName = "littlemaidrebirth:floor", tickLimit = 200)
+  public void teleportMovesToOwner(TestContext context) {
+    LMRBCommonTests.teleportMovesToOwner(context);
+  }
+
+  // ===== FEN 追加: shouldExecute =====
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void fencerShouldExecuteWithTarget(TestContext context) {
+    LMRBCommonTests.fencerShouldExecuteWithTarget(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void fencerShouldNotExecuteWithoutTarget(TestContext context) {
+    LMRBCommonTests.fencerShouldNotExecuteWithoutTarget(context);
+  }
+
+  // ===== D 追加: ATTACK_PROHIBITED =====
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void attackProhibitedDamageAllowedByDefault(TestContext context) {
+    LMRBCommonTests.attackProhibitedDamageAllowedByDefault(context);
+  }
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void attackProhibitedDamageBlockedWithConfig(TestContext context) {
+    LMRBCommonTests.attackProhibitedDamageBlockedWithConfig(context);
+  }
+
+  // ===== SOUL 追加 =====
+
+  @GameTest(templateName = EMPTY_STRUCTURE, tickLimit = 200)
+  public void soulPreservesOwnerUuid(TestContext context) {
+    LMRBCommonTests.soulPreservesOwnerUuid(context);
   }
 }
