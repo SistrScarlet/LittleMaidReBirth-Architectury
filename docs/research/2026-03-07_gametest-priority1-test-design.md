@@ -253,7 +253,9 @@ try {
 | 雇用・再雇用 | 5 | なし | 済 |
 | 待機切替 | 5 | なし | 済 |
 | isFriend | 7 | なし | 済 |
-| canTarget | 4 | なし | 済 (T-6 は FakePlayer の canTarget 挙動が不明なため保留) |
-| damage (フレンド) | 2 | D-2 で必要 | 済 (D-3, D-4 は ATTACK_PROHIBITED セットアップが複雑なため保留) |
+| canTarget | 4 | なし | 済 |
+| damage (フレンド) | 2 | D-2 で必要 | 済 |
+| damage (ATTACK_PROHIBITED) | 2 | D-4 で必要 | 済（Villager を ATTACK_PROHIBITED エンティティとして使用） |
 | 緊急状態 | 4 | なし | 済 |
-| **合計** | **28** | 1ケースのみ |
+| FakePlayer ワールド登録検証 | 2 | なし | 済 |
+| **合計** | **32** | 2ケース |
