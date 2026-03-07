@@ -11,6 +11,13 @@ import net.sistr.littlemaidrebirth.gametest.LMRBCommonTests;
 @PrefixGameTestTemplate(false)
 public class LMRBForgeGameTests {
 
+  // ===== 基本 =====
+
+  @GameTest(templateName = "empty")
+  public static void maidSpawn(TestContext context) {
+    LMRBCommonTests.maidSpawn(context);
+  }
+
   // ===== E: 緊急状態判定 =====
 
   @GameTest(templateName = "empty")

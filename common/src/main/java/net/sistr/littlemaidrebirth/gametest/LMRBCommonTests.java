@@ -40,6 +40,14 @@ public final class LMRBCommonTests {
     return maid;
   }
 
+  // ===== 基本 =====
+
+  public static void maidSpawn(TestContext context) {
+    var maid = spawnMaid(context);
+    context.assertTrue(maid != null, "メイドさんがスポーンできること");
+    context.complete();
+  }
+
   // ===== E: 緊急状態判定 =====
 
   public static void emergencyAtThreshold(TestContext context) {

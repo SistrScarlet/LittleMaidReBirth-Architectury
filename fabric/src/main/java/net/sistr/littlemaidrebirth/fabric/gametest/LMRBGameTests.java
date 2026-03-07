@@ -7,6 +7,13 @@ import net.sistr.littlemaidrebirth.gametest.LMRBCommonTests;
 
 public class LMRBGameTests implements FabricGameTest {
 
+  // ===== 基本 =====
+
+  @GameTest(templateName = EMPTY_STRUCTURE)
+  public void maidSpawn(TestContext context) {
+    LMRBCommonTests.maidSpawn(context);
+  }
+
   // ===== E: 緊急状態判定 =====
 
   @GameTest(templateName = EMPTY_STRUCTURE)
