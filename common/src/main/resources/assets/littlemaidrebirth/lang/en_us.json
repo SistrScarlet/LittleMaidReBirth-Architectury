@@ -96,6 +96,8 @@
   "text.autoconfig.littlemaidrebirth.option.health.enableWorkInEmergency.@Tooltip": "When enabled, maids in emergency state will continue working normally.\nIt's dangerous, so please let them rest.",
   "text.autoconfig.littlemaidrebirth.option.health.enableFriendlyFire": "Enable Friendly Fire",
   "text.autoconfig.littlemaidrebirth.option.health.enableFriendlyFire.@Tooltip": "When enabled, friendly attacks will hit maids.",
+  "text.autoconfig.littlemaidrebirth.option.health.blockDamageFromAttackProhibited": "Block Damage from Attack-Prohibited Targets",
+  "text.autoconfig.littlemaidrebirth.option.health.blockDamageFromAttackProhibited.@Tooltip": "When enabled, maids will not take damage from entities marked as attack-prohibited in the targeting system.",
   "text.autoconfig.littlemaidrebirth.option.health.enableSafeMove": "Enable Safe Movement",
   "text.autoconfig.littlemaidrebirth.option.health.enableSafeMove.@Tooltip": "When enabled, maids will avoid dangerous blocks and high falls.",
   "text.autoconfig.littlemaidrebirth.option.health.immortal": "Immortal Maids",

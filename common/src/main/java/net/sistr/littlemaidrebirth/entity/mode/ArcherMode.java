@@ -49,7 +49,7 @@ public class ArcherMode extends AbstractArcherMode<Item> {
             this.raycastShootLine(
                 target,
                 maxRange,
-                e -> e instanceof LivingEntity living && this.mob.isFriend(living));
+                e -> e instanceof LivingEntity living && !this.mob.canTarget(living));
         if (result.isPresent()) {
           this.cool = 10;
         } else {
@@ -86,7 +86,7 @@ public class ArcherMode extends AbstractArcherMode<Item> {
             raycastShootLine(
                 target,
                 maxRange,
-                e -> e instanceof LivingEntity living && this.mob.isFriend(living));
+                e -> e instanceof LivingEntity living && !this.mob.canTarget(living));
         if (result.isPresent()) {
           this.cool = 10;
         } else { // 射撃

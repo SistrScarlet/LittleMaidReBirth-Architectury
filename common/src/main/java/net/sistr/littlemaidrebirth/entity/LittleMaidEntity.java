@@ -614,7 +614,10 @@ public class LittleMaidEntity extends TameableEntity
 
   @Override
   public boolean canTarget(LivingEntity target) {
-    return super.canTarget(target) && !isFriend(target);
+    return super.canTarget(target)
+        && !TameableUtil.isFriend(this, target)
+        && !getTargetTag(new TargetIdentifier(target))
+            .contains(TargetingSystem.TargetTag.ATTACK_PROHIBITED);
   }
 
   @Nullable
@@ -831,7 +834,14 @@ public class LittleMaidEntity extends TameableEntity
     // Friendからの攻撃を除外
     if (!config.health.enableFriendlyFire
         && attacker instanceof LivingEntity
-        && isFriend((LivingEntity) attacker)) {
+        && TameableUtil.isFriend(this, (LivingEntity) attacker)) {
+      return false;
+    }
+    // 攻撃禁止対象からのダメージを除外
+    if (config.health.blockDamageFromAttackProhibited
+        && attacker instanceof LivingEntity
+        && getTargetTag(new TargetIdentifier((LivingEntity) attacker))
+            .contains(TargetingSystem.TargetTag.ATTACK_PROHIBITED)) {
       return false;
     }
 
@@ -1446,25 +1456,7 @@ public class LittleMaidEntity extends TameableEntity
 
   @Override
   public boolean canAttackWithOwner(LivingEntity target, LivingEntity owner) {
-    return !isFriend(target);
-  }
-
-  public boolean isFriend(LivingEntity entity) {
-    // todo 暫定でテイム済みのモブは攻撃対象から外す
-    // todo そもそも、isFriend()はAttackProhibitedでは決してない。TargetingSystemにフレンドタグを復活させる必要がある
-    if (entity instanceof Tameable tameable && TameableUtil.hasTameOwner(tameable)) {
-      return true;
-    }
-    // 暫定: ご主人がいるなら、プレイヤーを攻撃対象にしない
-    if (TameableUtil.hasTameOwner(this) && entity instanceof PlayerEntity) {
-      return true;
-    }
-    if (TameableUtil.isTameOwner(this, entity)
-        || (entity instanceof Tameable tameable && TameableUtil.equalTameOwner(this, tameable))) {
-      return true;
-    }
-    return getTargetTag(new TargetIdentifier(entity))
-        .contains(TargetingSystem.TargetTag.ATTACK_PROHIBITED);
+    return canTarget(target);
   }
 
   // 構え

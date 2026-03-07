@@ -5,8 +5,21 @@ import java.util.UUID;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.passive.TameableEntity;
+import net.minecraft.entity.player.PlayerEntity;
 
 public class TameableUtil {
+
+  /** テイム仲間（ご主人・同オーナーのテイム済みモブ・テイム済みモブ全般）かどうかを判定する */
+  public static boolean isFriend(Tameable self, LivingEntity target) {
+    if (target instanceof Tameable tameable && hasTameOwner(tameable)) {
+      return true;
+    }
+    if (hasTameOwner(self) && target instanceof PlayerEntity) {
+      return true;
+    }
+    return isTameOwner(self, target)
+        || (target instanceof Tameable tameable && equalTameOwner(self, tameable));
+  }
 
   /** テイムしたご主人を返す 同じワールドに存在しない場合、emptyで返す */
   public static Optional<LivingEntity> getTameOwner(Tameable tameable) {

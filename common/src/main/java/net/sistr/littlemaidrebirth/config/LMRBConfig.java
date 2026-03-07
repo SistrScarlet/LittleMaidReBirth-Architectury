@@ -59,6 +59,7 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip public float emergencyMaidHealthThreshold = 0.5f;
     @ConfigEntry.Gui.Tooltip public boolean enableWorkInEmergency = false;
     @ConfigEntry.Gui.Tooltip public boolean enableFriendlyFire = false;
+    @ConfigEntry.Gui.Tooltip public boolean blockDamageFromAttackProhibited = false;
     @ConfigEntry.Gui.Tooltip public boolean enableSafeMove = true;
     @ConfigEntry.Gui.Tooltip public boolean immortal = false;
     @ConfigEntry.Gui.Tooltip public boolean fallImmunity = false;

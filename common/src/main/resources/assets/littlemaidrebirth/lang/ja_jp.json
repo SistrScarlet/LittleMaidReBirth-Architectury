@@ -96,6 +96,8 @@
   "text.autoconfig.littlemaidrebirth.option.health.enableWorkInEmergency.@Tooltip": "有効にすると、緊急状態になったメイドさんが、通常通り働きます。\n危ないので、休ませてあげましょう。",
   "text.autoconfig.littlemaidrebirth.option.health.enableFriendlyFire": "フレンドリーファイアが有効か",
   "text.autoconfig.littlemaidrebirth.option.health.enableFriendlyFire.@Tooltip": "有効にすると、味方の攻撃がメイドさんに当たるようになります。",
+  "text.autoconfig.littlemaidrebirth.option.health.blockDamageFromAttackProhibited": "攻撃禁止対象からのダメージを無効化",
+  "text.autoconfig.littlemaidrebirth.option.health.blockDamageFromAttackProhibited.@Tooltip": "有効にすると、ターゲティングシステムで攻撃禁止に設定された対象からのダメージを受けなくなります。",
   "text.autoconfig.littlemaidrebirth.option.health.enableSafeMove": "安全移動が有効か",
   "text.autoconfig.littlemaidrebirth.option.health.enableSafeMove.@Tooltip": "有効にすると、メイドさんの危険なブロックへの接触や高所からの落下が起こらなくなります。",
   "text.autoconfig.littlemaidrebirth.option.health.immortal": "無敵のメイドさん",
