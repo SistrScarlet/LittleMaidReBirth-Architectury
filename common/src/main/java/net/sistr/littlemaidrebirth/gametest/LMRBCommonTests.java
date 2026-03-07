@@ -153,10 +153,16 @@ public final class LMRBCommonTests {
     var maid = spawnTamedMaid(context, owner);
     holdItem(stranger, new ItemStack(Items.SUGAR));
 
-    boolean wasSitting = maid.isSitting();
+    // 非待機状態からの操作
+    context.assertFalse(maid.isSitting(), "初期状態は非待機であること");
     maid.interactMob(stranger, Hand.MAIN_HAND);
+    context.assertFalse(maid.isSitting(), "オーナー以外の操作で待機にならないこと");
 
-    context.assertTrue(maid.isSitting() == wasSitting, "オーナー以外の操作で状態変化しないこと");
+    // 待機状態からの操作
+    TameableUtil.setWait(maid, true);
+    holdItem(stranger, new ItemStack(Items.SUGAR));
+    maid.interactMob(stranger, Hand.MAIN_HAND);
+    context.assertTrue(maid.isSitting(), "オーナー以外の操作で待機が解除されないこと");
     context.complete();
   }
 
@@ -166,10 +172,16 @@ public final class LMRBCommonTests {
     player.setSneaking(true);
     holdItem(player, new ItemStack(Items.SUGAR));
 
-    boolean wasSitting = maid.isSitting();
+    // 非待機状態からの操作
+    context.assertFalse(maid.isSitting(), "初期状態は非待機であること");
     maid.interactMob(player, Hand.MAIN_HAND);
+    context.assertFalse(maid.isSitting(), "スニーク中に待機にならないこと");
 
-    context.assertTrue(maid.isSitting() == wasSitting, "スニーク中に状態変化しないこと");
+    // 待機状態からの操作
+    TameableUtil.setWait(maid, true);
+    holdItem(player, new ItemStack(Items.SUGAR));
+    maid.interactMob(player, Hand.MAIN_HAND);
+    context.assertTrue(maid.isSitting(), "スニーク中に待機が解除されないこと");
     context.complete();
   }
 
@@ -232,10 +244,16 @@ public final class LMRBCommonTests {
     var maid = spawnTamedMaid(context, owner);
     holdItem(stranger, new ItemStack(Items.SUGAR));
 
-    boolean wasSitting = maid.isSitting();
+    // 非待機状態からの操作
+    context.assertFalse(maid.isSitting(), "初期状態は非待機であること");
     maid.interactMob(stranger, Hand.MAIN_HAND);
+    context.assertFalse(maid.isSitting(), "オーナー以外は砂糖で待機にできないこと");
 
-    context.assertTrue(maid.isSitting() == wasSitting, "オーナー以外は砂糖で操作できないこと");
+    // 待機状態からの操作
+    TameableUtil.setWait(maid, true);
+    holdItem(stranger, new ItemStack(Items.SUGAR));
+    maid.interactMob(stranger, Hand.MAIN_HAND);
+    context.assertTrue(maid.isSitting(), "オーナー以外は砂糖で待機を解除できないこと");
     context.complete();
   }
 
@@ -791,9 +809,7 @@ public final class LMRBCommonTests {
 
   public static void teleportMovesToOwner(TestContext context) {
     var player = createWorldPlayer(context, "test-owner");
-    var maid = context.spawnEntity(Registration.LITTLE_MAID_MOB.get(), new BlockPos(1, 1, 1));
-    maid.setOwnerUuid(player.getUuid());
-    maid.setMovingMode(MovingMode.ESCORT);
+    var maid = spawnTamedMaid(context, player);
     // プレイヤーを遠くに配置してテレポート条件を満たす
     player.refreshPositionAndAngles(context.getAbsolutePos(new BlockPos(18, 1, 18)), 0, 0);
 
