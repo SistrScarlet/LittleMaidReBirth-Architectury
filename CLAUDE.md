@@ -58,6 +58,7 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 - Windows側でチェックアウト中のブランチにはpush不可。別ブランチ名にpush: `git push local 1.20.1:wsl/{branch-name}`
 
 ### Code Editing Guidelines
+- 既存ファイルを Write で全体書き換えする際は、既存の内容が失われないよう注意する（Edit で差分追加を優先）
 - 返り値にOptionalを使用し、フィールドや引数には@Nullableを使用する
 - org.jetbrains.annotations.Nullableを使用する
 - @Nullable フィールドはローカル変数にキャッシュしてから使用する（SpotBugs NP_NULL_PARAM_DEREF 対策）
@@ -71,6 +72,18 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 - `LMSounds` 定数は `String` 型。`mob.play(LMSounds.COOKING_START)` のように使用
 - `getNavigation()` は `MobEntity` に定義（`LivingEntity` ではない）
 - `initGoals()` は `MobEntity` コンストラクタ内で呼ばれる — サブクラスのフィールドは未初期化。外部委譲時はラムダで遅延参照すること
+
+### GameTest
+- テストロジックは `common/.../gametest/LMRBCommonTests.java` に集約（static メソッド）
+- Fabric (`LMRBGameTests`: instance メソッド, `EMPTY_STRUCTURE`) / Forge (`LMRBForgeGameTests`: static メソッド, `"empty"`) からcommonに委譲
+- FakePlayer 生成: `GameTestHelper.createFakePlayer()` (`@ExpectPlatform`) — Fabric: `FakePlayer.get()`, Forge: `FakePlayerFactory.get()`
+- FakePlayer の制限: ネットワーク系処理は動作しない（パケット送信はno-op）、`startRiding()` 常にfalse
+- コンフィグ変更テスト: try/finally でフィールドを直接書き換え+復元。デフォルト前提で書く
+- テスト設計・分類: `docs/research/2026-03-07_gametest-feature-classification.md`
+
+### API Research
+- Minecraft バニラ・Fabric・Forge などの前提 Mod の API 調査には必ず `mc-api-research` エージェントを使用する
+- `.gradle` キャッシュの jar を直接検索しない
 
 ### Design Review Guidelines
 - レビュー観点: SOLID原則, Effective Java, Law of Demeter / Tell Don't Ask, OOPアンチパターン
