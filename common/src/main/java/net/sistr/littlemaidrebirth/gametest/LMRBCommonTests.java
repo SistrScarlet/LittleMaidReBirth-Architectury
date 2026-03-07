@@ -47,6 +47,23 @@ public final class LMRBCommonTests {
     return maid;
   }
 
+  /**
+   * FakePlayer を作成し、ワールドに登録する。テスト完了後に自動でワールドから削除される。 getTameOwner()
+   * 等ワールドからプレイヤーを検索する処理が必要なテストで使用する。
+   */
+  private static ServerPlayerEntity createWorldPlayer(TestContext context, String name) {
+    var player = createPlayer(context, name);
+    GameTestHelper.registerPlayerInWorld(context.getWorld(), player);
+    return player;
+  }
+
+  /** createWorldPlayer で登録した FakePlayer をワールドから削除する。complete() 前に呼ぶこと。 */
+  private static void cleanupWorldPlayers(ServerPlayerEntity... players) {
+    for (var player : players) {
+      GameTestHelper.removePlayerFromWorld(player);
+    }
+  }
+
   // ===== 基本 =====
 
   public static void maidSpawn(TestContext context) {
@@ -329,12 +346,6 @@ public final class LMRBCommonTests {
 
   // ===== P2: FakePlayer ワールド登録検証 =====
 
-  private static ServerPlayerEntity createWorldPlayer(TestContext context, String name) {
-    var player = createPlayer(context, name);
-    GameTestHelper.registerPlayerInWorld(context.getWorld(), player);
-    return player;
-  }
-
   public static void fakePlayerInWorldPlayers(TestContext context) {
     var player = createWorldPlayer(context, "test-world-player");
 
@@ -342,6 +353,7 @@ public final class LMRBCommonTests {
         context.getWorld().getPlayers().stream()
             .anyMatch(p -> p.getUuid().equals(player.getUuid()));
     context.assertTrue(found, "FakePlayerがworld.getPlayers()に含まれること");
+    cleanupWorldPlayers(player);
     context.complete();
   }
 
@@ -352,6 +364,7 @@ public final class LMRBCommonTests {
     var owner = TameableUtil.getTameOwner(maid);
     context.assertTrue(owner.isPresent(), "getTameOwnerがオーナーを返すこと");
     context.assertTrue(owner.get().getUuid().equals(player.getUuid()), "返されたオーナーのUUIDが一致すること");
+    cleanupWorldPlayers(player);
     context.complete();
   }
 
@@ -678,6 +691,7 @@ public final class LMRBCommonTests {
     var goal = new HasMMFollowTameOwnerGoal<>(maid, speed, start, end);
 
     context.assertTrue(goal.canStart(), "距離が遠いとき追従Goalが開始可能であること");
+    cleanupWorldPlayers(player);
     context.complete();
   }
 
@@ -695,6 +709,7 @@ public final class LMRBCommonTests {
             () -> config.movement.followEndDistance);
 
     context.assertFalse(goal.canStart(), "距離が近いとき追従Goalが開始しないこと");
+    cleanupWorldPlayers(player);
     context.complete();
   }
 
@@ -712,6 +727,7 @@ public final class LMRBCommonTests {
             () -> config.movement.followEndDistance);
 
     context.assertFalse(goal.canStart(), "待機中は追従Goalが開始しないこと");
+    cleanupWorldPlayers(player);
     context.complete();
   }
 
@@ -729,6 +745,7 @@ public final class LMRBCommonTests {
             () -> config.movement.followEndDistance);
 
     context.assertFalse(goal.canStart(), "FREEDOMモードでは追従Goalが開始しないこと");
+    cleanupWorldPlayers(player);
     context.complete();
   }
 
@@ -743,6 +760,7 @@ public final class LMRBCommonTests {
     var goal = new LMTeleportTameOwnerGoal(maid, () -> config.movement.teleportStartDistance);
 
     context.assertTrue(goal.canStart(), "距離がteleportStartDistance超でテレポート条件成立すること");
+    cleanupWorldPlayers(player);
     context.complete();
   }
 
@@ -754,6 +772,7 @@ public final class LMRBCommonTests {
     var goal = new LMTeleportTameOwnerGoal(maid, () -> config.movement.teleportStartDistance);
 
     context.assertFalse(goal.canStart(), "距離が近いとテレポートしないこと");
+    cleanupWorldPlayers(player);
     context.complete();
   }
 
@@ -766,6 +785,7 @@ public final class LMRBCommonTests {
     var goal = new LMTeleportTameOwnerGoal(maid, () -> config.movement.teleportStartDistance);
 
     context.assertFalse(goal.canStart(), "FREEDOMモードではテレポートしないこと");
+    cleanupWorldPlayers(player);
     context.complete();
   }
 
@@ -784,6 +804,7 @@ public final class LMRBCommonTests {
         () -> {
           double distSq = maid.squaredDistanceTo(player);
           context.assertTrue(distSq < range * range, "テレポート後にオーナー近くに移動していること");
+          cleanupWorldPlayers(player);
         });
   }
 
