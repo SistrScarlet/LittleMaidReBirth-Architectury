@@ -17,6 +17,15 @@ loom {
         mixinConfig "littlemaidrebirth-common.mixins.json"
         mixinConfig "littlemaidrebirth.mixins.json"
     }
+
+    runs {
+        gameTestServer {
+            server()
+            name "Game Test Server"
+            property "forge.enabledGameTestNamespaces", "littlemaidrebirth"
+            runDir "build/gametest"
+        }
+    }
 }
 
 configurations {
