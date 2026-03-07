@@ -29,6 +29,9 @@
     ],
     "modmenu": [
       "net.sistr.littlemaidrebirth.modmenu.fabric.LMRBModMenuIntegration"
+    ],
+    "fabric-gametest": [
+      "net.sistr.littlemaidrebirth.fabric.gametest.LMRBGameTests"
     ]
   },
   "mixins": [
