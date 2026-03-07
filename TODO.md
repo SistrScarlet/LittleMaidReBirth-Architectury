@@ -2,7 +2,6 @@
 
 ## 高
 
-- [ ] LittleMaidEntity.java の分割リファクタ（2000行超、Checkstyle FileLength 違反）
 
 ## 中
 
