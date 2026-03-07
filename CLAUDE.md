@@ -61,3 +61,10 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 - @Nullable フィールドはローカル変数にキャッシュしてから使用する（SpotBugs NP_NULL_PARAM_DEREF 対策）
 - Mixin Accessor は `util/` に配置し、メソッド名に `_LM` サフィックスを付ける（例: `getBrewTime_LM()`）
 
+### Architecture Notes
+- ブロック操作モード（料理・醸造）: `BlockWorkMode` + `WorkStrategy<T>` (Strategy パターン、委譲)
+- ブロック探索: `BlockSearch` (非同期BFS) + `SearchCondition` (linkable条件ビルダー)
+- ブロック排他制御: `BlockReservationManager` (GlobalPos でディメンション対応)
+- `LMSounds` 定数は `String` 型。`mob.play(LMSounds.COOKING_START)` のように使用
+- `getNavigation()` は `MobEntity` に定義（`LivingEntity` ではない）
+

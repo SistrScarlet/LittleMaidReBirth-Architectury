@@ -11,6 +11,8 @@
 
 - [ ] 移動モード×お仕事モードの組み合わせ表示名（例: 護衛剣士, 自由剣士）— 旧バージョンにあった機能の復活
 
+- [ ] 探索範囲・探索数などハードコードされた値のコンフィグ化（BlockWorkMode の SEARCH_DISTANCE, SEARCH_MAX_COUNT, SEARCH_BUDGET_PER_TICK 等）
+
 ## 低
 
 - [ ] EQ_DOESNT_OVERRIDE_EQUALS（TargetingSystem.Mob/Maid）— 実害なしだが将来の安全のため検討
