@@ -348,4 +348,89 @@ public class LMRBGameTests implements FabricGameTest {
   public void soulPreservesOwnerUuid(TestContext context) {
     LMRBCommonTests.soulPreservesOwnerUuid(context);
   }
+
+  // ===== MOV: Freedom / Tracer 切替 =====
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void featherEscortToFreedom(TestContext context) {
+    LMRBCommonTests.featherEscortToFreedom(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void featherFreedomToEscort(TestContext context) {
+    LMRBCommonTests.featherFreedomToEscort(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void redstoneFreedomToTracer(TestContext context) {
+    LMRBCommonTests.redstoneFreedomToTracer(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void redstoneTracerToFreedom(TestContext context) {
+    LMRBCommonTests.redstoneTracerToFreedom(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void redstoneIgnoredInEscort(TestContext context) {
+    LMRBCommonTests.redstoneIgnoredInEscort(context);
+  }
+
+  // ===== RIP: Ripper モード =====
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void shearsActivatesRipperMode(TestContext context) {
+    LMRBCommonTests.shearsActivatesRipperMode(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void stoneDoesNotActivateRipper(TestContext context) {
+    LMRBCommonTests.stoneDoesNotActivateRipper(context);
+  }
+
+  // ===== HEAL: Healer モード =====
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void foodActivatesHealerMode(TestContext context) {
+    LMRBCommonTests.foodActivatesHealerMode(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void potionActivatesHealerMode(TestContext context) {
+    LMRBCommonTests.potionActivatesHealerMode(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void swordDoesNotActivateHealer(TestContext context) {
+    LMRBCommonTests.swordDoesNotActivateHealer(context);
+  }
+
+  // ===== PICK: ドロップアイテム拾い =====
+
+  @GameTest(templateName = SMALL_FLOOR, tickLimit = 200)
+  public void tamedMaidPicksUpItem(TestContext context) {
+    LMRBCommonTests.tamedMaidPicksUpItem(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void wildMaidDoesNotPickUpItem(TestContext context) {
+    LMRBCommonTests.wildMaidDoesNotPickUpItem(context);
+  }
+
+  // ===== SAL: お給料消費・ストライキ =====
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void salaryConsumedFromInventory(TestContext context) {
+    LMRBCommonTests.salaryConsumedFromInventory(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void unpaidTimesIncreasesWithoutSalary(TestContext context) {
+    LMRBCommonTests.unpaidTimesIncreasesWithoutSalary(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public void strikeOnExceedingUnpaidLimit(TestContext context) {
+    LMRBCommonTests.strikeOnExceedingUnpaidLimit(context);
+  }
 }
