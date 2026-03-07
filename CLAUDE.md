@@ -31,6 +31,7 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 - `./gradlew spotbugsMain` - SpotBugs バグ検出
 - `python3 .claude/scripts/spotbugs-report.py` - SpotBugs レポート解析（`--summary`, `--priority N`）
 - `./gradlew :common:test` - ユニットテスト (JUnit 5)
+- `./gradlew :fabric:runGameTestServer` - GameTest 実行 (Fabric)
 
 ## Localization and Communication Guidelines
 
@@ -75,10 +76,10 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 
 ### GameTest
 - テストロジックは `common/.../gametest/LMRBCommonTests.java` に集約（static メソッド）
-- Fabric (`LMRBGameTests`: instance メソッド, `EMPTY_STRUCTURE`) / Forge (`LMRBForgeGameTests`: static メソッド, `"empty"`) からcommonに委譲
-- FakePlayer 生成: `GameTestHelper.createFakePlayer()` (`@ExpectPlatform`) — Fabric: `FakePlayer.get()`, Forge: `FakePlayerFactory.get()`
-- FakePlayer の制限: ネットワーク系処理は動作しない（パケット送信はno-op）、`startRiding()` 常にfalse
-- コンフィグ変更テスト: try/finally でフィールドを直接書き換え+復元。デフォルト前提で書く
+- Fabric (`LMRBGameTests`: instance メソッド) / Forge (`LMRBForgeGameTests`: static メソッド) からcommonに委譲
+- ストラクチャーは common/fabric/forge の `resources/data/littlemaidrebirth/structures/` に3箇所同一配置
+- FakePlayer ワールド登録が必要な場合は `createWorldPlayer()` + `cleanupWorldPlayers()` ペアで使用
+- コンフィグ変更テスト: try/finally でフィールドを直接書き換え+復元
 - テスト設計・分類: `docs/research/2026-03-07_gametest-feature-classification.md`
 
 ### API Research
