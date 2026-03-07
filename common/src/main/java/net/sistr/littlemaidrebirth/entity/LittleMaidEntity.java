@@ -44,7 +44,6 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -62,7 +61,6 @@ import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayableCompound;
 import net.sistr.littlemaidmodelloader.maidmodel.IModelCaps;
 import net.sistr.littlemaidmodelloader.multimodel.IMultiModel;
 import net.sistr.littlemaidmodelloader.multimodel.layer.MMPose;
-import net.sistr.littlemaidmodelloader.network.SyncMultiModelPacket;
 import net.sistr.littlemaidmodelloader.resource.holder.ConfigHolder;
 import net.sistr.littlemaidmodelloader.resource.holder.TextureHolder;
 import net.sistr.littlemaidmodelloader.resource.manager.LMConfigManager;
@@ -71,7 +69,6 @@ import net.sistr.littlemaidmodelloader.resource.manager.LMTextureManager;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidmodelloader.resource.util.TextureColors;
 import net.sistr.littlemaidrebirth.LMRBMod;
-import net.sistr.littlemaidrebirth.advancement.criterion.LMRBCriteria;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeManager;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
@@ -144,9 +141,6 @@ public class LittleMaidEntity extends TameableEntity
       DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
   private static final TrackedData<Byte> MASTER_STANCE =
       DataTracker.registerData(LittleMaidEntity.class, TrackedDataHandlerRegistry.BYTE);
-  // エンチャントの瓶はランダムな経験値を排出するため、その平均値を作成コストとする
-  private static final int EXPERIENCE_BOTTLE_COST = 7;
-
   // 移譲s
   public final LMHasInventory littleMaidInventory = new LMHasInventory();
   public final LMItemContractable<LittleMaidEntity> itemContractable =
@@ -1004,177 +998,15 @@ public class LittleMaidEntity extends TameableEntity
     return new Vec3d(0.0, this.getStandingEyeHeight() - 0.15f, 1f / 16f);
   }
 
-  // success 動作を実行し、手を振る
-  // consume 動作を実行するが、手を振らない
-  // pass 動作を実行しないが、他の動作を許可する
-  // fail 動作を実行せず、他の動作も許可しない
-  // 下二つならここ以外で手に持ったアイテムが使用される場合がある
-  // 継承元のコードは無視
   // todo 処理の見直し、処理を追加可能に
   // todo 使用アイテムをコンフィグから追加可能に
   @Override
   public ActionResult interactMob(PlayerEntity player, Hand hand) {
-    if (player.isSneaking()) {
-      return ActionResult.PASS;
-    }
-    ItemStack stack = player.getStackInHand(hand);
-    // オーナーが居ない場合
-    if (TameableUtil.getTameOwnerUuid(this).isEmpty()) {
-      if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
-        return contract(player, stack, false);
-      }
-      return ActionResult.PASS;
-    }
-    // オーナーじゃない場合
-    if (!player.getUuid().equals(this.getOwnerUuid())) {
-      return ActionResult.PASS;
-    }
-    // ストライキ時
-    if (isStrike()) {
-      if (stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE)) {
-        return contract(player, stack, true);
-      }
-      this.getWorld().sendEntityStatus(this, (byte) 6);
-      return ActionResult.PASS;
-    }
-    // サドル持ってるとき
-    if (stack.getItem() instanceof SaddleItem) {
-      if (!this.hasVehicle()) {
-        if (player.hasPassengers()) {
-          player.removeAllPassengers();
-        }
-        this.startRiding(player);
-      } else {
-        var vehicle = this.getVehicle();
-        if (vehicle == player) {
-          this.stopRiding();
-        }
-      }
-      return ActionResult.success(this.getWorld().isClient);
-    }
-    // 肩車されてるとき
-    if (this.getVehicle() == player) {
-      return ActionResult.PASS;
-    }
-    // 砂糖
-    if (stack.isIn(LMTags.Items.MAIDS_SALARY)) {
-      var config = getConfig();
-      heal(config.health.healAmount);
-      return changeState(player, stack);
-    }
-    // Freedom切替
-    if (stack.getItem() == Items.FEATHER) {
-      if (getMovingMode() == MovingMode.ESCORT) {
-        this.getWorld().sendEntityStatus(this, (byte) 73);
-        this.setMovingMode(MovingMode.FREEDOM);
-        this.setFreedomPos(this.getBlockPos());
-      } else {
-        this.getWorld().sendEntityStatus(this, (byte) 74);
-        this.setMovingMode(MovingMode.ESCORT);
-      }
-      return ActionResult.success(this.getWorld().isClient);
-    }
-    // Tracer切替
-    if ((this.getMovingMode() == MovingMode.FREEDOM || this.getMovingMode() == MovingMode.TRACER)
-        && stack.getItem() == Items.REDSTONE) {
-      if (this.getMovingMode() == MovingMode.FREEDOM) {
-        this.getWorld().sendEntityStatus(this, (byte) 75);
-        this.setMovingMode(MovingMode.TRACER);
-      } else {
-        this.getWorld().sendEntityStatus(this, (byte) 73);
-        this.setMovingMode(MovingMode.FREEDOM);
-        this.setFreedomPos(this.getBlockPos());
-      }
-      return ActionResult.success(this.getWorld().isClient);
-    }
-    // ガラス瓶->エンチャントの瓶
-    if (this.experiencePoints >= EXPERIENCE_BOTTLE_COST && stack.isOf(Items.GLASS_BOTTLE)) {
-      this.getWorld()
-          .playSound(
-              null,
-              this.getX(),
-              this.getY(),
-              this.getZ(),
-              SoundEvents.ITEM_BOTTLE_FILL,
-              SoundCategory.PLAYERS,
-              1.0f,
-              1.0f);
-      ItemStack itemStack2 =
-          ItemUsage.exchangeStack(stack, player, Items.EXPERIENCE_BOTTLE.getDefaultStack());
-      player.setStackInHand(hand, itemStack2);
-      this.addExperience(-EXPERIENCE_BOTTLE_COST);
-      return ActionResult.success(this.getWorld().isClient);
-    }
-    // モブミルク
-    if (getConfig().misc.canMilking && stack.isOf(Items.BUCKET)) {
-      player.playSound(SoundEvents.ENTITY_COW_MILK, 1.0F, 1.0F);
-      ItemStack itemStack2 =
-          ItemUsage.exchangeStack(stack, player, Items.MILK_BUCKET.getDefaultStack());
-      player.setStackInHand(hand, itemStack2);
-      return ActionResult.success(this.getWorld().isClient);
-    }
-    if (stack.getItem() == Items.GUNPOWDER) {
-      int maxAccelerationStack = getConfig().misc.maxAccelerationStack;
-      int accelerationTicks = getConfig().misc.accelerationTicksPerStack;
-      // 同期ズレ防止のため、if条件を付加する場合は結果をパケットで送信すること
-      int resumeCount = Math.min(maxAccelerationStack, stack.getCount());
-      int acTicks = resumeCount * accelerationTicks;
-      setAccelerationTicks(acTicks);
-
-      if (!player.getAbilities().creativeMode) {
-        stack.decrement(resumeCount);
-        if (stack.isEmpty()) {
-          player.getInventory().removeOne(stack);
-        }
-      }
-
-      return ActionResult.success(this.getWorld().isClient);
-    }
-    openInventory(player);
-    return ActionResult.success(this.getWorld().isClient);
+    return LMInteractionHandler.handle(this, player, hand);
   }
 
-  public ActionResult changeState(PlayerEntity player, ItemStack stack) {
-    this.getWorld().sendEntityStatus(this, (byte) 72);
-    this.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 1.0F, this.random.nextFloat() * 0.1F + 1.0F);
-    this.setFreedomPos(this.getBlockPos());
-    this.getNavigation().stop();
-    TameableUtil.switchWait(this);
-    if (!player.getAbilities().creativeMode) {
-      stack.decrement(1);
-      if (stack.isEmpty()) {
-        player.getInventory().removeOne(stack);
-      }
-    }
-    return ActionResult.success(this.getWorld().isClient);
-  }
-
-  public ActionResult contract(PlayerEntity player, ItemStack stack, boolean isReContract) {
-    if (!isReContract) {
-      this.getWorld().sendEntityStatus(this, (byte) 70);
-      if (player instanceof ServerPlayerEntity) {
-        LMRBCriteria.CONTRACT_MAID.trigger((ServerPlayerEntity) player, this);
-      }
-    } else {
-      this.getWorld().sendEntityStatus(this, (byte) 71);
-    }
-    this.setOwnerUuid(player.getUuid());
-    setContractMM(true);
-    // 契約状態の更新
-    if (!this.getWorld().isClient) {
-      SyncMultiModelPacket.sendS2CPacket(this, this);
-    }
-    setStrike(false);
-    itemContractable.setUnpaidTimes(0);
-    getNavigation().stop();
-    setMovingMode(MovingMode.ESCORT);
-    if (!player.getAbilities().creativeMode) {
-      stack.decrement(1);
-      if (stack.isEmpty()) {
-        player.getInventory().removeOne(stack);
-      }
-    }
-    return ActionResult.success(this.getWorld().isClient);
+  int getExperiencePoints() {
+    return this.experiencePoints;
   }
 
   public void addExperience(int experience) {
