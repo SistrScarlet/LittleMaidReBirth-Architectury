@@ -9,6 +9,16 @@ architectury {
 
 loom {
     accessWidenerPath = project(":common").loom.accessWidenerPath
+
+    runs {
+        gameTestServer {
+            server()
+            name "Game Test Server"
+            vmArg "-Dfabric-api.gametest"
+            vmArg "-Dfabric-api.gametest.report-file=${project.buildDir}/junit.xml"
+            runDir "build/gametest"
+        }
+    }
 }
 
 configurations {
