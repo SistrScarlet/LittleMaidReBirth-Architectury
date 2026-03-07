@@ -509,4 +509,30 @@ public class LMRBForgeGameTests {
   public static void maidPicksUpExperienceOrb(TestContext context) {
     LMRBCommonTests.maidPicksUpExperienceOrb(context);
   }
+
+  // ===== COOK: かまど作業 =====
+
+  @GameTest(templateName = SMALL_FLOOR, maxAttempts = 3)
+  public static void cookingInsertItems(TestContext context) {
+    LMRBCommonTests.cookingInsertItems(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR, tickLimit = 300, maxAttempts = 3)
+  public static void cookingSmeltAndExtract(TestContext context) {
+    LMRBCommonTests.cookingSmeltAndExtract(context);
+  }
+
+  // ===== PHARM: 醸造台作業 =====
+
+  @GameTest(templateName = SMALL_FLOOR, maxAttempts = 3)
+  public static void pharmacistInsertItems(TestContext context) {
+    LMRBCommonTests.pharmacistInsertItems(context);
+  }
+
+  // ===== STORE: チェストに格納 =====
+
+  @GameTest(templateName = SMALL_FLOOR, maxAttempts = 3)
+  public static void storeItemToChest(TestContext context) {
+    LMRBCommonTests.storeItemToChest(context);
+  }
 }

@@ -1347,4 +1347,128 @@ public final class LMRBCommonTests {
           context.assertTrue(maid.getXpToDrop() > xpBefore, "メイドさんが経験値オーブを拾って経験値が増加すること");
         });
   }
+
+  // ===== AI作業テスト共通: メイドさんを床上(y=2)にスポーン =====
+
+  private static final BlockPos AI_MAID_POS = new BlockPos(1, 2, 1);
+  private static final BlockPos AI_BLOCK_POS = new BlockPos(3, 2, 1);
+
+  private static LittleMaidEntity spawnTamedMaidForAI(
+      TestContext context, ServerPlayerEntity owner) {
+    var maid = context.spawnEntity(Registration.LITTLE_MAID_MOB.get(), AI_MAID_POS);
+    maid.setOwnerUuid(owner.getUuid());
+    maid.setMovingMode(MovingMode.ESCORT);
+    return maid;
+  }
+
+  // ===== COOK-2: かまどに材料を投入 =====
+
+  public static void cookingInsertItems(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaidForAI(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.BOWL));
+    maid.getInventory().setStack(0, new ItemStack(Items.COAL, 1));
+    maid.getInventory().setStack(1, new ItemStack(Items.RAW_IRON, 1));
+    context.setBlockState(AI_BLOCK_POS, net.minecraft.block.Blocks.FURNACE.getDefaultState());
+
+    context.addInstantFinalTask(
+        () -> {
+          var absPos = context.getAbsolutePos(AI_BLOCK_POS);
+          var be = context.getWorld().getBlockEntity(absPos);
+          context.assertTrue(
+              be instanceof net.minecraft.block.entity.AbstractFurnaceBlockEntity,
+              "かまどのBlockEntityが存在すること");
+          var furnace = (net.minecraft.block.entity.AbstractFurnaceBlockEntity) be;
+          boolean hasInput = !furnace.getStack(0).isEmpty();
+          boolean hasFuel = !furnace.getStack(1).isEmpty();
+          context.assertTrue(hasInput || hasFuel, "かまどに材料または燃料が投入されていること");
+        });
+  }
+
+  // ===== COOK-3: 精錬完了品を回収 =====
+
+  public static void cookingSmeltAndExtract(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaidForAI(context, player);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.BOWL));
+    maid.getInventory().setStack(0, new ItemStack(Items.COAL, 1));
+    maid.getInventory().setStack(1, new ItemStack(Items.RAW_IRON, 1));
+    context.setBlockState(AI_BLOCK_POS, net.minecraft.block.Blocks.FURNACE.getDefaultState());
+
+    context.addInstantFinalTask(
+        () -> {
+          var inv = maid.getInventory();
+          boolean found = false;
+          for (int i = 0; i < inv.size(); i++) {
+            if (inv.getStack(i).isOf(Items.IRON_INGOT)) {
+              found = true;
+              break;
+            }
+          }
+          context.assertTrue(found, "メイドさんのインベントリに精錬品(鉄インゴット)があること");
+        });
+  }
+
+  // ===== PHARM-2: 醸造台に材料を投入 =====
+
+  public static void pharmacistInsertItems(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaidForAI(context, player);
+    var waterBottle = new ItemStack(Items.POTION);
+    net.minecraft.potion.PotionUtil.setPotion(waterBottle, net.minecraft.potion.Potions.WATER);
+    maid.equipStack(EquipmentSlot.MAINHAND, waterBottle);
+    maid.getInventory().setStack(0, new ItemStack(Items.BLAZE_POWDER, 1));
+    maid.getInventory().setStack(1, new ItemStack(Items.NETHER_WART, 1));
+    var waterBottle2 = new ItemStack(Items.POTION);
+    net.minecraft.potion.PotionUtil.setPotion(waterBottle2, net.minecraft.potion.Potions.WATER);
+    maid.getInventory().setStack(2, waterBottle2);
+    context.setBlockState(AI_BLOCK_POS, net.minecraft.block.Blocks.BREWING_STAND.getDefaultState());
+
+    context.addInstantFinalTask(
+        () -> {
+          var absPos = context.getAbsolutePos(AI_BLOCK_POS);
+          var be = context.getWorld().getBlockEntity(absPos);
+          context.assertTrue(
+              be instanceof net.minecraft.block.entity.BrewingStandBlockEntity,
+              "醸造台のBlockEntityが存在すること");
+          var stand = (net.minecraft.block.entity.BrewingStandBlockEntity) be;
+          boolean hasPotion =
+              !stand.getStack(0).isEmpty()
+                  || !stand.getStack(1).isEmpty()
+                  || !stand.getStack(2).isEmpty();
+          boolean hasIngredient = !stand.getStack(3).isEmpty();
+          context.assertTrue(hasPotion || hasIngredient, "醸造台にポーションまたは材料が投入されていること");
+        });
+  }
+
+  // ===== STORE-1: 不要アイテムをチェストに格納 =====
+
+  public static void storeItemToChest(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaidForAI(context, player);
+    maid.setMovingMode(MovingMode.FREEDOM);
+    maid.setFreedomPos(maid.getBlockPos());
+    // workItemSlotSize(デフォルト9) 以降のスロット(9-17)を全て埋める
+    for (int i = 9; i < 18; i++) {
+      maid.getInventory().setStack(i, new ItemStack(Items.DIRT, 64));
+    }
+    context.setBlockState(AI_BLOCK_POS, net.minecraft.block.Blocks.CHEST.getDefaultState());
+
+    context.addInstantFinalTask(
+        () -> {
+          var absPos = context.getAbsolutePos(AI_BLOCK_POS);
+          var be = context.getWorld().getBlockEntity(absPos);
+          context.assertTrue(
+              be instanceof net.minecraft.inventory.Inventory, "チェストのBlockEntityが存在すること");
+          var chest = (net.minecraft.inventory.Inventory) be;
+          boolean found = false;
+          for (int i = 0; i < chest.size(); i++) {
+            if (chest.getStack(i).isOf(Items.DIRT)) {
+              found = true;
+              break;
+            }
+          }
+          context.assertTrue(found, "チェストにアイテムが格納されていること");
+        });
+  }
 }
