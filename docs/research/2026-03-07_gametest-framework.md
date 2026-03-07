@@ -43,16 +43,26 @@ public class LMRBGameTests implements FabricGameTest {
 ```
 
 - Yarn マッピング: `net.minecraft.test.GameTest`（アノテーション）, `net.minecraft.test.TestContext`（ヘルパー）
-- `EMPTY_STRUCTURE`: 8x8x8 の空気ブロック空間。ストラクチャーファイル不要
-- ブロック配置が必要なテスト（かまど作業等）はゲーム内 structure block で SNBT を作成
+- `EMPTY_STRUCTURE`: Fabric 専用（`fabric-gametest-api-v1:empty`）。ストラクチャーファイル不要
+- Forge はストラクチャーファイル（NBT）が必須。`data/<namespace>/structures/` に `.nbt`（GZip圧縮）で配置
+- SNBT ファイルは Forge では読み込まれない。ゲーム内 structure block で保存した NBT を使う
+- ブロック配置が必要なテスト（かまど作業等）もゲーム内 structure block で作成
+
+### Forge 固有の注意点
+
+- テストメソッドは `static` でなければならない（Fabric は instance メソッドで可）
+- `@GameTestHolder(MODID)` が namespace を付与するため、`templateName` に namespace を含めない
+- `@PrefixGameTestTemplate(false)` を付けないとクラス名がテンプレート名にプレフィックスされる
+- Forge の `runGameTestServer` はテスト完了後にサーバーが停止しない問題がある
 
 ### 実行方法
 
 | 方法 | コマンド/タスク | 用途 | 動作確認 |
 |------|--------------|------|---------|
-| クライアント内 | `runClient` → `/test runall` | 手動テスト・目視確認 | ✅ |
-| GameTestServer | `./gradlew :fabric:runGameTestServer` | CI 向け自動実行 | ✅ |
-| 通常サーバー | `runServer` → `/test runall` | 専用サーバーでの手動テスト | 未確認 |
+| Fabric クライアント | `:fabric:runClient` → `/test runall` | 手動テスト | ✅ |
+| Fabric GameTestServer | `./gradlew :fabric:runGameTestServer` | CI 向け自動実行 | ✅ |
+| Forge クライアント | `:forge:runClient` → `/test runall` | 手動テスト | ✅ |
+| Forge GameTestServer | `./gradlew :forge:runGameTestServer` | CI 向け | ❌ テスト完了せず停止 |
 
 ### ディレクトリ分離
 
