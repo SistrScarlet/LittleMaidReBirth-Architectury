@@ -4,19 +4,15 @@ import com.google.common.collect.Lists;
 import dev.architectury.extensions.network.EntitySpawnExtension;
 import dev.architectury.registry.menu.MenuRegistry;
 import java.util.*;
-import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.MobNavigation;
-import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
 import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
@@ -27,8 +23,6 @@ import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.entity.effect.StatusEffectInstance;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
@@ -56,10 +50,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.*;
@@ -87,7 +78,6 @@ import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.goal.*;
 import net.sistr.littlemaidrebirth.entity.mode.HasMode;
 import net.sistr.littlemaidrebirth.entity.mode.HasModeImpl;
-import net.sistr.littlemaidrebirth.entity.mode.ModeWrapperGoal;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetIdentifier;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
@@ -177,6 +167,8 @@ public class LittleMaidEntity extends TameableEntity
   public final SoundPlayableCompound soundPlayer;
   private final LMScreenHandlerFactory screenFactory = new LMScreenHandlerFactory(this);
   private final IModelCaps caps = new LittleMaidModelCaps(this);
+  private final LMSafeMovement safeMovement =
+      new LMSafeMovement(this, LittleMaidEntity::getConfig, this::getDangerHeightThreshold);
   private final TargetTagManager targetTagManager;
 
   private final Map<MobEntity, Predicate<MobEntity>> fleeEntities = new HashMap<>(); // todo クラス化検討
@@ -246,376 +238,19 @@ public class LittleMaidEntity extends TameableEntity
         && world.getBaseLightLevel(pos, 0) > 8;
   }
 
-  public static boolean resurrectionMaid(ServerWorld world, BlockPos pos, PlayerEntity player) {
-    var maidSouls = ((MaidManager) player).getMaidSouls();
-    if (maidSouls.isEmpty()) {
-      return false;
-    }
-    for (LittleMaidEntity.MaidSoul maidSoul : maidSouls) {
-      var maid = Registration.LITTLE_MAID_MOB.get().create(world);
-      if (maid != null) {
-        maid.installMaidSoul(maidSoul);
-        maid.refreshPositionAfterTeleport(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);
-
-        maid.setMovingMode(MovingMode.ESCORT);
-        TameableUtil.setWait(maid, true);
-        maid.lookAt(EntityAnchorArgumentType.EntityAnchor.EYES, player.getEyePos());
-        maid.getLookControl().lookAt(player);
-
-        maid.extinguish();
-        maid.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 100, 10));
-
-        world.spawnEntity(maid);
-
-        LMRBCriteria.RESURRECT_MAID.trigger((ServerPlayerEntity) player, maid);
-      }
-    }
-    ((MaidManager) player).clearMaidSouls();
-
-    world.removeBlock(pos, false);
-    world.playSound(
-        null,
-        pos.getX() + 0.5,
-        pos.getY(),
-        pos.getZ() + 0.5,
-        SoundEvents.ENTITY_FIREWORK_ROCKET_TWINKLE,
-        SoundCategory.PLAYERS,
-        1.0f,
-        2.0f);
-    world.playSound(
-        null,
-        pos.getX() + 0.5,
-        pos.getY(),
-        pos.getZ() + 0.5,
-        SoundEvents.ENTITY_FIREWORK_ROCKET_BLAST,
-        SoundCategory.PLAYERS,
-        1.0f,
-        2.0f);
-    // todo 演出強化
-    world.spawnParticles(
-        ParticleTypes.EXPLOSION,
-        pos.getX() + 0.5,
-        pos.getY() + 0.5,
-        pos.getZ() + 0.5,
-        1,
-        0,
-        0,
-        0,
-        0);
-    float size = 0.5f;
-    int count = 10;
-    double delta = 1.5;
-    world.spawnParticles(
-        new DustParticleEffect(new Vector3f(1.0f, 0.0f, 0.0f), size),
-        pos.getX() + 0.5,
-        pos.getY() + 0.5,
-        pos.getZ() + 0.5,
-        count,
-        delta,
-        delta,
-        delta,
-        0);
-    world.spawnParticles(
-        new DustParticleEffect(new Vector3f(1.0f, 0.65f, 0.0f), size),
-        pos.getX() + 0.5,
-        pos.getY() + 0.5,
-        pos.getZ() + 0.5,
-        count,
-        delta,
-        delta,
-        delta,
-        0);
-    world.spawnParticles(
-        new DustParticleEffect(new Vector3f(1.0f, 1.0f, 0.0f), size),
-        pos.getX() + 0.5,
-        pos.getY() + 0.5,
-        pos.getZ() + 0.5,
-        count,
-        delta,
-        delta,
-        delta,
-        0);
-    world.spawnParticles(
-        new DustParticleEffect(new Vector3f(0.0f, 1.0f, 0.0f), size),
-        pos.getX() + 0.5,
-        pos.getY() + 0.5,
-        pos.getZ() + 0.5,
-        count,
-        delta,
-        delta,
-        delta,
-        0);
-    world.spawnParticles(
-        new DustParticleEffect(new Vector3f(0.0f, 1.0f, 1.0f), size),
-        pos.getX() + 0.5,
-        pos.getY() + 0.5,
-        pos.getZ() + 0.5,
-        count,
-        delta,
-        delta,
-        delta,
-        0);
-    world.spawnParticles(
-        new DustParticleEffect(new Vector3f(0.0f, 0.0f, 1.0f), size),
-        pos.getX() + 0.5,
-        pos.getY() + 0.5,
-        pos.getZ() + 0.5,
-        count,
-        delta,
-        delta,
-        delta,
-        0);
-    world.spawnParticles(
-        new DustParticleEffect(new Vector3f(0.5f, 0.0f, 1.0f), size),
-        pos.getX() + 0.5,
-        pos.getY() + 0.5,
-        pos.getZ() + 0.5,
-        count,
-        delta,
-        delta,
-        delta,
-        0);
-    world.spawnParticles(
-        ParticleTypes.HEART,
-        pos.getX() + 0.5,
-        pos.getY() + 0.5,
-        pos.getZ() + 0.5,
-        count,
-        delta,
-        delta,
-        delta,
-        0);
-
-    return true;
-  }
-
   // 登録メソッドたち
 
   @Override
   protected void initGoals() {
-    int priority = -1;
-    LMRBConfig config = getConfig();
+    LMGoalInitializer.initGoals(this);
+  }
 
-    // 緊急テレポート
-    this.goalSelector.add(
-        priority,
-        new LMTeleportTameOwnerGoal(this, () -> config.movement.emergencyTeleportStartDistance) {
-          @Override
-          public boolean canStart() {
-            return isEmergency()
-                && LittleMaidEntity.this.hurtTime > 0
-                && !TameableUtil.isWait(LittleMaidEntity.this)
-                && super.canStart();
-          }
-        });
+  GoalSelector getGoalSelector() {
+    return this.goalSelector;
+  }
 
-    this.goalSelector.add(++priority, new SwimGoal(this));
-    this.goalSelector.add(++priority, new LongDoorInteractGoal(this, true));
-
-    this.goalSelector.add(
-        ++priority,
-        new LMHealMyselfGoal(
-            this,
-            () -> config.health.healInterval,
-            () -> config.health.healAmount,
-            stack -> stack.isIn(LMTags.Items.MAIDS_SALARY)));
-
-    this.goalSelector.add(++priority, new LMCollectSalaryFromContainerGoal<>(this));
-
-    this.goalSelector.add(++priority, new WaitGoal<>(this));
-
-    this.goalSelector.add(
-        ++priority, new LMTeleportTameOwnerGoal(this, () -> config.movement.teleportStartDistance));
-
-    // 危険な敵からの逃避
-    this.goalSelector.add(
-        ++priority,
-        new FleeEntityGoal<>(
-            this,
-            MobEntity.class,
-            config.target.dangerousAvoidDistance,
-            config.movement.followSpeed,
-            config.movement.sprintSpeed,
-            entity -> fleeEntities.containsKey(entity)) {
-          @Override
-          public void tick() {
-            fleeEntities.entrySet().removeIf(entry -> entry.getValue().test(entry.getKey()));
-            super.tick();
-          }
-
-          @Override
-          public void stop() {
-            super.stop();
-            this.mob.getNavigation().stop();
-          }
-        });
-
-    this.goalSelector.add(
-        ++priority,
-        new ModeWrapperGoal<>(this) {
-          @Override
-          public boolean canStart() {
-            return !this.owner.isStrike()
-                && (config.health.enableWorkInEmergency || !isEmergency())
-                && super.canStart();
-          }
-
-          @Override
-          public boolean shouldContinue() {
-            return !this.owner.isStrike()
-                && (config.health.enableWorkInEmergency || !isEmergency())
-                && super.shouldContinue();
-          }
-        });
-
-    this.goalSelector.add(
-        ++priority,
-        new HasMMFollowTameOwnerGoal<>(
-            this,
-            () -> config.movement.sprintSpeed,
-            () -> config.movement.sprintStartDistance,
-            () -> config.movement.sprintEndDistance) {
-          @Override
-          public void start() {
-            super.start();
-            this.tameable.setSprinting(true);
-          }
-
-          @Override
-          public void stop() {
-            super.stop();
-            this.tameable.setSprinting(false);
-          }
-        });
-
-    this.goalSelector.add(
-        ++priority,
-        new FollowAtHeldItemGoal<>(
-            this,
-            () -> config.misc.stareAtSalaryRange,
-            stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
-            () -> config.misc.followAtHeldSalaryRange,
-            true));
-    this.goalSelector.add(
-        ++priority,
-        new LMStareAtHeldItemGoal<>(
-            this,
-            () -> config.misc.stareAtSalaryRange,
-            stack -> stack.isIn(LMTags.Items.MAIDS_SALARY),
-            true));
-
-    // todo 頭の装飾品を仕舞わないようにする
-    this.goalSelector.add(
-        ++priority,
-        new LMStoreItemToContainerGoal<>(
-            this,
-            stack ->
-                stack.isIn(LMTags.Items.MAIDS_SALARY)
-                    || this.hasModeImpl
-                        .getMode()
-                        .filter(mode -> mode.getModeType().isModeItem(stack))
-                        .isPresent(),
-            () -> config.work.searchContainerRange));
-
-    this.goalSelector.add(
-        ++priority,
-        new LMMoveToDropItemGoal(
-            this,
-            () -> config.movement.pickupItemRange,
-            () -> config.movement.pickupItemFrequency,
-            () -> config.movement.pickupItemSpeed) {
-          @Override
-          public boolean canStart() {
-            return TameableUtil.hasTameOwner(LittleMaidEntity.this)
-                && (config.health.enableWorkInEmergency || !isEmergency())
-                && super.canStart();
-          }
-
-          @Override
-          public List<ItemEntity> findAroundDropItem() {
-            return TameableUtil.getTameOwner(maid)
-                .map(
-                    owner -> {
-                      return super.findAroundDropItem().stream()
-                          .filter(item -> !this.isOwnerRange(item, owner))
-                          .collect(Collectors.toList());
-                      // ご主人様が存在しない場合は普通にとる
-                    })
-                .orElse(super.findAroundDropItem());
-          }
-        });
-
-    this.goalSelector.add(
-        ++priority,
-        new HasMMFollowTameOwnerGoal<>(
-            this,
-            () -> config.movement.followSpeed,
-            () -> config.movement.followStartDistance,
-            () -> config.movement.followEndDistance));
-
-    this.goalSelector.add(++priority, new PlaySnowGoal(this));
-
-    this.goalSelector.add(
-        ++priority, new RedstoneTraceGoal(this, () -> config.movement.tracerSpeed));
-    this.goalSelector.add(
-        ++priority,
-        new FreedomGoal<>(this, config.movement.freedomSpeed, () -> config.movement.freedomRange));
-
-    // 野良
-    this.goalSelector.add(
-        ++priority,
-        new LMMoveToDropItemGoal(
-            this,
-            () -> config.movement.pickupItemRange,
-            () -> config.movement.pickupItemFrequency,
-            () -> config.movement.pickupItemSpeed) {
-          @Override
-          public boolean canStart() {
-            return !TameableUtil.hasTameOwner(LittleMaidEntity.this)
-                && config.misc.canPickupItemByNoOwner
-                && (config.health.enableWorkInEmergency || !isEmergency())
-                && super.canStart();
-          }
-        });
-    this.goalSelector.add(
-        ++priority,
-        new EscapeDangerGoal(this, config.movement.escapeSpeed) {
-          @Override
-          public boolean canStart() {
-            return !TameableUtil.hasTameOwner(LittleMaidEntity.this) && super.canStart();
-          }
-        });
-    this.goalSelector.add(
-        ++priority,
-        new FollowAtHeldItemGoal<>(
-            this,
-            () -> config.misc.stareAtEmployItemRange,
-            stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE),
-            () -> config.misc.followAtHeldEmployItemRange,
-            false));
-    this.goalSelector.add(
-        ++priority,
-        new LMStareAtHeldItemGoal<>(
-            this,
-            () -> config.misc.stareAtEmployItemRange,
-            stack -> stack.isIn(LMTags.Items.MAIDS_EMPLOYABLE),
-            false));
-
-    this.goalSelector.add(
-        ++priority,
-        new WanderAroundFarGoal(this, config.movement.freedomSpeed) {
-          @Override
-          public boolean canStart() {
-            return !TameableUtil.hasTameOwner(LittleMaidEntity.this) && super.canStart();
-          }
-        });
-
-    // 視線
-    this.goalSelector.add(++priority, new LookAtEntityGoal(this, LivingEntity.class, 8.0F));
-    this.goalSelector.add(priority, new LookAroundGoal(this));
-
-    // ターゲット系
-    this.targetSelector.add(0, new LMTargetGoal(this));
+  GoalSelector getTargetSelector() {
+    return this.targetSelector;
   }
 
   @Override
@@ -1349,187 +984,16 @@ public class LittleMaidEntity extends TameableEntity
   @Override
   public void postShoot() {}
 
-  // todo コメントを差す
   @Override
   protected Vec3d adjustMovementForSneaking(Vec3d movement, MovementType type) {
     if (type != MovementType.SELF && type != MovementType.PLAYER) {
       return movement;
     }
-
-    LMRBConfig config = getConfig();
-
-    if (!config.health.immortal
-        && !getConfig().health.nonMobDamageImmunity
-        && config.health.enableSafeMove
-        && this.canClipAtLedge()) {
-      boolean shouldBackByDamage =
-          isDamageSourceEmpty(this.getBoundingBox())
-              && !this.isDamageSourceEmpty(this.getBoundingBox().offset(movement.x, 0, movement.z));
-      boolean shouldBackByFall =
-          !config.health.fallImmunity
-              && !isSafeFallHeight(this.getPos().add(movement.x, 0, movement.z));
-
-      if (shouldBackByDamage || shouldBackByFall) {
-        BiPredicate<Double, Double> shouldBackPredicate = (x, z) -> false;
-        if (shouldBackByDamage) {
-          BiPredicate<Double, Double> finalPredicate = shouldBackPredicate;
-          shouldBackPredicate =
-              (x, z) ->
-                  finalPredicate.test(x, z)
-                      // 危険物がbox内にある
-                      || !this.isDamageSourceEmpty(this.getBoundingBox().offset(x, 0, z));
-        }
-
-        if (shouldBackByFall) {
-          BiPredicate<Double, Double> finalPredicate = shouldBackPredicate;
-          shouldBackPredicate =
-              (x, z) ->
-                  finalPredicate.test(x, z)
-                      // 足場がbox内にない
-                      || this.getWorld()
-                          .isSpaceEmpty(
-                              this,
-                              this.getBoundingBox()
-                                  .offset(x, 0, z)
-                                  .stretch(0, -(getDangerHeightThreshold() - fallDistance), 0))
-                      // または、すぐ下に足場がなく、危険物がbox内にある
-                      || (this.getWorld()
-                              .isSpaceEmpty(
-                                  this,
-                                  this.getBoundingBox()
-                                      .offset(x, 0, z)
-                                      .stretch(0, -getStepHeight(), 0))
-                          && !this.isDamageSourceEmpty(
-                              this.getBoundingBox()
-                                  .offset(x, 0, z)
-                                  .stretch(0, -getDangerHeightThreshold(), 0)));
-        }
-
-        movement = pushBack(movement, shouldBackPredicate);
-      }
-    }
-
-    return movement;
+    return safeMovement.adjust(movement);
   }
 
-  private Vec3d pushBack(Vec3d movement, BiPredicate<Double, Double> pushBackPredicate) {
-    double dot = 0.05;
-    double mX = movement.x;
-    double mZ = movement.z;
-    while (mX != 0.0 && pushBackPredicate.test(mX, 0d)) {
-      if (mX < dot && mX >= -dot) {
-        mX = 0.0;
-        continue;
-      }
-      if (mX > 0.0) {
-        mX -= dot;
-        continue;
-      }
-      mX += dot;
-    }
-    while (mZ != 0.0 && pushBackPredicate.test(0d, mZ)) {
-      if (mZ < dot && mZ >= -dot) {
-        mZ = 0.0;
-        continue;
-      }
-      if (mZ > 0.0) {
-        mZ -= dot;
-        continue;
-      }
-      mZ += dot;
-    }
-    while (mX != 0.0 && mZ != 0.0 && pushBackPredicate.test(mX, mZ)) {
-      mX = mX < dot && mX >= -dot ? 0.0 : (mX > 0.0 ? mX - dot : mX + dot);
-      if (mZ < dot && mZ >= -dot) {
-        mZ = 0.0;
-        continue;
-      }
-      if (mZ > 0.0) {
-        mZ -= dot;
-        continue;
-      }
-      mZ += dot;
-    }
-    return new Vec3d(mX, movement.y, mZ);
-  }
-
-  private boolean isDamageSourceEmpty(Box box) {
-    int minX = MathHelper.floor(box.minX);
-    int maxX = MathHelper.floor(box.maxX);
-    int minY = MathHelper.floor(box.minY);
-    int maxY = MathHelper.floor(box.maxY);
-    int minZ = MathHelper.floor(box.minZ);
-    int maxZ = MathHelper.floor(box.maxZ);
-
-    for (int x = 0; x < maxX - minX + 1; x++) {
-      for (int y = 0; y < maxY - minY + 1; y++) {
-        for (int z = 0; z < maxZ - minZ + 1; z++) {
-          PathNodeType pathNodeType =
-              this.getNavigation()
-                  .getNodeMaker()
-                  .getDefaultNodeType(this.getWorld(), minX + x, minY + y, minZ + z);
-          if (pathNodeType == PathNodeType.DAMAGE_FIRE
-              || pathNodeType == PathNodeType.DAMAGE_OTHER
-              || pathNodeType == PathNodeType.LAVA) {
-            return false;
-          }
-        }
-      }
-    }
-    return true;
-  }
-
-  private boolean isSafeFallHeight(Vec3d pos) {
-    BlockHitResult result =
-        this.getWorld()
-            .raycast(
-                new RaycastContext(
-                    pos,
-                    pos.subtract(0, getDangerHeightThreshold() - fallDistance + 0.1, 0),
-                    RaycastContext.ShapeType.COLLIDER,
-                    RaycastContext.FluidHandling.NONE,
-                    this));
-    if (result.getType() == HitResult.Type.MISS) {
-      return false;
-    }
-    Vec3d hitPos = result.getPos();
-    if (getDangerHeightThreshold() - fallDistance < pos.y - hitPos.y) {
-      return false;
-    }
-    BlockPos checkPos =
-        new BlockPos(MathHelper.floor(pos.x), MathHelper.floor(pos.y - 1), MathHelper.floor(pos.z));
-    for (int i = 0; i < pos.y - hitPos.y + 1; i++) {
-      PathNodeType pathNodeType =
-          this.getNavigation()
-              .getNodeMaker()
-              .getDefaultNodeType(
-                  this.getWorld(), checkPos.getX(), checkPos.getY(), checkPos.getZ());
-      if (pathNodeType == PathNodeType.WALKABLE || pathNodeType == PathNodeType.BLOCKED) {
-        return true;
-      }
-      if (pathNodeType == PathNodeType.DAMAGE_FIRE
-          || pathNodeType == PathNodeType.DAMAGE_OTHER
-          || pathNodeType == PathNodeType.LAVA) {
-        return false;
-      }
-      checkPos = checkPos.down();
-    }
-    return false;
-  }
-
-  private boolean canClipAtLedge() {
-    float canClipHeight = getDangerHeightThreshold() + 1.0f;
-    // 着地しているか、落下距離が危険高度未満かつ下に足場があるとき
-    return this.isOnGround()
-        || this.fallDistance < canClipHeight
-            && !this.getWorld()
-                .isSpaceEmpty(
-                    this,
-                    this.getBoundingBox().stretch(0.0, this.fallDistance - canClipHeight, 0.0));
-  }
-
+  // マイナスの値も返すことを利用しているため、バージョンアップ/mixinでの仕様変更に注意が必要
   private float getDangerHeightThreshold() {
-    // マイナスの値も返すことを利用しているため、バージョンアップ/mixinでの仕様変更に注意が必要
     int fallDamage = computeFallDamage(0, 1);
     return -fallDamage;
   }
@@ -1755,6 +1219,10 @@ public class LittleMaidEntity extends TameableEntity
   }
 
   // Flee
+
+  Map<MobEntity, Predicate<MobEntity>> getFleeEntities() {
+    return this.fleeEntities;
+  }
 
   public void addFleeEntity(MobEntity entity, Predicate<MobEntity> removePredicate) {
     this.fleeEntities.put(entity, removePredicate);
@@ -2318,47 +1786,6 @@ public class LittleMaidEntity extends TameableEntity
     public void stop() {
       super.stop();
       this.maid.setBegging(false);
-    }
-  }
-
-  // todo このクラス置く場所ここで正しい？
-  public static class MaidSoul {
-    private final NbtCompound nbt;
-    private final UUID uuid;
-    private final String name;
-
-    public MaidSoul(LittleMaidEntity maid) {
-      this.nbt = new NbtCompound();
-      maid.writeNbt(this.nbt);
-      this.nbt.putString("Name", maid.getName().getString());
-      this.name = maid.getName().getString();
-      this.uuid = maid.getUuid();
-    }
-
-    private MaidSoul(NbtCompound nbt, UUID uuid, String name) {
-      this.nbt = nbt;
-      this.uuid = uuid;
-      this.name = name;
-    }
-
-    public static MaidSoul fromNbt(NbtCompound nbt) {
-      return new MaidSoul(nbt, nbt.getUuid("UUID"), nbt.getString("Name"));
-    }
-
-    public NbtCompound getNbt() {
-      return nbt;
-    }
-
-    public UUID getUuid() {
-      return this.uuid;
-    }
-
-    public Optional<UUID> getOwnerUUID() {
-      return Optional.ofNullable(nbt.getUuid("Owner"));
-    }
-
-    public String getName() {
-      return this.name;
     }
   }
 }

@@ -17,6 +17,7 @@ import net.minecraft.world.World;
 import net.sistr.littlemaidmodelloader.entity.compound.SoundPlayable;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.MaidSoul;
 import net.sistr.littlemaidrebirth.entity.MaidSoulEntity;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
 import net.sistr.littlemaidrebirth.entity.util.MaidManager;
@@ -131,7 +132,7 @@ public abstract class MixinServerPlayerEntity extends MixinPlayerEntity implemen
   }
 
   @Override
-  public void registerMaid(LittleMaidEntity.MaidSoul soul) {
+  public void registerMaid(MaidSoul soul) {
     this.maidManager.registerMaid(soul);
   }
 
@@ -151,7 +152,7 @@ public abstract class MixinServerPlayerEntity extends MixinPlayerEntity implemen
   }
 
   @Override
-  public List<LittleMaidEntity.MaidSoul> getMaidSouls() {
+  public List<MaidSoul> getMaidSouls() {
     return this.maidManager.getMaidSouls();
   }
 

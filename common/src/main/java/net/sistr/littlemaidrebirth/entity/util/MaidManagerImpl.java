@@ -5,6 +5,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.MaidSoul;
 import net.sistr.littlemaidrebirth.entity.MaidSoulEntity;
 
 public class MaidManagerImpl implements MaidManager {
@@ -21,7 +22,7 @@ public class MaidManagerImpl implements MaidManager {
   }
 
   @Override
-  public void registerMaid(LittleMaidEntity.MaidSoul soul) {
+  public void registerMaid(MaidSoul soul) {
     maidMap.put(soul.getUuid(), SoulLMInfo.create(soul));
   }
 
@@ -63,7 +64,7 @@ public class MaidManagerImpl implements MaidManager {
   }
 
   @Override
-  public List<LittleMaidEntity.MaidSoul> getMaidSouls() {
+  public List<MaidSoul> getMaidSouls() {
     return this.maidMap.values().stream()
         .filter(lmInfo -> lmInfo.status() == Status.SOUL_WITHIN)
         .map(lmInfo -> ((SoulLMInfo) lmInfo).soul())

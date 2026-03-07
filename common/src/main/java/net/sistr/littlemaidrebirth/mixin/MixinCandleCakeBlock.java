@@ -13,7 +13,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.MaidResurrection;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -42,7 +42,7 @@ public abstract class MixinCandleCakeBlock {
         && CandleCakeBlock.canBeLit(state)
         && LMRB$getAroundAlterComponentBlocks(world, pos) >= 4
         && world instanceof ServerWorld serverWorld) {
-      if (LittleMaidEntity.resurrectionMaid(serverWorld, pos, player)) {
+      if (MaidResurrection.resurrect(serverWorld, pos, player)) {
         cir.setReturnValue(ActionResult.SUCCESS);
       }
     }

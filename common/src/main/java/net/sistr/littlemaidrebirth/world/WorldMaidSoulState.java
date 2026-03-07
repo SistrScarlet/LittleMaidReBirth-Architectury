@@ -11,16 +11,16 @@ import net.minecraft.nbt.NbtList;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
 import net.sistr.littlemaidrebirth.LMRBMod;
-import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
+import net.sistr.littlemaidrebirth.entity.MaidSoul;
 
 public class WorldMaidSoulState extends PersistentState {
-  private final Map<UUID, List<LittleMaidEntity.MaidSoul>> maidSoulsMap = Maps.newHashMap();
+  private final Map<UUID, List<MaidSoul>> maidSoulsMap = Maps.newHashMap();
 
-  public void add(UUID ownerId, LittleMaidEntity.MaidSoul maidSoul) {
+  public void add(UUID ownerId, MaidSoul maidSoul) {
     maidSoulsMap.computeIfAbsent(ownerId, (id) -> Lists.newArrayList()).add(maidSoul);
   }
 
-  public List<LittleMaidEntity.MaidSoul> get(UUID ownerId) {
+  public List<MaidSoul> get(UUID ownerId) {
     return maidSoulsMap.computeIfAbsent(ownerId, id -> Lists.newArrayList());
   }
 
@@ -31,13 +31,13 @@ public class WorldMaidSoulState extends PersistentState {
   @Override
   public NbtCompound writeNbt(NbtCompound nbt) {
     var nbtEntries = new NbtList();
-    for (Map.Entry<UUID, List<LittleMaidEntity.MaidSoul>> entry : maidSoulsMap.entrySet()) {
+    for (Map.Entry<UUID, List<MaidSoul>> entry : maidSoulsMap.entrySet()) {
       var uuid = entry.getKey();
       var list = entry.getValue();
       var nbtEntry = new NbtCompound();
       nbtEntry.putUuid("id", uuid);
       var nbtMaidSouls = new NbtList();
-      for (LittleMaidEntity.MaidSoul maidSoul : list) {
+      for (MaidSoul maidSoul : list) {
         nbtMaidSouls.add(maidSoul.getNbt());
       }
       nbtEntry.put("maidSouls", nbtMaidSouls);
@@ -53,9 +53,9 @@ public class WorldMaidSoulState extends PersistentState {
     for (NbtElement nbtEntry : nbtEntries) {
       var id = ((NbtCompound) nbtEntry).getUuid("id");
       var nbtMaidSouls = ((NbtCompound) nbtEntry).getList("maidSouls", NbtElement.COMPOUND_TYPE);
-      List<LittleMaidEntity.MaidSoul> maidSouls = Lists.newArrayList();
+      List<MaidSoul> maidSouls = Lists.newArrayList();
       for (NbtElement nbtMaidSoul : nbtMaidSouls) {
-        maidSouls.add(LittleMaidEntity.MaidSoul.fromNbt((NbtCompound) nbtMaidSoul));
+        maidSouls.add(MaidSoul.fromNbt((NbtCompound) nbtMaidSoul));
       }
       worldMaidSoulState.maidSoulsMap.put(id, maidSouls);
     }

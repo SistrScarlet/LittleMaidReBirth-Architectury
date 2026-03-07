@@ -21,7 +21,7 @@ import org.joml.Vector3f;
 // メイドソウル
 // 体重21g！
 public class MaidSoulEntity extends Entity {
-  @Nullable private LittleMaidEntity.MaidSoul maidSoul; // メイドソウルはクライアント側はnull
+  @Nullable private MaidSoul maidSoul; // メイドソウルはクライアント側はnull
   private int waveProgress;
   private boolean maidManagerRegistered;
 
@@ -30,7 +30,7 @@ public class MaidSoulEntity extends Entity {
     this.noClip = true;
   }
 
-  public MaidSoulEntity(World world, LittleMaidEntity.MaidSoul maidSoul) {
+  public MaidSoulEntity(World world, MaidSoul maidSoul) {
     this(Registration.MAID_SOUL_ENTITY.get(), world);
     this.maidSoul = maidSoul;
   }
@@ -194,7 +194,7 @@ public class MaidSoulEntity extends Entity {
   @Override
   protected void readCustomDataFromNbt(NbtCompound nbt) {
     if (nbt.contains("maidSoul")) {
-      this.maidSoul = LittleMaidEntity.MaidSoul.fromNbt(nbt.getCompound("maidSoul"));
+      this.maidSoul = MaidSoul.fromNbt(nbt.getCompound("maidSoul"));
     }
   }
 
@@ -235,7 +235,7 @@ public class MaidSoulEntity extends Entity {
     return waveProgress;
   }
 
-  public LittleMaidEntity.MaidSoul getSoul() {
+  public MaidSoul getSoul() {
     return this.maidSoul;
   }
 }
