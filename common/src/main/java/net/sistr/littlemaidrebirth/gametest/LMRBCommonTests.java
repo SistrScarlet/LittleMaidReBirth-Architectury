@@ -1310,4 +1310,41 @@ public final class LMRBCommonTests {
           context.assertTrue(found, "死亡時に装備がドロップすること");
         });
   }
+
+  public static void validNaturalSpawnCondition(TestContext context) {
+    // グロウストーンを置いて光レベルを確保（光レベル15 > 8）
+    var lightPos = new BlockPos(1, 2, 1);
+    context.setBlockState(lightPos, net.minecraft.block.Blocks.GLOWSTONE.getDefaultState());
+    // グロウストーン上のスポーン位置
+    var checkPos = new BlockPos(1, 3, 1);
+    var absPos = context.getAbsolutePos(checkPos);
+    boolean valid = LittleMaidEntity.isValidNaturalSpawn(context.getWorld(), absPos);
+    context.assertTrue(valid, "固体ブロック上＋明るさ8超でスポーン可能であること");
+    context.complete();
+  }
+
+  public static void invalidNaturalSpawnNoSolidBlock(TestContext context) {
+    // 空中の位置（下のブロックが空気）
+    var absPos = context.getAbsolutePos(new BlockPos(1, 3, 1));
+    boolean valid = LittleMaidEntity.isValidNaturalSpawn(context.getWorld(), absPos);
+    context.assertFalse(valid, "固体ブロックがない場所ではスポーン不可であること");
+    context.complete();
+  }
+
+  public static void maidPicksUpExperienceOrb(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    var maid = spawnTamedMaid(context, player);
+    int xpBefore = maid.getXpToDrop();
+    // メイドさんの足元に経験値オーブをスポーン
+    var absPos = context.getAbsolutePos(MAID_POS);
+    var xpOrb =
+        new net.minecraft.entity.ExperienceOrbEntity(
+            context.getWorld(), absPos.getX() + 0.5, absPos.getY(), absPos.getZ() + 0.5, 10);
+    context.getWorld().spawnEntity(xpOrb);
+
+    context.addInstantFinalTask(
+        () -> {
+          context.assertTrue(maid.getXpToDrop() > xpBefore, "メイドさんが経験値オーブを拾って経験値が増加すること");
+        });
+  }
 }

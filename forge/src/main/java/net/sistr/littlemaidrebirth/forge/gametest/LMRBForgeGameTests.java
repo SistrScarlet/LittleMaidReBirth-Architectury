@@ -494,4 +494,19 @@ public class LMRBForgeGameTests {
   public static void deathDropsInventory(TestContext context) {
     LMRBCommonTests.deathDropsInventory(context);
   }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void validNaturalSpawnCondition(TestContext context) {
+    LMRBCommonTests.validNaturalSpawnCondition(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR)
+  public static void invalidNaturalSpawnNoSolidBlock(TestContext context) {
+    LMRBCommonTests.invalidNaturalSpawnNoSolidBlock(context);
+  }
+
+  @GameTest(templateName = SMALL_FLOOR, tickLimit = 200)
+  public static void maidPicksUpExperienceOrb(TestContext context) {
+    LMRBCommonTests.maidPicksUpExperienceOrb(context);
+  }
 }
