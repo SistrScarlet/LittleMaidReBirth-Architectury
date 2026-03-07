@@ -535,4 +535,13 @@ public class LMRBForgeGameTests {
   public static void storeItemToChest(TestContext context) {
     LMRBCommonTests.storeItemToChest(context);
   }
+
+  // ===== ARCH: 射撃 =====
+
+  private static final String ARCHER_ARENA = "archer_arena";
+
+  @GameTest(templateName = ARCHER_ARENA, maxAttempts = 3)
+  public static void archerShootsDamagesTarget(TestContext context) {
+    LMRBCommonTests.archerShootsDamagesTarget(context);
+  }
 }

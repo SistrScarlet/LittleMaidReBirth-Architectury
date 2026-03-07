@@ -1471,4 +1471,24 @@ public final class LMRBCommonTests {
           context.assertTrue(found, "チェストにアイテムが格納されていること");
         });
   }
+
+  // ===== ARCH-2: 射撃でターゲットにダメージ =====
+
+  public static void archerShootsDamagesTarget(TestContext context) {
+    var player = createPlayer(context, "test-owner");
+    // メイドさんをフェンス手前(z=2)に配置
+    var maid = context.spawnEntity(Registration.LITTLE_MAID_MOB.get(), new BlockPos(4, 1, 2));
+    maid.setOwnerUuid(player.getUuid());
+    maid.setMovingMode(MovingMode.ESCORT);
+    maid.equipStack(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
+    maid.getInventory().setStack(0, new ItemStack(Items.ARROW, 64));
+    // ヴィンディケーターをフェンス向こう(z=6)に配置
+    var target = context.spawnEntity(EntityType.VINDICATOR, new BlockPos(4, 1, 6));
+    float healthBefore = target.getHealth();
+
+    context.addInstantFinalTask(
+        () -> {
+          context.assertTrue(target.getHealth() < healthBefore, "射撃でターゲットにダメージを与えること");
+        });
+  }
 }

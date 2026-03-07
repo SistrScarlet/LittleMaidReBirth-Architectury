@@ -197,14 +197,7 @@ def _infer_tag_type(value):
     elif isinstance(value, bool):
         return TAG_BYTE
     elif isinstance(value, int):
-        if -128 <= value <= 127:
-            return TAG_BYTE
-        elif -32768 <= value <= 32767:
-            return TAG_SHORT
-        elif -2147483648 <= value <= 2147483647:
-            return TAG_INT
-        else:
-            return TAG_LONG
+        return TAG_INT
     elif isinstance(value, float):
         return TAG_DOUBLE
     else:

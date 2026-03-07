@@ -531,4 +531,13 @@ public class LMRBGameTests implements FabricGameTest {
   public void storeItemToChest(TestContext context) {
     LMRBCommonTests.storeItemToChest(context);
   }
+
+  // ===== ARCH: 射撃 =====
+
+  private static final String ARCHER_ARENA = "littlemaidrebirth:archer_arena";
+
+  @GameTest(templateName = ARCHER_ARENA, maxAttempts = 3)
+  public void archerShootsDamagesTarget(TestContext context) {
+    LMRBCommonTests.archerShootsDamagesTarget(context);
+  }
 }
