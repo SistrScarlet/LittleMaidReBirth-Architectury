@@ -57,7 +57,6 @@ final class LMGoalInitializer {
             new LMTeleportTameOwnerGoal(maid, () -> config.movement.teleportStartDistance));
 
     // 危険な敵からの逃避
-    var fleeEntities = maid.getFleeEntities();
     maid.getGoalSelector()
         .add(
             ++priority,
@@ -67,10 +66,12 @@ final class LMGoalInitializer {
                 config.target.dangerousAvoidDistance,
                 config.movement.followSpeed,
                 config.movement.sprintSpeed,
-                fleeEntities::containsKey) {
+                entity -> maid.getFleeEntities().containsKey(entity)) {
               @Override
               public void tick() {
-                fleeEntities.entrySet().removeIf(entry -> entry.getValue().test(entry.getKey()));
+                maid.getFleeEntities()
+                    .entrySet()
+                    .removeIf(entry -> entry.getValue().test(entry.getKey()));
                 super.tick();
               }
 
