@@ -67,6 +67,9 @@ Little Maid Rebirth (LMRB) is a Minecraft mod that adds tameable maid entities w
 - protected フィールド/メソッドへの外部アクセスが必要な場合、同パッケージ内ならパッケージプライベートゲッターを追加する（Mixin Accessor より簡潔）
 
 ### Architecture Notes
+- コンフィグ: `config/LMRBConfig.java` — AutoConfig + Cloth Config (TOML)。セクション別 inner class。`LMRBMod.getConfig()` でアクセス
+- コンフィグ追加手順: (1) LMRBConfig にフィールド追加 (2) 消費側でコンフィグ参照に置換 (3) lang/{en_us,ja_jp}.json にキー `text.autoconfig.littlemaidrebirth.option.{section}.{field}` と `@Tooltip` を追加
+- ターゲティング設定は `TargetingConfig` ラッパー経由でアクセスする（`TargetingConfig.getAlertRange()` 等）
 - ブロック操作モード（料理・醸造）: `BlockWorkMode` + `WorkStrategy<T>` (Strategy パターン、委譲)
 - ブロック探索: `BlockSearch` (非同期BFS) + `SearchCondition` (linkable条件ビルダー)
 - ブロック排他制御: `BlockReservationManager` (GlobalPos でディメンション対応)
