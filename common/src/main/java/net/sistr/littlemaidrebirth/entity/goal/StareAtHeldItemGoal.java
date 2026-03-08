@@ -29,7 +29,7 @@ public class StareAtHeldItemGoal<T extends PathAwareEntity> extends Goal {
 
   @Override
   public boolean shouldContinue() {
-    return isHeldTargetItem(stareAt);
+    return stareAt != null && stareAt.isAlive() && isHeldTargetItem(stareAt);
   }
 
   public boolean isHeldTargetItem(PlayerEntity player) {
@@ -38,6 +38,9 @@ public class StareAtHeldItemGoal<T extends PathAwareEntity> extends Goal {
 
   @Override
   public void tick() {
+    if (stareAt == null) {
+      return;
+    }
     mob.getLookControl().lookAt(stareAt, 30F, 30F);
   }
 }

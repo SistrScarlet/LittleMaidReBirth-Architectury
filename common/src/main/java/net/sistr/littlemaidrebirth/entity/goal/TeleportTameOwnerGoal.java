@@ -48,6 +48,11 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
   }
 
   public boolean shouldContinue() {
+    LivingEntity currentOwner = TameableUtil.getTameOwner(this.tameable).orElse(null);
+    if (currentOwner == null) {
+      return false;
+    }
+    this.owner = currentOwner;
     return teleportStartSq.get() < this.tameable.squaredDistanceTo(this.owner);
   }
 
@@ -64,6 +69,9 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
 
   @Override
   public void tick() {
+    if (this.owner == null) {
+      return;
+    }
     this.tameable.getLookControl().lookAt(this.owner, 10.0f, this.tameable.getMaxLookPitchChange());
     if (--this.updateCountdownTicks > 0) {
       return;

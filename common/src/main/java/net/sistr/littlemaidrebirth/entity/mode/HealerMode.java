@@ -114,6 +114,9 @@ public class HealerMode extends Mode {
 
   @Override
   public void tick() {
+    if (owner == null) {
+      return;
+    }
     Inventory inventory = LMHasInventory.getInvAndHands(mob);
     // 飯
     if (foodIndex != -1) {

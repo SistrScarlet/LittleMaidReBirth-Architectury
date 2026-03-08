@@ -54,10 +54,11 @@ public class TorcherMode extends Mode {
       BlockPos basePos;
       if (this.mob.getMovingMode() == MovingMode.ESCORT) {
         Entity owner = TameableUtil.getTameOwner(mob).orElse(null);
-        if (owner == null) {
-          return false;
+        if (owner != null) {
+          basePos = owner.getBlockPos();
+        } else {
+          basePos = mob.getBlockPos();
         }
-        basePos = owner.getBlockPos();
       } else {
         basePos = mob.getBlockPos();
       }

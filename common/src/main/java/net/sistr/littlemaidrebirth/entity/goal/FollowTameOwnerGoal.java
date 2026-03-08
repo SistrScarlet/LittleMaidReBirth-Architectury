@@ -58,9 +58,13 @@ public class FollowTameOwnerGoal<T extends TameableEntity> extends Goal {
       return false;
     } else if (TameableUtil.isWait(tameable)) {
       return false;
-    } else {
-      return followEndSq.get() < this.tameable.squaredDistanceTo(this.owner);
     }
+    LivingEntity currentOwner = TameableUtil.getTameOwner(tameable).orElse(null);
+    if (currentOwner == null) {
+      return false;
+    }
+    this.owner = currentOwner;
+    return followEndSq.get() < this.tameable.squaredDistanceTo(this.owner);
   }
 
   @Override
@@ -79,6 +83,9 @@ public class FollowTameOwnerGoal<T extends TameableEntity> extends Goal {
 
   @Override
   public void tick() {
+    if (this.owner == null) {
+      return;
+    }
     this.tameable.getLookControl().lookAt(this.owner, 10.0f, this.tameable.getMaxLookPitchChange());
     if (--this.updateCountdownTicks > 0) {
       return;
