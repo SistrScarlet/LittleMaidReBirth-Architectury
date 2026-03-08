@@ -51,6 +51,9 @@ final class LMGoalInitializer {
 
     maid.getGoalSelector().add(++priority, new WaitGoal<>(maid));
 
+    // 別ディメンションの主人の元へテレポート
+    maid.getGoalSelector().add(++priority, new CrossDimensionTeleportGoal(maid));
+
     maid.getGoalSelector()
         .add(
             ++priority,
