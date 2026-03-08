@@ -27,7 +27,7 @@ public class LMTargetGoal extends Goal {
 
   @Override
   public boolean canStart() {
-    int chance = 10; // todo コンフィグ化検討
+    int chance = TargetingConfig.getTargetingInterval();
     if (this.maid.getRandom().nextInt(getTickCount(chance)) != 0) {
       return false;
     }
@@ -96,7 +96,7 @@ public class LMTargetGoal extends Goal {
     // 再計算カウンター
     recalc = Math.max(0, recalc - 1);
     if (recalc > 0) {
-      recalc = getTickCount(10);
+      recalc = getTickCount(TargetingConfig.getTargetingInterval());
       return true;
     }
     // 状況の変化により優先度を再計算する
@@ -107,7 +107,7 @@ public class LMTargetGoal extends Goal {
   public void start() {
     super.start();
     // ターゲット確定時の初期設定
-    recalc = getTickCount(10);
+    recalc = getTickCount(TargetingConfig.getTargetingInterval());
   }
 
   @Override

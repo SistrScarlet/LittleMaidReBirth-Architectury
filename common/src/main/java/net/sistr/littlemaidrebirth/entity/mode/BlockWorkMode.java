@@ -8,17 +8,16 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
+import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.util.BlockSearch;
 import net.sistr.littlemaidrebirth.util.SearchCondition;
 import org.jetbrains.annotations.Nullable;
 
 public final class BlockWorkMode extends Mode {
-  private static final int SEARCH_BUDGET_PER_TICK = 10;
-  private static final int SEARCH_MAX_COUNT = 128;
-  private static final double SEARCH_DISTANCE = 6;
 
   private final LittleMaidEntity mob;
   private final BlockReservationManager reservationManager;
@@ -76,7 +75,7 @@ public final class BlockWorkMode extends Mode {
     if (0 < --findCooldown) {
       return false;
     }
-    findCooldown = 20;
+    findCooldown = LMRBMod.getConfig().movement.pathRecalcInterval * 2;
 
     WorkStrategy<BlockEntity> s = typedStrategy();
     World world = mob.getWorld();
@@ -84,8 +83,9 @@ public final class BlockWorkMode extends Mode {
     BlockPos pos = targetPos;
 
     // モードが中断されたあと、再開するときの判定
+    LMRBConfig.Work workConfig = LMRBMod.getConfig().work;
     if (pos != null
-        && pos.isWithinDistance(mob.getPos(), SEARCH_DISTANCE)
+        && pos.isWithinDistance(mob.getPos(), workConfig.blockSearchDistance)
         && !reservationManager.isReservedByOther(world, pos, mob)) {
       BlockEntity be = s.getBlockEntity(world, pos).orElse(null);
       if (be != null && s.hasRemainingWork(be)) {
@@ -117,9 +117,12 @@ public final class BlockWorkMode extends Mode {
   }
 
   private void startSearch() {
-    SearchCondition condition = SearchCondition.forMob(mob).maxDistance(SEARCH_DISTANCE).build();
+    LMRBConfig.Work workConfig = LMRBMod.getConfig().work;
+    SearchCondition condition =
+        SearchCondition.forMob(mob).maxDistance(workConfig.blockSearchDistance).build();
     activeSearch =
-        new BlockSearch(mob.getBlockPos(), this::isTargetBlock, condition, SEARCH_MAX_COUNT);
+        new BlockSearch(
+            mob.getBlockPos(), this::isTargetBlock, condition, workConfig.blockSearchMaxCount);
   }
 
   private boolean tickSearch() {
@@ -128,7 +131,7 @@ public final class BlockWorkMode extends Mode {
       return false;
     }
 
-    search.tick(SEARCH_BUDGET_PER_TICK);
+    search.tick(LMRBMod.getConfig().work.blockSearchBudgetPerTick);
 
     var result = search.getResult();
     if (result.isPresent()) {
@@ -194,7 +197,7 @@ public final class BlockWorkMode extends Mode {
         mob.setSneaking(false);
       }
       if (--pathRecalcCooldown <= 0) {
-        pathRecalcCooldown = 10;
+        pathRecalcCooldown = LMRBMod.getConfig().movement.pathRecalcInterval;
         double x = pos.getX() + 0.5D;
         double y = pos.getY() + 0.5D;
         double z = pos.getZ() + 0.5D;

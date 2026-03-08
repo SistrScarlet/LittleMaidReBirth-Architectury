@@ -58,7 +58,7 @@ public class RedstoneTraceGoal extends Goal {
         .forEach(this.aroundSignalPos::add);
     // このタイマーは実行完了時にリセットされる
     // そのため、連続実行時は遅延無し
-    recalcTimer = getTickCount(20);
+    recalcTimer = getTickCount(LMRBMod.getConfig().movement.pathRecalcInterval * 2);
     return !this.aroundSignalPos.isEmpty();
   }
 

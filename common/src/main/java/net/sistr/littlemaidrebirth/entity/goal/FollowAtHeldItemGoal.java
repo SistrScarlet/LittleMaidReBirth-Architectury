@@ -5,6 +5,7 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.item.ItemStack;
+import net.sistr.littlemaidrebirth.LMRBMod;
 
 public class FollowAtHeldItemGoal<T extends TameableEntity> extends TameableStareAtHeldItemGoal<T> {
   private final Supplier<Float> followRangeSq;
@@ -31,7 +32,7 @@ public class FollowAtHeldItemGoal<T extends TameableEntity> extends TameableStar
     if (0 < reCalcCool--) {
       return;
     }
-    reCalcCool = getTickCount(10);
+    reCalcCool = getTickCount(LMRBMod.getConfig().movement.pathRecalcInterval);
     mob.getNavigation().startMovingTo(stareAt, 1);
   }
 }

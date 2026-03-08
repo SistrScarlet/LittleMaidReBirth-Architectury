@@ -19,8 +19,6 @@ import net.sistr.littlemaidrebirth.tags.LMTags;
 
 final class LMInteractionHandler {
 
-  private static final int EXPERIENCE_BOTTLE_COST = 7;
-
   private LMInteractionHandler() {}
 
   static ActionResult handle(LittleMaidEntity maid, PlayerEntity player, Hand hand) {
@@ -71,7 +69,8 @@ final class LMInteractionHandler {
       return handleRedstone(maid);
     }
     // ガラス瓶->エンチャントの瓶
-    if (maid.getExperiencePoints() >= EXPERIENCE_BOTTLE_COST && stack.isOf(Items.GLASS_BOTTLE)) {
+    if (maid.getExperiencePoints() >= LittleMaidEntity.getConfig().misc.experienceBottleCost
+        && stack.isOf(Items.GLASS_BOTTLE)) {
       return handleGlassBottle(maid, player, hand, stack);
     }
     // モブミルク
@@ -140,7 +139,7 @@ final class LMInteractionHandler {
     ItemStack itemStack2 =
         ItemUsage.exchangeStack(stack, player, Items.EXPERIENCE_BOTTLE.getDefaultStack());
     player.setStackInHand(hand, itemStack2);
-    maid.addExperience(-EXPERIENCE_BOTTLE_COST);
+    maid.addExperience(-LittleMaidEntity.getConfig().misc.experienceBottleCost);
     return ActionResult.success(maid.getWorld().isClient);
   }
 

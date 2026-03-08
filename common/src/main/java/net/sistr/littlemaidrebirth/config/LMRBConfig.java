@@ -21,6 +21,7 @@ public class LMRBConfig implements ConfigData {
   public static class Spawn {
     @ConfigEntry.Gui.RequiresRestart @ConfigEntry.Gui.Tooltip public boolean canNaturalSpawn = true;
     @ConfigEntry.Gui.Tooltip public boolean canDespawn = false;
+    @ConfigEntry.Gui.Tooltip public int spawnMinLightLevel = 8;
 
     @ConfigEntry.Gui.RequiresRestart @ConfigEntry.Gui.Tooltip
     public List<String> maidSpawnBiomeTags =
@@ -94,6 +95,7 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip public float pickupItemRange = 8.0f;
     @ConfigEntry.Gui.Tooltip public int pickupItemFrequency = 40;
     @ConfigEntry.Gui.RequiresRestart @ConfigEntry.Gui.Tooltip public float escapeSpeed = 1.2f;
+    @ConfigEntry.Gui.Tooltip public int pathRecalcInterval = 10;
   }
 
   @ConfigEntry.Category("work")
@@ -111,6 +113,11 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip public float archerShootVelocityFactor = 1.0f;
     @ConfigEntry.Gui.Tooltip public int torcherLightLevelThreshold = 7;
     @ConfigEntry.Gui.Tooltip public float searchContainerRange = 8.0f;
+    @ConfigEntry.Gui.Tooltip public float blockSearchDistance = 6.0f;
+    @ConfigEntry.Gui.Tooltip public int blockSearchMaxCount = 128;
+    @ConfigEntry.Gui.Tooltip public int blockSearchBudgetPerTick = 10;
+    @ConfigEntry.Gui.Tooltip public float torcherSearchMultiplier = 7.0f;
+    @ConfigEntry.Gui.Tooltip public int ripperSearchInterval = 40;
   }
 
   @ConfigEntry.Category("contract")
@@ -151,6 +158,7 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip public int maxAccelerationStack = 8;
     @ConfigEntry.Gui.Tooltip public int accelerationTicksPerStack = 80;
     @ConfigEntry.Gui.Tooltip public int accelerationMultiple = 2;
+    @ConfigEntry.Gui.Tooltip public int experienceBottleCost = 7;
   }
 
   @ConfigEntry.Category("target")
@@ -159,6 +167,10 @@ public class LMRBConfig implements ConfigData {
   public Target target = new Target();
 
   public static class Target {
+    // 敵検出範囲（Attribute。既存エンティティには適用されず、新規スポーン時のみ反映）
+    @ConfigEntry.Gui.RequiresRestart @ConfigEntry.Gui.Tooltip public double followRange = 48.0;
+    @ConfigEntry.Gui.Tooltip public int targetingInterval = 10;
+
     // 距離関連設定
     @ConfigEntry.Gui.Tooltip public int alertRange = 16; // 警戒範囲（敵検出・先制攻撃範囲）
     @ConfigEntry.Gui.Tooltip public int combatRange = 8; // 戦闘範囲（実際の戦闘行動範囲）

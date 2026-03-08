@@ -2,11 +2,12 @@ package net.sistr.littlemaidrebirth.entity.mode;
 
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 
 public abstract class AbstractFencerMode<T> extends AbstractBattleMode<T> {
-  protected int maxRecalcPathCool = 10;
+  protected int maxRecalcPathCool = LMRBMod.getConfig().movement.pathRecalcInterval;
   protected int recalcPathCool = 0;
   protected float speed;
 

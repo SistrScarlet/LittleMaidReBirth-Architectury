@@ -9,6 +9,7 @@ import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.passive.TameableEntity;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 public class FollowTameOwnerGoal<T extends TameableEntity> extends Goal {
@@ -82,7 +83,7 @@ public class FollowTameOwnerGoal<T extends TameableEntity> extends Goal {
     if (--this.updateCountdownTicks > 0) {
       return;
     }
-    this.updateCountdownTicks = getTickCount(10);
+    this.updateCountdownTicks = getTickCount(LMRBMod.getConfig().movement.pathRecalcInterval);
     this.navigation.startMovingTo(this.owner, this.speed.get());
   }
 }

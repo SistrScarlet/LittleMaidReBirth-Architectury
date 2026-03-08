@@ -45,4 +45,9 @@ public class TargetingConfig {
   public static int getAttackedByValidTicks() {
     return LMRBMod.getConfig().target.attackedByValidTicks;
   }
+
+  /** ターゲッティング再計算間隔(tick) */
+  public static int getTargetingInterval() {
+    return LMRBMod.getConfig().target.targetingInterval;
+  }
 }

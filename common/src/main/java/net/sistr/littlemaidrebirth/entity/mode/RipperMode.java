@@ -10,6 +10,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
@@ -34,7 +35,7 @@ public class RipperMode extends Mode {
     if (0 < cool--) {
       return false;
     }
-    cool = 40;
+    cool = LMRBMod.getConfig().work.ripperSearchInterval;
     this.shearable.addAll(findCanShearableMob());
     return !this.shearable.isEmpty();
   }
@@ -92,7 +93,7 @@ public class RipperMode extends Mode {
       return;
     }
     if (--this.timeToRecalcPath <= 0) {
-      this.timeToRecalcPath = 10;
+      this.timeToRecalcPath = LMRBMod.getConfig().movement.pathRecalcInterval;
       var path =
           this.mob.getNavigation().findPathTo(target.getX(), target.getY(), target.getZ(), 1);
       if (path == null

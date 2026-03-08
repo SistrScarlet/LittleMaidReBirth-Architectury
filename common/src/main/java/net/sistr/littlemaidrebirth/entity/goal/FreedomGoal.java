@@ -6,6 +6,7 @@ import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
 import net.minecraft.entity.ai.pathing.Path;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
+import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
@@ -56,7 +57,7 @@ public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal
     if (0 < --reCalcCool) {
       return;
     }
-    reCalcCool = getTickCount(20);
+    reCalcCool = getTickCount(LMRBMod.getConfig().movement.pathRecalcInterval * 2);
     // freedomPosを目指して移動
     Path path =
         mob.getNavigation()

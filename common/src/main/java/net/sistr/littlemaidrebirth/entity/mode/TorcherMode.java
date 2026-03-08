@@ -63,12 +63,12 @@ public class TorcherMode extends Mode {
       }
       SearchCondition condition =
           SearchCondition.forMob(mob, basePos).maxDistance(distance).build();
-      int maxCount = MathHelper.floor(distance * distance * 7);
+      int maxCount =
+          MathHelper.floor(distance * distance * LMRBMod.getConfig().work.torcherSearchMultiplier);
       blockSearch =
           new BlockSearch(basePos, pos -> isDark(pos) && isPlaceable(pos), condition, maxCount);
     }
-    // 毎tick 10ブロック探索
-    blockSearch.tick(10);
+    blockSearch.tick(LMRBMod.getConfig().work.blockSearchBudgetPerTick);
     placePos = blockSearch.getResult().orElse(null);
     return placePos != null;
   }
@@ -118,7 +118,7 @@ public class TorcherMode extends Mode {
     // 手の届く範囲でない場合、近づく
     if (3 * 3 < distanceSq) {
       if (--recalcPathTimer < 0) {
-        recalcPathTimer = 20;
+        recalcPathTimer = LMRBMod.getConfig().movement.pathRecalcInterval * 2;
         Path path =
             this.mob
                 .getNavigation()

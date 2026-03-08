@@ -221,15 +221,14 @@ public class LittleMaidEntity extends TameableEntity
             .add(EntityAttributes.GENERIC_ATTACK_DAMAGE)
             .add(EntityAttributes.GENERIC_ATTACK_SPEED)
             .add(EntityAttributes.GENERIC_LUCK)
-            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, 48.0D);
+            .add(EntityAttributes.GENERIC_FOLLOW_RANGE, LMRBMod.getConfig().target.followRange);
     ReachAttributeUtil.addAttribute(builder);
     return builder;
   }
 
-  // todo コンフィグでスポーン条件を設定可能にする
   public static boolean isValidNaturalSpawn(WorldAccess world, BlockPos pos) {
     return world.getBlockState(pos.down()).isFullCube(world, pos)
-        && world.getBaseLightLevel(pos, 0) > 8;
+        && world.getBaseLightLevel(pos, 0) > LMRBMod.getConfig().spawn.spawnMinLightLevel;
   }
 
   // 登録メソッドたち
