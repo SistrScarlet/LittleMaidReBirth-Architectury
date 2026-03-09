@@ -34,135 +34,138 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class MixinServerPlayerEntity extends MixinPlayerEntity implements MaidManager {
-  @Shadow
-  public abstract ServerWorld getServerWorld();
+    @Shadow
+    public abstract ServerWorld getServerWorld();
 
-  @Unique private final MaidManager maidManager = new MaidManagerImpl();
+    @Unique private final MaidManager maidManager = new MaidManagerImpl();
 
-  protected MixinServerPlayerEntity(EntityType<? extends LivingEntity> entityType, World world) {
-    super(entityType, world);
-  }
-
-  @Inject(method = "copyFrom", at = @At("RETURN"))
-  public void onCopy(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
-    // ターゲットタグ
-    var thisSync = this.getTargetTagsSync();
-    var oldSync = ((TargetTagManager) oldPlayer).getTargetTagsSync();
-    thisSync.syncFrom(oldSync);
-
-    // メイドさん管理
-    migrateWorldMaidSoulState();
-    this.checkMaidUnload();
-    var nbt = new NbtCompound();
-    ((MaidManager) oldPlayer).writeMaidManager(oldPlayer.writeNbt(nbt));
-    this.readMaidManager(nbt);
-  }
-
-  @Inject(method = "trySleep", at = @At("RETURN"))
-  public void onTrySleep(
-      BlockPos pos, CallbackInfoReturnable<Either<PlayerEntity.SleepFailureReason, Unit>> cir) {
-    if (this.isSleeping()) {
-      getAroundTamedSoundPlayable().forEach(e -> e.play(LMSounds.GOOD_NIGHT));
+    protected MixinServerPlayerEntity(EntityType<? extends LivingEntity> entityType, World world) {
+        super(entityType, world);
     }
-  }
 
-  @Inject(method = "wakeUp", at = @At("RETURN"))
-  public void onWakeUp(boolean bl, boolean updateSleepingPlayers, CallbackInfo ci) {
-    if (!bl && !updateSleepingPlayers) {
-      getAroundTamedSoundPlayable().forEach(s -> s.play(LMSounds.GOOD_MORNING));
+    @Inject(method = "copyFrom", at = @At("RETURN"))
+    public void onCopy(ServerPlayerEntity oldPlayer, boolean alive, CallbackInfo ci) {
+        // ターゲットタグ
+        var thisSync = this.getTargetTagsSync();
+        var oldSync = ((TargetTagManager) oldPlayer).getTargetTagsSync();
+        thisSync.syncFrom(oldSync);
+
+        // メイドさん管理
+        migrateWorldMaidSoulState();
+        this.checkMaidUnload();
+        var nbt = new NbtCompound();
+        ((MaidManager) oldPlayer).writeMaidManager(oldPlayer.writeNbt(nbt));
+        this.readMaidManager(nbt);
     }
-  }
 
-  private Stream<SoundPlayable> getAroundTamedSoundPlayable() {
-    return this.getWorld()
-        .getOtherEntities(
-            this,
-            this.getBoundingBox().expand(8),
-            e ->
-                e instanceof Tameable tameable
-                    && TameableUtil.getTameOwnerUuid(tameable)
-                        .filter(id -> id.equals(this.getUuid()))
-                        .isPresent()
-                    && e instanceof SoundPlayable)
-        .stream()
-        .map(e -> (SoundPlayable) e)
-        .filter(
-            s ->
-                !(s instanceof LivingEntity)
-                    || (((LivingEntity) s).getMainHandStack().getItem() == Items.CLOCK
-                        || ((LivingEntity) s).getOffHandStack().getItem() == Items.CLOCK));
-  }
-
-  @Inject(method = "readCustomDataFromNbt", at = @At("RETURN"))
-  private void onReadSP(NbtCompound nbt, CallbackInfo ci) {
-    this.readMaidManager(nbt);
-    migrateWorldMaidSoulState();
-  }
-
-  @Inject(method = "writeCustomDataToNbt", at = @At("RETURN"))
-  private void onWriteSP(NbtCompound nbt, CallbackInfo ci) {
-    this.checkMaidUnload();
-    this.writeMaidManager(nbt);
-  }
-
-  @Inject(method = "tick", at = @At("HEAD"))
-  private void onTick(CallbackInfo ci) {
-    if (this.getRandom().nextInt(20) == 0) {
-      this.checkMaidUnload();
+    @Inject(method = "trySleep", at = @At("RETURN"))
+    public void onTrySleep(
+            BlockPos pos,
+            CallbackInfoReturnable<Either<PlayerEntity.SleepFailureReason, Unit>> cir) {
+        if (this.isSleeping()) {
+            getAroundTamedSoundPlayable().forEach(e -> e.play(LMSounds.GOOD_NIGHT));
+        }
     }
-  }
 
-  /** メイドソウルをワールド管理からプレイヤー管理に移行する */
-  @Unique
-  private void migrateWorldMaidSoulState() {
-    WorldMaidSoulState worldMaidSoulState =
-        WorldMaidSoulState.getWorldMaidSoulState(getServerWorld());
-    worldMaidSoulState.get(this.getUuid()).forEach(this.maidManager::registerMaid);
-    worldMaidSoulState.remove(this.getUuid());
-  }
+    @Inject(method = "wakeUp", at = @At("RETURN"))
+    public void onWakeUp(boolean bl, boolean updateSleepingPlayers, CallbackInfo ci) {
+        if (!bl && !updateSleepingPlayers) {
+            getAroundTamedSoundPlayable().forEach(s -> s.play(LMSounds.GOOD_MORNING));
+        }
+    }
 
-  @Override
-  public void registerMaid(MaidSoulEntity soul) {
-    this.maidManager.registerMaid(soul);
-  }
+    private Stream<SoundPlayable> getAroundTamedSoundPlayable() {
+        return this.getWorld()
+                .getOtherEntities(
+                        this,
+                        this.getBoundingBox().expand(8),
+                        e ->
+                                e instanceof Tameable tameable
+                                        && TameableUtil.getTameOwnerUuid(tameable)
+                                                .filter(id -> id.equals(this.getUuid()))
+                                                .isPresent()
+                                        && e instanceof SoundPlayable)
+                .stream()
+                .map(e -> (SoundPlayable) e)
+                .filter(
+                        s ->
+                                !(s instanceof LivingEntity)
+                                        || (((LivingEntity) s).getMainHandStack().getItem()
+                                                        == Items.CLOCK
+                                                || ((LivingEntity) s).getOffHandStack().getItem()
+                                                        == Items.CLOCK));
+    }
 
-  @Override
-  public void registerMaid(LittleMaidEntity maid) {
-    this.maidManager.registerMaid(maid);
-  }
+    @Inject(method = "readCustomDataFromNbt", at = @At("RETURN"))
+    private void onReadSP(NbtCompound nbt, CallbackInfo ci) {
+        this.readMaidManager(nbt);
+        migrateWorldMaidSoulState();
+    }
 
-  @Override
-  public void registerMaid(MaidSoul soul) {
-    this.maidManager.registerMaid(soul);
-  }
+    @Inject(method = "writeCustomDataToNbt", at = @At("RETURN"))
+    private void onWriteSP(NbtCompound nbt, CallbackInfo ci) {
+        this.checkMaidUnload();
+        this.writeMaidManager(nbt);
+    }
 
-  @Override
-  public List<MaidManager.LMInfo> getMaidList() {
-    return this.maidManager.getMaidList();
-  }
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void onTick(CallbackInfo ci) {
+        if (this.getRandom().nextInt(20) == 0) {
+            this.checkMaidUnload();
+        }
+    }
 
-  @Override
-  public void writeMaidManager(NbtCompound nbt) {
-    this.maidManager.writeMaidManager(nbt);
-  }
+    /** メイドソウルをワールド管理からプレイヤー管理に移行する */
+    @Unique
+    private void migrateWorldMaidSoulState() {
+        WorldMaidSoulState worldMaidSoulState =
+                WorldMaidSoulState.getWorldMaidSoulState(getServerWorld());
+        worldMaidSoulState.get(this.getUuid()).forEach(this.maidManager::registerMaid);
+        worldMaidSoulState.remove(this.getUuid());
+    }
 
-  @Override
-  public void readMaidManager(NbtCompound nbt) {
-    this.maidManager.readMaidManager(nbt);
-  }
+    @Override
+    public void registerMaid(MaidSoulEntity soul) {
+        this.maidManager.registerMaid(soul);
+    }
 
-  @Override
-  public List<MaidSoul> getMaidSouls() {
-    return this.maidManager.getMaidSouls();
-  }
+    @Override
+    public void registerMaid(LittleMaidEntity maid) {
+        this.maidManager.registerMaid(maid);
+    }
 
-  @Override
-  public void clearMaidSouls() {
-    this.maidManager.clearMaidSouls();
-  }
+    @Override
+    public void registerMaid(MaidSoul soul) {
+        this.maidManager.registerMaid(soul);
+    }
 
-  @Override
-  public void checkMaidUnload() {
-    this.maidManager.checkMaidUnload();
-  }
+    @Override
+    public List<MaidManager.LMInfo> getMaidList() {
+        return this.maidManager.getMaidList();
+    }
+
+    @Override
+    public void writeMaidManager(NbtCompound nbt) {
+        this.maidManager.writeMaidManager(nbt);
+    }
+
+    @Override
+    public void readMaidManager(NbtCompound nbt) {
+        this.maidManager.readMaidManager(nbt);
+    }
+
+    @Override
+    public List<MaidSoul> getMaidSouls() {
+        return this.maidManager.getMaidSouls();
+    }
+
+    @Override
+    public void clearMaidSouls() {
+        this.maidManager.clearMaidSouls();
+    }
+
+    @Override
+    public void checkMaidUnload() {
+        this.maidManager.checkMaidUnload();
+    }
 }

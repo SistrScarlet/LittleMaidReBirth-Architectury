@@ -10,77 +10,77 @@ import net.minecraft.server.world.ServerWorld;
 
 public class TameableUtil {
 
-  /** テイム仲間（ご主人・同オーナーのテイム済みモブ・テイム済みモブ全般）かどうかを判定する */
-  public static boolean isFriend(Tameable self, LivingEntity target) {
-    if (target instanceof Tameable tameable && hasTameOwner(tameable)) {
-      return true;
+    /** テイム仲間（ご主人・同オーナーのテイム済みモブ・テイム済みモブ全般）かどうかを判定する */
+    public static boolean isFriend(Tameable self, LivingEntity target) {
+        if (target instanceof Tameable tameable && hasTameOwner(tameable)) {
+            return true;
+        }
+        if (hasTameOwner(self) && target instanceof PlayerEntity) {
+            return true;
+        }
+        return isTameOwner(self, target)
+                || (target instanceof Tameable tameable && equalTameOwner(self, tameable));
     }
-    if (hasTameOwner(self) && target instanceof PlayerEntity) {
-      return true;
+
+    /** テイムしたご主人を返す 同じワールドに存在しない場合、emptyで返す */
+    public static Optional<LivingEntity> getTameOwner(Tameable tameable) {
+        return Optional.ofNullable(tameable.getOwner());
     }
-    return isTameOwner(self, target)
-        || (target instanceof Tameable tameable && equalTameOwner(self, tameable));
-  }
 
-  /** テイムしたご主人を返す 同じワールドに存在しない場合、emptyで返す */
-  public static Optional<LivingEntity> getTameOwner(Tameable tameable) {
-    return Optional.ofNullable(tameable.getOwner());
-  }
-
-  /** テイムしたご主人をワールド横断で検索する。まず同ワールドを探し、居なければ別ディメンションを検索する。 オフラインの場合はemptyで返す。 */
-  public static Optional<LivingEntity> getCrossWorldTameOwner(
-      ServerWorld world, Tameable tameable) {
-    LivingEntity owner = tameable.getOwner();
-    if (owner != null) {
-      return Optional.of(owner);
+    /** テイムしたご主人をワールド横断で検索する。まず同ワールドを探し、居なければ別ディメンションを検索する。 オフラインの場合はemptyで返す。 */
+    public static Optional<LivingEntity> getCrossWorldTameOwner(
+            ServerWorld world, Tameable tameable) {
+        LivingEntity owner = tameable.getOwner();
+        if (owner != null) {
+            return Optional.of(owner);
+        }
+        UUID uuid = tameable.getOwnerUuid();
+        if (uuid == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(world.getServer().getPlayerManager().getPlayer(uuid));
     }
-    UUID uuid = tameable.getOwnerUuid();
-    if (uuid == null) {
-      return Optional.empty();
+
+    /** テイムしたご主人のUUIDをセットする テイムしたことになる */
+    public static void setTameOwnerUuid(TameableEntity tameable, UUID id) {
+        tameable.setOwnerUuid(id);
     }
-    return Optional.ofNullable(world.getServer().getPlayerManager().getPlayer(uuid));
-  }
 
-  /** テイムしたご主人のUUIDをセットする テイムしたことになる */
-  public static void setTameOwnerUuid(TameableEntity tameable, UUID id) {
-    tameable.setOwnerUuid(id);
-  }
-
-  /** テイムしたご主人のUUIDを返す 存在しない場合、emptyで返す */
-  public static Optional<UUID> getTameOwnerUuid(Tameable tameable) {
-    return Optional.ofNullable(tameable.getOwnerUuid());
-  }
-
-  /** テイムしたご主人が居るならtrueを返す ご主人がワールドに居るかどうかは関係ない */
-  public static boolean hasTameOwner(Tameable tameable) {
-    return getTameOwnerUuid(tameable).isPresent();
-  }
-
-  /** 待機中であるか否かを返す */
-  public static boolean isWait(TameableEntity tameable) {
-    return tameable.isSitting();
-  }
-
-  /** 待機状態をセットする */
-  public static void setWait(TameableEntity tameable, boolean isWait) {
-    tameable.setSitting(isWait);
-  }
-
-  public static void switchWait(TameableEntity tameable) {
-    tameable.setSitting(!tameable.isSitting());
-  }
-
-  /** ご主人が同じならtrue ご主人を持っていない場合はfalse */
-  public static boolean equalTameOwner(Tameable a, Tameable b) {
-    var aOwner = getTameOwner(a);
-    var bOwner = getTameOwner(b);
-    if (aOwner.isEmpty() || bOwner.isEmpty()) {
-      return false;
+    /** テイムしたご主人のUUIDを返す 存在しない場合、emptyで返す */
+    public static Optional<UUID> getTameOwnerUuid(Tameable tameable) {
+        return Optional.ofNullable(tameable.getOwnerUuid());
     }
-    return aOwner.get().equals(bOwner.get());
-  }
 
-  public static boolean isTameOwner(Tameable tameable, LivingEntity entity) {
-    return entity.getUuid().equals(tameable.getOwnerUuid());
-  }
+    /** テイムしたご主人が居るならtrueを返す ご主人がワールドに居るかどうかは関係ない */
+    public static boolean hasTameOwner(Tameable tameable) {
+        return getTameOwnerUuid(tameable).isPresent();
+    }
+
+    /** 待機中であるか否かを返す */
+    public static boolean isWait(TameableEntity tameable) {
+        return tameable.isSitting();
+    }
+
+    /** 待機状態をセットする */
+    public static void setWait(TameableEntity tameable, boolean isWait) {
+        tameable.setSitting(isWait);
+    }
+
+    public static void switchWait(TameableEntity tameable) {
+        tameable.setSitting(!tameable.isSitting());
+    }
+
+    /** ご主人が同じならtrue ご主人を持っていない場合はfalse */
+    public static boolean equalTameOwner(Tameable a, Tameable b) {
+        var aOwner = getTameOwner(a);
+        var bOwner = getTameOwner(b);
+        if (aOwner.isEmpty() || bOwner.isEmpty()) {
+            return false;
+        }
+        return aOwner.get().equals(bOwner.get());
+    }
+
+    public static boolean isTameOwner(Tameable tameable, LivingEntity entity) {
+        return entity.getUuid().equals(tameable.getOwnerUuid());
+    }
 }

@@ -8,44 +8,44 @@ import net.sistr.littlemaidrebirth.api.mode.Mode;
 import net.sistr.littlemaidrebirth.api.mode.ModeType;
 
 public abstract class AbstractBattleMode<T> extends Mode {
-  protected final MobEntity mob;
-  protected LivingEntity target;
-  protected ItemStack weaponStack;
-  protected T weapon;
+    protected final MobEntity mob;
+    protected LivingEntity target;
+    protected ItemStack weaponStack;
+    protected T weapon;
 
-  protected AbstractBattleMode(MobEntity mob, ModeType<? extends Mode> modeType, String name) {
-    super(modeType, name);
-    this.mob = mob;
-  }
-
-  public boolean shouldExecute() {
-    if (this.mob.getTarget() == null || !this.mob.getTarget().isAlive()) {
-      return false;
-    }
-    this.target = this.mob.getTarget();
-
-    var main = this.mob.getMainHandStack();
-    if (isWeapon(main)) {
-      this.weaponStack = main;
-      this.weapon = getWeaponInstance(main).orElseThrow();
-      return true;
+    protected AbstractBattleMode(MobEntity mob, ModeType<? extends Mode> modeType, String name) {
+        super(modeType, name);
+        this.mob = mob;
     }
 
-    return false;
-  }
+    public boolean shouldExecute() {
+        if (this.mob.getTarget() == null || !this.mob.getTarget().isAlive()) {
+            return false;
+        }
+        this.target = this.mob.getTarget();
 
-  public boolean shouldContinueExecuting() {
-    return this.shouldExecute();
-  }
+        var main = this.mob.getMainHandStack();
+        if (isWeapon(main)) {
+            this.weaponStack = main;
+            this.weapon = getWeaponInstance(main).orElseThrow();
+            return true;
+        }
 
-  @Override
-  public boolean isBattleMode() {
-    return true;
-  }
+        return false;
+    }
 
-  protected boolean isWeapon(ItemStack stack) {
-    return getWeaponInstance(stack).isPresent();
-  }
+    public boolean shouldContinueExecuting() {
+        return this.shouldExecute();
+    }
 
-  protected abstract Optional<T> getWeaponInstance(ItemStack stack);
+    @Override
+    public boolean isBattleMode() {
+        return true;
+    }
+
+    protected boolean isWeapon(ItemStack stack) {
+        return getWeaponInstance(stack).isPresent();
+    }
+
+    protected abstract Optional<T> getWeaponInstance(ItemStack stack);
 }

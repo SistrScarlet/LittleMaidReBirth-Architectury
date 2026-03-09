@@ -6,7 +6,7 @@ import net.minecraft.recipe.RecipeType;
 /** Mixin Accessor */
 public interface AbstractFurnaceAccessor {
 
-  RecipeType<? extends AbstractCookingRecipe> getRecipeType_LM();
+    RecipeType<? extends AbstractCookingRecipe> getRecipeType_LM();
 
-  boolean isBurningFire_LM();
+    boolean isBurningFire_LM();
 }

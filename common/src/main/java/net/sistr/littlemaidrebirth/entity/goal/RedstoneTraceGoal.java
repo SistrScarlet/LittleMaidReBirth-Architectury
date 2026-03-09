@@ -20,100 +20,106 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 // todo この状態では自由行動の起点が最後に検知した赤石動力付近に再設定されます。
 // todo 処理の再実装
 public class RedstoneTraceGoal extends Goal {
-  protected final LittleMaidEntity mob;
-  protected final Supplier<Float> speed;
-  protected final List<BlockPos> aroundSignalPos = Lists.newArrayList();
-  protected int recalcTimer;
+    protected final LittleMaidEntity mob;
+    protected final Supplier<Float> speed;
+    protected final List<BlockPos> aroundSignalPos = Lists.newArrayList();
+    protected int recalcTimer;
 
-  public RedstoneTraceGoal(LittleMaidEntity mob, Supplier<Float> speed) {
-    this.mob = mob;
-    this.speed = speed;
-    this.setControls(EnumSet.of(Control.LOOK, Control.MOVE));
-  }
-
-  @Override
-  public boolean canStart() {
-    if (!TameableUtil.hasTameOwner(this.mob)) {
-      return false;
+    public RedstoneTraceGoal(LittleMaidEntity mob, Supplier<Float> speed) {
+        this.mob = mob;
+        this.speed = speed;
+        this.setControls(EnumSet.of(Control.LOOK, Control.MOVE));
     }
 
-    // 実行に失敗した場合、遅延される
-    if (0 < recalcTimer) {
-      recalcTimer--;
-      return false;
+    @Override
+    public boolean canStart() {
+        if (!TameableUtil.hasTameOwner(this.mob)) {
+            return false;
+        }
+
+        // 実行に失敗した場合、遅延される
+        if (0 < recalcTimer) {
+            recalcTimer--;
+            return false;
+        }
+        if (TameableUtil.isWait(mob)
+                || mob.getMovingMode() != MovingMode.TRACER
+                || !this.mob.getNavigation().isIdle()) {
+            return false;
+        }
+        this.aroundSignalPos.clear();
+        getAroundSignalPoses()
+                // 現在位置にあるposは除外する。ただし高度は無視
+                // getBlockPos()で判定してもいいが、実装的に動作しない場合があり得るので安全のためこちらに
+                .filter(
+                        pos ->
+                                MathHelper.floor(this.mob.getX()) != pos.getX()
+                                        || MathHelper.floor(this.mob.getZ()) != pos.getZ())
+                .forEach(this.aroundSignalPos::add);
+        // このタイマーは実行完了時にリセットされる
+        // そのため、連続実行時は遅延無し
+        recalcTimer = getTickCount(LMRBMod.getConfig().movement.pathRecalcInterval * 2);
+        return !this.aroundSignalPos.isEmpty();
     }
-    if (TameableUtil.isWait(mob)
-        || mob.getMovingMode() != MovingMode.TRACER
-        || !this.mob.getNavigation().isIdle()) {
-      return false;
+
+    @Override
+    public boolean shouldContinue() {
+        return !TameableUtil.isWait(mob)
+                && mob.getMovingMode() == MovingMode.TRACER
+                && !this.mob.getNavigation().isIdle();
     }
-    this.aroundSignalPos.clear();
-    getAroundSignalPoses()
-        // 現在位置にあるposは除外する。ただし高度は無視
-        // getBlockPos()で判定してもいいが、実装的に動作しない場合があり得るので安全のためこちらに
-        .filter(
-            pos ->
-                MathHelper.floor(this.mob.getX()) != pos.getX()
-                    || MathHelper.floor(this.mob.getZ()) != pos.getZ())
-        .forEach(this.aroundSignalPos::add);
-    // このタイマーは実行完了時にリセットされる
-    // そのため、連続実行時は遅延無し
-    recalcTimer = getTickCount(LMRBMod.getConfig().movement.pathRecalcInterval * 2);
-    return !this.aroundSignalPos.isEmpty();
-  }
 
-  @Override
-  public boolean shouldContinue() {
-    return !TameableUtil.isWait(mob)
-        && mob.getMovingMode() == MovingMode.TRACER
-        && !this.mob.getNavigation().isIdle();
-  }
+    @Override
+    public void start() {
+        this.aroundSignalPos.stream()
+                .min(
+                        Comparator.comparingDouble(
+                                pos ->
+                                        // 左55度を0として時計回りに一周回し、角度が浅いposを取る
+                                        // あと高度が高い位置を優先して取る
+                                        -MathHelper.subtractAngles(getRelYaw(pos), 55f)
+                                                + 180f
+                                                - pos.getY()))
+                .ifPresent(
+                        pos -> {
+                            var navigation = this.mob.getNavigation();
+                            if (!navigation.startMovingAlong(
+                                    navigation.findPathTo(pos, 0), this.speed.get())) {
+                                navigation.stop();
+                            }
+                        });
+    }
 
-  @Override
-  public void start() {
-    this.aroundSignalPos.stream()
-        .min(
-            Comparator.comparingDouble(
-                pos ->
-                    // 左55度を0として時計回りに一周回し、角度が浅いposを取る
-                    // あと高度が高い位置を優先して取る
-                    -MathHelper.subtractAngles(getRelYaw(pos), 55f) + 180f - pos.getY()))
-        .ifPresent(
-            pos -> {
-              var navigation = this.mob.getNavigation();
-              if (!navigation.startMovingAlong(navigation.findPathTo(pos, 0), this.speed.get())) {
-                navigation.stop();
-              }
-            });
-  }
+    @Override
+    public void stop() {
+        this.recalcTimer = 0;
+    }
 
-  @Override
-  public void stop() {
-    this.recalcTimer = 0;
-  }
+    protected Stream<BlockPos> getAroundSignalPoses() {
+        int horizon = LMRBMod.getConfig().movement.tracerHorizonRange;
+        int vertical = LMRBMod.getConfig().movement.tracerVerticalRange;
+        return BlockPos.stream(
+                        this.mob.getBlockPos().add(horizon, vertical, horizon),
+                        this.mob.getBlockPos().add(-horizon, -vertical, -horizon))
+                .map(BlockPos::toImmutable)
+                .filter(this::isEmitSignal);
+    }
 
-  protected Stream<BlockPos> getAroundSignalPoses() {
-    int horizon = LMRBMod.getConfig().movement.tracerHorizonRange;
-    int vertical = LMRBMod.getConfig().movement.tracerVerticalRange;
-    return BlockPos.stream(
-            this.mob.getBlockPos().add(horizon, vertical, horizon),
-            this.mob.getBlockPos().add(-horizon, -vertical, -horizon))
-        .map(BlockPos::toImmutable)
-        .filter(this::isEmitSignal);
-  }
+    protected boolean isEmitSignal(BlockPos pos) {
+        var state = mob.getWorld().getBlockState(pos);
+        return Arrays.stream(Direction.values())
+                .anyMatch(
+                        direction ->
+                                0
+                                        < state.getStrongRedstonePower(
+                                                this.mob.getWorld(), pos, direction));
+    }
 
-  protected boolean isEmitSignal(BlockPos pos) {
-    var state = mob.getWorld().getBlockState(pos);
-    return Arrays.stream(Direction.values())
-        .anyMatch(
-            direction -> 0 < state.getStrongRedstonePower(this.mob.getWorld(), pos, direction));
-  }
-
-  protected float getRelYaw(BlockPos pos) {
-    float x = (float) (pos.getX() + 0.5f - this.mob.getX());
-    float z = (float) (pos.getZ() + 0.5f - this.mob.getZ());
-    float yaw = (float) (-MathHelper.atan2(x, z) * (180 / Math.PI));
-    float mobYaw = this.mob.getYaw();
-    return MathHelper.subtractAngles(mobYaw, yaw);
-  }
+    protected float getRelYaw(BlockPos pos) {
+        float x = (float) (pos.getX() + 0.5f - this.mob.getX());
+        float z = (float) (pos.getZ() + 0.5f - this.mob.getZ());
+        float yaw = (float) (-MathHelper.atan2(x, z) * (180 / Math.PI));
+        float mobYaw = this.mob.getYaw();
+        return MathHelper.subtractAngles(mobYaw, yaw);
+    }
 }

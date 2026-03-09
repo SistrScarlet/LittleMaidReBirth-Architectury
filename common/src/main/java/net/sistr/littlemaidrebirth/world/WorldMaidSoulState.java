@@ -14,58 +14,61 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.MaidSoul;
 
 public class WorldMaidSoulState extends PersistentState {
-  private final Map<UUID, List<MaidSoul>> maidSoulsMap = Maps.newHashMap();
+    private final Map<UUID, List<MaidSoul>> maidSoulsMap = Maps.newHashMap();
 
-  public void add(UUID ownerId, MaidSoul maidSoul) {
-    maidSoulsMap.computeIfAbsent(ownerId, (id) -> Lists.newArrayList()).add(maidSoul);
-  }
-
-  public List<MaidSoul> get(UUID ownerId) {
-    return maidSoulsMap.computeIfAbsent(ownerId, id -> Lists.newArrayList());
-  }
-
-  public void remove(UUID ownerId) {
-    this.maidSoulsMap.remove(ownerId);
-  }
-
-  @Override
-  public NbtCompound writeNbt(NbtCompound nbt) {
-    var nbtEntries = new NbtList();
-    for (Map.Entry<UUID, List<MaidSoul>> entry : maidSoulsMap.entrySet()) {
-      var uuid = entry.getKey();
-      var list = entry.getValue();
-      var nbtEntry = new NbtCompound();
-      nbtEntry.putUuid("id", uuid);
-      var nbtMaidSouls = new NbtList();
-      for (MaidSoul maidSoul : list) {
-        nbtMaidSouls.add(maidSoul.getNbt());
-      }
-      nbtEntry.put("maidSouls", nbtMaidSouls);
-      nbtEntries.add(nbtEntry);
+    public void add(UUID ownerId, MaidSoul maidSoul) {
+        maidSoulsMap.computeIfAbsent(ownerId, (id) -> Lists.newArrayList()).add(maidSoul);
     }
-    nbt.put("maidSoulsEntries", nbtEntries);
-    return nbt;
-  }
 
-  public static WorldMaidSoulState createFromNbt(NbtCompound nbt) {
-    WorldMaidSoulState worldMaidSoulState = new WorldMaidSoulState();
-    var nbtEntries = nbt.getList("maidSoulsEntries", NbtElement.COMPOUND_TYPE);
-    for (NbtElement nbtEntry : nbtEntries) {
-      var id = ((NbtCompound) nbtEntry).getUuid("id");
-      var nbtMaidSouls = ((NbtCompound) nbtEntry).getList("maidSouls", NbtElement.COMPOUND_TYPE);
-      List<MaidSoul> maidSouls = Lists.newArrayList();
-      for (NbtElement nbtMaidSoul : nbtMaidSouls) {
-        maidSouls.add(MaidSoul.fromNbt((NbtCompound) nbtMaidSoul));
-      }
-      worldMaidSoulState.maidSoulsMap.put(id, maidSouls);
+    public List<MaidSoul> get(UUID ownerId) {
+        return maidSoulsMap.computeIfAbsent(ownerId, id -> Lists.newArrayList());
     }
-    return worldMaidSoulState;
-  }
 
-  public static WorldMaidSoulState getWorldMaidSoulState(ServerWorld world) {
-    var persistentStateManager = world.getPersistentStateManager();
+    public void remove(UUID ownerId) {
+        this.maidSoulsMap.remove(ownerId);
+    }
 
-    return persistentStateManager.getOrCreate(
-        WorldMaidSoulState::createFromNbt, WorldMaidSoulState::new, LMRBMod.MODID + "_maidsouls");
-  }
+    @Override
+    public NbtCompound writeNbt(NbtCompound nbt) {
+        var nbtEntries = new NbtList();
+        for (Map.Entry<UUID, List<MaidSoul>> entry : maidSoulsMap.entrySet()) {
+            var uuid = entry.getKey();
+            var list = entry.getValue();
+            var nbtEntry = new NbtCompound();
+            nbtEntry.putUuid("id", uuid);
+            var nbtMaidSouls = new NbtList();
+            for (MaidSoul maidSoul : list) {
+                nbtMaidSouls.add(maidSoul.getNbt());
+            }
+            nbtEntry.put("maidSouls", nbtMaidSouls);
+            nbtEntries.add(nbtEntry);
+        }
+        nbt.put("maidSoulsEntries", nbtEntries);
+        return nbt;
+    }
+
+    public static WorldMaidSoulState createFromNbt(NbtCompound nbt) {
+        WorldMaidSoulState worldMaidSoulState = new WorldMaidSoulState();
+        var nbtEntries = nbt.getList("maidSoulsEntries", NbtElement.COMPOUND_TYPE);
+        for (NbtElement nbtEntry : nbtEntries) {
+            var id = ((NbtCompound) nbtEntry).getUuid("id");
+            var nbtMaidSouls =
+                    ((NbtCompound) nbtEntry).getList("maidSouls", NbtElement.COMPOUND_TYPE);
+            List<MaidSoul> maidSouls = Lists.newArrayList();
+            for (NbtElement nbtMaidSoul : nbtMaidSouls) {
+                maidSouls.add(MaidSoul.fromNbt((NbtCompound) nbtMaidSoul));
+            }
+            worldMaidSoulState.maidSoulsMap.put(id, maidSouls);
+        }
+        return worldMaidSoulState;
+    }
+
+    public static WorldMaidSoulState getWorldMaidSoulState(ServerWorld world) {
+        var persistentStateManager = world.getPersistentStateManager();
+
+        return persistentStateManager.getOrCreate(
+                WorldMaidSoulState::createFromNbt,
+                WorldMaidSoulState::new,
+                LMRBMod.MODID + "_maidsouls");
+    }
 }

@@ -5,26 +5,26 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 
 public class LMTeleportTameOwnerGoal extends TeleportTameOwnerGoal<LittleMaidEntity> {
-  protected final LittleMaidEntity maid;
+    protected final LittleMaidEntity maid;
 
-  public LMTeleportTameOwnerGoal(LittleMaidEntity maid, Supplier<Float> teleportStart) {
-    super(maid, teleportStart);
-    this.maid = maid;
-  }
-
-  @Override
-  public boolean canStart() {
-    if (this.tameable.getMovingMode() != MovingMode.ESCORT) {
-      return false;
+    public LMTeleportTameOwnerGoal(LittleMaidEntity maid, Supplier<Float> teleportStart) {
+        super(maid, teleportStart);
+        this.maid = maid;
     }
-    return super.canStart();
-  }
 
-  @Override
-  public boolean shouldContinue() {
-    if (this.tameable.getMovingMode() != MovingMode.ESCORT) {
-      return false;
+    @Override
+    public boolean canStart() {
+        if (this.tameable.getMovingMode() != MovingMode.ESCORT) {
+            return false;
+        }
+        return super.canStart();
     }
-    return super.shouldContinue();
-  }
+
+    @Override
+    public boolean shouldContinue() {
+        if (this.tameable.getMovingMode() != MovingMode.ESCORT) {
+            return false;
+        }
+        return super.shouldContinue();
+    }
 }

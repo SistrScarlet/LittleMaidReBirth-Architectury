@@ -16,39 +16,39 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(ItemEntity.class)
 public abstract class MixinItemEntity extends Entity implements LMCollidable {
 
-  @Shadow
-  public abstract ItemStack getStack();
+    @Shadow
+    public abstract ItemStack getStack();
 
-  @Shadow private @Nullable UUID owner;
+    @Shadow private @Nullable UUID owner;
 
-  @Shadow
-  public abstract boolean cannotPickup();
+    @Shadow
+    public abstract boolean cannotPickup();
 
-  public MixinItemEntity(EntityType<?> type, World world) {
-    super(type, world);
-  }
-
-  @Override
-  public void onCollision_LMRB(LittleMaidEntity maid) {
-    if (this.getWorld().isClient) {
-      return;
+    public MixinItemEntity(EntityType<?> type, World world) {
+        super(type, world);
     }
 
-    if (this.cannotPickup() || (this.owner != null && !this.owner.equals(maid.getUuid()))) {
-      return;
-    }
+    @Override
+    public void onCollision_LMRB(LittleMaidEntity maid) {
+        if (this.getWorld().isClient) {
+            return;
+        }
 
-    ItemStack stack = this.getStack();
-    int prevCount = stack.getCount();
+        if (this.cannotPickup() || (this.owner != null && !this.owner.equals(maid.getUuid()))) {
+            return;
+        }
 
-    stack = HopperBlockEntity.transfer(null, maid.getInventory(), stack, null);
-    if (stack.getCount() != prevCount) {
-      maid.sendPickup(this, prevCount);
-      if (stack.isEmpty()) {
-        this.discard();
-        stack.setCount(prevCount);
-      }
-      maid.triggerItemPickedUpByEntityCriteria((ItemEntity) (Object) this);
+        ItemStack stack = this.getStack();
+        int prevCount = stack.getCount();
+
+        stack = HopperBlockEntity.transfer(null, maid.getInventory(), stack, null);
+        if (stack.getCount() != prevCount) {
+            maid.sendPickup(this, prevCount);
+            if (stack.isEmpty()) {
+                this.discard();
+                stack.setCount(prevCount);
+            }
+            maid.triggerItemPickedUpByEntityCriteria((ItemEntity) (Object) this);
+        }
     }
-  }
 }

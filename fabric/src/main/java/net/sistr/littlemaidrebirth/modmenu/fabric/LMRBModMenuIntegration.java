@@ -6,9 +6,9 @@ import me.shedaniel.autoconfig.AutoConfig;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 
 public class LMRBModMenuIntegration implements ModMenuApi {
-  @Override
-  public ConfigScreenFactory<?> getModConfigScreenFactory() {
-    // return LMRBClothConfigBuilder::getConfigScreen;
-    return parent -> AutoConfig.getConfigScreen(LMRBConfig.class, parent).get();
-  }
+    @Override
+    public ConfigScreenFactory<?> getModConfigScreenFactory() {
+        // return LMRBClothConfigBuilder::getConfigScreen;
+        return parent -> AutoConfig.getConfigScreen(LMRBConfig.class, parent).get();
+    }
 }

@@ -16,66 +16,68 @@ import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 
 // ドロップアイテムに向かうGoal
 public abstract class MoveToDropItemGoal extends Goal {
-  private final PathAwareEntity mob;
-  private final Supplier<Float> range;
-  private final Supplier<Integer> frequency;
-  private final Supplier<Float> speed;
+    private final PathAwareEntity mob;
+    private final Supplier<Float> range;
+    private final Supplier<Integer> frequency;
+    private final Supplier<Float> speed;
 
-  public MoveToDropItemGoal(
-      PathAwareEntity mob,
-      Supplier<Float> range,
-      Supplier<Integer> frequency,
-      Supplier<Float> speed) {
-    this.mob = mob;
-    this.range = range;
-    this.frequency = frequency;
-    this.speed = speed;
-    setControls(EnumSet.of(Control.MOVE, Control.LOOK));
-  }
-
-  @Override
-  public boolean canStart() {
-    if (this.mob.getRandom().nextFloat() > 1.0f / this.getTickCount(frequency.get())
-        || isInventoryFull()) {
-      return false;
-    }
-    Stream<BlockPos> positions = findAroundDropItem().stream().map(Entity::getBlockPos);
-    Path path =
-        positions
-            .map(pos -> mob.getNavigation().findPathTo(pos, 0))
-            .filter(Objects::nonNull)
-            .filter(Path::reachesTarget)
-            .findAny()
-            .orElse(null);
-    if (path == null) {
-      return false;
+    public MoveToDropItemGoal(
+            PathAwareEntity mob,
+            Supplier<Float> range,
+            Supplier<Integer> frequency,
+            Supplier<Float> speed) {
+        this.mob = mob;
+        this.range = range;
+        this.frequency = frequency;
+        this.speed = speed;
+        setControls(EnumSet.of(Control.MOVE, Control.LOOK));
     }
 
-    mob.getNavigation().startMovingAlong(path, speed.get());
-    return true;
-  }
+    @Override
+    public boolean canStart() {
+        if (this.mob.getRandom().nextFloat() > 1.0f / this.getTickCount(frequency.get())
+                || isInventoryFull()) {
+            return false;
+        }
+        Stream<BlockPos> positions = findAroundDropItem().stream().map(Entity::getBlockPos);
+        Path path =
+                positions
+                        .map(pos -> mob.getNavigation().findPathTo(pos, 0))
+                        .filter(Objects::nonNull)
+                        .filter(Path::reachesTarget)
+                        .findAny()
+                        .orElse(null);
+        if (path == null) {
+            return false;
+        }
 
-  @Override
-  public void start() {
-    super.start();
-    if (mob instanceof SoundPlayable) {
-      ((SoundPlayable) mob).play(LMSounds.FIND_TARGET_I);
+        mob.getNavigation().startMovingAlong(path, speed.get());
+        return true;
     }
-  }
 
-  @Override
-  public boolean shouldContinue() {
-    return !mob.getNavigation().isIdle();
-  }
+    @Override
+    public void start() {
+        super.start();
+        if (mob instanceof SoundPlayable) {
+            ((SoundPlayable) mob).play(LMSounds.FIND_TARGET_I);
+        }
+    }
 
-  public abstract boolean isInventoryFull();
+    @Override
+    public boolean shouldContinue() {
+        return !mob.getNavigation().isIdle();
+    }
 
-  public List<ItemEntity> findAroundDropItem() {
-    float range = this.range.get();
-    return mob.getWorld()
-        .getEntitiesByClass(
-            ItemEntity.class,
-            mob.getBoundingBox().expand(range, range / 4f, range),
-            item -> !item.cannotPickup() && item.squaredDistanceTo(mob) < range * range);
-  }
+    public abstract boolean isInventoryFull();
+
+    public List<ItemEntity> findAroundDropItem() {
+        float range = this.range.get();
+        return mob.getWorld()
+                .getEntitiesByClass(
+                        ItemEntity.class,
+                        mob.getBoundingBox().expand(range, range / 4f, range),
+                        item ->
+                                !item.cannotPickup()
+                                        && item.squaredDistanceTo(mob) < range * range);
+    }
 }

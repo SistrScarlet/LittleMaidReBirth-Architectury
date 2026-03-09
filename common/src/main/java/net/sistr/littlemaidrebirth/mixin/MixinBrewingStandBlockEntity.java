@@ -8,17 +8,17 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(BrewingStandBlockEntity.class)
 public abstract class MixinBrewingStandBlockEntity implements BrewingStandAccessor {
 
-  @Shadow int brewTime;
+    @Shadow int brewTime;
 
-  @Shadow int fuel;
+    @Shadow int fuel;
 
-  @Override
-  public int getBrewTime_LM() {
-    return this.brewTime;
-  }
+    @Override
+    public int getBrewTime_LM() {
+        return this.brewTime;
+    }
 
-  @Override
-  public int getFuel_LM() {
-    return this.fuel;
-  }
+    @Override
+    public int getFuel_LM() {
+        return this.fuel;
+    }
 }

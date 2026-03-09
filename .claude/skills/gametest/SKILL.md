@@ -15,6 +15,25 @@ description: |
 
 Minecraft 1.17+ に組み込まれた GameTest Framework を使って、mod の機能をゲーム内で自動テストするためのテストケースを作成する。Fabric と Forge で API が異なるため、両方に対応する。
 
+## プロジェクト固有情報
+
+このスキルと同じディレクトリにある `PROJECT.md` にプロジェクト固有の情報がある。
+テスト作成時は **必ず PROJECT.md を読んでから作業を開始**すること。
+
+PROJECT.md には以下が記載される:
+- modid
+- 既存ストラクチャー一覧（名前、サイズ、用途、templateName）
+- テストクラスのパスと委譲パターン
+- プロジェクト固有のヘルパークラス・メソッド
+- 既知の注意事項
+
+テスト作成中に新たなプロジェクト固有の知見を得た場合は、PROJECT.md に追記・更新すること。
+
+## セットアップ
+
+GameTest の Gradle 設定・エントリポイント登録・初回実行手順は `SETUP.md` を参照。
+プロジェクトに GameTest を新規導入する場合は、まず SETUP.md の手順に従うこと。
+
 ## テストクラスの書き方
 
 ### Fabric
@@ -77,19 +96,7 @@ public class MyModForgeGameTests {
 
 ## ストラクチャーファイル
 
-### 既存ストラクチャー
-
-| ID | サイズ | 用途 | Fabric templateName | Forge templateName |
-|----|--------|------|--------------------|--------------------|
-| `small_floor` | 8x4x8 石床 | デフォルト（ほとんどのテスト） | `"littlemaidrebirth:small_floor"` | `"small_floor"` |
-| `floor` | 21x4x21 石床 | 広い空間が必要（追従・テレポート） | `"littlemaidrebirth:floor"` | `"floor"` |
-| `archer_arena` | 8x4x8 石床+ガラス壁+フェンス仕切り | 射撃テスト | `"littlemaidrebirth:archer_arena"` | `"archer_arena"` |
-
-各テストクラスで `SMALL_FLOOR` / `FLOOR` として定数定義済み。
-
-**重要**: `EMPTY_STRUCTURE`（床なし）は使わない。エンティティが落下して `clearArea()` の範囲外に残り、次回テスト起動時に UUID 重複警告が出る。
-
-### ストラクチャーの配置先
+### 配置先
 
 ストラクチャーは **common / fabric / forge の3箇所に同一ファイルを配置**する必要がある:
 
@@ -108,18 +115,18 @@ nbt.py スクリプト（`.claude/skills/gametest/scripts/nbt.py`）で生成:
 ```bash
 S=.claude/skills/gametest/scripts/nbt.py
 # 空間作成（8x4x8）
-python3 $S create data/modid/structures/cooking_test.nbt 8 4 8
+python3 $S create data/modid/structures/my_test.nbt 8 4 8
 # 床を石で敷く
-python3 $S fill data/modid/structures/cooking_test.nbt 0 0 0 7 0 7 stone
-# かまど設置
-python3 $S set data/modid/structures/cooking_test.nbt 3 1 3 furnace facing=north
+python3 $S fill data/modid/structures/my_test.nbt 0 0 0 7 0 7 stone
+# ブロック設置
+python3 $S set data/modid/structures/my_test.nbt 3 1 3 furnace facing=north
 # 確認
-python3 $S info data/modid/structures/cooking_test.nbt
+python3 $S info data/modid/structures/my_test.nbt
 ```
 
-nbt.py がない場合、このスキルの `scripts/nbt.py` をプロジェクトにコピーして使用する。
-
 **重要**: nbt.py は整数値を常に TAG_INT で書き込む。Forge は `.nbt`（GZip 圧縮バイナリ）のみ読み込む。
+
+**重要**: `EMPTY_STRUCTURE`（床なし）は使わない。エンティティが落下して `clearArea()` の範囲外に残り、次回テスト起動時に UUID 重複警告が出る。床付きストラクチャーを使うこと。
 
 ## TestContext の主要メソッド（Yarn マッピング）
 
@@ -180,30 +187,24 @@ Fabric と Forge で `@GameTest` の定義が異なる。
 
 ## FakePlayer
 
-テストでプレイヤーが必要な場合は `GameTestHelper` を使用する。
+テストでプレイヤーが必要な場合は FakePlayer を使用する。
 
 ### 基本（ワールド登録なし）
 
 `interactMob()` 等でプレイヤーを直接渡す場合はワールド登録不要:
 
 ```java
-var player = GameTestHelper.createFakePlayer(context.getWorld(), "test-owner");
+// FakePlayer の作成方法はプロジェクトにより異なる。PROJECT.md を参照。
+var player = createFakePlayer(context.getWorld(), "test-player");
 ```
 
 ### ワールド登録あり
 
-`getTameOwner()` 等、ワールドからプレイヤーを検索する処理が必要な場合:
+ワールドからプレイヤーを検索する処理（例: `getTameOwner()`）が必要な場合は、
+ワールドの players リストに登録する必要がある。
 
-```java
-// LMRBCommonTests のヘルパー
-var player = createWorldPlayer(context, "test-owner"); // 内部で registerPlayerInWorld を呼ぶ
-// ... テストロジック ...
-cleanupWorldPlayers(player); // complete() の前に必ず呼ぶ
-context.complete();
-```
-
-- `registerPlayerInWorld` → `ServerWorld.onPlayerConnected(player)` でワールドの players リストに登録
-- `removePlayerFromWorld` → `Entity.remove(RemovalReason.DISCARDED)` でワールドから削除
+- 登録: `ServerWorld.onPlayerConnected(player)`
+- 削除: `Entity.remove(RemovalReason.DISCARDED)`
 - **クリーンアップは必須**: GameTest の `clearArea()` は PlayerEntity を除外するため、FakePlayer は明示的に削除しないとワールドに残り続ける
 
 ### 非同期テストでのクリーンアップ
@@ -214,8 +215,8 @@ context.complete();
 context.addInstantFinalTask(() -> {
     // 検証
     context.assertTrue(condition, "msg");
-    // クリーンアップ
-    cleanupWorldPlayers(player);
+    // クリーンアップ（ワールド登録した場合は必須）
+    removeFakePlayer(player);
 });
 ```
 
@@ -230,11 +231,7 @@ context.addInstantFinalTask(() -> {
 
 ## 既知の注意事項
 
-- テストログ: `fabric/build/gametest/logs/latest.log` で失敗詳細を確認
-- AI動作テスト（モード作業・格納等）: エンティティ・ブロックは y=2 に配置（y=1 は SMALL_FLOOR の床と同じ高さ）
 - AI依存の flaky テスト: `@GameTest(maxAttempts = 3)` を指定
 - Forge の `runGameTestServer` はテスト完了後にサーバーが停止しない問題がある（1.20.1 確認）
 - テスト名は小文字に正規化される
 - Forge は `.nbt`（GZip 圧縮バイナリ）のみ読み込む。`.snbt`（テキスト）は読み込まれない
-- 死亡→魂生成等、ワールドの tick が必要なテストは `tickLimit = 200` を設定する
-- FakePlayer のネットワーク系処理は no-op（パケット送信不可）、`startRiding()` は常に false

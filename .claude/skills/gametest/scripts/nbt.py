@@ -264,7 +264,10 @@ def _write_compound(f, data):
 
 # ---- Structure Builder ----
 
-DATA_VERSION = 3465  # 1.20.1
+# DataVersion for structure files.
+# Update this to match your Minecraft version.
+# Examples: 1.20.1 = 3465, 1.20.4 = 3700, 1.21 = 3953
+DATA_VERSION = 3465
 
 
 def _parse_block_arg(args):

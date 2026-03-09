@@ -24,8 +24,8 @@ TOOLS_DIR="$PROJECT_ROOT/.claude/tools"
 CS_CONFIG="$PROJECT_ROOT/config/checkstyle/checkstyle.xml"
 
 # .claude/tools/ 内から JAR を検索（バージョン非依存）
-GJF_JAR=$(compgen -G "$TOOLS_DIR/google-java-format-*-all-deps.jar" | head -1)
-CS_JAR=$(compgen -G "$TOOLS_DIR/checkstyle-*-all.jar" | head -1)
+GJF_JAR=$(compgen -G "$TOOLS_DIR/google-java-format-*-all-deps.jar" | sort -V | tail -1)
+CS_JAR=$(compgen -G "$TOOLS_DIR/checkstyle-*-all.jar" | sort -V | tail -1)
 
 # 1. google-java-format で整形 (--replace でインプレース)
 if [[ -n "$GJF_JAR" && -f "$GJF_JAR" ]]; then

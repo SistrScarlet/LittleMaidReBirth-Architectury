@@ -24,42 +24,42 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(CandleCakeBlock.class)
 public abstract class MixinCandleCakeBlock {
 
-  @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
-  private void onUseInjection(
-      BlockState state,
-      World world,
-      BlockPos pos,
-      PlayerEntity player,
-      Hand hand,
-      BlockHitResult hit,
-      CallbackInfoReturnable<ActionResult> cir) {
-    ItemStack itemStack = player.getStackInHand(hand);
-    // 着火するときを取得できなさそうだったので、手動で判定
-    // クライアントでは動かない
-    if ((itemStack.getItem() instanceof FlintAndSteelItem
-            || itemStack.getItem() instanceof FireChargeItem
-            || itemStack.isIn(ItemTags.CREEPER_IGNITERS))
-        && CandleCakeBlock.canBeLit(state)
-        && LMRB$getAroundAlterComponentBlocks(world, pos) >= 4
-        && world instanceof ServerWorld serverWorld) {
-      if (MaidResurrection.resurrect(serverWorld, pos, player)) {
-        cir.setReturnValue(ActionResult.SUCCESS);
-      }
+    @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
+    private void onUseInjection(
+            BlockState state,
+            World world,
+            BlockPos pos,
+            PlayerEntity player,
+            Hand hand,
+            BlockHitResult hit,
+            CallbackInfoReturnable<ActionResult> cir) {
+        ItemStack itemStack = player.getStackInHand(hand);
+        // 着火するときを取得できなさそうだったので、手動で判定
+        // クライアントでは動かない
+        if ((itemStack.getItem() instanceof FlintAndSteelItem
+                        || itemStack.getItem() instanceof FireChargeItem
+                        || itemStack.isIn(ItemTags.CREEPER_IGNITERS))
+                && CandleCakeBlock.canBeLit(state)
+                && LMRB$getAroundAlterComponentBlocks(world, pos) >= 4
+                && world instanceof ServerWorld serverWorld) {
+            if (MaidResurrection.resurrect(serverWorld, pos, player)) {
+                cir.setReturnValue(ActionResult.SUCCESS);
+            }
+        }
     }
-  }
 
-  @Unique
-  private static int LMRB$getAroundAlterComponentBlocks(World world, BlockPos center) {
-    int num = 0;
-    for (int i = 0; i < 9; i++) {
-      if (i == 4) {
-        continue;
-      }
-      var blockState = world.getBlockState(center.add((i % 3) - 1, 0, (i / 3) - 1));
-      if (blockState.isIn(LMTags.Blocks.MAID_ALTER_COMPONENT_BLOCKS)) {
-        num++;
-      }
+    @Unique
+    private static int LMRB$getAroundAlterComponentBlocks(World world, BlockPos center) {
+        int num = 0;
+        for (int i = 0; i < 9; i++) {
+            if (i == 4) {
+                continue;
+            }
+            var blockState = world.getBlockState(center.add((i % 3) - 1, 0, (i / 3) - 1));
+            if (blockState.isIn(LMTags.Blocks.MAID_ALTER_COMPONENT_BLOCKS)) {
+                num++;
+            }
+        }
+        return num;
     }
-    return num;
-  }
 }

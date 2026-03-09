@@ -59,7 +59,7 @@ allprojects {
     spotless {
         java {
             target "src/*/java/**/*.java"
-            googleJavaFormat("1.17.0")
+            googleJavaFormat("1.17.0").style("AOSP")
             removeUnusedImports()
             trimTrailingWhitespace()
             endWithNewline()

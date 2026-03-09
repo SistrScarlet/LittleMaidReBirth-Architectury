@@ -105,3 +105,6 @@ uv.lock
 /.claude/agent-memory-local/
 /.claude/tools/
 .factorypath
+.claude/tools/
+.claude/agent-memory-local/
+.claude/settings.local.json

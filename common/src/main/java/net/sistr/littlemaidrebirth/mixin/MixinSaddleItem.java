@@ -13,15 +13,15 @@ import org.spongepowered.asm.mixin.Mixin;
 @Mixin(SaddleItem.class)
 public class MixinSaddleItem extends Item {
 
-  public MixinSaddleItem(Settings settings) {
-    super(settings);
-  }
-
-  @Override
-  public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-    if (user.getPassengerList().stream().anyMatch(e -> e instanceof LittleMaidEntity)) {
-      user.removeAllPassengers();
+    public MixinSaddleItem(Settings settings) {
+        super(settings);
     }
-    return super.use(world, user, hand);
-  }
+
+    @Override
+    public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
+        if (user.getPassengerList().stream().anyMatch(e -> e instanceof LittleMaidEntity)) {
+            user.removeAllPassengers();
+        }
+        return super.use(world, user, hand);
+    }
 }

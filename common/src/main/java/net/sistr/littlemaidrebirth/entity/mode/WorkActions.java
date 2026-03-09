@@ -1,7 +1,7 @@
 package net.sistr.littlemaidrebirth.entity.mode;
 
 public interface WorkActions {
-  void pickupAction();
+    void pickupAction();
 
-  void playSoundIfReady(String sound);
+    void playSoundIfReady(String sound);
 }

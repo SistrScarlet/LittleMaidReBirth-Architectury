@@ -4,62 +4,62 @@ import net.minecraft.nbt.NbtCompound;
 
 /** MobのAIモードのクラス */
 public abstract class Mode {
-  private final ModeType<? extends Mode> modeType;
-  private final String name;
+    private final ModeType<? extends Mode> modeType;
+    private final String name;
 
-  protected Mode(ModeType<? extends Mode> modeType, String name) {
-    this.modeType = modeType;
-    this.name = name;
-  }
+    protected Mode(ModeType<? extends Mode> modeType, String name) {
+        this.modeType = modeType;
+        this.name = name;
+    }
 
-  /** モード開始時(切り替わった時)に一度だけ処理 */
-  public void startModeTask() {}
+    /** モード開始時(切り替わった時)に一度だけ処理 */
+    public void startModeTask() {}
 
-  /** 処理を開始すべきか */
-  public abstract boolean shouldExecute();
+    /** 処理を開始すべきか */
+    public abstract boolean shouldExecute();
 
-  /** 処理を続行すべきか */
-  public abstract boolean shouldContinueExecuting();
+    /** 処理を続行すべきか */
+    public abstract boolean shouldContinueExecuting();
 
-  /** 処理開始時に一回だけ処理 */
-  public void startExecuting() {}
+    /** 処理開始時に一回だけ処理 */
+    public void startExecuting() {}
 
-  /** 毎tick処理 */
-  public void tick() {}
+    /** 毎tick処理 */
+    public void tick() {}
 
-  /** 処理終了時に一回だけ処理 */
-  public void resetTask() {}
+    /** 処理終了時に一回だけ処理 */
+    public void resetTask() {}
 
-  /** モード終了時(切り替わった時)に一回だけ処理 */
-  public void endModeTask() {}
+    /** モード終了時(切り替わった時)に一回だけ処理 */
+    public void endModeTask() {}
 
-  /** ワールド保存時に処理 */
-  public void writeModeData(NbtCompound nbt) {}
+    /** ワールド保存時に処理 */
+    public void writeModeData(NbtCompound nbt) {}
 
-  /** ワールド読み込み時に処理 */
-  public void readModeData(NbtCompound nbt) {}
+    /** ワールド読み込み時に処理 */
+    public void readModeData(NbtCompound nbt) {}
 
-  /** モード名表示用 */
-  public final String getName() {
-    return name;
-  }
+    /** モード名表示用 */
+    public final String getName() {
+        return name;
+    }
 
-  /** モードタイプ取得 */
-  public final ModeType<? extends Mode> getModeType() {
-    return modeType;
-  }
+    /** モードタイプ取得 */
+    public final ModeType<? extends Mode> getModeType() {
+        return modeType;
+    }
 
-  public boolean isBattleMode() {
-    return false;
-  }
+    public boolean isBattleMode() {
+        return false;
+    }
 
-  public BattleModeType getBattleModeType() {
-    return isBattleMode() ? BattleModeType.SWORD : BattleModeType.NONE;
-  }
+    public BattleModeType getBattleModeType() {
+        return isBattleMode() ? BattleModeType.SWORD : BattleModeType.NONE;
+    }
 
-  public enum BattleModeType {
-    NONE,
-    SWORD,
-    BOW
-  }
+    public enum BattleModeType {
+        NONE,
+        SWORD,
+        BOW
+    }
 }

@@ -23,72 +23,72 @@ import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 
 public class OpenTargetTagScreenPacket {
-  public static final Identifier ID = new Identifier(LMRBMod.MODID, "open_target_tag_screen");
+    public static final Identifier ID = new Identifier(LMRBMod.MODID, "open_target_tag_screen");
 
-  public static <T extends Entity & TargetTagManager> void sendS2CPacket(
-      T entity, PlayerEntity player) {
-    PacketByteBuf buf = createS2CPacket(entity, player);
-    NetworkManager.sendToPlayer((ServerPlayerEntity) player, ID, buf);
-  }
-
-  public static <T extends Entity & TargetTagManager> PacketByteBuf createS2CPacket(
-      T entity, PlayerEntity player) {
-    NbtCompound nbt = new NbtCompound();
-    entity.writeTargetTags(nbt);
-
-    PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-    buf.writeVarInt(entity.getId());
-    buf.writeNbt(nbt);
-    return buf;
-  }
-
-  @Environment(EnvType.CLIENT)
-  public static void sendC2SPacket(Entity entity) {
-    PacketByteBuf buf = createC2SPacket(entity);
-    NetworkManager.sendToServer(ID, buf);
-  }
-
-  public static PacketByteBuf createC2SPacket(Entity entity) {
-    PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-    buf.writeVarInt(entity.getId());
-    return buf;
-  }
-
-  @Environment(EnvType.CLIENT)
-  public static void receiveS2CPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
-    PlayerEntity player = context.getPlayer();
-    if (player == null) return;
-    int id = buf.readVarInt();
-    NbtCompound nbt = buf.readNbt();
-    context.queue(() -> openScreen(id, nbt, player));
-  }
-
-  @Environment(EnvType.CLIENT)
-  private static void openScreen(int id, NbtCompound nbt, PlayerEntity player) {
-    Entity entity = player.getWorld().getEntityById(id);
-    if (!(entity instanceof TargetTagManager)) {
-      return;
+    public static <T extends Entity & TargetTagManager> void sendS2CPacket(
+            T entity, PlayerEntity player) {
+        PacketByteBuf buf = createS2CPacket(entity, player);
+        NetworkManager.sendToPlayer((ServerPlayerEntity) player, ID, buf);
     }
-    Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> targetTagMap = new HashMap<>();
-    TargetTagManagerImpl.read(targetTagMap, nbt);
 
-    MinecraftClient.getInstance().setScreen(new TargetTagScreen(entity, targetTagMap));
-  }
+    public static <T extends Entity & TargetTagManager> PacketByteBuf createS2CPacket(
+            T entity, PlayerEntity player) {
+        NbtCompound nbt = new NbtCompound();
+        entity.writeTargetTags(nbt);
 
-  private static <T extends Entity & TargetTagManager> void openScreen(
-      int id, PlayerEntity player) {
-    Entity entity = player.getWorld().getEntityById(id);
-    if (!(entity instanceof TargetTagManager)
-        || (entity instanceof TameableEntity
-            && !player.getUuid().equals(((TameableEntity) entity).getOwnerUuid()))) {
-      return;
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        buf.writeVarInt(entity.getId());
+        buf.writeNbt(nbt);
+        return buf;
     }
-    //noinspection unchecked
-    sendS2CPacket((T) entity, player);
-  }
 
-  public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
-    int id = buf.readVarInt();
-    context.queue(() -> openScreen(id, context.getPlayer()));
-  }
+    @Environment(EnvType.CLIENT)
+    public static void sendC2SPacket(Entity entity) {
+        PacketByteBuf buf = createC2SPacket(entity);
+        NetworkManager.sendToServer(ID, buf);
+    }
+
+    public static PacketByteBuf createC2SPacket(Entity entity) {
+        PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
+        buf.writeVarInt(entity.getId());
+        return buf;
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static void receiveS2CPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) return;
+        int id = buf.readVarInt();
+        NbtCompound nbt = buf.readNbt();
+        context.queue(() -> openScreen(id, nbt, player));
+    }
+
+    @Environment(EnvType.CLIENT)
+    private static void openScreen(int id, NbtCompound nbt, PlayerEntity player) {
+        Entity entity = player.getWorld().getEntityById(id);
+        if (!(entity instanceof TargetTagManager)) {
+            return;
+        }
+        Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> targetTagMap = new HashMap<>();
+        TargetTagManagerImpl.read(targetTagMap, nbt);
+
+        MinecraftClient.getInstance().setScreen(new TargetTagScreen(entity, targetTagMap));
+    }
+
+    private static <T extends Entity & TargetTagManager> void openScreen(
+            int id, PlayerEntity player) {
+        Entity entity = player.getWorld().getEntityById(id);
+        if (!(entity instanceof TargetTagManager)
+                || (entity instanceof TameableEntity
+                        && !player.getUuid().equals(((TameableEntity) entity).getOwnerUuid()))) {
+            return;
+        }
+        //noinspection unchecked
+        sendS2CPacket((T) entity, player);
+    }
+
+    public static void receiveC2SPacket(PacketByteBuf buf, NetworkManager.PacketContext context) {
+        int id = buf.readVarInt();
+        context.queue(() -> openScreen(id, context.getPlayer()));
+    }
 }

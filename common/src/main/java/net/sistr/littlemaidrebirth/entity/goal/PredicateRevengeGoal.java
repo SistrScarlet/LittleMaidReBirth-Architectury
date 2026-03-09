@@ -6,16 +6,16 @@ import net.minecraft.entity.ai.goal.RevengeGoal;
 import net.minecraft.entity.mob.PathAwareEntity;
 
 public class PredicateRevengeGoal extends RevengeGoal {
-  protected final Predicate<LivingEntity> target;
+    protected final Predicate<LivingEntity> target;
 
-  public PredicateRevengeGoal(
-      PathAwareEntity mob, Predicate<LivingEntity> target, Class<?>... noRevengeTypes) {
-    super(mob, noRevengeTypes);
-    this.target = target;
-  }
+    public PredicateRevengeGoal(
+            PathAwareEntity mob, Predicate<LivingEntity> target, Class<?>... noRevengeTypes) {
+        super(mob, noRevengeTypes);
+        this.target = target;
+    }
 
-  @Override
-  public boolean canStart() {
-    return super.canStart() && target.test(this.mob.getAttacker());
-  }
+    @Override
+    public boolean canStart() {
+        return super.canStart() && target.test(this.mob.getAttacker());
+    }
 }

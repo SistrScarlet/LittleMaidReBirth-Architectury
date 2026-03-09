@@ -5,19 +5,19 @@ import java.util.Set;
 import net.minecraft.nbt.NbtCompound;
 
 public interface TargetTagManager {
-  Set<TargetingSystem.TargetTag> getTargetTag(TargetIdentifier id);
+    Set<TargetingSystem.TargetTag> getTargetTag(TargetIdentifier id);
 
-  void writeTargetTags(NbtCompound nbt);
+    void writeTargetTags(NbtCompound nbt);
 
-  void readTargetTags(NbtCompound nbt);
+    void readTargetTags(NbtCompound nbt);
 
-  Sync getTargetTagsSync();
+    Sync getTargetTagsSync();
 
-  interface Sync {
-    int hash();
+    interface Sync {
+        int hash();
 
-    Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> getData();
+        Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> getData();
 
-    void syncFrom(Sync source);
-  }
+        void syncFrom(Sync source);
+    }
 }

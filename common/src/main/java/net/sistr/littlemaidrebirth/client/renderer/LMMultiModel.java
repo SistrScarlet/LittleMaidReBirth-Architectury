@@ -16,86 +16,92 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 /** LM専用に拡張 */
 public class LMMultiModel<T extends LittleMaidEntity> extends MultiModel<T>
-    implements ModelWithHead {
-  private T entity;
-  private final ModelPart modelPart = new ModelPart(ImmutableList.of(), ImmutableMap.of());
+        implements ModelWithHead {
+    private T entity;
+    private final ModelPart modelPart = new ModelPart(ImmutableList.of(), ImmutableMap.of());
 
-  @Override
-  public void animateModel(T entity, float limbAngle, float limbDistance, float tickDelta) {
-    this.entity = entity;
-    super.animateModel(entity, limbAngle, limbDistance, tickDelta);
-  }
-
-  @Override
-  public void setAngles(
-      T entity,
-      float limbAngle,
-      float limbDistance,
-      float animationProgress,
-      float headYaw,
-      float headPitch) {
-    this.entity = entity;
-    super.setAngles(entity, limbAngle, limbDistance, animationProgress, headYaw, headPitch);
-  }
-
-  @Override
-  public void render(
-      MatrixStack matrices,
-      VertexConsumer vertices,
-      int light,
-      int overlay,
-      float red,
-      float green,
-      float blue,
-      float alpha) {
-    if (this.entity == null) {
-      return;
+    @Override
+    public void animateModel(T entity, float limbAngle, float limbDistance, float tickDelta) {
+        this.entity = entity;
+        super.animateModel(entity, limbAngle, limbDistance, tickDelta);
     }
-    if (this.entity.isAcceleration()) {
-      float percent =
-          MathHelper.clamp(
-              (float) this.entity.getAccelerationTicks()
-                  / (LMRBMod.getConfig().misc.accelerationTicksPerStack
-                      * LMRBMod.getConfig().misc.maxAccelerationStack),
-              0,
-              1);
-      green -= 0.4f * percent + 0.1f;
-      blue -= 0.4f * percent + 0.1f;
-    }
-    super.render(matrices, vertices, light, overlay, red, green, blue, alpha);
-  }
 
-  @Override
-  public ModelPart getHead() {
-    if (this.entity == null) {
-      return this.modelPart;
+    @Override
+    public void setAngles(
+            T entity,
+            float limbAngle,
+            float limbDistance,
+            float animationProgress,
+            float headYaw,
+            float headPitch) {
+        this.entity = entity;
+        super.setAngles(entity, limbAngle, limbDistance, animationProgress, headYaw, headPitch);
     }
-    this.entity
-        .getModel(IHasMultiModel.Layer.SKIN, IHasMultiModel.Part.HEAD)
-        .filter(model -> model instanceof ModelLittleMaidBase)
-        .map(model -> (ModelLittleMaidBase) model)
-        .ifPresent(
-            model -> {
-              modelPart.pivotX = 0;
-              modelPart.pivotY = 0;
-              modelPart.pivotZ = 0;
-              modelPart.roll = 0;
-              modelPart.yaw = 0;
-              modelPart.pitch = 0;
-              ModelRenderer modelRenderer = model.bipedHead;
-              while (modelRenderer != null) {
-                modelPart.pivotX +=
-                    (modelRenderer.rotationPointX + modelRenderer.offsetX * 16.0f) * 0.9375F;
-                modelPart.pivotY +=
-                    (modelRenderer.rotationPointY + modelRenderer.offsetY * 16.0f) * 0.9375F;
-                modelPart.pivotZ +=
-                    (modelRenderer.rotationPointZ + modelRenderer.offsetZ * 16.0f) * 0.9375F;
-                modelPart.roll += modelRenderer.rotateAngleZ;
-                modelPart.yaw += modelRenderer.rotateAngleY;
-                modelPart.pitch += modelRenderer.rotateAngleX;
-                modelRenderer = modelRenderer.pearent;
-              }
-            });
-    return modelPart;
-  }
+
+    @Override
+    public void render(
+            MatrixStack matrices,
+            VertexConsumer vertices,
+            int light,
+            int overlay,
+            float red,
+            float green,
+            float blue,
+            float alpha) {
+        if (this.entity == null) {
+            return;
+        }
+        if (this.entity.isAcceleration()) {
+            float percent =
+                    MathHelper.clamp(
+                            (float) this.entity.getAccelerationTicks()
+                                    / (LMRBMod.getConfig().misc.accelerationTicksPerStack
+                                            * LMRBMod.getConfig().misc.maxAccelerationStack),
+                            0,
+                            1);
+            green -= 0.4f * percent + 0.1f;
+            blue -= 0.4f * percent + 0.1f;
+        }
+        super.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+    }
+
+    @Override
+    public ModelPart getHead() {
+        if (this.entity == null) {
+            return this.modelPart;
+        }
+        this.entity
+                .getModel(IHasMultiModel.Layer.SKIN, IHasMultiModel.Part.HEAD)
+                .filter(model -> model instanceof ModelLittleMaidBase)
+                .map(model -> (ModelLittleMaidBase) model)
+                .ifPresent(
+                        model -> {
+                            modelPart.pivotX = 0;
+                            modelPart.pivotY = 0;
+                            modelPart.pivotZ = 0;
+                            modelPart.roll = 0;
+                            modelPart.yaw = 0;
+                            modelPart.pitch = 0;
+                            ModelRenderer modelRenderer = model.bipedHead;
+                            while (modelRenderer != null) {
+                                modelPart.pivotX +=
+                                        (modelRenderer.rotationPointX
+                                                        + modelRenderer.offsetX * 16.0f)
+                                                * 0.9375F;
+                                modelPart.pivotY +=
+                                        (modelRenderer.rotationPointY
+                                                        + modelRenderer.offsetY * 16.0f)
+                                                * 0.9375F;
+                                modelPart.pivotZ +=
+                                        (modelRenderer.rotationPointZ
+                                                        + modelRenderer.offsetZ * 16.0f)
+                                                * 0.9375F;
+                                modelPart.roll += modelRenderer.rotateAngleZ;
+                                modelPart.yaw += modelRenderer.rotateAngleY;
+                                modelPart.pitch += modelRenderer.rotateAngleX;
+                                modelRenderer = modelRenderer.pearent;
+                            }
+                        });
+        return modelPart;
+    }
 }

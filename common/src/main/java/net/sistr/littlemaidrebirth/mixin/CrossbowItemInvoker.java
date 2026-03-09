@@ -8,8 +8,8 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(CrossbowItem.class)
 public interface CrossbowItemInvoker {
 
-  @Invoker("getSpeed")
-  static float getSpeed(ItemStack stack) {
-    throw new AssertionError();
-  }
+    @Invoker("getSpeed")
+    static float getSpeed(ItemStack stack) {
+        throw new AssertionError();
+    }
 }

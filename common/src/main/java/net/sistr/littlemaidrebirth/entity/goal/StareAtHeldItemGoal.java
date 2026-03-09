@@ -9,38 +9,40 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 
 public class StareAtHeldItemGoal<T extends PathAwareEntity> extends Goal {
-  protected final T mob;
-  protected final Supplier<Float> stareAtRange;
-  protected final Predicate<ItemStack> targetItem;
-  protected PlayerEntity stareAt;
+    protected final T mob;
+    protected final Supplier<Float> stareAtRange;
+    protected final Predicate<ItemStack> targetItem;
+    protected PlayerEntity stareAt;
 
-  public StareAtHeldItemGoal(T mob, Supplier<Float> stareAtRange, Predicate<ItemStack> targetItem) {
-    this.mob = mob;
-    this.stareAtRange = stareAtRange;
-    this.targetItem = targetItem;
-    setControls(EnumSet.of(Control.LOOK));
-  }
-
-  @Override
-  public boolean canStart() {
-    stareAt = mob.getWorld().getClosestPlayer(mob, stareAtRange.get());
-    return stareAt != null && isHeldTargetItem(stareAt);
-  }
-
-  @Override
-  public boolean shouldContinue() {
-    return stareAt != null && stareAt.isAlive() && isHeldTargetItem(stareAt);
-  }
-
-  public boolean isHeldTargetItem(PlayerEntity player) {
-    return targetItem.test(player.getMainHandStack()) || targetItem.test(player.getOffHandStack());
-  }
-
-  @Override
-  public void tick() {
-    if (stareAt == null) {
-      return;
+    public StareAtHeldItemGoal(
+            T mob, Supplier<Float> stareAtRange, Predicate<ItemStack> targetItem) {
+        this.mob = mob;
+        this.stareAtRange = stareAtRange;
+        this.targetItem = targetItem;
+        setControls(EnumSet.of(Control.LOOK));
     }
-    mob.getLookControl().lookAt(stareAt, 30F, 30F);
-  }
+
+    @Override
+    public boolean canStart() {
+        stareAt = mob.getWorld().getClosestPlayer(mob, stareAtRange.get());
+        return stareAt != null && isHeldTargetItem(stareAt);
+    }
+
+    @Override
+    public boolean shouldContinue() {
+        return stareAt != null && stareAt.isAlive() && isHeldTargetItem(stareAt);
+    }
+
+    public boolean isHeldTargetItem(PlayerEntity player) {
+        return targetItem.test(player.getMainHandStack())
+                || targetItem.test(player.getOffHandStack());
+    }
+
+    @Override
+    public void tick() {
+        if (stareAt == null) {
+            return;
+        }
+        mob.getLookControl().lookAt(stareAt, 30F, 30F);
+    }
 }

@@ -8,7 +8,7 @@ import net.minecraftforge.common.util.FakePlayerFactory;
 
 public class GameTestHelperImpl {
 
-  public static ServerPlayerEntity createFakePlayer(ServerWorld world, String name) {
-    return FakePlayerFactory.get(world, new GameProfile(UUID.randomUUID(), name));
-  }
+    public static ServerPlayerEntity createFakePlayer(ServerWorld world, String name) {
+        return FakePlayerFactory.get(world, new GameProfile(UUID.randomUUID(), name));
+    }
 }

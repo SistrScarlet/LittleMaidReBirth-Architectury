@@ -9,16 +9,16 @@ import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(RangedWeaponItem.class)
 public abstract class MixinRangedWeaponItem implements IRangedWeapon {
-  @Shadow
-  public abstract int getRange();
+    @Shadow
+    public abstract int getRange();
 
-  @Override
-  public float getMaxRange_LMRB(ItemStack stack, LivingEntity user) {
-    return getRange();
-  }
+    @Override
+    public float getMaxRange_LMRB(ItemStack stack, LivingEntity user) {
+        return getRange();
+    }
 
-  @Override
-  public int getInterval_LMRB(ItemStack stack, LivingEntity user) {
-    return 20;
-  }
+    @Override
+    public int getInterval_LMRB(ItemStack stack, LivingEntity user) {
+        return 20;
+    }
 }

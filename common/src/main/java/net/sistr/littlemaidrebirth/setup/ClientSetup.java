@@ -6,9 +6,9 @@ import net.sistr.littlemaidrebirth.client.screen.LittleMaidScreen;
 
 public class ClientSetup {
 
-  public static void init() {
-    MenuRegistry.registerScreenFactory(
-        Registration.LITTLE_MAID_SCREEN_HANDLER.get(), LittleMaidScreen::new);
-    LMKeys.init();
-  }
+    public static void init() {
+        MenuRegistry.registerScreenFactory(
+                Registration.LITTLE_MAID_SCREEN_HANDLER.get(), LittleMaidScreen::new);
+        LMKeys.init();
+    }
 }

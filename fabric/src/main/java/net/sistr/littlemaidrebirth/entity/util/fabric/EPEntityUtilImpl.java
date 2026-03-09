@@ -6,12 +6,12 @@ import net.minecraft.item.BowItem;
 import net.minecraft.item.ItemStack;
 
 public class EPEntityUtilImpl {
-  public static PersistentProjectileEntity arrowCustomHook(
-      BowItem bowItem, PersistentProjectileEntity projectile) {
-    return projectile;
-  }
+    public static PersistentProjectileEntity arrowCustomHook(
+            BowItem bowItem, PersistentProjectileEntity projectile) {
+        return projectile;
+    }
 
-  public static ItemStack arrowCustomHook(LivingEntity user, ItemStack weapon, ItemStack arrow) {
-    return arrow;
-  }
+    public static ItemStack arrowCustomHook(LivingEntity user, ItemStack weapon, ItemStack arrow) {
+        return arrow;
+    }
 }

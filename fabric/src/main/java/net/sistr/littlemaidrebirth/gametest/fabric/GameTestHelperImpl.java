@@ -8,7 +8,7 @@ import net.minecraft.server.world.ServerWorld;
 
 public class GameTestHelperImpl {
 
-  public static ServerPlayerEntity createFakePlayer(ServerWorld world, String name) {
-    return FakePlayer.get(world, new GameProfile(UUID.randomUUID(), name));
-  }
+    public static ServerPlayerEntity createFakePlayer(ServerWorld world, String name) {
+        return FakePlayer.get(world, new GameProfile(UUID.randomUUID(), name));
+    }
 }

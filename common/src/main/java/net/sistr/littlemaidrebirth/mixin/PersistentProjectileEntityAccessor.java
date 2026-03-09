@@ -9,9 +9,9 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 @Mixin(PersistentProjectileEntity.class)
 public interface PersistentProjectileEntityAccessor {
 
-  @Invoker("asItemStack")
-  ItemStack invokeAsItemStack();
+    @Invoker("asItemStack")
+    ItemStack invokeAsItemStack();
 
-  @Accessor
-  boolean getInGround();
+    @Accessor
+    boolean getInGround();
 }

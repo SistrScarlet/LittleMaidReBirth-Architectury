@@ -8,19 +8,19 @@ import net.minecraft.world.World;
 
 public interface WorkStrategy<T extends BlockEntity> {
 
-  Optional<T> getBlockEntity(World world, BlockPos pos);
+    Optional<T> getBlockEntity(World world, BlockPos pos);
 
-  boolean hasRequiredItems(Inventory inventory, World world);
+    boolean hasRequiredItems(Inventory inventory, World world);
 
-  boolean isUsableTarget(T blockEntity, Inventory inventory, World world);
+    boolean isUsableTarget(T blockEntity, Inventory inventory, World world);
 
-  boolean hasRemainingWork(T blockEntity);
+    boolean hasRemainingWork(T blockEntity);
 
-  boolean shouldContinueWork(T blockEntity, Inventory inventory, World world);
+    boolean shouldContinueWork(T blockEntity, Inventory inventory, World world);
 
-  void doWork(T blockEntity, Inventory inventory, World world, WorkActions actions);
+    void doWork(T blockEntity, Inventory inventory, World world, WorkActions actions);
 
-  void extractAll(T blockEntity, Inventory inventory, WorkActions actions);
+    void extractAll(T blockEntity, Inventory inventory, WorkActions actions);
 
-  String blockPosNbtKey();
+    String blockPosNbtKey();
 }
