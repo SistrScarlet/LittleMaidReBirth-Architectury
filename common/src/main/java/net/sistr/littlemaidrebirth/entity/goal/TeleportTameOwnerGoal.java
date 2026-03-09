@@ -1,6 +1,8 @@
 package net.sistr.littlemaidrebirth.entity.goal;
 
 import java.util.EnumSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -10,18 +12,22 @@ import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.mob.PathAwareEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
+import org.jetbrains.annotations.Nullable;
 
 public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends Goal {
   protected final T tameable;
   protected final World world;
   protected final Supplier<Float> teleportStartSq;
   private final EntityNavigation navigation;
-  private LivingEntity owner;
+  @Nullable private LivingEntity owner;
+  private boolean crossDimension;
   private int updateCountdownTicks;
 
   public TeleportTameOwnerGoal(T tameable, Supplier<Float> teleportStart) {
@@ -34,26 +40,58 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
 
   @Override
   public boolean canStart() {
+    // 同ディメンションの主人を検索
     LivingEntity tameOwner = TameableUtil.getTameOwner(this.tameable).orElse(null);
-    if (tameOwner == null) {
-      return false;
-    } else if (tameOwner.isSpectator()) {
-      return false;
-    } else if (this.tameable.squaredDistanceTo(tameOwner) < teleportStartSq.get()) {
-      return false;
-    } else {
+    if (tameOwner != null) {
+      if (tameOwner.isSpectator()) {
+        return false;
+      }
+      if (this.tameable.squaredDistanceTo(tameOwner) < teleportStartSq.get()) {
+        return false;
+      }
       this.owner = tameOwner;
+      this.crossDimension = false;
       return true;
     }
+    // 別ディメンションの主人を検索
+    ServerPlayerEntity crossOwner = findCrossDimensionOwner();
+    if (crossOwner == null || crossOwner.isSpectator()) {
+      return false;
+    }
+    this.owner = crossOwner;
+    this.crossDimension = true;
+    return true;
   }
 
   public boolean shouldContinue() {
+    // 同ディメンションに主人が居るか確認
     LivingEntity currentOwner = TameableUtil.getTameOwner(this.tameable).orElse(null);
-    if (currentOwner == null) {
+    if (currentOwner != null) {
+      this.owner = currentOwner;
+      this.crossDimension = false;
+      return teleportStartSq.get() < this.tameable.squaredDistanceTo(this.owner);
+    }
+    // 別ディメンションに主人が居るか確認
+    ServerPlayerEntity crossOwner = findCrossDimensionOwner();
+    if (crossOwner == null) {
       return false;
     }
-    this.owner = currentOwner;
-    return teleportStartSq.get() < this.tameable.squaredDistanceTo(this.owner);
+    this.owner = crossOwner;
+    this.crossDimension = true;
+    return true;
+  }
+
+  @Nullable
+  private ServerPlayerEntity findCrossDimensionOwner() {
+    UUID uuid = this.tameable.getOwnerUuid();
+    if (uuid == null || !(this.tameable.getWorld() instanceof ServerWorld serverWorld)) {
+      return null;
+    }
+    ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(uuid);
+    if (player == null || player.getWorld() == this.tameable.getWorld()) {
+      return null;
+    }
+    return player;
   }
 
   @Override
@@ -64,15 +102,21 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
   @Override
   public void stop() {
     this.owner = null;
+    this.crossDimension = false;
     this.navigation.stop();
   }
 
   @Override
   public void tick() {
-    if (this.owner == null) {
+    LivingEntity cachedOwner = this.owner;
+    if (cachedOwner == null) {
       return;
     }
-    this.tameable.getLookControl().lookAt(this.owner, 10.0f, this.tameable.getMaxLookPitchChange());
+    if (!crossDimension) {
+      this.tameable
+          .getLookControl()
+          .lookAt(cachedOwner, 10.0f, this.tameable.getMaxLookPitchChange());
+    }
     if (--this.updateCountdownTicks > 0) {
       return;
     }
@@ -81,7 +125,11 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
   }
 
   protected void tryTeleport() {
-    BlockPos ownerPos = this.owner.getBlockPos();
+    LivingEntity cachedOwner = this.owner;
+    if (cachedOwner == null) {
+      return;
+    }
+    BlockPos ownerPos = cachedOwner.getBlockPos();
     for (int i = 0; i < getConfigMaxTryTeleportCount(); ++i) {
       int teleportWidthRange = getConfigTeleportWidthRange();
       int teleportHeightRange = getConfigTeleportHeightRange();
@@ -96,15 +144,31 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
   }
 
   protected boolean tryTeleportTo(int x, int y, int z) {
-    if (isOwnerRange(this.owner, x, y, z)) {
+    LivingEntity cachedOwner = this.owner;
+    if (cachedOwner == null) {
       return false;
     }
-    if (!this.canTeleportTo(new BlockPos(x, y, z))) {
+    if (isOwnerRange(cachedOwner, x, y, z)) {
       return false;
     }
-    this.tameable.refreshPositionAndAngles(
-        x + 0.5, y, z + 0.5, this.tameable.getYaw(), this.tameable.getPitch());
-    this.navigation.stop();
+    World targetWorld = cachedOwner.getWorld();
+    if (!this.canTeleportTo(targetWorld, new BlockPos(x, y, z))) {
+      return false;
+    }
+    if (crossDimension) {
+      this.tameable.teleport(
+          (ServerWorld) targetWorld,
+          x + 0.5,
+          y,
+          z + 0.5,
+          Set.of(),
+          this.tameable.getYaw(),
+          this.tameable.getPitch());
+    } else {
+      this.tameable.refreshPositionAndAngles(
+          x + 0.5, y, z + 0.5, this.tameable.getYaw(), this.tameable.getPitch());
+      this.navigation.stop();
+    }
     return true;
   }
 
@@ -122,13 +186,13 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
     return 0 < dot && dot < range * range;
   }
 
-  protected boolean canTeleportTo(BlockPos pos) {
-    PathNodeType pathNodeType = LandPathNodeMaker.getLandNodeType(this.world, pos.mutableCopy());
+  protected boolean canTeleportTo(World targetWorld, BlockPos pos) {
+    PathNodeType pathNodeType = LandPathNodeMaker.getLandNodeType(targetWorld, pos.mutableCopy());
     if (pathNodeType != PathNodeType.WALKABLE) {
       return false;
     }
     BlockPos blockPos = pos.subtract(this.tameable.getBlockPos());
-    return this.world.isSpaceEmpty(this.tameable, this.tameable.getBoundingBox().offset(blockPos));
+    return targetWorld.isSpaceEmpty(this.tameable, this.tameable.getBoundingBox().offset(blockPos));
   }
 
   protected int getRandomInt(int min, int max) {
