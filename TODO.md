@@ -2,7 +2,7 @@
 
 ## 高
 
-- [ ] 射手メイドさんの sighting 音声が再生されていない — FIND_TARGET_N の playSoundCool 中に SIGHTING がキャンセルされる
+- [ ] 射手メイドさんの sighting 音声が再生されない — FIND_TARGET_N / SHOOT の playSoundCool との衝突、および isUsingItem による分岐の問題
 
 ## 中
 

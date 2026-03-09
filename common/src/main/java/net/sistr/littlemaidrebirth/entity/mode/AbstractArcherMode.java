@@ -31,11 +31,7 @@ public abstract class AbstractArcherMode<T> extends AbstractBattleMode<T> {
     this.mob.setAimingBow(true);
     this.mob.play(LMSounds.FIND_TARGET_N);
     this.mob.getNavigation().stop();
-    onStartExecuting();
   }
-
-  /** サブクラス用の startExecuting フック */
-  protected void onStartExecuting() {}
 
   public void tick() {
     LivingEntity target = this.mob.getTarget();

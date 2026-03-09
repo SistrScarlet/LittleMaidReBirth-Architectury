@@ -30,11 +30,7 @@ public class ArcherMode extends AbstractArcherMode<Item> {
         && super.shouldExecute();
   }
 
-  @Override
-  protected void onStartExecuting() {
-    this.cool = LMRBMod.getConfig().misc.playSoundInterval + 1;
-  }
-
+  // todo 処理の見直し
   @Override
   protected void tickRangedAttack(
       LivingEntity target, ItemStack itemStack, boolean canSee, double distanceSq, float maxRange) {
@@ -57,7 +53,7 @@ public class ArcherMode extends AbstractArcherMode<Item> {
         if (result.isPresent()) {
           this.cool = 10;
         } else {
-          this.cool = LMRBMod.getConfig().misc.playSoundInterval + 1;
+          this.cool = 5;
           this.mob.clearActiveItem();
           this.mob.attack(target, 1.0f);
           this.mob.play(LMSounds.SHOOT);
