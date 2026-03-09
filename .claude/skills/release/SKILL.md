@@ -64,19 +64,11 @@ git push origin v{version}
 gh release create v{version} \
   --title "v{version}" \
   -n "{リリースノート}" \
-  fabric/build/libs/LMRB-1.20.1-{version}-Fabric.jar \
-  forge/build/libs/LMRB-1.20.1-{version}-Forge.jar
+  fabric/build/libs/LMRB-{mc_version}-{version}-Fabric.jar \
+  forge/build/libs/LMRB-{mc_version}-{version}-Forge.jar
 ```
 
-### 6. Dropbox アップロード
-
-```bash
-python3 .claude/scripts/dropbox-upload.py --version {version} [--mc-version 1.20.1]
-```
-
-既存のフォルダ構造 `/Mods/LittleMaidReBirth/{Fabric,Forge}/{mc_folder}/` にアップロードされる。
-
-### 7. 完了報告
+### 6. 完了報告
 
 GitHub Release URL をユーザーに伝える。
 
@@ -85,4 +77,4 @@ GitHub Release URL をユーザーに伝える。
 - 各ステップで確認を取りながら進める（特にリリースノートとタグpush）
 - JARファイル名は `LMRB-{mc_version}-{version}-Fabric.jar` / `LMRB-{mc_version}-{version}-Forge.jar`
 - Minecraft バージョンが変わった場合はJARパスのプレフィックスも変わる点に注意
-- Dropbox の MC バージョンフォルダマッピングは `.claude/scripts/dropbox-upload.py` の `MC_VERSION_FOLDER` で管理
+- `.claude/scripts/` にカスタムアップロードスクリプトがある場合、リリース後にユーザーに実行を提案する

@@ -20,17 +20,20 @@ if [[ ! -f "$FILE_PATH" ]]; then
 fi
 
 PROJECT_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-GJF_JAR="$PROJECT_ROOT/.claude/tools/google-java-format-1.17.0-all-deps.jar"
-CS_JAR="$PROJECT_ROOT/.claude/tools/checkstyle-10.21.4-all.jar"
+TOOLS_DIR="$PROJECT_ROOT/.claude/tools"
 CS_CONFIG="$PROJECT_ROOT/config/checkstyle/checkstyle.xml"
 
+# .claude/tools/ 内から JAR を検索（バージョン非依存）
+GJF_JAR=$(compgen -G "$TOOLS_DIR/google-java-format-*-all-deps.jar" | head -1)
+CS_JAR=$(compgen -G "$TOOLS_DIR/checkstyle-*-all.jar" | head -1)
+
 # 1. google-java-format で整形 (--replace でインプレース)
-if [[ -f "$GJF_JAR" ]]; then
+if [[ -n "$GJF_JAR" && -f "$GJF_JAR" ]]; then
   java -jar "$GJF_JAR" --replace "$FILE_PATH" 2>/dev/null || true
 fi
 
 # 2. Checkstyle でチェック (警告として出力、終了コードは無視)
-if [[ -f "$CS_JAR" && -f "$CS_CONFIG" ]]; then
+if [[ -n "$CS_JAR" && -f "$CS_JAR" && -f "$CS_CONFIG" ]]; then
   RESULT=$(java -jar "$CS_JAR" -c "$CS_CONFIG" "$FILE_PATH" 2>&1 || true)
   # "Starting audit..." と "Audit done." 以外の行があれば警告表示
   WARNINGS=$(echo "$RESULT" | grep -v "^Starting audit" | grep -v "^Audit done" | grep -v "^$" || true)
