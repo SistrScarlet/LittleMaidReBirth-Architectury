@@ -1,9 +1,5 @@
 # TODO
 
-## 高
-
-- [ ] 射手メイドさんの sighting 音声が再生されない — FIND_TARGET_N / SHOOT の playSoundCool との衝突、および isUsingItem による分岐の問題
-
 ## 中
 
 - [ ] モード続行判定の拡張 — 無手でもモード続行すべき場合に対応（HasModeImpl/Mode に関数追加）。薬剤師モードでメインハンドの水瓶も醸造に使えるようにする
