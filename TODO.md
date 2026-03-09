@@ -2,7 +2,7 @@
 
 ## 高
 
-- [ ] プレイヤーが別ディメンションに居る時の挙動について考える
+- [ ] 射手メイドさんの sighting 音声が再生されていない — FIND_TARGET_N の playSoundCool 中に SIGHTING がキャンセルされる
 
 ## 中
 
