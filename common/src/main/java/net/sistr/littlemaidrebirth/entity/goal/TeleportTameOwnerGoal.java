@@ -2,7 +2,6 @@ package net.sistr.littlemaidrebirth.entity.goal;
 
 import java.util.EnumSet;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Supplier;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -12,7 +11,6 @@ import net.minecraft.entity.ai.pathing.EntityNavigation;
 import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.mob.PathAwareEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -23,16 +21,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends Goal {
   protected final T tameable;
-  protected final World world;
   protected final Supplier<Float> teleportStartSq;
   private final EntityNavigation navigation;
   @Nullable private LivingEntity owner;
   private boolean crossDimension;
-  private int updateCountdownTicks;
 
   public TeleportTameOwnerGoal(T tameable, Supplier<Float> teleportStart) {
     this.tameable = tameable;
-    this.world = tameable.getWorld();
     this.teleportStartSq = () -> teleportStart.get() * teleportStart.get();
     this.navigation = tameable.getNavigation();
     this.setControls(EnumSet.of(Control.MOVE));
@@ -40,64 +35,30 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
 
   @Override
   public boolean canStart() {
-    // 同ディメンションの主人を検索
-    LivingEntity tameOwner = TameableUtil.getTameOwner(this.tameable).orElse(null);
-    if (tameOwner != null) {
-      if (tameOwner.isSpectator()) {
-        return false;
-      }
-      if (this.tameable.squaredDistanceTo(tameOwner) < teleportStartSq.get()) {
-        return false;
-      }
-      this.owner = tameOwner;
-      this.crossDimension = false;
-      return true;
-    }
-    // 別ディメンションの主人を検索
-    ServerPlayerEntity crossOwner = findCrossDimensionOwner();
-    if (crossOwner == null || crossOwner.isSpectator()) {
+    if (!(this.tameable.getWorld() instanceof ServerWorld serverWorld)) {
       return false;
     }
-    this.owner = crossOwner;
-    this.crossDimension = true;
-    return true;
-  }
-
-  public boolean shouldContinue() {
-    // 同ディメンションに主人が居るか確認
-    LivingEntity currentOwner = TameableUtil.getTameOwner(this.tameable).orElse(null);
-    if (currentOwner != null) {
-      this.owner = currentOwner;
-      this.crossDimension = false;
-      return teleportStartSq.get() < this.tameable.squaredDistanceTo(this.owner);
-    }
-    // 別ディメンションに主人が居るか確認
-    ServerPlayerEntity crossOwner = findCrossDimensionOwner();
-    if (crossOwner == null) {
+    LivingEntity foundOwner =
+        TameableUtil.getCrossWorldTameOwner(serverWorld, this.tameable).orElse(null);
+    if (foundOwner == null || foundOwner.isSpectator()) {
       return false;
     }
-    this.owner = crossOwner;
-    this.crossDimension = true;
+    boolean isCross = foundOwner.getWorld() != this.tameable.getWorld();
+    if (!isCross && this.tameable.squaredDistanceTo(foundOwner) < teleportStartSq.get()) {
+      return false;
+    }
+    this.owner = foundOwner;
+    this.crossDimension = isCross;
     return true;
-  }
-
-  @Nullable
-  private ServerPlayerEntity findCrossDimensionOwner() {
-    UUID uuid = this.tameable.getOwnerUuid();
-    if (uuid == null || !(this.tameable.getWorld() instanceof ServerWorld serverWorld)) {
-      return null;
-    }
-    ServerPlayerEntity player = serverWorld.getServer().getPlayerManager().getPlayer(uuid);
-    if (player == null || player.getWorld() == this.tameable.getWorld()) {
-      return null;
-    }
-    return player;
   }
 
   @Override
-  public void start() {
-    this.updateCountdownTicks = 0;
+  public boolean shouldContinue() {
+    return canStart();
   }
+
+  @Override
+  public void start() {}
 
   @Override
   public void stop() {
@@ -112,15 +73,6 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
     if (cachedOwner == null) {
       return;
     }
-    if (!crossDimension) {
-      this.tameable
-          .getLookControl()
-          .lookAt(cachedOwner, 10.0f, this.tameable.getMaxLookPitchChange());
-    }
-    if (--this.updateCountdownTicks > 0) {
-      return;
-    }
-    this.updateCountdownTicks = getTickCount(LMRBMod.getConfig().movement.pathRecalcInterval);
     tryTeleport();
   }
 

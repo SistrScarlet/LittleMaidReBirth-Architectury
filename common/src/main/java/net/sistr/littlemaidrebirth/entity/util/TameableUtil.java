@@ -6,6 +6,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Tameable;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 
 public class TameableUtil {
 
@@ -24,6 +25,20 @@ public class TameableUtil {
   /** テイムしたご主人を返す 同じワールドに存在しない場合、emptyで返す */
   public static Optional<LivingEntity> getTameOwner(Tameable tameable) {
     return Optional.ofNullable(tameable.getOwner());
+  }
+
+  /** テイムしたご主人をワールド横断で検索する。まず同ワールドを探し、居なければ別ディメンションを検索する。 オフラインの場合はemptyで返す。 */
+  public static Optional<LivingEntity> getCrossWorldTameOwner(
+      ServerWorld world, Tameable tameable) {
+    LivingEntity owner = tameable.getOwner();
+    if (owner != null) {
+      return Optional.of(owner);
+    }
+    UUID uuid = tameable.getOwnerUuid();
+    if (uuid == null) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(world.getServer().getPlayerManager().getPlayer(uuid));
   }
 
   /** テイムしたご主人のUUIDをセットする テイムしたことになる */
