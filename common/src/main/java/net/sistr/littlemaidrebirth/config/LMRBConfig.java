@@ -109,7 +109,6 @@ public class LMRBConfig implements ConfigData {
     @ConfigEntry.Gui.Tooltip public float fencerAttackDistanceFactor = 1.0f;
     @ConfigEntry.Gui.Tooltip public float fencerAttackRateFactor = 0.75f;
     @ConfigEntry.Gui.Tooltip public float archerShootDistanceFactor = 1.0f;
-    @ConfigEntry.Gui.Tooltip public float archerShootRateFactor = 1.0f;
     @ConfigEntry.Gui.Tooltip public float archerShootVelocityFactor = 1.0f;
     @ConfigEntry.Gui.Tooltip public int torcherLightLevelThreshold = 7;
     @ConfigEntry.Gui.Tooltip public float searchContainerRange = 8.0f;

@@ -168,8 +168,6 @@
   "text.autoconfig.littlemaidrebirth.option.work.fencerAttackRateFactor.@Tooltip": "剣士の攻撃頻度にこの係数が掛けられます。",
   "text.autoconfig.littlemaidrebirth.option.work.archerShootDistanceFactor": "弓兵の射撃距離係数",
   "text.autoconfig.littlemaidrebirth.option.work.archerShootDistanceFactor.@Tooltip": "弓兵の射撃距離にこの係数が掛けられます。\nちなみに、メイドさんは射撃距離の100%から75%程度までを維持しようとします。",
-  "text.autoconfig.littlemaidrebirth.option.work.archerShootRateFactor": "弓兵の射撃頻度係数",
-  "text.autoconfig.littlemaidrebirth.option.work.archerShootRateFactor.@Tooltip": "弓兵の射撃頻度にこの係数が掛けられます。",
   "text.autoconfig.littlemaidrebirth.option.work.archerShootVelocityFactor": "弓兵の射撃初速係数",
   "text.autoconfig.littlemaidrebirth.option.work.archerShootVelocityFactor.@Tooltip": "弓兵の射撃初速にこの係数が掛けられます。\nちなみに、矢は速度に応じてダメージが上がります。",
   "text.autoconfig.littlemaidrebirth.option.work.torcherLightLevelThreshold": "照明係の照明設置明るさレベルのしきい値",

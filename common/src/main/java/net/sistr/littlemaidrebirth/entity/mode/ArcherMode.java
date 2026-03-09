@@ -9,7 +9,6 @@ import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.resource.util.LMSounds;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.api.mode.IRangedWeapon;
@@ -30,16 +29,17 @@ public class ArcherMode extends AbstractArcherMode<Item> {
         && super.shouldExecute();
   }
 
-  // todo 処理の見直し
   @Override
   protected void tickRangedAttack(
       LivingEntity target, ItemStack itemStack, boolean canSee, double distanceSq, float maxRange) {
     if (itemStack.getItem() instanceof BowItem) {
       if (0 < --cool) {
+        if (cool == 0) {
+          mob.play(LMSounds.SIGHTING);
+        }
         return;
       }
       if (!this.mob.isUsingItem()) {
-        mob.play(LMSounds.SIGHTING);
         this.mob.setCurrentHand(Hand.MAIN_HAND);
       }
       int interval = getInterval(itemStack);
@@ -53,7 +53,7 @@ public class ArcherMode extends AbstractArcherMode<Item> {
         if (result.isPresent()) {
           this.cool = 10;
         } else {
-          this.cool = 5;
+          this.cool = 10;
           this.mob.clearActiveItem();
           this.mob.attack(target, 1.0f);
           this.mob.play(LMSounds.SHOOT);
@@ -69,11 +69,12 @@ public class ArcherMode extends AbstractArcherMode<Item> {
           this.mob.setCharging(true);
         } else { // チャージ中
           // チャージが終わった
-          if (this.mob.getItemUseTime() >= CrossbowItem.getPullTime(this.mob.getActiveItem())) {
+          if (this.mob.getItemUseTime() >= getInterval(itemStack)) {
             // チャージはこのメソッドから行われる
             this.mob.stopUsingItem();
             this.mob.setCharging(false);
-            this.cool = 5;
+            this.cool = 10;
+            mob.play(LMSounds.SIGHTING);
             this.mob.swingHand(Hand.MAIN_HAND);
           }
         }
@@ -100,11 +101,9 @@ public class ArcherMode extends AbstractArcherMode<Item> {
   }
 
   protected int getInterval(ItemStack itemStack) {
-    return MathHelper.ceil(
-        (itemStack.getItem() instanceof IRangedWeapon rangedWeapon
-                ? rangedWeapon.getInterval_LMRB(itemStack, this.mob)
-                : 20)
-            / LMRBMod.getConfig().work.archerShootRateFactor);
+    return itemStack.getItem() instanceof IRangedWeapon rangedWeapon
+        ? rangedWeapon.getInterval_LMRB(itemStack, this.mob)
+        : 20;
   }
 
   @Override
@@ -118,7 +117,7 @@ public class ArcherMode extends AbstractArcherMode<Item> {
   @Override
   public void resetTask() {
     super.resetTask();
-    this.cool = 5;
+    this.cool = 10;
     if (this.mob.isUsingItem()) {
       this.mob.clearActiveItem();
       this.mob.setCharging(false);

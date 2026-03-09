@@ -168,8 +168,6 @@
   "text.autoconfig.littlemaidrebirth.option.work.fencerAttackRateFactor.@Tooltip": "Fencer attack rate is multiplied by this factor.",
   "text.autoconfig.littlemaidrebirth.option.work.archerShootDistanceFactor": "Archer Shoot Distance Factor",
   "text.autoconfig.littlemaidrebirth.option.work.archerShootDistanceFactor.@Tooltip": "Archer shooting distance is multiplied by this factor.\nBy the way, maids try to maintain between 100% and 75% of their shooting distance.",
-  "text.autoconfig.littlemaidrebirth.option.work.archerShootRateFactor": "Archer Shoot Rate Factor",
-  "text.autoconfig.littlemaidrebirth.option.work.archerShootRateFactor.@Tooltip": "Archer shooting rate is multiplied by this factor.",
   "text.autoconfig.littlemaidrebirth.option.work.archerShootVelocityFactor": "Archer Shoot Velocity Factor",
   "text.autoconfig.littlemaidrebirth.option.work.archerShootVelocityFactor.@Tooltip": "Archer shooting velocity is multiplied by this factor.\nBy the way, arrow damage increases with velocity.",
   "text.autoconfig.littlemaidrebirth.option.work.torcherLightLevelThreshold": "Torcher Light Level Threshold",
