@@ -12,6 +12,7 @@ import net.minecraft.entity.ai.pathing.LandPathNodeMaker;
 import net.minecraft.entity.ai.pathing.PathNodeType;
 import net.minecraft.entity.mob.PathAwareEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -116,6 +117,15 @@ public class TeleportTameOwnerGoal<T extends PathAwareEntity & Tameable> extends
           Set.of(),
           this.tameable.getYaw(),
           this.tameable.getPitch());
+      targetWorld.playSound(
+          null,
+          x + 0.5,
+          y,
+          z + 0.5,
+          SoundEvents.ENTITY_ENDERMAN_TELEPORT,
+          this.tameable.getSoundCategory(),
+          1.0f,
+          2.0f);
     } else {
       this.tameable.refreshPositionAndAngles(
           x + 0.5, y, z + 0.5, this.tameable.getYaw(), this.tameable.getPitch());
