@@ -2,7 +2,6 @@ package net.sistr.littlemaidrebirth.entity;
 
 import com.google.common.collect.Lists;
 import dev.architectury.extensions.network.EntitySpawnExtension;
-import dev.architectury.networking.NetworkManager;
 import dev.architectury.registry.menu.MenuRegistry;
 import java.util.*;
 import java.util.function.Predicate;
@@ -85,6 +84,7 @@ import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 import net.sistr.littlemaidrebirth.entity.util.*;
+import net.sistr.littlemaidrebirth.network.SpawnLittleMaidPacket;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LMCollidable;
@@ -653,9 +653,18 @@ public class LittleMaidEntity extends TameableEntity
         return false;
     }
 
-    // todo マウント系の位置をモデルに追従させる。1.21 で getMountedHeightOffset /
-    //  getHeightOffset が削除されたため、騎乗・搭乗オフセットのモデル連動は失われている。
-    //  復元には EntityAttachments (EntityType.Builder) での設定が必要。
+    // 1.21 で getHeightOffset が削除されたため、乗客として乗り物に乗る際の搭乗オフセット
+    // (モデル連動) を getVehicleAttachmentPos で復元する。乗り物側の搭乗位置にこの値が加算される。
+    // (プレイヤー肩車は MixinPlayerEntity 側で別途補正済みのため、ここは主にボート等が対象)
+    @Override
+    public Vec3d getVehicleAttachmentPos(Entity vehicle) {
+        IMultiModel model =
+                getModel(Layer.SKIN, Part.HEAD).orElse(LMModelManager.INSTANCE.getDefaultModel());
+        return new Vec3d(0.0, model.getyOffset(getCaps()) - getHeight(), 0.0);
+    }
+
+    // todo メイドさん自身が乗り物になる場合 (getMountedHeightOffset 相当) のモデル連動は未対応。
+    //  必要なら EntityType.Builder の passengerAttachments で設定する。
 
     // このままだとEntityDimensionsが作っては捨てられてを繰り返すのでパフォーマンスはよろしくない
     // …が、そもそもそんなにたくさん呼ばれるメソッドでもない
@@ -796,7 +805,7 @@ public class LittleMaidEntity extends TameableEntity
         } else {
             this.play(LMSounds.ATTACK);
         }
-        // PlayerEntityのattack処理を参考に、武器の耐久地を減らす処理を実装する
+        // PlayerEntity の attack 処理に倣い、命中後処理と武器の耐久消費を行う
         if (result) {
             ItemStack mainHandStack = this.getMainHandStack();
             Entity entity = target;
@@ -811,6 +820,10 @@ public class LittleMaidEntity extends TameableEntity
                 // その対策にtry/catchを置いておく
                 try {
                     mainHandStack.getItem().postHit(mainHandStack, (LivingEntity) entity, this);
+                    // 1.21 で武器の耐久消費は postHit から postDamageEntity へ移された
+                    mainHandStack
+                            .getItem()
+                            .postDamageEntity(mainHandStack, (LivingEntity) entity, this);
                 } catch (Exception e) {
                     LMRBMod.LOGGER.error("メイドさんの攻撃時に例外が発生しました。", e);
                 }
@@ -956,8 +969,9 @@ public class LittleMaidEntity extends TameableEntity
             this.getWorld().spawnEntity(arrow);
             arrowStack.decrement(1);
         } else if (stack.getItem() instanceof CrossbowItem) {
-            // CrossbowUser#shoot の第1引数は「射手 (クロスボウ保持者)」。狙いは getTarget() を使う
-            this.shoot(this, 1.6F);
+            // CrossbowUser#shoot の第1引数は射手 (クロスボウ保持者)、第2引数は弾速、狙いは getTarget()。
+            // バニラ Mob と同じ基準速度 1.6F に archerShootVelocityFactor を掛ける (弓と同様)。
+            this.shoot(this, 1.6F * getConfig().work.archerShootVelocityFactor);
         }
     }
 
@@ -972,9 +986,9 @@ public class LittleMaidEntity extends TameableEntity
         this.dataTracker.set(CHARGING, charging);
     }
 
-    // todo 1.21 で CrossbowUser の shoot(...) / getProjectileLaunchVelocity が廃止され、
-    //  クロスボウのカスタム弾道 (archerShootVelocityFactor) は失われた。
-    //  バニラの CrossbowUser#shoot(LivingEntity, float) デフォルトに委譲している。
+    // 弾速は archerShootVelocityFactor で調整するが、弓のような距離補正アーク
+    // (shootAt の horizonLen 補正) はバニラ shootAll に委譲しているため未適用。
+    // クロスボウは平射のため実用上は問題になりにくい。
 
     @Override
     public void postShoot() {}
@@ -1577,7 +1591,9 @@ public class LittleMaidEntity extends TameableEntity
 
     @Override
     public Packet<ClientPlayPacketListener> createSpawnPacket(EntityTrackerEntry trackerEntry) {
-        return NetworkManager.createAddEntityPacket(this, trackerEntry);
+        // Architectury 標準のスポーンパケットは生成が遅延し再トラッキング時に follow-up を取りこぼすため、
+        // 即時生成する自前パケットを使う（詳細は SpawnLittleMaidPacket 参照）。
+        return SpawnLittleMaidPacket.create(this);
     }
 
     public static LMRBConfig getConfig() {

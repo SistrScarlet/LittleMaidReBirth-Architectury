@@ -22,6 +22,8 @@ public class Networking {
                     OpenTargetTagScreenPacket.ID, OpenTargetTagScreenPacket.CODEC);
             NetworkManager.registerS2CPayloadType(
                     OpenMaidManagerScreenPacket.ID, OpenMaidManagerScreenPacket.CODEC);
+            NetworkManager.registerS2CPayloadType(
+                    SpawnLittleMaidPacket.ID, SpawnLittleMaidPacket.CODEC);
         }
         serverInit();
     }
@@ -43,6 +45,11 @@ public class Networking {
                 OpenMaidManagerScreenPacket.ID,
                 OpenMaidManagerScreenPacket.CODEC,
                 OpenMaidManagerScreenPacket::receiveS2CPacket);
+        NetworkManager.registerReceiver(
+                NetworkManager.Side.S2C,
+                SpawnLittleMaidPacket.ID,
+                SpawnLittleMaidPacket.CODEC,
+                SpawnLittleMaidPacket::receiveS2CPacket);
     }
 
     private void serverInit() {
