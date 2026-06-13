@@ -7,6 +7,12 @@
 - [ ] マルチ時の安定性の改善（原因不明。コード全体の調査が必要）
 - [ ] HiFM氏のKMExtend描画バグ
 
+### 1.21.1 移植回帰バグ
+
+- [ ] 同期範囲外→範囲内に入ったとき、防具・移動モード・姿(モデル)が同期されない（姿が見えない）。エンティティ再トラッキング時に spawn/tracker データが再送・再適用されていない疑い。`EntitySpawnExtension` の saveAdditional/loadAdditionalSpawnData（Architectury networking 1.21）と DataTracker 初期値再送、1.21 のトラッキング仕様変更を調査。3種同時に失敗するため再トラッキング機構全体が原因の可能性大
+- [ ] ボートに乗ると約0.2m高い（プレイヤーが肩車した時は正常）。乗り物搭乗位置オフセット。1.21 の passenger attachment（`EntityDimensions.passengerAttachments` / `getPassengerAttachmentPos`）未定義の可能性
+- [ ] 近接攻撃で剣の耐久が減らない（以前からのバグの可能性あり）。メイドの近接攻撃時に武器 `stack.damage(...)` が呼ばれているか、1.21 の attack/postHit/durability 仕様変更を調査
+
 ## 中
 
 - [ ] モード続行判定の拡張 — 無手でもモード続行すべき場合に対応（HasModeImpl/Mode に関数追加）。薬剤師モードでメインハンドの水瓶も醸造に使えるようにする
@@ -33,3 +39,5 @@
 
 - [ ] 好感度か何かの機能（仕様未確定）
 - [ ] EQ_DOESNT_OVERRIDE_EQUALS（TargetingSystem.Mob/Maid）— 実害なしだが将来の安全のため検討
+- [ ] 近接リーチ: 1.21 で reach 属性が廃止され固定値運用中（攻撃3 / リーチ4.5）。属性ベースに戻すか要検討（ユーザー後ほど検討予定）
+- [ ] クロスボウに `archerShootVelocityFactor` が未適用。弓は適用済みだが、クロスボウは 1.21 で `CrossbowUser#shoot` のカスタム弾道 API が廃止されバニラ委譲(固定速度1.6F)のため係数が効かない。設定を反映したい場合はカスタム発射処理の再実装が必要
