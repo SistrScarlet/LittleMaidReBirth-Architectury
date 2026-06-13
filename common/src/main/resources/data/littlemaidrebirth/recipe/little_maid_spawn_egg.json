@@ -21,7 +21,7 @@
     }
   },
   "result": {
-    "item": "littlemaidrebirth:little_maid_spawn_egg"
+    "id": "littlemaidrebirth:little_maid_spawn_egg"
   },
   "show_notification": true
 }
