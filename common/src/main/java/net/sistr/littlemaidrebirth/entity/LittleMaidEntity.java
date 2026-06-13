@@ -956,7 +956,8 @@ public class LittleMaidEntity extends TameableEntity
             this.getWorld().spawnEntity(arrow);
             arrowStack.decrement(1);
         } else if (stack.getItem() instanceof CrossbowItem) {
-            this.shoot(target, 1.6F);
+            // CrossbowUser#shoot の第1引数は「射手 (クロスボウ保持者)」。狙いは getTarget() を使う
+            this.shoot(this, 1.6F);
         }
     }
 
