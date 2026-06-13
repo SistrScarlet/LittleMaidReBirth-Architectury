@@ -146,9 +146,9 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                     }
 
                     @Override
-                    protected void renderButton(
+                    protected void renderWidget(
                             DrawContext context, int mouseX, int mouseY, float delta) {
-                        super.renderButton(context, mouseX, mouseY, delta);
+                        super.renderWidget(context, mouseX, mouseY, delta);
 
                         setTooltip(
                                 Tooltip.of(
@@ -206,13 +206,18 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     public void render(DrawContext context, int mouseX, int mouseY, float partialTicks) {
         super.render(context, mouseX, mouseY, partialTicks);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
+        int entityCenterX = (this.width - this.backgroundWidth) / 2 + 52;
+        int entityTop = (this.height - this.backgroundHeight) / 2;
         InventoryScreen.drawEntity(
                 context,
-                (this.width - this.backgroundWidth) / 2 + 52,
-                (this.height - this.backgroundHeight) / 2 + 59,
+                entityCenterX - 25,
+                entityTop + 1,
+                entityCenterX + 25,
+                entityTop + 59,
                 20,
-                (this.width - this.backgroundWidth) / 2F + 52 - mouseX,
-                (this.height - this.backgroundHeight) / 2F + 30 - mouseY,
+                0.0625f,
+                (float) mouseX,
+                (float) mouseY,
                 owner);
 
         if (isSettingWISS) {
@@ -440,8 +445,8 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
         }
 
         @Override
-        protected void renderButton(DrawContext context, int mouseX, int mouseY, float delta) {
-            super.renderButton(context, mouseX, mouseY, delta);
+        protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+            super.renderWidget(context, mouseX, mouseY, delta);
             context.drawItem(
                     getIconItem(),
                     this.getX() - 8 + this.width / 2,

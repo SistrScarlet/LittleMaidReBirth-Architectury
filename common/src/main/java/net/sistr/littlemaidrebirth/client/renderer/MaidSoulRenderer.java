@@ -8,8 +8,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.MaidSoulEntity;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
     private static final Identifier TEXTURE =
@@ -44,24 +42,21 @@ public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
         float y2 = y - radius;
         var consumer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(HEART));
         var entry = matrices.peek();
-        var posMatrix = entry.getPositionMatrix();
-        var normMatrix = entry.getNormalMatrix();
         // 反時計回りが表
         // 表を見て、右上、左上、左下、右下の順
-        vertex(posMatrix, normMatrix, consumer, x1, y1, z1, 1.0f, 0.0f);
-        vertex(posMatrix, normMatrix, consumer, x2, y1, z2, 0.0f, 0.0f);
-        vertex(posMatrix, normMatrix, consumer, x2, y2, z2, 0.0f, 1.0f);
-        vertex(posMatrix, normMatrix, consumer, x1, y2, z1, 1.0f, 1.0f);
+        vertex(entry, consumer, x1, y1, z1, 1.0f, 0.0f);
+        vertex(entry, consumer, x2, y1, z2, 0.0f, 0.0f);
+        vertex(entry, consumer, x2, y2, z2, 0.0f, 1.0f);
+        vertex(entry, consumer, x1, y2, z1, 1.0f, 1.0f);
         // 裏、左右反転、右上、右下、左下、左上
-        vertex(posMatrix, normMatrix, consumer, x1, y1, z1, 0.0f, 0.0f);
-        vertex(posMatrix, normMatrix, consumer, x1, y2, z1, 0.0f, 1.0f);
-        vertex(posMatrix, normMatrix, consumer, x2, y2, z2, 1.0f, 1.0f);
-        vertex(posMatrix, normMatrix, consumer, x2, y1, z2, 1.0f, 0.0f);
+        vertex(entry, consumer, x1, y1, z1, 0.0f, 0.0f);
+        vertex(entry, consumer, x1, y2, z1, 0.0f, 1.0f);
+        vertex(entry, consumer, x2, y2, z2, 1.0f, 1.0f);
+        vertex(entry, consumer, x2, y1, z2, 1.0f, 0.0f);
     }
 
     public void vertex(
-            Matrix4f positionMatrix,
-            Matrix3f normalMatrix,
+            MatrixStack.Entry entry,
             VertexConsumer vertexConsumer,
             float x,
             float y,
@@ -69,13 +64,12 @@ public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
             float u,
             float v) {
         vertexConsumer
-                .vertex(positionMatrix, x, y, z)
+                .vertex(entry.getPositionMatrix(), x, y, z)
                 .color(255, 255, 255, 255)
                 .texture(u, v)
                 .overlay(OverlayTexture.DEFAULT_UV)
                 .light(LightmapTextureManager.MAX_BLOCK_LIGHT_COORDINATE)
-                .normal(normalMatrix, 0, 0, 1)
-                .next();
+                .normal(entry, 0, 0, 1);
     }
 
     @Override

@@ -2,7 +2,6 @@ package net.sistr.littlemaidrebirth.entity;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.Inventory;
@@ -13,6 +12,7 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.Identifier;
 import net.sistr.littlemaidrebirth.entity.util.GuiEntitySupplier;
 import net.sistr.littlemaidrebirth.setup.Registration;
+import org.jetbrains.annotations.Nullable;
 
 public class LittleMaidScreenHandler extends ScreenHandler
         implements GuiEntitySupplier<LittleMaidEntity> {
@@ -287,7 +287,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
 
                     @Override
                     public boolean canInsert(ItemStack stack) {
-                        return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.HEAD;
+                        return getPreferredSlot(stack) == EquipmentSlot.HEAD;
                     }
 
                     @Override
@@ -304,7 +304,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
 
                     @Override
                     public boolean canInsert(ItemStack stack) {
-                        return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.CHEST;
+                        return getPreferredSlot(stack) == EquipmentSlot.CHEST;
                     }
 
                     @Override
@@ -321,7 +321,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
 
                     @Override
                     public boolean canInsert(ItemStack stack) {
-                        return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.LEGS;
+                        return getPreferredSlot(stack) == EquipmentSlot.LEGS;
                     }
 
                     @Override
@@ -338,7 +338,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
 
                     @Override
                     public boolean canInsert(ItemStack stack) {
-                        return MobEntity.getPreferredEquipmentSlot(stack) == EquipmentSlot.FEET;
+                        return getPreferredSlot(stack) == EquipmentSlot.FEET;
                     }
 
                     @Override
@@ -346,5 +346,11 @@ public class LittleMaidScreenHandler extends ScreenHandler
                         return Pair.of(atlas, Identifier.of("item/empty_armor_slot_boots"));
                     }
                 });
+    }
+
+    @Nullable
+    private EquipmentSlot getPreferredSlot(ItemStack stack) {
+        LittleMaidEntity m = this.maid;
+        return m == null ? null : m.getPreferredEquipmentSlot(stack);
     }
 }

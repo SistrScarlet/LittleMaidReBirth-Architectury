@@ -3,7 +3,6 @@
  */
 package net.sistr.littlemaidrebirth.client.renderer;
 
-import com.mojang.authlib.GameProfile;
 import java.util.Map;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -23,14 +22,14 @@ import net.minecraft.client.render.entity.model.EntityModelLoader;
 import net.minecraft.client.render.entity.model.ModelWithHead;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
@@ -105,19 +104,14 @@ public class LMHeadFeatureRenderer<T extends LittleMaidEntity, M extends EntityM
             Item item = itemStack.getItem();
             if (item instanceof BlockItem
                     && ((BlockItem) item).getBlock() instanceof AbstractSkullBlock) {
-                NbtCompound nbtCompound;
                 matrixStack.scale(1.1875f, -1.1875f, -1.1875f);
-                GameProfile gameProfile = null;
-                if (itemStack.hasNbt()
-                        && (nbtCompound = itemStack.getNbt()).contains("SkullOwner", 10)) {
-                    gameProfile = NbtHelper.toGameProfile(nbtCompound.getCompound("SkullOwner"));
-                }
+                ProfileComponent profile = itemStack.get(DataComponentTypes.PROFILE);
                 matrixStack.translate(-0.5, 0.0, -0.5);
                 SkullBlock.SkullType skullType =
                         ((AbstractSkullBlock) ((BlockItem) item).getBlock()).getSkullType();
                 SkullBlockEntityModel skullBlockEntityModel = this.headModels.get(skullType);
                 RenderLayer renderLayer =
-                        SkullBlockEntityRenderer.getRenderLayer(skullType, gameProfile);
+                        SkullBlockEntityRenderer.getRenderLayer(skullType, profile);
                 SkullBlockEntityRenderer.renderSkull(
                         null,
                         180.0f,

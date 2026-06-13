@@ -1032,7 +1032,10 @@ public final class LMRBCommonTests {
         var player = createPlayer(context, "test-owner");
         var maid = spawnTamedMaid(context, player);
         var potion = new ItemStack(Items.POTION);
-        net.minecraft.potion.PotionUtil.setPotion(potion, net.minecraft.potion.Potions.HEALING);
+        potion.set(
+                net.minecraft.component.DataComponentTypes.POTION_CONTENTS,
+                new net.minecraft.component.type.PotionContentsComponent(
+                        net.minecraft.potion.Potions.HEALING));
         maid.equipStack(EquipmentSlot.MAINHAND, potion);
         maid.hasModeImpl.tick();
 
@@ -1201,7 +1204,10 @@ public final class LMRBCommonTests {
         var player = createPlayer(context, "test-owner");
         var maid = spawnTamedMaid(context, player);
         var waterBottle = new ItemStack(Items.POTION);
-        net.minecraft.potion.PotionUtil.setPotion(waterBottle, net.minecraft.potion.Potions.WATER);
+        waterBottle.set(
+                net.minecraft.component.DataComponentTypes.POTION_CONTENTS,
+                new net.minecraft.component.type.PotionContentsComponent(
+                        net.minecraft.potion.Potions.WATER));
         maid.equipStack(EquipmentSlot.MAINHAND, waterBottle);
         maid.hasModeImpl.tick();
 
@@ -1429,12 +1435,18 @@ public final class LMRBCommonTests {
         var player = createPlayer(context, "test-owner");
         var maid = spawnTamedMaidForAI(context, player);
         var waterBottle = new ItemStack(Items.POTION);
-        net.minecraft.potion.PotionUtil.setPotion(waterBottle, net.minecraft.potion.Potions.WATER);
+        waterBottle.set(
+                net.minecraft.component.DataComponentTypes.POTION_CONTENTS,
+                new net.minecraft.component.type.PotionContentsComponent(
+                        net.minecraft.potion.Potions.WATER));
         maid.equipStack(EquipmentSlot.MAINHAND, waterBottle);
         maid.getInventory().setStack(0, new ItemStack(Items.BLAZE_POWDER, 1));
         maid.getInventory().setStack(1, new ItemStack(Items.NETHER_WART, 1));
         var waterBottle2 = new ItemStack(Items.POTION);
-        net.minecraft.potion.PotionUtil.setPotion(waterBottle2, net.minecraft.potion.Potions.WATER);
+        waterBottle2.set(
+                net.minecraft.component.DataComponentTypes.POTION_CONTENTS,
+                new net.minecraft.component.type.PotionContentsComponent(
+                        net.minecraft.potion.Potions.WATER));
         maid.getInventory().setStack(2, waterBottle2);
         context.setBlockState(
                 AI_BLOCK_POS, net.minecraft.block.Blocks.BREWING_STAND.getDefaultState());

@@ -6,6 +6,7 @@ import net.minecraft.client.model.ModelPart;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.ModelWithHead;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.client.renderer.MultiModel;
 import net.sistr.littlemaidmodelloader.entity.compound.IHasMultiModel;
@@ -40,14 +41,7 @@ public class LMMultiModel<T extends LittleMaidEntity> extends MultiModel<T>
 
     @Override
     public void render(
-            MatrixStack matrices,
-            VertexConsumer vertices,
-            int light,
-            int overlay,
-            float red,
-            float green,
-            float blue,
-            float alpha) {
+            MatrixStack matrices, VertexConsumer vertices, int light, int overlay, int color) {
         if (this.entity == null) {
             return;
         }
@@ -59,10 +53,17 @@ public class LMMultiModel<T extends LittleMaidEntity> extends MultiModel<T>
                                             * LMRBMod.getConfig().misc.maxAccelerationStack),
                             0,
                             1);
-            green -= 0.4f * percent + 0.1f;
-            blue -= 0.4f * percent + 0.1f;
+            int sub = Math.round((0.4f * percent + 0.1f) * 255);
+            int green = MathHelper.clamp(ColorHelper.Argb.getGreen(color) - sub, 0, 255);
+            int blue = MathHelper.clamp(ColorHelper.Argb.getBlue(color) - sub, 0, 255);
+            color =
+                    ColorHelper.Argb.getArgb(
+                            ColorHelper.Argb.getAlpha(color),
+                            ColorHelper.Argb.getRed(color),
+                            green,
+                            blue);
         }
-        super.render(matrices, vertices, light, overlay, red, green, blue, alpha);
+        super.render(matrices, vertices, light, overlay, color);
     }
 
     @Override
