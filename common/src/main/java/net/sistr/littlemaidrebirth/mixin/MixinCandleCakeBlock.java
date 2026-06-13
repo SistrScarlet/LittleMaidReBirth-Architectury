@@ -8,8 +8,8 @@ import net.minecraft.item.FlintAndSteelItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -24,26 +24,26 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(CandleCakeBlock.class)
 public abstract class MixinCandleCakeBlock {
 
-    @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "onUseWithItem", at = @At("HEAD"), cancellable = true)
     private void onUseInjection(
+            ItemStack stack,
             BlockState state,
             World world,
             BlockPos pos,
             PlayerEntity player,
             Hand hand,
             BlockHitResult hit,
-            CallbackInfoReturnable<ActionResult> cir) {
-        ItemStack itemStack = player.getStackInHand(hand);
+            CallbackInfoReturnable<ItemActionResult> cir) {
         // 着火するときを取得できなさそうだったので、手動で判定
         // クライアントでは動かない
-        if ((itemStack.getItem() instanceof FlintAndSteelItem
-                        || itemStack.getItem() instanceof FireChargeItem
-                        || itemStack.isIn(ItemTags.CREEPER_IGNITERS))
+        if ((stack.getItem() instanceof FlintAndSteelItem
+                        || stack.getItem() instanceof FireChargeItem
+                        || stack.isIn(ItemTags.CREEPER_IGNITERS))
                 && CandleCakeBlock.canBeLit(state)
                 && LMRB$getAroundAlterComponentBlocks(world, pos) >= 4
                 && world instanceof ServerWorld serverWorld) {
             if (MaidResurrection.resurrect(serverWorld, pos, player)) {
-                cir.setReturnValue(ActionResult.SUCCESS);
+                cir.setReturnValue(ItemActionResult.SUCCESS);
             }
         }
     }
