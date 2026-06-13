@@ -1,0 +1,54 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+issueTrackerURL = "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/issues"
+license = "https://github.com/SistrScarlet/LittleMaidModelLoader-Fabric/blob/1.16_Architectury/LICENCE.md"
+
+[[mods]]
+modId = "littlemaidrebirth"
+version = "${version}"
+displayName = "LittleMaid ReBirth"
+authors = "Sistr"
+credits = "erer00gg, dlsts, utsudashinou"
+description = "いろいろ手伝ってくれたりくれなかったりする、ちいさなメイドさんを追加するMOD"
+logoFile = "icon.png"
+
+[[mixins]]
+config = "littlemaidrebirth-common.mixins.json"
+
+[[mixins]]
+config = "littlemaidrebirth.mixins.json"
+
+[[dependencies.littlemaidrebirth]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.littlemaidrebirth]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.21.2)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.littlemaidrebirth]]
+modId = "architectury"
+type = "required"
+versionRange = "[13.0.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.littlemaidrebirth]]
+modId = "cloth_config"
+type = "required"
+versionRange = "[15.0.0,)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.littlemaidrebirth]]
+modId = "littlemaidmodelloader"
+type = "required"
+versionRange = "[9.0.0,)"
+ordering = "AFTER"
+side = "BOTH"
