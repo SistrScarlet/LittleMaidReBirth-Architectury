@@ -14,7 +14,7 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 /** クライアントからサーバーへメイドさんのインベントリを開くパケット */
 public class C2SOpenInventoryPacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "open_inventory");
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "open_inventory");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity) {

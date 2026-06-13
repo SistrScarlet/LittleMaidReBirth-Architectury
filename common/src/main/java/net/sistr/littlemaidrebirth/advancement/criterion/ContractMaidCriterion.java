@@ -11,7 +11,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 public class ContractMaidCriterion extends TameAnimalCriterion {
-    private static final Identifier ID = new Identifier(LMRBMod.MODID, "contract_maid");
+    private static final Identifier ID = Identifier.of(LMRBMod.MODID, "contract_maid");
 
     @Override
     public Identifier getId() {

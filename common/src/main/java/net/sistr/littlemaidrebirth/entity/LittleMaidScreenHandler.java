@@ -262,7 +262,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
     }
 
     private void layoutMaidInventorySlots() {
-        Identifier atlas = new Identifier("textures/atlas/blocks.png");
+        Identifier atlas = Identifier.of("textures/atlas/blocks.png");
         // index 0~17
         addSlotBox(maidInventory, 0, 8, 76, 9, 18, 2, 18);
 
@@ -272,7 +272,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
                 new Slot(handInventory, 1, 152, 44) {
                     @Override
                     public Pair<Identifier, Identifier> getBackgroundSprite() {
-                        return Pair.of(atlas, new Identifier("item/empty_armor_slot_shield"));
+                        return Pair.of(atlas, Identifier.of("item/empty_armor_slot_shield"));
                     }
                 });
 
@@ -292,7 +292,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
 
                     @Override
                     public Pair<Identifier, Identifier> getBackgroundSprite() {
-                        return Pair.of(atlas, new Identifier("item/empty_armor_slot_helmet"));
+                        return Pair.of(atlas, Identifier.of("item/empty_armor_slot_helmet"));
                     }
                 });
         addSlot(
@@ -309,7 +309,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
 
                     @Override
                     public Pair<Identifier, Identifier> getBackgroundSprite() {
-                        return Pair.of(atlas, new Identifier("item/empty_armor_slot_chestplate"));
+                        return Pair.of(atlas, Identifier.of("item/empty_armor_slot_chestplate"));
                     }
                 });
         addSlot(
@@ -326,7 +326,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
 
                     @Override
                     public Pair<Identifier, Identifier> getBackgroundSprite() {
-                        return Pair.of(atlas, new Identifier("item/empty_armor_slot_leggings"));
+                        return Pair.of(atlas, Identifier.of("item/empty_armor_slot_leggings"));
                     }
                 });
         addSlot(
@@ -343,7 +343,7 @@ public class LittleMaidScreenHandler extends ScreenHandler
 
                     @Override
                     public Pair<Identifier, Identifier> getBackgroundSprite() {
-                        return Pair.of(atlas, new Identifier("item/empty_armor_slot_boots"));
+                        return Pair.of(atlas, Identifier.of("item/empty_armor_slot_boots"));
                     }
                 });
     }

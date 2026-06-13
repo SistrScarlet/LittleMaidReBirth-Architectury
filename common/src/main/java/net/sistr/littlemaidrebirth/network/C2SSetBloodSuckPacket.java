@@ -14,7 +14,7 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 /** クライアントからサーバーへBloodSuckを設定するパケット */
 public class C2SSetBloodSuckPacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "set_blood_suck");
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "set_blood_suck");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, boolean isBloodSuck) {

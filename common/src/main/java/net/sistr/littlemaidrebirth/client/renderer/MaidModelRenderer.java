@@ -28,7 +28,7 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 @Environment(EnvType.CLIENT)
 public class MaidModelRenderer
         extends MobEntityRenderer<LittleMaidEntity, LMMultiModel<LittleMaidEntity>> {
-    private static final Identifier NULL_TEXTURE = new Identifier(LMRBMod.MODID, "null");
+    private static final Identifier NULL_TEXTURE = Identifier.of(LMRBMod.MODID, "null");
 
     public MaidModelRenderer(EntityRendererFactory.Context ctx) {
         super(ctx, new LMMultiModel<>(), 0.5F);

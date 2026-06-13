@@ -19,7 +19,7 @@ import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 
 public class C2SSetTargetTagsPacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "set_target_tags");
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "set_target_tags");
 
     @Environment(EnvType.CLIENT)
     public static <T extends Entity & TargetTagManager> void sendC2SPacket(

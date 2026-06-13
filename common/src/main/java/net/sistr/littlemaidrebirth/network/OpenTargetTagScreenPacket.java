@@ -23,7 +23,7 @@ import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 
 public class OpenTargetTagScreenPacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "open_target_tag_screen");
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "open_target_tag_screen");
 
     public static <T extends Entity & TargetTagManager> void sendS2CPacket(
             T entity, PlayerEntity player) {

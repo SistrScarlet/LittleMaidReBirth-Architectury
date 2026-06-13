@@ -31,8 +31,8 @@ import net.sistr.littlemaidrebirth.network.*;
 @Environment(EnvType.CLIENT)
 public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final Identifier GUI =
-            new Identifier("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
-    private static final Identifier ICONS = new Identifier("textures/gui/icons.png");
+            Identifier.of("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
+    private static final Identifier ICONS = Identifier.of("textures/gui/icons.png");
     private static final ItemStack ARMOR = Items.LEATHER_CHESTPLATE.getDefaultStack();
     private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
     private static final ItemStack NOTE = Items.NOTE_BLOCK.getDefaultStack();

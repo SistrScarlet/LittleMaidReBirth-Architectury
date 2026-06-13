@@ -15,7 +15,7 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 /** C2Sで移動状態をセットするパケット */
 public class C2SSetMovingStatePacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "set_moving_state");
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "set_moving_state");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, MovingMode state) {

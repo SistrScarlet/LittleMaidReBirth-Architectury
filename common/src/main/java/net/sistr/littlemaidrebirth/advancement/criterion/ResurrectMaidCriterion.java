@@ -11,7 +11,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 public class ResurrectMaidCriterion extends TameAnimalCriterion {
-    private static final Identifier ID = new Identifier(LMRBMod.MODID, "resurrect_maid");
+    private static final Identifier ID = Identifier.of(LMRBMod.MODID, "resurrect_maid");
 
     @Override
     public Identifier getId() {

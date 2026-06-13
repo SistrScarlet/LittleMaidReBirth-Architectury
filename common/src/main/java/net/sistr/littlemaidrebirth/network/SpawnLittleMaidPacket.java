@@ -17,7 +17,7 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 public class SpawnLittleMaidPacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "spawn_littlemaid");
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "spawn_littlemaid");
 
     @SuppressWarnings({"unchecked", "UnstableApiUsage", "deprecation"})
     public static Packet<ClientPlayPacketListener> create(LittleMaidEntity maid) {

@@ -134,6 +134,6 @@ public class Modes {
     }
 
     private static void register(String id, ModeType<?> modeType) {
-        ModeManager.INSTANCE.register(new Identifier(MODID, id), modeType);
+        ModeManager.INSTANCE.register(Identifier.of(MODID, id), modeType);
     }
 }

@@ -25,7 +25,7 @@ public class LMTags {
         public static final TagKey<Item> PHARMACIST_MODE = register("pharmacist_mode");
 
         private static TagKey<Item> register(String id) {
-            return TagKey.of(RegistryKeys.ITEM, new Identifier(LMRBMod.MODID, id));
+            return TagKey.of(RegistryKeys.ITEM, Identifier.of(LMRBMod.MODID, id));
         }
     }
 
@@ -34,7 +34,7 @@ public class LMTags {
                 register("maid_alter_component_blocks");
 
         private static TagKey<Block> register(String id) {
-            return TagKey.of(RegistryKeys.BLOCK, new Identifier(LMRBMod.MODID, id));
+            return TagKey.of(RegistryKeys.BLOCK, Identifier.of(LMRBMod.MODID, id));
         }
     }
 
@@ -44,7 +44,7 @@ public class LMTags {
                 register("maid_spawn_exclude_biome");
 
         private static TagKey<Biome> register(String id) {
-            return TagKey.of(RegistryKeys.BIOME, new Identifier(LMRBMod.MODID, id));
+            return TagKey.of(RegistryKeys.BIOME, Identifier.of(LMRBMod.MODID, id));
         }
     }
 }

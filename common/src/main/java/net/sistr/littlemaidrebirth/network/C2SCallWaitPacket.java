@@ -14,7 +14,7 @@ import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 public class C2SCallWaitPacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "call_wait");
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "call_wait");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, State state) {

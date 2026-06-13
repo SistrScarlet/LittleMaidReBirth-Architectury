@@ -13,8 +13,8 @@ import org.joml.Matrix4f;
 
 public class MaidSoulRenderer extends EntityRenderer<MaidSoulEntity> {
     private static final Identifier TEXTURE =
-            new Identifier(LMRBMod.MODID, "textures/entity/maid_soul/maid_soul.png");
-    private static final Identifier HEART = new Identifier("textures/particle/heart.png");
+            Identifier.of(LMRBMod.MODID, "textures/entity/maid_soul/maid_soul.png");
+    private static final Identifier HEART = Identifier.of("textures/particle/heart.png");
 
     public MaidSoulRenderer(EntityRendererFactory.Context ctx) {
         super(ctx);

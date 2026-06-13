@@ -20,7 +20,7 @@ import net.sistr.littlemaidrebirth.entity.util.MaidManager;
 import net.sistr.littlemaidrebirth.entity.util.MaidManagerImpl;
 
 public class OpenMaidManagerScreenPacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "open_maid_manager_screen");
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "open_maid_manager_screen");
 
     public static void sendS2CPacket(PlayerEntity player) {
         PacketByteBuf buf = createS2CPacket(player);

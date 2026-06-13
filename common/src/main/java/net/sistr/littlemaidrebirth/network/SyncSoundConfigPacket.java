@@ -19,7 +19,7 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 /** サウンドコンフィグを同期するパケット */
 public class SyncSoundConfigPacket {
-    public static final Identifier ID = new Identifier(LMRBMod.MODID, "sync_sound_config");
+    public static final Identifier ID = Identifier.of(LMRBMod.MODID, "sync_sound_config");
 
     @Environment(EnvType.CLIENT)
     public static void sendC2SPacket(Entity entity, String configName) {
