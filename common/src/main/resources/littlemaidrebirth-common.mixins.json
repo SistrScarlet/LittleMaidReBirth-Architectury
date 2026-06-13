@@ -17,7 +17,8 @@
     "MixinSaddleItem",
     "MixinServerPlayerEntity",
     "PersistentProjectileEntityAccessor",
-    "ProjectileEntityAccessor"
+    "ProjectileEntityAccessor",
+    "SpawnRestrictionInvoker"
   ],
   "client": [
   ],
