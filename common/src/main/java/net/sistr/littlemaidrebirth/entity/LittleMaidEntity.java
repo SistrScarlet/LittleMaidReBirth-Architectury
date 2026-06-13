@@ -9,13 +9,15 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.EnchantmentEffectComponentTypes;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.goal.*;
 import net.minecraft.entity.ai.pathing.MobNavigation;
 import net.minecraft.entity.attribute.DefaultAttributeContainer;
-import net.minecraft.entity.attribute.EntityAttribute;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.boss.dragon.EnderDragonPart;
 import net.minecraft.entity.damage.DamageEffects;
@@ -29,7 +31,6 @@ import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.entity.projectile.thrown.SnowballEntity;
 import net.minecraft.inventory.Inventory;
@@ -42,6 +43,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.EntityTrackerEntry;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -86,6 +88,7 @@ import net.sistr.littlemaidrebirth.mixin.CrossbowItemInvoker;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LMCollidable;
+import net.sistr.littlemaidrebirth.util.LMEnchantmentUtil;
 import net.sistr.littlemaidrebirth.util.ReachAttributeUtil;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
@@ -248,14 +251,14 @@ public class LittleMaidEntity extends TameableEntity
   }
 
   @Override
-  protected void initDataTracker() {
-    super.initDataTracker();
-    this.dataTracker.startTracking(LMM_FLAGS, (byte) 0);
-    this.dataTracker.startTracking(MOVING_MODE, (byte) 0);
-    this.dataTracker.startTracking(MODE_NAME, "");
-    this.dataTracker.startTracking(CHARGING, false);
-    this.dataTracker.startTracking(ACCELERATE, false);
-    this.dataTracker.startTracking(MASTER_STANCE, (byte) 0);
+  protected void initDataTracker(DataTracker.Builder builder) {
+    super.initDataTracker(builder);
+    builder.add(LMM_FLAGS, (byte) 0);
+    builder.add(MOVING_MODE, (byte) 0);
+    builder.add(MODE_NAME, "");
+    builder.add(CHARGING, false);
+    builder.add(ACCELERATE, false);
+    builder.add(MASTER_STANCE, (byte) 0);
   }
 
   public void addDefaultModes(LittleMaidEntity maid) {
@@ -296,9 +299,7 @@ public class LittleMaidEntity extends TameableEntity
     if (maidVersion <= 1) {
       var defaultAttributes = createLittleMaidAttributes().build();
       var entityAttributes =
-          new EntityAttribute[] {
-            EntityAttributes.GENERIC_MOVEMENT_SPEED, EntityAttributes.GENERIC_FOLLOW_RANGE
-          };
+          List.of(EntityAttributes.GENERIC_MOVEMENT_SPEED, EntityAttributes.GENERIC_FOLLOW_RANGE);
       for (var attribute : entityAttributes) {
         var customInstance = this.getAttributes().getCustomInstance(attribute);
         if (customInstance != null) {
@@ -314,12 +315,16 @@ public class LittleMaidEntity extends TameableEntity
       for (int i = 0; i < list.size(); i++) {
         NbtCompound nbtCompound = list.getCompound(i);
         int j = nbtCompound.getByte("Slot") & 255;
-        ItemStack stack = ItemStack.fromNbt(nbtCompound);
+        ItemStack stack =
+            ItemStack.fromNbt(this.getRegistryManager(), nbtCompound).orElse(ItemStack.EMPTY);
         if (!stack.isEmpty()) {
           if (j == 0) {
             this.equipStack(EquipmentSlot.MAINHAND, stack);
           } else if (100 <= j && j < 104) {
-            this.equipStack(EquipmentSlot.fromTypeIndex(EquipmentSlot.Type.ARMOR, j - 100), stack);
+            EquipmentSlot[] armorSlots = {
+              EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD
+            };
+            this.equipStack(armorSlots[j - 100], stack);
           } else if (j == 150) {
             this.equipStack(EquipmentSlot.OFFHAND, stack);
           }
@@ -334,7 +339,7 @@ public class LittleMaidEntity extends TameableEntity
       readModeData(nbt);
       setBloodSuck(nbt.getBoolean("isBloodSuck"));
       if (this.getMovingMode() == MovingMode.FREEDOM && nbt.contains("FreedomPos")) {
-        freedomPos = NbtHelper.toBlockPos(nbt.getCompound("FreedomPos"));
+        freedomPos = NbtHelper.toBlockPos(nbt, "FreedomPos").orElse(null);
       }
       readTargetTags(nbt);
     }
@@ -413,7 +418,7 @@ public class LittleMaidEntity extends TameableEntity
     buf.writeString(getConfigHolder().getName());
     // 頭の装飾品が表示されない対策
     // 原因はインベントリを開くまで同期されないため
-    buf.writeItemStack(getInventory().getStack(17));
+    buf.writeNbt(getInventory().getStack(17).encodeAllowEmpty(this.getRegistryManager()));
     // architectury側のミスでPitchYawが逆に与えられているのを修正
     buf.writeFloat(this.getPitch());
     buf.writeFloat(this.getYaw());
@@ -442,7 +447,10 @@ public class LittleMaidEntity extends TameableEntity
     // サウンド
     LMConfigManager.INSTANCE.getConfig(buf.readString()).ifPresent(this::setConfigHolder);
 
-    getInventory().setStack(17, buf.readItemStack());
+    getInventory()
+        .setStack(
+            17,
+            ItemStack.fromNbt(this.getRegistryManager(), buf.readNbt()).orElse(ItemStack.EMPTY));
     this.setPitch(buf.readFloat());
     this.setYaw(buf.readFloat());
     this.accelerationTicks = buf.readVarInt();
@@ -626,42 +634,31 @@ public class LittleMaidEntity extends TameableEntity
     return null;
   }
 
-  // todo マウント系の位置を調整
-
-  /** 上に乗ってるエンティティへのオフセット */
   @Override
-  public double getMountedHeightOffset() {
-    IMultiModel model =
-        getModel(Layer.SKIN, Part.HEAD).orElse(LMModelManager.INSTANCE.getDefaultModel());
-    return model.getMountedYOffset(getCaps());
+  public boolean isBreedingItem(ItemStack stack) {
+    return false;
   }
 
-  /** 騎乗時のオフセット */
-  @Override
-  public double getHeightOffset() {
-    IMultiModel model =
-        getModel(Layer.SKIN, Part.HEAD).orElse(LMModelManager.INSTANCE.getDefaultModel());
-    return model.getyOffset(getCaps()) - getHeight();
-  }
+  // todo マウント系の位置をモデルに追従させる。1.21 で getMountedHeightOffset /
+  //  getHeightOffset が削除されたため、騎乗・搭乗オフセットのモデル連動は失われている。
+  //  復元には EntityAttachments (EntityType.Builder) での設定が必要。
 
   // このままだとEntityDimensionsが作っては捨てられてを繰り返すのでパフォーマンスはよろしくない
   // …が、そもそもそんなにたくさん呼ばれるメソッドでもない
   @Override
-  public EntityDimensions getDimensions(EntityPose pose) {
-    EntityDimensions dimensions;
+  protected EntityDimensions getBaseDimensions(EntityPose pose) {
     IMultiModel model =
         getModel(Layer.SKIN, Part.HEAD).orElse(LMModelManager.INSTANCE.getDefaultModel());
     float height = model.getHeight(getCaps(), MMPose.convertPose(pose));
     float width = model.getWidth(getCaps(), MMPose.convertPose(pose));
-    dimensions = EntityDimensions.changing(width, height);
-    return dimensions.scaled(getScaleFactor());
+    return EntityDimensions.changing(width, height);
   }
 
   @Nullable
   @Override
-  public Entity moveToWorld(ServerWorld destination) {
+  public Entity teleportTo(TeleportTarget teleportTarget) {
     // ディメンション移動の時に、自由行動地点を削除する
-    Entity entity = super.moveToWorld(destination);
+    Entity entity = super.teleportTo(teleportTarget);
     if (entity == null) return null;
     if (entity instanceof LittleMaidEntity && this.getMovingMode() == MovingMode.FREEDOM) {
       ((LittleMaidEntity) entity).setFreedomPos(null);
@@ -906,16 +903,18 @@ public class LittleMaidEntity extends TameableEntity
 
   // todo try/catchを挟む。処理の見直し
   @Override
-  public void attack(LivingEntity target, float pullProgress) {
+  public void shootAt(LivingEntity target, float pullProgress) {
     var stack = this.getMainHandStack();
     // 弾が無い場合は実行されないはずだが、念のためチェック
     var arrowStack = this.getProjectileType(stack);
-    boolean isInfinite = EnchantmentHelper.getLevel(Enchantments.INFINITY, stack) >= 1;
+    RegistryEntry<Enchantment> infinity =
+        LMEnchantmentUtil.entry(this.getWorld(), Enchantments.INFINITY);
+    boolean isInfinite = EnchantmentHelper.getLevel(infinity, stack) >= 1;
     if (arrowStack.isEmpty() && !isInfinite) {
       return;
     }
     if (stack.getItem() instanceof BowItem bowItem) {
-      var arrow = ProjectileUtil.createArrowProjectile(this, arrowStack, pullProgress);
+      var arrow = ProjectileUtil.createArrowProjectile(this, arrowStack, pullProgress, stack);
       if (arrowStack.getItem() instanceof ArrowItem && !isInfinite) {
         arrow.pickupType = PersistentProjectileEntity.PickupPermission.ALLOWED;
       }
@@ -952,38 +951,9 @@ public class LittleMaidEntity extends TameableEntity
     this.dataTracker.set(CHARGING, charging);
   }
 
-  @Override
-  public void shoot(
-      LivingEntity target, ItemStack crossbow, ProjectileEntity projectile, float multiShotSpray) {
-    this.shoot(this, target, projectile, multiShotSpray, CrossbowItemInvoker.getSpeed(crossbow));
-  }
-
-  // todo 弾道調整
-  @Override
-  public void shoot(
-      LivingEntity entity,
-      LivingEntity target,
-      ProjectileEntity projectile,
-      float multishotSpray,
-      float speed) {
-    double xDiff = target.getX() - entity.getX();
-    double yDiff = target.getEyeY() - projectile.getY();
-    double zDiff = target.getZ() - entity.getZ();
-    double horizonLen = Math.sqrt(xDiff * xDiff + zDiff * zDiff);
-    Vector3f targetAt =
-        this.getProjectileLaunchVelocity(
-            entity, new Vec3d(xDiff, yDiff + horizonLen * 0.025, zDiff), multishotSpray);
-    projectile.setVelocity(
-        targetAt.x(),
-        targetAt.y(),
-        targetAt.z(),
-        speed * getConfig().work.archerShootVelocityFactor,
-        14 - entity.getWorld().getDifficulty().getId() * 4);
-    entity.playSound(
-        SoundEvents.ITEM_CROSSBOW_SHOOT,
-        1.0f,
-        1.0f / (entity.getRandom().nextFloat() * 0.4f + 0.8f));
-  }
+  // todo 1.21 で CrossbowUser の shoot(...) / getProjectileLaunchVelocity が廃止され、
+  //  クロスボウのカスタム弾道 (archerShootVelocityFactor) は失われた。
+  //  バニラの CrossbowUser#shoot(LivingEntity, float) デフォルトに委譲している。
 
   @Override
   public void postShoot() {}
@@ -1103,14 +1073,16 @@ public class LittleMaidEntity extends TameableEntity
         amount = 1.0f;
       }
       int i = -1;
+      EquipmentSlot[] armorSlots = {
+        EquipmentSlot.FEET, EquipmentSlot.LEGS, EquipmentSlot.CHEST, EquipmentSlot.HEAD
+      };
       for (ItemStack stack : this.getArmorItems()) {
         i++;
-        if (source.isIn(DamageTypeTags.IS_FIRE) && stack.getItem().isFireproof()
+        if (source.isIn(DamageTypeTags.IS_FIRE) && stack.contains(DataComponentTypes.FIRE_RESISTANT)
             || !(stack.getItem() instanceof ArmorItem)) {
           continue;
         }
-        var slot = EquipmentSlot.fromTypeIndex(EquipmentSlot.Type.ARMOR, i);
-        stack.damage((int) amount, this, arg -> arg.sendEquipmentBreakStatus(slot));
+        stack.damage((int) amount, this, armorSlots[i]);
       }
     }
   }
@@ -1122,11 +1094,11 @@ public class LittleMaidEntity extends TameableEntity
         amount = 1.0f;
       }
       var stack = getEquippedStack(EquipmentSlot.HEAD);
-      if (source.isIn(DamageTypeTags.IS_FIRE) && stack.getItem().isFireproof()
+      if (source.isIn(DamageTypeTags.IS_FIRE) && stack.contains(DataComponentTypes.FIRE_RESISTANT)
           || !(stack.getItem() instanceof ArmorItem)) {
         return;
       }
-      stack.damage((int) amount, this, arg -> arg.sendEquipmentBreakStatus(EquipmentSlot.HEAD));
+      stack.damage((int) amount, this, EquipmentSlot.HEAD);
     }
   }
 
@@ -1173,13 +1145,13 @@ public class LittleMaidEntity extends TameableEntity
   public void equipStack(EquipmentSlot slot, ItemStack stack) {
     super.equipStack(slot, stack);
 
-    if (slot.getType() == EquipmentSlot.Type.ARMOR) {
+    if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
       multiModel.updateArmor();
     }
   }
 
   @Override
-  protected void dropEquipment(DamageSource source, int lootingMultiplier, boolean allowDrops) {
+  protected void dropEquipment(ServerWorld world, DamageSource source, boolean causedByPlayer) {
     // dropInventoryで捨てるので不要
     // 実装的に、こちらはランダムドロップに使うもの
   }
@@ -1189,13 +1161,17 @@ public class LittleMaidEntity extends TameableEntity
     Inventory inv = this.getInventory();
     for (int i = 0; i < inv.size(); i++) {
       ItemStack stack = inv.getStack(i);
-      if (stack.isEmpty() || EnchantmentHelper.hasVanishingCurse(stack)) continue;
+      if (stack.isEmpty()
+          || EnchantmentHelper.hasAnyEnchantmentsWith(
+              stack, EnchantmentEffectComponentTypes.PREVENT_EQUIPMENT_DROP)) continue;
       this.dropStack(stack);
       inv.setStack(i, ItemStack.EMPTY);
     }
     for (EquipmentSlot slot : EquipmentSlot.values()) {
       ItemStack stack = this.getEquippedStack(slot);
-      if (stack.isEmpty() || EnchantmentHelper.hasVanishingCurse(stack)) continue;
+      if (stack.isEmpty()
+          || EnchantmentHelper.hasAnyEnchantmentsWith(
+              stack, EnchantmentEffectComponentTypes.PREVENT_EQUIPMENT_DROP)) continue;
       this.dropStack(stack);
       this.equipStack(slot, ItemStack.EMPTY);
     }
@@ -1264,11 +1240,6 @@ public class LittleMaidEntity extends TameableEntity
   @Override
   public boolean isTamed() {
     return TameableUtil.getTameOwnerUuid(this).isPresent();
-  }
-
-  @Override
-  public EntityView method_48926() {
-    return this.getWorld();
   }
 
   public boolean isBegging() {
