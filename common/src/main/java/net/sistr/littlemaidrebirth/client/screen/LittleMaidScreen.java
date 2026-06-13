@@ -32,7 +32,13 @@ import net.sistr.littlemaidrebirth.network.*;
 public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     private static final Identifier GUI =
             Identifier.of("lmreengaged", "textures/gui/container/littlemaidinventory2.png");
-    private static final Identifier ICONS = Identifier.of("textures/gui/icons.png");
+    // 1.21: icons.png は廃止され HUD スプライトへ分割された
+    private static final Identifier HEART_CONTAINER = Identifier.ofVanilla("hud/heart/container");
+    private static final Identifier HEART_FULL = Identifier.ofVanilla("hud/heart/full");
+    private static final Identifier HEART_HALF = Identifier.ofVanilla("hud/heart/half");
+    private static final Identifier ARMOR_EMPTY = Identifier.ofVanilla("hud/armor_empty");
+    private static final Identifier ARMOR_FULL = Identifier.ofVanilla("hud/armor_full");
+    private static final Identifier ARMOR_HALF = Identifier.ofVanilla("hud/armor_half");
     private static final ItemStack ARMOR = Items.LEATHER_CHESTPLATE.getDefaultStack();
     private static final ItemStack BOOK = Items.BOOK.getDefaultStack();
     private static final ItemStack NOTE = Items.NOTE_BLOCK.getDefaultStack();
@@ -215,7 +221,9 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
                 entityCenterX + 25,
                 entityTop + 59,
                 20,
-                0.0625f,
+                // 足元を box 下端 (entityTop+59) に固定。centerY=entityTop+30, size=20
+                // → yOffset = (59-30)/20 - height/2。1.20.1 の足元アンカー描画を再現
+                1.45f - owner.getHeight() / 2f,
                 (float) mouseX,
                 (float) mouseY,
                 owner);
@@ -317,7 +325,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     protected void drawHealth(DrawContext context, int x, int y, float health, int rowHeart) {
-        drawIcon(context, x, y, health, rowHeart, 16, 0, 52, 0, 61, 0);
+        drawIcon(context, x, y, health, rowHeart, HEART_CONTAINER, HEART_FULL, HEART_HALF);
     }
 
     protected void drawArmor(DrawContext context) {
@@ -327,7 +335,7 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
     }
 
     protected void drawArmor(DrawContext context, int x, int y, float health, int rowHeart) {
-        drawIcon(context, x, y, health, rowHeart, 16, 9, 34, 9, 25, 9);
+        drawIcon(context, x, y, health, rowHeart, ARMOR_EMPTY, ARMOR_FULL, ARMOR_HALF);
     }
 
     protected void drawIcon(
@@ -336,18 +344,15 @@ public class LittleMaidScreen extends HandledScreen<LittleMaidScreenHandler> {
             int y,
             float num,
             int row,
-            int baseU,
-            int baseV,
-            int overU,
-            int overV,
-            int halfU,
-            int halfV) {
+            Identifier base,
+            Identifier full,
+            Identifier half) {
         for (int i = 0; i < row; i++) {
-            context.drawTexture(ICONS, x + i * 9, y, baseU, baseV, 9, 9);
+            context.drawGuiTexture(base, x + i * 9, y, 9, 9);
             if (1 < num) {
-                context.drawTexture(ICONS, x + i * 9, y, overU, overV, 9, 9);
+                context.drawGuiTexture(full, x + i * 9, y, 9, 9);
             } else if (0 < num) {
-                context.drawTexture(ICONS, x + i * 9, y, halfU, halfV, 9, 9);
+                context.drawGuiTexture(half, x + i * 9, y, 9, 9);
             }
             num -= 2;
         }

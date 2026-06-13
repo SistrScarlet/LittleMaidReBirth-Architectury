@@ -397,7 +397,9 @@ public class MaidManagerScreen extends Screen {
                                         entityX + 25,
                                         entityY + 8,
                                         entitySize,
-                                        0.0625f,
+                                        // 足元を旧アンカー entityY に固定。centerY=entityY-21,
+                                        // size=20 → yOffset = (0-(-21))/20 - height/2
+                                        1.05f - e.getHeight() / 2f,
                                         (float) (entityX - 20),
                                         (float) (entityY - 21),
                                         e);
