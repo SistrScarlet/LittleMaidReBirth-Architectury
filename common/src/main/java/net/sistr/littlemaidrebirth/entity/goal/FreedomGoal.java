@@ -13,81 +13,79 @@ import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 // 雇い主が居ない場合も実行される
 public class FreedomGoal<T extends LittleMaidEntity> extends WanderAroundFarGoal {
-    private final T maid;
-    private final Supplier<Float> distance;
-    private final Supplier<Float> distanceSq;
-    private BlockPos freedomPos;
-    private int reCalcCool;
+  private final T maid;
+  private final Supplier<Float> distance;
+  private final Supplier<Float> distanceSq;
+  private BlockPos freedomPos;
+  private int reCalcCool;
 
-    public FreedomGoal(T mob, float speedIn, Supplier<Float> distance) {
-        super(mob, speedIn);
-        this.maid = mob;
-        this.distance = distance;
-        this.distanceSq = () -> distance.get() * distance.get();
-        setControls(EnumSet.of(Control.MOVE));
+  public FreedomGoal(T mob, float speedIn, Supplier<Float> distance) {
+    super(mob, speedIn);
+    this.maid = mob;
+    this.distance = distance;
+    this.distanceSq = () -> distance.get() * distance.get();
+    setControls(EnumSet.of(Control.MOVE));
+  }
+
+  @Override
+  public boolean canStart() {
+    return TameableUtil.hasTameOwner(maid)
+        && !TameableUtil.isWait(maid)
+        && maid.getNavigation().isIdle()
+        && maid.getMovingMode() == MovingMode.FREEDOM
+        && super.canStart();
+  }
+
+  @Override
+  public void start() {
+    super.start();
+    freedomPos = this.maid.getFreedomPos().orElse(null);
+  }
+
+  @Override
+  public void tick() {
+    super.tick();
+
+    // 自由行動の起点が存在する場合、起点から自由行動範囲の外に行かないようにする
+
+    if (freedomPos == null) {
+      return;
     }
-
-    @Override
-    public boolean canStart() {
-        return TameableUtil.hasTameOwner(maid)
-                && !TameableUtil.isWait(maid)
-                && maid.getNavigation().isIdle()
-                && maid.getMovingMode() == MovingMode.FREEDOM
-                && super.canStart();
+    if (freedomPos.getSquaredDistance(mob.getPos()) < distanceSq.get()) {
+      return;
     }
-
-    @Override
-    public void start() {
-        super.start();
-        freedomPos = this.maid.getFreedomPos().orElse(null);
+    if (0 < --reCalcCool) {
+      return;
     }
-
-    @Override
-    public void tick() {
-        super.tick();
-
-        // 自由行動の起点が存在する場合、起点から自由行動範囲の外に行かないようにする
-
-        if (freedomPos == null) {
-            return;
-        }
-        if (freedomPos.getSquaredDistance(mob.getPos()) < distanceSq.get()) {
-            return;
-        }
-        if (0 < --reCalcCool) {
-            return;
-        }
-        reCalcCool = getTickCount(LMRBMod.getConfig().movement.pathRecalcInterval * 2);
-        // freedomPosを目指して移動
-        Path path =
-                mob.getNavigation()
-                        .findPathTo(
-                                freedomPos.getX(),
-                                freedomPos.getY(),
-                                freedomPos.getZ(),
-                                MathHelper.floor(distance.get() * 0.5));
-        if (path != null
-                && path.getEnd() != null
-                && path.getEnd().getManhattanDistance(freedomPos) < distance.get()) {
-            mob.getNavigation().startMovingAlong(path, speed);
-            return;
-        }
-        mob.getNavigation().stop();
-        // 移動しても着きそうにない場合はTP
-        if (mob.isOnGround()
-                && mob.getWorld()
-                        .isSpaceEmpty(
-                                mob.getBoundingBox()
-                                        .offset(mob.getPos().multiply(-1))
-                                        .offset(freedomPos))) {
-            mob.teleport(freedomPos.getX() + 0.5D, freedomPos.getY(), freedomPos.getZ() + 0.5D);
-        }
+    reCalcCool = getTickCount(LMRBMod.getConfig().movement.pathRecalcInterval * 2);
+    // freedomPosを目指して移動
+    Path path =
+        mob.getNavigation()
+            .findPathTo(
+                freedomPos.getX(),
+                freedomPos.getY(),
+                freedomPos.getZ(),
+                MathHelper.floor(distance.get() * 0.5));
+    if (path != null
+        && path.getEnd() != null
+        && path.getEnd().getManhattanDistance(freedomPos) < distance.get()) {
+      mob.getNavigation().startMovingAlong(path, speed);
+      return;
     }
-
-    @Override
-    public void stop() {
-        super.stop();
-        freedomPos = null;
-        reCalcCool = 0;
+    mob.getNavigation().stop();
+    // 移動しても着きそうにない場合はTP
+    if (mob.isOnGround()
+        && mob.getWorld()
+            .isSpaceEmpty(
+                mob.getBoundingBox().offset(mob.getPos().multiply(-1)).offset(freedomPos))) {
+      mob.requestTeleport(freedomPos.getX() + 0.5D, freedomPos.getY(), freedomPos.getZ() + 0.5D);
     }
+  }
+
+  @Override
+  public void stop() {
+    super.stop();
+    freedomPos = null;
+    reCalcCool = 0;
+  }
 }
