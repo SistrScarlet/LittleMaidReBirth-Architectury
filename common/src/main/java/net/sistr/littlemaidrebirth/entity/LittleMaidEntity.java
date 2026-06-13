@@ -84,7 +84,6 @@ import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 import net.sistr.littlemaidrebirth.entity.util.*;
-import net.sistr.littlemaidrebirth.mixin.CrossbowItemInvoker;
 import net.sistr.littlemaidrebirth.setup.Registration;
 import net.sistr.littlemaidrebirth.tags.LMTags;
 import net.sistr.littlemaidrebirth.util.LMCollidable;
@@ -936,7 +935,7 @@ public class LittleMaidEntity extends TameableEntity
       this.getWorld().spawnEntity(arrow);
       arrowStack.decrement(1);
     } else if (stack.getItem() instanceof CrossbowItem) {
-      this.shoot(this, CrossbowItemInvoker.getSpeed(stack));
+      this.shoot(target, 1.6F);
     }
   }
 
