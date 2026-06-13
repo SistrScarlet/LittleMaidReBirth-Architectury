@@ -43,6 +43,7 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.registry.tag.DamageTypeTags;
 import net.minecraft.server.network.EntityTrackerEntry;
@@ -271,7 +272,7 @@ public class LittleMaidEntity extends TameableEntity
     super.writeCustomDataToNbt(nbt);
     nbt.putByte("maidVersion", (byte) 2);
 
-    writeInventory(nbt);
+    writeInventory(nbt, this.getRegistryManager());
     nbt.putInt("XpTotal", this.experiencePoints);
     if (TameableUtil.getTameOwnerUuid(this).isPresent()) {
       nbt.putBoolean("Wait", TameableUtil.isWait(this));
@@ -307,7 +308,7 @@ public class LittleMaidEntity extends TameableEntity
       }
     }
 
-    readInventory(nbt);
+    readInventory(nbt, this.getRegistryManager());
     this.experiencePoints = nbt.getInt("XpTotal");
     if (maidVersion == 0) {
       var list = nbt.getList("Inventory", 10);
@@ -1047,13 +1048,13 @@ public class LittleMaidEntity extends TameableEntity
   }
 
   @Override
-  public void writeInventory(NbtCompound tag) {
-    this.littleMaidInventory.writeInventory(tag);
+  public void writeInventory(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
+    this.littleMaidInventory.writeInventory(tag, lookup);
   }
 
   @Override
-  public void readInventory(NbtCompound tag) {
-    this.littleMaidInventory.readInventory(tag);
+  public void readInventory(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
+    this.littleMaidInventory.readInventory(tag, lookup);
   }
 
   public int getWorkItemSlotSize() {
