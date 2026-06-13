@@ -10,13 +10,14 @@ import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 public class ContractMaidCriterion extends AbstractCriterion<TameAnimalCriterion.Conditions> {
 
-  @Override
-  public Codec<TameAnimalCriterion.Conditions> getConditionsCodec() {
-    return TameAnimalCriterion.Conditions.CODEC;
-  }
+    @Override
+    public Codec<TameAnimalCriterion.Conditions> getConditionsCodec() {
+        return TameAnimalCriterion.Conditions.CODEC;
+    }
 
-  public void trigger(ServerPlayerEntity player, LittleMaidEntity entity) {
-    LootContext lootContext = EntityPredicate.createAdvancementEntityLootContext(player, entity);
-    this.trigger(player, conditions -> conditions.matches(lootContext));
-  }
+    public void trigger(ServerPlayerEntity player, LittleMaidEntity entity) {
+        LootContext lootContext =
+                EntityPredicate.createAdvancementEntityLootContext(player, entity);
+        this.trigger(player, conditions -> conditions.matches(lootContext));
+    }
 }

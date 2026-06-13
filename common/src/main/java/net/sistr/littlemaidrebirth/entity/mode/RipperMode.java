@@ -16,102 +16,104 @@ import net.sistr.littlemaidrebirth.api.mode.ModeType;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
 
 public class RipperMode extends Mode {
-  protected final LittleMaidEntity mob;
-  protected final float radius;
-  protected final Queue<Entity> shearable = Lists.newLinkedList();
-  protected int timeToRecalcPath;
-  protected int timeToIgnore;
-  protected int cool;
+    protected final LittleMaidEntity mob;
+    protected final float radius;
+    protected final Queue<Entity> shearable = Lists.newLinkedList();
+    protected int timeToRecalcPath;
+    protected int timeToIgnore;
+    protected int cool;
 
-  public RipperMode(
-      ModeType<? extends Mode> modeType, String name, LittleMaidEntity mob, float radius) {
-    super(modeType, name);
-    this.mob = mob;
-    this.radius = radius;
-  }
+    public RipperMode(
+            ModeType<? extends Mode> modeType, String name, LittleMaidEntity mob, float radius) {
+        super(modeType, name);
+        this.mob = mob;
+        this.radius = radius;
+    }
 
-  @Override
-  public boolean shouldExecute() {
-    if (0 < cool--) {
-      return false;
+    @Override
+    public boolean shouldExecute() {
+        if (0 < cool--) {
+            return false;
+        }
+        cool = LMRBMod.getConfig().work.ripperSearchInterval;
+        this.shearable.addAll(findCanShearableMob());
+        return !this.shearable.isEmpty();
     }
-    cool = LMRBMod.getConfig().work.ripperSearchInterval;
-    this.shearable.addAll(findCanShearableMob());
-    return !this.shearable.isEmpty();
-  }
 
-  public Collection<Entity> findCanShearableMob() {
-    Box bb =
-        new Box(
-            this.mob.getX() + radius,
-            this.mob.getY() + radius / 2F,
-            this.mob.getZ() + radius,
-            this.mob.getX() - radius,
-            this.mob.getY() - radius / 2F,
-            this.mob.getZ() - radius);
-    return this.mob
-        .getWorld()
-        .getOtherEntities(
-            this.mob,
-            bb,
-            (entity) ->
-                entity instanceof LivingEntity
-                    && entity instanceof Shearable
-                    && ((Shearable) entity).isShearable());
-  }
+    public Collection<Entity> findCanShearableMob() {
+        Box bb =
+                new Box(
+                        this.mob.getX() + radius,
+                        this.mob.getY() + radius / 2F,
+                        this.mob.getZ() + radius,
+                        this.mob.getX() - radius,
+                        this.mob.getY() - radius / 2F,
+                        this.mob.getZ() - radius);
+        return this.mob
+                .getWorld()
+                .getOtherEntities(
+                        this.mob,
+                        bb,
+                        (entity) ->
+                                entity instanceof LivingEntity
+                                        && entity instanceof Shearable
+                                        && ((Shearable) entity).isShearable());
+    }
 
-  @Override
-  public boolean shouldContinueExecuting() {
-    return !this.shearable.isEmpty();
-  }
+    @Override
+    public boolean shouldContinueExecuting() {
+        return !this.shearable.isEmpty();
+    }
 
-  @Override
-  public void tick() {
-    if (this.shearable.isEmpty()) {
-      return;
+    @Override
+    public void tick() {
+        if (this.shearable.isEmpty()) {
+            return;
+        }
+        Entity target = this.shearable.peek();
+        if (!(target instanceof LivingEntity) || !(target instanceof Shearable)) {
+            this.shearable.remove();
+            this.timeToIgnore = 0;
+            return;
+        }
+        if (200 < ++this.timeToIgnore) {
+            this.shearable.remove();
+            this.timeToIgnore = 0;
+            return;
+        }
+        if (target.squaredDistanceTo(this.mob) < 2.5f * 2.5f) {
+            ItemStack stack = this.mob.getMainHandStack();
+            if (((Shearable) target).isShearable()) {
+                ((Shearable) target).sheared(SoundCategory.PLAYERS);
+                stack.damage(1, this.mob, EquipmentSlot.MAINHAND);
+            }
+            this.shearable.remove();
+            this.timeToIgnore = 0;
+            this.mob.getNavigation().stop();
+            return;
+        }
+        if (--this.timeToRecalcPath <= 0) {
+            this.timeToRecalcPath = LMRBMod.getConfig().movement.pathRecalcInterval;
+            var path =
+                    this.mob
+                            .getNavigation()
+                            .findPathTo(target.getX(), target.getY(), target.getZ(), 1);
+            if (path == null
+                    || path.getEnd() == null
+                    || path.getEnd().getPos().add(0.5, 0, 0.5).squaredDistanceTo(target.getPos())
+                            > 2.5f * 2.5f) {
+                this.shearable.remove();
+                this.timeToIgnore = 0;
+            } else {
+                this.mob.getNavigation().startMovingAlong(path, 1.0f);
+            }
+        }
     }
-    Entity target = this.shearable.peek();
-    if (!(target instanceof LivingEntity) || !(target instanceof Shearable)) {
-      this.shearable.remove();
-      this.timeToIgnore = 0;
-      return;
-    }
-    if (200 < ++this.timeToIgnore) {
-      this.shearable.remove();
-      this.timeToIgnore = 0;
-      return;
-    }
-    if (target.squaredDistanceTo(this.mob) < 2.5f * 2.5f) {
-      ItemStack stack = this.mob.getMainHandStack();
-      if (((Shearable) target).isShearable()) {
-        ((Shearable) target).sheared(SoundCategory.PLAYERS);
-        stack.damage(1, this.mob, EquipmentSlot.MAINHAND);
-      }
-      this.shearable.remove();
-      this.timeToIgnore = 0;
-      this.mob.getNavigation().stop();
-      return;
-    }
-    if (--this.timeToRecalcPath <= 0) {
-      this.timeToRecalcPath = LMRBMod.getConfig().movement.pathRecalcInterval;
-      var path =
-          this.mob.getNavigation().findPathTo(target.getX(), target.getY(), target.getZ(), 1);
-      if (path == null
-          || path.getEnd() == null
-          || path.getEnd().getPos().add(0.5, 0, 0.5).squaredDistanceTo(target.getPos())
-              > 2.5f * 2.5f) {
-        this.shearable.remove();
+
+    @Override
+    public void resetTask() {
         this.timeToIgnore = 0;
-      } else {
-        this.mob.getNavigation().startMovingAlong(path, 1.0f);
-      }
+        this.timeToRecalcPath = 0;
+        this.shearable.clear();
     }
-  }
-
-  @Override
-  public void resetTask() {
-    this.timeToIgnore = 0;
-    this.timeToRecalcPath = 0;
-    this.shearable.clear();
-  }
 }
