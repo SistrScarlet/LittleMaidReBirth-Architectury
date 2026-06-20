@@ -434,6 +434,17 @@ public class LittleMaidEntity extends TameableEntity
         buf.writeFloat(this.getPitch());
         buf.writeFloat(this.getYaw());
         buf.writeVarInt(this.accelerationTicks);
+        // 1.21 では再トラッキング時に DataTracker / 装備の follow-up が確実に届かないため、
+        // 描画に必要な状態 (各種フラグ・モード・装備) を spawn data で直接送る。
+        buf.writeByte(this.dataTracker.get(LMM_FLAGS));
+        buf.writeByte(getMovingMode().getId());
+        buf.writeString(this.dataTracker.get(MODE_NAME));
+        buf.writeBoolean(this.dataTracker.get(CHARGING));
+        buf.writeBoolean(this.dataTracker.get(ACCELERATE));
+        buf.writeByte(this.dataTracker.get(MASTER_STANCE));
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            buf.writeNbt(getEquippedStack(slot).encodeAllowEmpty(this.getRegistryManager()));
+        }
     }
 
     // 蔵
@@ -466,6 +477,18 @@ public class LittleMaidEntity extends TameableEntity
         this.setPitch(buf.readFloat());
         this.setYaw(buf.readFloat());
         this.accelerationTicks = buf.readVarInt();
+        this.dataTracker.set(LMM_FLAGS, buf.readByte());
+        setMovingMode(MovingMode.fromId(buf.readByte()));
+        this.dataTracker.set(MODE_NAME, buf.readString());
+        this.dataTracker.set(CHARGING, buf.readBoolean());
+        this.dataTracker.set(ACCELERATE, buf.readBoolean());
+        this.dataTracker.set(MASTER_STANCE, buf.readByte());
+        for (EquipmentSlot slot : EquipmentSlot.values()) {
+            equipStack(
+                    slot,
+                    ItemStack.fromNbt(this.getRegistryManager(), buf.readNbt())
+                            .orElse(ItemStack.EMPTY));
+        }
     }
 
     @Override
@@ -653,14 +676,13 @@ public class LittleMaidEntity extends TameableEntity
         return false;
     }
 
-    // 1.21 で getHeightOffset が削除されたため、乗客として乗り物に乗る際の搭乗オフセット
-    // (モデル連動) を getVehicleAttachmentPos で復元する。乗り物側の搭乗位置にこの値が加算される。
-    // (プレイヤー肩車は MixinPlayerEntity 側で別途補正済みのため、ここは主にボート等が対象)
+    // 1.21 で getHeightOffset が削除されたため、乗客として乗り物に乗る際の搭乗オフセットを
+    // getVehicleAttachmentPos で補正する（乗り物側の搭乗位置にこの値が加算される）。
+    // モデル連動式 (getyOffset - getHeight) は pose 依存で実質ゼロになり効かなかったため、
+    // ボートで約0.2m高い分を直値で下げる。(プレイヤー肩車は MixinPlayerEntity 側で別途補正済み)
     @Override
     public Vec3d getVehicleAttachmentPos(Entity vehicle) {
-        IMultiModel model =
-                getModel(Layer.SKIN, Part.HEAD).orElse(LMModelManager.INSTANCE.getDefaultModel());
-        return new Vec3d(0.0, model.getyOffset(getCaps()) - getHeight(), 0.0);
+        return new Vec3d(0.0, -0.2, 0.0);
     }
 
     // todo メイドさん自身が乗り物になる場合 (getMountedHeightOffset 相当) のモデル連動は未対応。
