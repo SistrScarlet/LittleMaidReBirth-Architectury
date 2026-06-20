@@ -22,6 +22,13 @@ final class LMInteractionHandler {
     private LMInteractionHandler() {}
 
     static ActionResult handle(LittleMaidEntity maid, PlayerEntity player, Hand hand) {
+        // メイドさんへの操作はメインハンドのみ受け付ける。
+        // オフハンド(多くの場合空手)まで処理すると、末尾の openInventory に落ちて
+        // 意図せずインベントリが開く(特にクライアントで owner 未同期だと両手分の
+        // インタラクションが送られ、サーバーのオフハンド処理がインベントリを開く)。
+        if (hand != Hand.MAIN_HAND) {
+            return ActionResult.PASS;
+        }
         if (player.isSneaking()) {
             return ActionResult.PASS;
         }

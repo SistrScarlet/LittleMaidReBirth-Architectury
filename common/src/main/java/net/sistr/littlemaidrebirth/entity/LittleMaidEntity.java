@@ -445,6 +445,14 @@ public class LittleMaidEntity extends TameableEntity
         for (EquipmentSlot slot : EquipmentSlot.values()) {
             buf.writeNbt(getEquippedStack(slot).encodeAllowEmpty(this.getRegistryManager()));
         }
+        // owner も TameableEntity 標準の DataTracker 同期(follow-up)依存のため、再トラッキング時に
+        // クライアントで未取得になりうる。owner 未取得だと操作判定がクライアント/サーバーで食い違う
+        // (オフハンドにフォールスルーして誤ってインベントリが開く等)ので spawn data で直接送る。
+        UUID ownerUuid = getOwnerUuid();
+        buf.writeBoolean(ownerUuid != null);
+        if (ownerUuid != null) {
+            buf.writeUuid(ownerUuid);
+        }
     }
 
     // 蔵
@@ -488,6 +496,9 @@ public class LittleMaidEntity extends TameableEntity
                     slot,
                     ItemStack.fromNbt(this.getRegistryManager(), buf.readNbt())
                             .orElse(ItemStack.EMPTY));
+        }
+        if (buf.readBoolean()) {
+            setOwnerUuid(buf.readUuid());
         }
     }
 
@@ -677,12 +688,13 @@ public class LittleMaidEntity extends TameableEntity
     }
 
     // 1.21 で getHeightOffset が削除されたため、乗客として乗り物に乗る際の搭乗オフセットを
-    // getVehicleAttachmentPos で補正する（乗り物側の搭乗位置にこの値が加算される）。
-    // モデル連動式 (getyOffset - getHeight) は pose 依存で実質ゼロになり効かなかったため、
-    // ボートで約0.2m高い分を直値で下げる。(プレイヤー肩車は MixinPlayerEntity 側で別途補正済み)
+    // getVehicleAttachmentPos で補正する。バニラ Entity#updatePassengerPosition では
+    // 搭乗位置からこの値が「減算」される (pos = ridingPos - vehicleAttachmentPos) ため、
+    // ボートで約0.2m高い分を下げるには正の +0.2 を返す。
+    // (プレイヤー肩車は MixinPlayerEntity 側で別途補正済み)
     @Override
     public Vec3d getVehicleAttachmentPos(Entity vehicle) {
-        return new Vec3d(0.0, -0.2, 0.0);
+        return new Vec3d(0.0, 0.2, 0.0);
     }
 
     // todo メイドさん自身が乗り物になる場合 (getMountedHeightOffset 相当) のモデル連動は未対応。
