@@ -193,7 +193,11 @@ def build_jar_list(project_root, project_config, gradle_props, version, mc_versi
     """アップロード対象の JAR リストを構築する。"""
     dropbox_base = project_config["dropbox_base"]
     upload_path_tmpl = project_config["upload_path"]
-    platforms = project_config.get("platforms", ["Fabric", "Forge"])
+    # バージョンごとに loader が異なる場合 (例: 1.20.1=Forge / 1.21.1=NeoForge) は
+    # mc_version_platforms で上書きする。未指定なら global platforms を使う。
+    platforms = project_config.get("mc_version_platforms", {}).get(
+        mc_version, project_config.get("platforms", ["Fabric", "Forge"])
+    )
     mc_version_folders = project_config.get("mc_version_folders", {})
     jar_prefix = gradle_props.get("archives_base_name", "Mod")
 
@@ -258,7 +262,8 @@ def cmd_check(args):
     dropbox_base = project_config["dropbox_base"]
     mc_version_folders = project_config.get("mc_version_folders", {})
     upload_path_tmpl = project_config["upload_path"]
-    platforms = project_config.get("platforms", ["Fabric", "Forge"])
+    default_platforms = project_config.get("platforms", ["Fabric", "Forge"])
+    mc_version_platforms = project_config.get("mc_version_platforms", {})
 
     app_key, app_secret, refresh_token = load_credentials()
     access_token = get_access_token(app_key, app_secret, refresh_token)
@@ -284,7 +289,7 @@ def cmd_check(args):
     print("設定との照合:")
     expected_folders = set()
     for mc_ver, mc_folder in mc_version_folders.items():
-        for platform in platforms:
+        for platform in mc_version_platforms.get(mc_ver, default_platforms):
             path = "/" + upload_path_tmpl.format(
                 platform=platform, mc_folder=mc_folder, jar="*"
             )
