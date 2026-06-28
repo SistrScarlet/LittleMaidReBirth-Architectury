@@ -19,56 +19,56 @@ import net.sistr.littlemaidrebirth.entity.util.MaidManager;
 import net.sistr.littlemaidrebirth.entity.util.MaidManagerImpl;
 
 public record OpenMaidManagerScreenPacket(NbtCompound nbt, boolean isC2S) implements CustomPayload {
-  public static final CustomPayload.Id<OpenMaidManagerScreenPacket> C2S_ID =
-      new CustomPayload.Id<>(Identifier.of(LMRBMod.MODID, "open_maid_manager_screen_c2s"));
-  public static final CustomPayload.Id<OpenMaidManagerScreenPacket> S2C_ID =
-      new CustomPayload.Id<>(Identifier.of(LMRBMod.MODID, "open_maid_manager_screen_s2c"));
+    public static final CustomPayload.Id<OpenMaidManagerScreenPacket> C2S_ID =
+            new CustomPayload.Id<>(Identifier.of(LMRBMod.MODID, "open_maid_manager_screen_c2s"));
+    public static final CustomPayload.Id<OpenMaidManagerScreenPacket> S2C_ID =
+            new CustomPayload.Id<>(Identifier.of(LMRBMod.MODID, "open_maid_manager_screen_s2c"));
 
-  public static final PacketCodec<RegistryByteBuf, OpenMaidManagerScreenPacket> C2S_CODEC =
-      PacketCodec.of(
-          (packet, buf) -> buf.writeNbt(packet.nbt()),
-          buf -> new OpenMaidManagerScreenPacket(buf.readNbt(), true));
+    public static final PacketCodec<RegistryByteBuf, OpenMaidManagerScreenPacket> C2S_CODEC =
+            PacketCodec.of(
+                    (packet, buf) -> buf.writeNbt(packet.nbt()),
+                    buf -> new OpenMaidManagerScreenPacket(buf.readNbt(), true));
 
-  public static final PacketCodec<RegistryByteBuf, OpenMaidManagerScreenPacket> S2C_CODEC =
-      PacketCodec.of(
-          (packet, buf) -> buf.writeNbt(packet.nbt()),
-          buf -> new OpenMaidManagerScreenPacket(buf.readNbt(), false));
+    public static final PacketCodec<RegistryByteBuf, OpenMaidManagerScreenPacket> S2C_CODEC =
+            PacketCodec.of(
+                    (packet, buf) -> buf.writeNbt(packet.nbt()),
+                    buf -> new OpenMaidManagerScreenPacket(buf.readNbt(), false));
 
-  @Override
-  public CustomPayload.Id<? extends CustomPayload> getId() {
-    return isC2S ? C2S_ID : S2C_ID;
-  }
+    @Override
+    public CustomPayload.Id<? extends CustomPayload> getId() {
+        return isC2S ? C2S_ID : S2C_ID;
+    }
 
-  public static void sendS2CPacket(PlayerEntity player) {
-    var nbt = new NbtCompound();
-    var lmInfos = ((MaidManager) player).getMaidList();
-    MaidManagerImpl.write(nbt, lmInfos);
-    NetworkManager.sendToPlayer(
-        (ServerPlayerEntity) player, new OpenMaidManagerScreenPacket(nbt, false));
-  }
+    public static void sendS2CPacket(PlayerEntity player) {
+        var nbt = new NbtCompound();
+        var lmInfos = ((MaidManager) player).getMaidList();
+        MaidManagerImpl.write(nbt, lmInfos);
+        NetworkManager.sendToPlayer(
+                (ServerPlayerEntity) player, new OpenMaidManagerScreenPacket(nbt, false));
+    }
 
-  @Environment(EnvType.CLIENT)
-  public static void sendC2SPacket() {
-    NetworkManager.sendToServer(new OpenMaidManagerScreenPacket(new NbtCompound(), true));
-  }
+    @Environment(EnvType.CLIENT)
+    public static void sendC2SPacket() {
+        NetworkManager.sendToServer(new OpenMaidManagerScreenPacket(new NbtCompound(), true));
+    }
 
-  @Environment(EnvType.CLIENT)
-  public static void receiveS2CPacket(
-      OpenMaidManagerScreenPacket payload, NetworkManager.PacketContext context) {
-    PlayerEntity player = context.getPlayer();
-    if (player == null) return;
-    var lmInfos = new ArrayList<MaidManager.LMInfo>();
-    MaidManagerImpl.read(payload.nbt(), lmInfos);
-    context.queue(() -> openScreen(player, lmInfos));
-  }
+    @Environment(EnvType.CLIENT)
+    public static void receiveS2CPacket(
+            OpenMaidManagerScreenPacket payload, NetworkManager.PacketContext context) {
+        PlayerEntity player = context.getPlayer();
+        if (player == null) return;
+        var lmInfos = new ArrayList<MaidManager.LMInfo>();
+        MaidManagerImpl.read(payload.nbt(), lmInfos);
+        context.queue(() -> openScreen(player, lmInfos));
+    }
 
-  @Environment(EnvType.CLIENT)
-  private static void openScreen(PlayerEntity player, List<MaidManager.LMInfo> lmInfos) {
-    MinecraftClient.getInstance().setScreen(new MaidManagerScreen(lmInfos));
-  }
+    @Environment(EnvType.CLIENT)
+    private static void openScreen(PlayerEntity player, List<MaidManager.LMInfo> lmInfos) {
+        MinecraftClient.getInstance().setScreen(new MaidManagerScreen(lmInfos));
+    }
 
-  public static void receiveC2SPacket(
-      OpenMaidManagerScreenPacket payload, NetworkManager.PacketContext context) {
-    context.queue(() -> sendS2CPacket(context.getPlayer()));
-  }
+    public static void receiveC2SPacket(
+            OpenMaidManagerScreenPacket payload, NetworkManager.PacketContext context) {
+        context.queue(() -> sendS2CPacket(context.getPlayer()));
+    }
 }

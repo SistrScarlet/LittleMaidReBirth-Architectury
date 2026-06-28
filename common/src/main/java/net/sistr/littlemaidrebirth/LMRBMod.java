@@ -11,24 +11,24 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class LMRBMod {
-  public static final String MODID = "littlemaidrebirth";
-  public static final Logger LOGGER = LogManager.getLogger();
-  private static ConfigHolder<LMRBConfig> CONFIG_HOLDER;
+    public static final String MODID = "littlemaidrebirth";
+    public static final Logger LOGGER = LogManager.getLogger();
+    private static ConfigHolder<LMRBConfig> CONFIG_HOLDER;
 
-  public static void init() {
-    AutoConfig.register(LMRBConfig.class, Toml4jConfigSerializer::new);
-    CONFIG_HOLDER = AutoConfig.getConfigHolder(LMRBConfig.class);
+    public static void init() {
+        AutoConfig.register(LMRBConfig.class, Toml4jConfigSerializer::new);
+        CONFIG_HOLDER = AutoConfig.getConfigHolder(LMRBConfig.class);
 
-    Registration.init();
-    registerAttribute();
-  }
+        Registration.init();
+        registerAttribute();
+    }
 
-  public static void registerAttribute() {
-    EntityAttributeRegistry.register(
-        Registration.LITTLE_MAID_MOB, LittleMaidEntity::createLittleMaidAttributes);
-  }
+    public static void registerAttribute() {
+        EntityAttributeRegistry.register(
+                Registration.LITTLE_MAID_MOB, LittleMaidEntity::createLittleMaidAttributes);
+    }
 
-  public static LMRBConfig getConfig() {
-    return CONFIG_HOLDER.getConfig();
-  }
+    public static LMRBConfig getConfig() {
+        return CONFIG_HOLDER.getConfig();
+    }
 }
