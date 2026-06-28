@@ -9,8 +9,7 @@
 
 ### 1.21.1 移植回帰バグ
 
-- [ ] 同期範囲外→範囲内に入ったとき、防具・移動モード・姿(モデル)が同期されない（姿が見えない）。エンティティ再トラッキング時に spawn/tracker データが再送・再適用されていない疑い。`EntitySpawnExtension` の saveAdditional/loadAdditionalSpawnData（Architectury networking 1.21）と DataTracker 初期値再送、1.21 のトラッキング仕様変更を調査。3種同時に失敗するため再トラッキング機構全体が原因の可能性大
-- [ ] ボートに乗ると約0.2m高い（プレイヤーが肩車した時は正常）。乗り物搭乗位置オフセット。1.21 の passenger attachment（`EntityDimensions.passengerAttachments` / `getPassengerAttachmentPos`）未定義の可能性
+- [ ] ボートに乗ると約0.2m高い（プレイヤーが肩車した時は正常）。`getVehicleAttachmentPos` に +0.2/-0.2 を返す方法を試したが実機で差が出なかった（バイトコード上は `pos = ridingPos - vehicleAttachmentPos` の減算だが効いていない）。1.21 の passenger attachment（`EntityDimensions.passengerAttachments` / `BoatEntity` の搭乗位置計算）を再調査し、別経路でオフセットされている可能性を確認する
 - [ ] 近接攻撃で剣の耐久が減らない（以前からのバグの可能性あり）。メイドの近接攻撃時に武器 `stack.damage(...)` が呼ばれているか、1.21 の attack/postHit/durability 仕様変更を調査
 
 ## 中
