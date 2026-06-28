@@ -9,14 +9,16 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 import net.sistr.littlemaidrebirth.LMRBMod;
+import net.sistr.littlemaidrebirth.client.key.LMKeys;
 import net.sistr.littlemaidrebirth.client.renderer.MaidModelRenderer;
 import net.sistr.littlemaidrebirth.client.renderer.MaidSoulRenderer;
+import net.sistr.littlemaidrebirth.client.screen.LittleMaidScreen;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.LittleMaidEntity;
-import net.sistr.littlemaidrebirth.setup.ClientSetup;
 import net.sistr.littlemaidrebirth.setup.ModSetup;
 import net.sistr.littlemaidrebirth.setup.Registration;
 
@@ -33,6 +35,7 @@ public class LMRBNeoForge {
         modBus.addListener(this::modInit);
         modBus.addListener(this::spawnRestrictionInit);
         modBus.addListener(this::clientInit);
+        modBus.addListener(this::menuScreenInit);
         modBus.addListener(this::renderInit);
     }
 
@@ -51,7 +54,12 @@ public class LMRBNeoForge {
     }
 
     public void clientInit(FMLClientSetupEvent event) {
-        ClientSetup.init();
+        LMKeys.init();
+    }
+
+    // FMLClientSetupEvent より後に発火するため、スクリーン登録はこちらで行う
+    public void menuScreenInit(RegisterMenuScreensEvent event) {
+        event.register(Registration.LITTLE_MAID_SCREEN_HANDLER.get(), LittleMaidScreen::new);
     }
 
     // ClientSetupよりこちらの方が実行が早いため、ClientSetupからArchitecturyのメソッド登録しようとすると無視される
