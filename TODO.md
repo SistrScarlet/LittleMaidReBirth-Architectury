@@ -9,6 +9,8 @@
 
 ### 1.21.1 移植回帰バグ
 
+- [ ] NeoForge でアドバンスメント Criteria（contract_maid / resurrect_maid）が未登録。NeoForge の `RegisterEvent` タイミングで `CriteriaTriggers.register` を呼ぶよう対応が必要。暫定的に `LMRBCriteria.init()` を NeoForge から除外しアドバンスメント無効化で回避中
+
 - [ ] ボートに乗ると約0.2m高い（プレイヤーが肩車した時は正常）。`getVehicleAttachmentPos` に +0.2/-0.2 を返す方法を試したが実機で差が出なかった（バイトコード上は `pos = ridingPos - vehicleAttachmentPos` の減算だが効いていない）。1.21 の passenger attachment（`EntityDimensions.passengerAttachments` / `BoatEntity` の搭乗位置計算）を再調査し、別経路でオフセットされている可能性を確認する
 - [ ] 近接攻撃で剣の耐久が減らない（以前からのバグの可能性あり）。メイドの近接攻撃時に武器 `stack.damage(...)` が呼ばれているか、1.21 の attack/postHit/durability 仕様変更を調査
 
