@@ -19,75 +19,85 @@ import net.sistr.littlemaidrebirth.LMRBMod;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
 
 /** サウンドコンフィグを同期するパケット */
-public record SyncSoundConfigPacket(int entityId, String configName) implements CustomPayload {
-    public static final CustomPayload.Id<SyncSoundConfigPacket> ID =
-            new CustomPayload.Id<>(Identifier.of(LMRBMod.MODID, "sync_sound_config"));
+public record SyncSoundConfigPacket(int entityId, String configName, boolean isC2S)
+    implements CustomPayload {
+  public static final CustomPayload.Id<SyncSoundConfigPacket> C2S_ID =
+      new CustomPayload.Id<>(Identifier.of(LMRBMod.MODID, "sync_sound_config_c2s"));
+  public static final CustomPayload.Id<SyncSoundConfigPacket> S2C_ID =
+      new CustomPayload.Id<>(Identifier.of(LMRBMod.MODID, "sync_sound_config_s2c"));
 
-    public static final PacketCodec<RegistryByteBuf, SyncSoundConfigPacket> CODEC =
-            PacketCodec.of(
-                    (packet, buf) -> {
-                        buf.writeVarInt(packet.entityId());
-                        buf.writeString(packet.configName());
-                    },
-                    buf -> new SyncSoundConfigPacket(buf.readVarInt(), buf.readString()));
+  public static final PacketCodec<RegistryByteBuf, SyncSoundConfigPacket> C2S_CODEC =
+      PacketCodec.of(
+          (packet, buf) -> {
+            buf.writeVarInt(packet.entityId());
+            buf.writeString(packet.configName());
+          },
+          buf -> new SyncSoundConfigPacket(buf.readVarInt(), buf.readString(), true));
 
-    @Override
-    public CustomPayload.Id<? extends CustomPayload> getId() {
-        return ID;
+  public static final PacketCodec<RegistryByteBuf, SyncSoundConfigPacket> S2C_CODEC =
+      PacketCodec.of(
+          (packet, buf) -> {
+            buf.writeVarInt(packet.entityId());
+            buf.writeString(packet.configName());
+          },
+          buf -> new SyncSoundConfigPacket(buf.readVarInt(), buf.readString(), false));
+
+  @Override
+  public CustomPayload.Id<? extends CustomPayload> getId() {
+    return isC2S ? C2S_ID : S2C_ID;
+  }
+
+  @Environment(EnvType.CLIENT)
+  public static void sendC2SPacket(Entity entity, String configName) {
+    NetworkManager.sendToServer(new SyncSoundConfigPacket(entity.getId(), configName, true));
+  }
+
+  public static void sendS2CPacket(Entity entity, String configName) {
+    NetworkManager.sendToPlayers(
+        PlayerList.tracking(entity), new SyncSoundConfigPacket(entity.getId(), configName, false));
+  }
+
+  @Environment(EnvType.CLIENT)
+  public static void receiveS2CPacket(
+      SyncSoundConfigPacket payload, NetworkManager.PacketContext context) {
+    context.queue(() -> applySoundConfigClient(payload.entityId(), payload.configName()));
+  }
+
+  @Environment(EnvType.CLIENT)
+  private static void applySoundConfigClient(int id, String configName) {
+    PlayerEntity player = MinecraftClient.getInstance().player;
+    if (player == null) return;
+    World world = player.getWorld();
+    Entity entity = world.getEntityById(id);
+    if (entity instanceof SoundPlayable) {
+      LMConfigManager.INSTANCE
+          .getConfig(configName)
+          .ifPresent(((SoundPlayable) entity)::setConfigHolder);
     }
+  }
 
-    @Environment(EnvType.CLIENT)
-    public static void sendC2SPacket(Entity entity, String configName) {
-        NetworkManager.sendToServer(new SyncSoundConfigPacket(entity.getId(), configName));
-    }
+  public static void receiveC2SPacket(
+      SyncSoundConfigPacket payload, NetworkManager.PacketContext context) {
+    context.queue(
+        () ->
+            applySoundConfigServer(context.getPlayer(), payload.entityId(), payload.configName()));
+  }
 
-    public static void sendS2CPacket(Entity entity, String configName) {
-        NetworkManager.sendToPlayers(
-                PlayerList.tracking(entity), new SyncSoundConfigPacket(entity.getId(), configName));
+  private static void applySoundConfigServer(PlayerEntity player, int id, String configName) {
+    World world = player.getWorld();
+    Entity entity = world.getEntityById(id);
+    if (!(entity instanceof SoundPlayable)) {
+      return;
     }
-
-    @Environment(EnvType.CLIENT)
-    public static void receiveS2CPacket(
-            SyncSoundConfigPacket payload, NetworkManager.PacketContext context) {
-        context.queue(() -> applySoundConfigClient(payload.entityId(), payload.configName()));
+    if (entity instanceof Tameable tameable
+        && TameableUtil.getTameOwnerUuid(tameable)
+            .filter(ownerId -> ownerId.equals(player.getUuid()))
+            .isEmpty()) {
+      return;
     }
-
-    @Environment(EnvType.CLIENT)
-    private static void applySoundConfigClient(int id, String configName) {
-        PlayerEntity player = MinecraftClient.getInstance().player;
-        if (player == null) return;
-        World world = player.getWorld();
-        Entity entity = world.getEntityById(id);
-        if (entity instanceof SoundPlayable) {
-            LMConfigManager.INSTANCE
-                    .getConfig(configName)
-                    .ifPresent(((SoundPlayable) entity)::setConfigHolder);
-        }
-    }
-
-    public static void receiveC2SPacket(
-            SyncSoundConfigPacket payload, NetworkManager.PacketContext context) {
-        context.queue(
-                () ->
-                        applySoundConfigServer(
-                                context.getPlayer(), payload.entityId(), payload.configName()));
-    }
-
-    private static void applySoundConfigServer(PlayerEntity player, int id, String configName) {
-        World world = player.getWorld();
-        Entity entity = world.getEntityById(id);
-        if (!(entity instanceof SoundPlayable)) {
-            return;
-        }
-        if (entity instanceof Tameable tameable
-                && TameableUtil.getTameOwnerUuid(tameable)
-                        .filter(ownerId -> ownerId.equals(player.getUuid()))
-                        .isEmpty()) {
-            return;
-        }
-        LMConfigManager.INSTANCE
-                .getConfig(configName)
-                .ifPresent(((SoundPlayable) entity)::setConfigHolder);
-        sendS2CPacket(entity, configName);
-    }
+    LMConfigManager.INSTANCE
+        .getConfig(configName)
+        .ifPresent(((SoundPlayable) entity)::setConfigHolder);
+    sendS2CPacket(entity, configName);
+  }
 }
