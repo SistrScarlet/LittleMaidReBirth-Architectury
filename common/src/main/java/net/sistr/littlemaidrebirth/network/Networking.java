@@ -19,9 +19,9 @@ public class Networking {
       NetworkManager.registerS2CPayloadType(
           SyncSoundConfigPacket.S2C_ID, SyncSoundConfigPacket.S2C_CODEC);
       NetworkManager.registerS2CPayloadType(
-          OpenTargetTagScreenPacket.ID, OpenTargetTagScreenPacket.CODEC);
+          OpenTargetTagScreenPacket.S2C_ID, OpenTargetTagScreenPacket.S2C_CODEC);
       NetworkManager.registerS2CPayloadType(
-          OpenMaidManagerScreenPacket.ID, OpenMaidManagerScreenPacket.CODEC);
+          OpenMaidManagerScreenPacket.S2C_ID, OpenMaidManagerScreenPacket.S2C_CODEC);
       NetworkManager.registerS2CPayloadType(SpawnLittleMaidPacket.ID, SpawnLittleMaidPacket.CODEC);
     }
     serverInit();
@@ -36,13 +36,13 @@ public class Networking {
         SyncSoundConfigPacket::receiveS2CPacket);
     NetworkManager.registerReceiver(
         NetworkManager.Side.S2C,
-        OpenTargetTagScreenPacket.ID,
-        OpenTargetTagScreenPacket.CODEC,
+        OpenTargetTagScreenPacket.S2C_ID,
+        OpenTargetTagScreenPacket.S2C_CODEC,
         OpenTargetTagScreenPacket::receiveS2CPacket);
     NetworkManager.registerReceiver(
         NetworkManager.Side.S2C,
-        OpenMaidManagerScreenPacket.ID,
-        OpenMaidManagerScreenPacket.CODEC,
+        OpenMaidManagerScreenPacket.S2C_ID,
+        OpenMaidManagerScreenPacket.S2C_CODEC,
         OpenMaidManagerScreenPacket::receiveS2CPacket);
     NetworkManager.registerReceiver(
         NetworkManager.Side.S2C,
@@ -79,13 +79,13 @@ public class Networking {
         C2SSetTargetTagsPacket::receive);
     NetworkManager.registerReceiver(
         NetworkManager.Side.C2S,
-        OpenTargetTagScreenPacket.ID,
-        OpenTargetTagScreenPacket.CODEC,
+        OpenTargetTagScreenPacket.C2S_ID,
+        OpenTargetTagScreenPacket.C2S_CODEC,
         OpenTargetTagScreenPacket::receiveC2SPacket);
     NetworkManager.registerReceiver(
         NetworkManager.Side.C2S,
-        OpenMaidManagerScreenPacket.ID,
-        OpenMaidManagerScreenPacket.CODEC,
+        OpenMaidManagerScreenPacket.C2S_ID,
+        OpenMaidManagerScreenPacket.C2S_CODEC,
         OpenMaidManagerScreenPacket::receiveC2SPacket);
     NetworkManager.registerReceiver(
         NetworkManager.Side.C2S,
