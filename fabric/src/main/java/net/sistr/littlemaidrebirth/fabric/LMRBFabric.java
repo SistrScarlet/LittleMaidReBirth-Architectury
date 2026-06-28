@@ -17,25 +17,25 @@ import net.sistr.littlemaidrebirth.setup.Registration;
 
 public class LMRBFabric implements ModInitializer, ClientModInitializer {
 
-  @Override
-  public void onInitialize() {
-    LMRBMod.init();
-    LMRBCriteria.init();
-    ModSetup.init();
+    @Override
+    public void onInitialize() {
+        LMRBMod.init();
+        LMRBCriteria.init();
+        ModSetup.init();
 
-    SpawnRestrictionInvoker.register_LM(
-        Registration.LITTLE_MAID_MOB.get(),
-        SpawnLocationTypes.ON_GROUND,
-        Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
-        (type, world, spawnReason, pos, random) ->
-            LittleMaidEntity.isValidNaturalSpawn(world, pos));
-  }
+        SpawnRestrictionInvoker.register_LM(
+                Registration.LITTLE_MAID_MOB.get(),
+                SpawnLocationTypes.ON_GROUND,
+                Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                (type, world, spawnReason, pos, random) ->
+                        LittleMaidEntity.isValidNaturalSpawn(world, pos));
+    }
 
-  @Override
-  public void onInitializeClient() {
-    ClientSetup.init();
-    // Forge側でうまく登録できないため、ここで登録
-    EntityRendererRegistry.register(Registration.LITTLE_MAID_MOB.get(), MaidModelRenderer::new);
-    EntityRendererRegistry.register(Registration.MAID_SOUL_ENTITY.get(), MaidSoulRenderer::new);
-  }
+    @Override
+    public void onInitializeClient() {
+        ClientSetup.init();
+        // Forge側でうまく登録できないため、ここで登録
+        EntityRendererRegistry.register(Registration.LITTLE_MAID_MOB.get(), MaidModelRenderer::new);
+        EntityRendererRegistry.register(Registration.MAID_SOUL_ENTITY.get(), MaidSoulRenderer::new);
+    }
 }
