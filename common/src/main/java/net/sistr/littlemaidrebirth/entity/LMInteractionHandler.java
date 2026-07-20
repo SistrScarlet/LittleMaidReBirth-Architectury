@@ -11,6 +11,7 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.sistr.littlemaidmodelloader.network.SyncMultiModelPacket;
+import net.sistr.littlemaidrebirth.advancement.criterion.LMRBCriteria;
 import net.sistr.littlemaidrebirth.config.LMRBConfig;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
@@ -194,8 +195,7 @@ final class LMInteractionHandler {
         if (!isReContract) {
             maid.getWorld().sendEntityStatus(maid, (byte) 70);
             if (player instanceof ServerPlayerEntity) {
-                // TODO: NeoForge の RegisterEvent タイミングで Criteria 登録対応後に復活
-                // LMRBCriteria.CONTRACT_MAID.trigger((ServerPlayerEntity) player, maid);
+                LMRBCriteria.CONTRACT_MAID.trigger((ServerPlayerEntity) player, maid);
             }
         } else {
             maid.getWorld().sendEntityStatus(maid, (byte) 71);

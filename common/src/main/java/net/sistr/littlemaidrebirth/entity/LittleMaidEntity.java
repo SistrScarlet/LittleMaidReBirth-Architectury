@@ -687,14 +687,15 @@ public class LittleMaidEntity extends TameableEntity
         return false;
     }
 
-    // 1.21 で getHeightOffset が削除されたため、乗客として乗り物に乗る際の搭乗オフセットを
-    // getVehicleAttachmentPos で補正する。バニラ Entity#updatePassengerPosition では
-    // 搭乗位置からこの値が「減算」される (pos = ridingPos - vehicleAttachmentPos) ため、
-    // ボートで約0.2m高い分を下げるには正の +0.2 を返す。
-    // (プレイヤー肩車は MixinPlayerEntity 側で別途補正済み)
     @Override
     public Vec3d getVehicleAttachmentPos(Entity vehicle) {
-        return new Vec3d(0.0, 0.2, 0.0);
+        IMultiModel model =
+                getModel(Layer.SKIN, Part.HEAD).orElse(LMModelManager.INSTANCE.getDefaultModel());
+        // 1.20.1: Y = vehicleY + vehicle.getMountedHeightOffset() + (getyOffset - getHeight)
+        // 1.21.1: Y = vehicleY + vehicle.getPassengerAttachmentPos().y - this.y
+        // ボートの場合 getMountedHeightOffset=-0.1 → getPassengerAttachmentPos.y=0.1875 (差: +0.2875)
+        double offset = 0.2875 + getHeight() - model.getyOffset(getCaps());
+        return new Vec3d(0.0, offset, 0.0);
     }
 
     // todo メイドさん自身が乗り物になる場合 (getMountedHeightOffset 相当) のモデル連動は未対応。

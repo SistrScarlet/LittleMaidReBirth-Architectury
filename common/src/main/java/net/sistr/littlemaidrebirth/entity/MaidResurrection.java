@@ -6,10 +6,12 @@ import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.DustParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
+import net.sistr.littlemaidrebirth.advancement.criterion.LMRBCriteria;
 import net.sistr.littlemaidrebirth.entity.util.MaidManager;
 import net.sistr.littlemaidrebirth.entity.util.MovingMode;
 import net.sistr.littlemaidrebirth.entity.util.TameableUtil;
@@ -41,8 +43,7 @@ public final class MaidResurrection {
 
                 world.spawnEntity(maid);
 
-                // TODO: NeoForge の RegisterEvent タイミングで Criteria 登録対応後に復活
-                // LMRBCriteria.RESURRECT_MAID.trigger((ServerPlayerEntity) player, maid);
+                LMRBCriteria.RESURRECT_MAID.trigger((ServerPlayerEntity) player, maid);
             }
         }
         ((MaidManager) player).clearMaidSouls();

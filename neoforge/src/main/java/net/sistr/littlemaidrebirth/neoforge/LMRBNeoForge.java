@@ -1,6 +1,8 @@
 package net.sistr.littlemaidrebirth.neoforge;
 
 import net.minecraft.entity.SpawnLocationTypes;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.util.Identifier;
 import net.minecraft.world.Heightmap;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -11,7 +13,9 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import net.neoforged.neoforge.registries.RegisterEvent;
 import net.sistr.littlemaidrebirth.LMRBMod;
+import net.sistr.littlemaidrebirth.advancement.criterion.LMRBCriteria;
 import net.sistr.littlemaidrebirth.client.key.LMKeys;
 import net.sistr.littlemaidrebirth.client.renderer.MaidModelRenderer;
 import net.sistr.littlemaidrebirth.client.renderer.MaidSoulRenderer;
@@ -31,11 +35,25 @@ public class LMRBNeoForge {
             ClientConfigScreenSetup.register(container);
         }
 
+        modBus.addListener(this::registerCriteria);
         modBus.addListener(this::modInit);
         modBus.addListener(this::spawnRestrictionInit);
         modBus.addListener(this::clientInit);
         modBus.addListener(this::menuScreenInit);
         modBus.addListener(this::renderInit);
+    }
+
+    public void registerCriteria(RegisterEvent event) {
+        event.register(
+                RegistryKeys.CRITERION,
+                helper -> {
+                    helper.register(
+                            Identifier.of(LMRBMod.MODID, "contract_maid"),
+                            LMRBCriteria.CONTRACT_MAID);
+                    helper.register(
+                            Identifier.of(LMRBMod.MODID, "resurrect_maid"),
+                            LMRBCriteria.RESURRECT_MAID);
+                });
     }
 
     public void modInit(FMLCommonSetupEvent event) {
