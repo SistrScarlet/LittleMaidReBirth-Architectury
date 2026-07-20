@@ -2,7 +2,7 @@
   "parent": "littlemaidrebirth:husbandry/contract_maid",
   "display": {
     "icon": {
-      "item": "minecraft:cake"
+      "id": "minecraft:cake"
     },
     "title": {
       "translate": "advancements.husbandry.resurrect_maid.title"

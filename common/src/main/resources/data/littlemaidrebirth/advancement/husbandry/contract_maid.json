@@ -2,7 +2,7 @@
   "parent": "minecraft:husbandry/root",
   "display": {
     "icon": {
-      "item": "minecraft:cake"
+      "id": "minecraft:cake"
     },
     "title": {
       "translate": "advancements.husbandry.contract_maid.title"
