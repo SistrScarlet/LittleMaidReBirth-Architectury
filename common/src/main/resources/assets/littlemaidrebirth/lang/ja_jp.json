@@ -49,6 +49,9 @@
   "gui.littlemaidrebirth.target_tag.tags.ranged_weapon_prohibited": "遠距離武器禁止",
   "gui.littlemaidrebirth.target_tag.tags.approach_allowed": "接近許可",
   "gui.littlemaidrebirth.target_tag.tags.approach_prohibited": "接近禁止",
+  "gui.littlemaidrebirth.target_tag.reset": "初期設定に戻す",
+  "gui.littlemaidrebirth.target_tag.reset_confirm": "もう一度クリック",
+  "gui.littlemaidrebirth.target_tag.reset.tooltip": "全エンティティの敵対対象タグを初期設定に戻します",
 
   "gui.littlemaidrebirth.maidmanager.open_inventory": "インベントリ",
 

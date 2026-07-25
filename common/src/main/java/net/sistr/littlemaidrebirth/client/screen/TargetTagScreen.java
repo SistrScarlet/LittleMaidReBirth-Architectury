@@ -14,11 +14,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
 import net.sistr.littlemaidmodelloader.client.screen.component.*;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetIdentifier;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManager;
+import net.sistr.littlemaidrebirth.entity.targeting.TargetTagManagerImpl;
 import net.sistr.littlemaidrebirth.entity.targeting.TargetingSystem;
 import net.sistr.littlemaidrebirth.network.C2SSetTargetTagsPacket;
 import org.lwjgl.glfw.GLFW;
@@ -29,6 +31,10 @@ public class TargetTagScreen extends Screen {
     private final Entity entity;
     private final Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> targetTags;
     private FilterableListGUI<TargetTagGUIElement> targetTagGui;
+    private ButtonWidget resetButton;
+
+    /** リセットは全設定を巻き戻すため、誤爆防止に 2 段階クリックにする */
+    private boolean resetConfirming;
 
     public TargetTagScreen(
             Entity entity, Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> targetTags) {
@@ -82,6 +88,40 @@ public class TargetTagScreen extends Screen {
                         .searchInputHeight(searchInputHeight)
                         .withPlaceholder("Search entities...")
                         .build();
+
+        // リストの左側の余白にリセットボタンを置く
+        int leftMargin = MathHelper.floor((this.width - totalWidth) / 2f);
+        int buttonWidth = Math.min(80, Math.max(40, leftMargin - 8));
+        this.resetConfirming = false;
+        this.resetButton =
+                ButtonWidget.builder(
+                                Text.translatable("gui.littlemaidrebirth.target_tag.reset"),
+                                this::onResetPressed)
+                        .dimensions(4, 4, buttonWidth, searchInputHeight)
+                        .tooltip(
+                                Tooltip.of(
+                                        Text.translatable(
+                                                "gui.littlemaidrebirth.target_tag.reset.tooltip")))
+                        .build();
+    }
+
+    private void onResetPressed(ButtonWidget button) {
+        if (!this.resetConfirming) {
+            this.resetConfirming = true;
+            button.setMessage(
+                    Text.translatable("gui.littlemaidrebirth.target_tag.reset_confirm")
+                            .formatted(Formatting.RED));
+            return;
+        }
+        assert this.client != null;
+        var world = this.client.world;
+        if (world == null) {
+            return;
+        }
+        this.targetTags.clear();
+        this.targetTags.putAll(TargetTagManagerImpl.createDefaultTargetTags(world));
+        // targetTags から要素を組み直すため init() をやり直す
+        this.clearAndInit();
     }
 
     @Override
@@ -89,10 +129,14 @@ public class TargetTagScreen extends Screen {
         context.fill(0, 0, this.width, this.height, 0x40000000);
 
         targetTagGui.render(context, mouseX, mouseY, delta);
+        resetButton.render(context, mouseX, mouseY, delta);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (resetButton.mouseClicked(mouseX, mouseY, button)) {
+            return true;
+        }
         return targetTagGui.mouseClicked(mouseX, mouseY, button);
     }
 

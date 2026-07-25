@@ -34,6 +34,23 @@ public class TargetTagManagerImpl implements TargetTagManager {
 
     // コンストラクタで実行するとスタックオーバーフローになるので分離
     private void init() {
+        initStatic(this.world);
+        var tmp = new HashMap<>(TARGET_TAG_MAP);
+        tmp.putAll(targetTagMap);
+        this.targetTagMap.putAll(tmp);
+        this.hash = this.targetTagMap.hashCode();
+    }
+
+    /** デフォルトのタグ構成のコピーを返す。GUI のリセット用 */
+    public static Map<TargetIdentifier, Set<TargetingSystem.TargetTag>> createDefaultTargetTags(
+            World world) {
+        initStatic(world);
+        var defaults = new HashMap<TargetIdentifier, Set<TargetingSystem.TargetTag>>();
+        TARGET_TAG_MAP.forEach((id, tags) -> defaults.put(id, new HashSet<>(tags)));
+        return defaults;
+    }
+
+    private static void initStatic(World world) {
         if (!staticInitialized) {
             Registries.ENTITY_TYPE.stream()
                     .filter(type -> type.isSummonable() && type.isSaveable())
@@ -94,10 +111,6 @@ public class TargetTagManagerImpl implements TargetTagManager {
             staticInitialized = true;
             LMRBMod.LOGGER.info("TargetTagMap Count: {}", TARGET_TAG_MAP.size());
         }
-        var tmp = new HashMap<>(TARGET_TAG_MAP);
-        tmp.putAll(targetTagMap);
-        this.targetTagMap.putAll(tmp);
-        this.hash = this.targetTagMap.hashCode();
     }
 
     @Override

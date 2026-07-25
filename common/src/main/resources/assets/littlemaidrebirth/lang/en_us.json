@@ -49,6 +49,9 @@
   "gui.littlemaidrebirth.target_tag.tags.ranged_weapon_prohibited": "Ranged Weapon Prohibited",
   "gui.littlemaidrebirth.target_tag.tags.approach_allowed": "Approach Allowed",
   "gui.littlemaidrebirth.target_tag.tags.approach_prohibited": "Approach Prohibited",
+  "gui.littlemaidrebirth.target_tag.reset": "Reset to Default",
+  "gui.littlemaidrebirth.target_tag.reset_confirm": "Click Again",
+  "gui.littlemaidrebirth.target_tag.reset.tooltip": "Reset target tags for all entities to their defaults",
 
   "gui.littlemaidrebirth.maidmanager.open_inventory": "Inventory",
 
