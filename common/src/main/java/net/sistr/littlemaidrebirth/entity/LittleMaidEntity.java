@@ -698,18 +698,28 @@ public class LittleMaidEntity extends TameableEntity
         return new Vec3d(0.0, offset, 0.0);
     }
 
-    // todo メイドさん自身が乗り物になる場合 (getMountedHeightOffset 相当) のモデル連動は未対応。
-    //  必要なら EntityType.Builder の passengerAttachments で設定する。
-
     // このままだとEntityDimensionsが作っては捨てられてを繰り返すのでパフォーマンスはよろしくない
     // …が、そもそもそんなにたくさん呼ばれるメソッドでもない
+    // PASSENGER attachment は旧 getMountedHeightOffset (自分の上に乗るエンティティの位置) 相当。
+    // scaled() は width/height/eyeHeight/attachments をまとめてスケールするため最後に呼ぶ。
+    // 既定実装が内包している getScaleFactor() の適用は override すると失われるので掛け直す。
     @Override
     protected EntityDimensions getBaseDimensions(EntityPose pose) {
         IMultiModel model =
                 getModel(Layer.SKIN, Part.HEAD).orElse(LMModelManager.INSTANCE.getDefaultModel());
-        float height = model.getHeight(getCaps(), MMPose.convertPose(pose));
-        float width = model.getWidth(getCaps(), MMPose.convertPose(pose));
-        return EntityDimensions.changing(width, height);
+        IModelCaps caps = getCaps();
+        MMPose mmPose = MMPose.convertPose(pose);
+        float height = model.getHeight(caps, mmPose);
+        float width = model.getWidth(caps, mmPose);
+        return EntityDimensions.changing(width, height)
+                .withAttachments(
+                        EntityAttachments.builder()
+                                .add(
+                                        EntityAttachmentType.PASSENGER,
+                                        0.0F,
+                                        model.getMountedYOffset(caps),
+                                        0.0F))
+                .scaled(getScaleFactor());
     }
 
     @Nullable
