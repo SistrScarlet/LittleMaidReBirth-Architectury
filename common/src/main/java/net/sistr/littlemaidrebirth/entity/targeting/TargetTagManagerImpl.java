@@ -130,11 +130,13 @@ public class TargetTagManagerImpl implements TargetTagManager {
             var tags = entry.getValue();
             var listEntry = new NbtCompound();
             listEntry.putString("id", id.toString());
-            var tagsList = new NbtList();
+            // NbtList ではなく ByteArray で書く。理由は readTagOrdinals を参照
+            var ordinals = new byte[tags.size()];
+            int i = 0;
             for (TargetingSystem.TargetTag tag : tags) {
-                tagsList.add(NbtByte.of((byte) tag.ordinal()));
+                ordinals[i++] = (byte) tag.ordinal();
             }
-            listEntry.put("tags", tagsList);
+            listEntry.putByteArray("tags", ordinals);
             list.add(listEntry);
         }
         nbt.put("targetTagMap", list);
@@ -157,16 +159,34 @@ public class TargetTagManagerImpl implements TargetTagManager {
             var listEntry = list.getCompound(i);
             var id = TargetIdentifier.tryParse(listEntry.getString("id"));
             if (id.isEmpty()) continue;
-            var tagsList = listEntry.getList("tags", NbtElement.BYTE_TYPE);
             var tags = new HashSet<TargetingSystem.TargetTag>();
-            for (NbtElement nbtElement : tagsList) {
-                byte ordinal = ((NbtByte) nbtElement).byteValue();
+            for (byte ordinal : readTagOrdinals(listEntry)) {
                 if (ordinal >= 0 && ordinal < TargetingSystem.TargetTag.values().length) {
                     tags.add(TargetingSystem.TargetTag.values()[ordinal]);
                 }
             }
             targetTagMap.put(id.get(), tags);
         }
+    }
+
+    /**
+     * tags の ordinal 列を読み取る。ByteArray と NbtList の両形式を受け付ける。
+     *
+     * <p>{@code NbtOps.createList} は全要素が NbtByte の NbtList を NbtByteArray へ変換する。 シングルプレイのホストは
+     * playerdata ではなく level.dat の Player タグから読み込まれ、その経路が Dynamic を通るため型が入れ替わる。{@code
+     * getList(BYTE_TYPE)} は型が LIST でないと空を返すので、 NbtList で保存すると再ログイン時に全タグが失われていた。書き込みは ByteArray
+     * に統一しつつ、 旧形式で保存された既存データも読めるようにしておく。
+     */
+    private static byte[] readTagOrdinals(NbtCompound listEntry) {
+        if (listEntry.contains("tags", NbtElement.BYTE_ARRAY_TYPE)) {
+            return listEntry.getByteArray("tags");
+        }
+        var tagsList = listEntry.getList("tags", NbtElement.BYTE_TYPE);
+        var ordinals = new byte[tagsList.size()];
+        for (int i = 0; i < tagsList.size(); i++) {
+            ordinals[i] = ((NbtByte) tagsList.get(i)).byteValue();
+        }
+        return ordinals;
     }
 
     @Override
