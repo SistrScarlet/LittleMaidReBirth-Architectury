@@ -9,6 +9,7 @@
 #   jar-search.sh sig <Class> [--all]
 #   jar-search.sh bytecode <Class> [method-pattern] [--all]
 #   jar-search.sh apidiff <Class> <old-version> [new-version]
+#   jar-search.sh callers <Class> [method] [--dir <subdir>] [--all]
 #   jar-search.sh doctor
 #
 # Global options:
@@ -400,6 +401,119 @@ cmd_apidiff() {
   fi
 }
 
+cmd_callers() {
+  local pattern="" method="" dir_filter=""
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --dir) dir_filter="$2"; shift 2 ;;
+      --all) SKIP_VERSION_FILTER=true; shift ;;
+      *)
+        if [ -z "$pattern" ]; then pattern="$1"; else method="$1"; fi
+        shift ;;
+    esac
+  done
+  if [ -z "$pattern" ]; then
+    echo "Usage: jar-search.sh callers <Class> [method] [--dir <subdir>] [--all]" >&2
+    return 1
+  fi
+
+  # 対象クラスを解決し、定数プール検索用の内部名 (net/minecraft/... 形式) を得る
+  local resolved entry internal
+  resolved=$(resolve_class_entry "$pattern") || return 1
+  entry="${resolved#*:}"
+  internal="${entry%.class}"
+
+  local javap_bin=""
+  if [ -n "$method" ]; then
+    javap_bin=$(resolve_javap) || return 1
+  fi
+
+  echo "=== Callers of ${internal}${method:+#$method} ($(version_label)) ==="
+
+  local tmp
+  tmp=$(mktemp -d)
+  local found=0
+  local jar
+  while IFS= read -r jar; do
+    [ -z "$jar" ] && continue
+    case "$jar" in
+      *"$dir_filter"*) ;; # --dir 指定時のフィルタ (未指定なら全 jar が通る)
+      *) [ -n "$dir_filter" ] && continue ;;
+    esac
+    # 段階1: jar 全体を stream grep して参照の有無を判定 (展開せず高速に)
+    # unzip の SIGPIPE (grep -q の早期終了) を || true で吸収する
+    if ! { unzip -p "$jar" '*.class' 2>/dev/null || true; } | grep -qF "$internal"; then
+      continue
+    fi
+    # 段階2: 参照を含む jar のみ展開し、参照元クラスを特定
+    local jdir="$tmp/$(basename "$jar" .jar)"
+    mkdir -p "$jdir"
+    unzip -o -q "$jar" '*.class' -d "$jdir" 2>/dev/null || true
+    local hits
+    hits=$(grep -rlF "$internal" "$jdir" 2>/dev/null | sort || true)
+    [ -z "$hits" ] && continue
+
+    local jar_header_shown=false
+    local n_candidates
+    n_candidates=$(echo "$hits" | grep -c . || true)
+    local skip_javap=false
+    if [ -n "$method" ] && [ "$n_candidates" -gt 200 ]; then
+      skip_javap=true
+    fi
+
+    local f
+    while IFS= read -r f; do
+      [ -z "$f" ] && continue
+      local rel="${f#$jdir/}"
+      local base="${rel%.class}"
+      # 自己参照 (対象クラス自身とそのインナークラス) を除外
+      case "$base" in
+        "$internal"|"$internal"\$*) continue ;;
+      esac
+      local fqcn
+      fqcn=$(echo "$base" | tr '/' '.')
+
+      if [ -n "$method" ] && [ "$skip_javap" = false ]; then
+        # 候補クラスを javap -c し、実際に対象メソッドを呼んでいるかを確認する。
+        # javap の呼び出しコメントは "Method <internal>.<method>:..." 形式
+        # ("InterfaceMethod" も "Method" を含むため grep 1 本で両方拾える)
+        local calls
+        calls=$("$javap_bin" -p -c -classpath "$jdir" "$fqcn" 2>/dev/null \
+          | awk -v pat="Method ${internal}.${method}" '
+              BEGIN { RS=""; FS="\n" }
+              index($0, pat) {
+                print "    " $1
+                for (i = 2; i <= NF; i++) if (index($i, pat)) print "      " $i
+              }' || true)
+        [ -z "$calls" ] && continue
+        if [ "$jar_header_shown" = false ]; then
+          echo ""
+          echo "--- ${jar#$PROJECT_ROOT/} ---"
+          jar_header_shown=true
+        fi
+        echo "  $fqcn"
+        echo "$calls"
+      else
+        if [ "$jar_header_shown" = false ]; then
+          echo ""
+          echo "--- ${jar#$PROJECT_ROOT/} ---"
+          jar_header_shown=true
+          if [ "$skip_javap" = true ]; then
+            echo "  (候補 $n_candidates クラス > 200 のため method 検証を省略し、クラス参照の一覧のみ表示。--dir で絞り込み推奨)"
+          fi
+        fi
+        echo "  $fqcn"
+      fi
+      found=1
+    done <<< "$hits"
+  done < <(find_class_jars "")
+  rm -rf "$tmp"
+
+  if [ "$found" -eq 0 ]; then
+    echo "(no callers found)"
+  fi
+}
+
 cmd_doctor() {
   echo "=== jar-search.sh doctor ==="
   echo "Project root : $PROJECT_ROOT"
@@ -459,6 +573,7 @@ case "${1:-help}" in
   sig)      shift; cmd_sig "$@" ;;
   bytecode) shift; cmd_bytecode "$@" ;;
   apidiff)  shift; cmd_apidiff "$@" ;;
+  callers)  shift; cmd_callers "$@" ;;
   doctor)   shift; cmd_doctor ;;
   *)
     cat <<'USAGE'
@@ -470,6 +585,7 @@ Usage:
   jar-search.sh sig <Class> [--all]
   jar-search.sh bytecode <Class> [method-pattern] [--all]
   jar-search.sh apidiff <Class> <old-version> [new-version]
+  jar-search.sh callers <Class> [method] [--dir <subdir>] [--all]
   jar-search.sh doctor
 
 Global options:
@@ -498,6 +614,8 @@ Examples:
   jar-search.sh bytecode Sound getLocation        # Bytecode of one member (javap -p -c)
   jar-search.sh bytecode Sound "static"           # Static initializer (constant values)
   jar-search.sh apidiff Sound 1.20.1              # Signature diff old -> current version
+  jar-search.sh callers Sound                     # Classes referencing Sound
+  jar-search.sh callers Sound getLocation         # Call sites of Sound.getLocation
   jar-search.sh doctor                            # Check source jars / javap availability
 USAGE
     ;;
